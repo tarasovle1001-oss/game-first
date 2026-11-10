@@ -1,0 +1,25 @@
+{
+  "name": "test-city",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "bot": "tsx packages/bots/src/run.ts",
+    "dev": "pnpm --filter @tc/ui dev",
+    "build": "pnpm --filter @tc/ui build",
+    "check": "pnpm typecheck && pnpm test && pnpm bot"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
