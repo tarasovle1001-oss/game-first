@@ -8,17 +8,18 @@ import { WAIT } from "@tc/base";
 const mods = [baseMod, exampleMod];
 const engine = createEngine(mods);
 const advance = { type: CORE_ADVANCE };
+const wait = (minutes: number) => ({ type: WAIT, payload: { minutes } });
 const canAdvance = (s: GameState) => engine.listActions(s).some((a) => a.type === CORE_ADVANCE);
 /** Moves to the next phase, waiting through shift ticks when the phase cannot be left yet. */
 const nextPhase = (s: GameState) => {
-  while (!canAdvance(s)) s = engine.dispatch(s, { type: WAIT });
+  while (!canAdvance(s)) s = engine.dispatch(s, wait(60));
   return engine.dispatch(s, advance);
 };
 
 describe("day cycle", () => {
   it("walks phases and rolls the day over", () => {
     let s = engine.init(1);
-    expect(s.time).toEqual({ day: 1, phase: "prep" });
+    expect(s.time).toEqual({ day: 1, phase: "prep", minute: 960 });
     const seen = [];
     for (let i = 0; i < 4; i++) {
       s = nextPhase(s);
@@ -86,7 +87,7 @@ describe("save", () => {
   it("round-trips mid-day and continues identically", () => {
     let a = engine.init(7);
     a = nextPhase(a);
-    for (let i = 0; i < 5; i++) a = engine.dispatch(a, { type: WAIT }); // stop in the middle of a shift
+    for (let i = 0; i < 14; i++) a = engine.dispatch(a, wait(10)); // stop in the middle of a shift
     let b = loadGame(saveGame(a, engine), mods).state;
     expect(b).toEqual(a);
     for (let i = 0; i < 12; i++) {
@@ -127,7 +128,7 @@ describe("shift and economy", () => {
   it("guests arrive, get served, pay, and are gone after closing", () => {
     let s = nextPhase(engine.init(3));
     const moneyBefore = s.mods.base.money;
-    while (!canAdvance(s)) s = engine.dispatch(s, { type: WAIT });
+    while (!canAdvance(s)) s = engine.dispatch(s, wait(10));
     expect(s.mods.base.shift.served).toBeGreaterThan(0);
     expect(s.mods.base.money).toBeGreaterThan(moneyBefore);
     s = engine.dispatch(s, advance);
@@ -142,9 +143,36 @@ describe("shift and economy", () => {
     expect(s.mods.base.money).toBe(0);
     expect(s.mods.base.debt).toBeGreaterThan(debtBefore);
   });
+  it("waits in steps and can stop at the first event", () => {
+    const s = nextPhase(engine.init(3));
+    expect(engine.dispatch(s, wait(30)).mods.base.shift.tick).toBe(3);
+    const stopped = engine.dispatch(s, { type: WAIT, payload: { until: "event" } });
+    expect(stopped.mods.base.shift.tick).toBeGreaterThan(0);
+    expect(stopped.mods.base.shift.interrupt || stopped.mods.base.shift.tick === 36).toBe(true);
+    expect(stopped.time.minute).toBe(18 * 60 + stopped.mods.base.shift.tick * 10);
+  });
+  it("answers proposals through the consent formula and remembers why", () => {
+    let s = nextPhase(engine.init(5));
+    while (s.mods.base.proposals.length === 0) s = canAdvance(s) ? nextPhase(nextPhase(nextPhase(nextPhase(s)))) : engine.dispatch(s, wait(10));
+    const p = s.mods.base.proposals[0];
+    expect(p.rows[0].id).toBe("consent.act");
+    expect(p.rows.reduce((a: number, r: { value: number }) => a + r.value, 0)).toBeCloseTo(p.total);
+    expect(["eager", "hesitant", "refuse"]).toContain(p.verdict);
+  });
+  it("husband in the room makes her less willing", () => {
+    let s = nextPhase(engine.init(5));
+    while (s.mods.base.shift.visits.length === 0) s = engine.dispatch(s, wait(10));
+    const partner = s.mods.base.shift.visits[0].patron;
+    const input = { act: "kiss", partner, loc: "cafe.hall", offer: 0, pressure: 0 };
+    const watched = engine.evaluate("base/consent", s, input);
+    const away = engine.evaluate("base/consent", { ...s, where: { ...s.where, husband: "cafe.kitchen" } }, input);
+    expect(watched.rows.some((r) => r.id === "consent.husband")).toBe(true);
+    expect(away.rows.some((r) => r.id === "consent.husband")).toBe(false);
+    expect(away.total).toBeGreaterThan(watched.total);
+  });
   it("tip formula exposes named rows", () => {
     let s = nextPhase(engine.init(3));
-    while (!s.mods.base.shift.visits.length) s = engine.dispatch(s, { type: WAIT });
+    while (!s.mods.base.shift.visits.length) s = engine.dispatch(s, wait(10));
     const patron = s.mods.base.shift.visits[0].patron;
     const res = engine.evaluate("base/tip", s, { patron, bill: 20 });
     expect(res.rows.map((r) => r.id)).toEqual(["tip.generosity", "tip.mood", "tip.interest"]);

@@ -1,0 +1,66 @@
+# Scene types and how the schematic draws them: one mannequin per role.
+# pose: stand | sit | kneel | lie_back | lie_front | bend | all_fours | straddle
+# x: horizontal offset from the centre, y: lift above the floor, flip: true = faces left
+- id: idle
+  figures:
+    - { role: wife, pose: stand, x: -30, y: 0, flip: false }
+- id: serving
+  figures:
+    - { role: wife, pose: stand, x: -25, y: 0, flip: false }
+    - { role: patron, pose: sit, x: 30, y: 0, flip: true }
+- id: patron_chatting
+  figures:
+    - { role: wife, pose: stand, x: -28, y: 0, flip: false }
+    - { role: patron, pose: sit, x: 30, y: 0, flip: true }
+- id: patron_drinking
+  figures:
+    - { role: wife, pose: sit, x: -26, y: 0, flip: false }
+    - { role: patron, pose: sit, x: 30, y: 0, flip: true }
+- id: patron_flirting
+  figures:
+    - { role: wife, pose: stand, x: -18, y: 0, flip: false }
+    - { role: patron, pose: sit, x: 26, y: 0, flip: true }
+- id: patron_touching
+  figures:
+    - { role: wife, pose: stand, x: -8, y: 0, flip: false }
+    - { role: patron, pose: sit, x: 24, y: 0, flip: true }
+- id: patron_moment_sit_on_lap
+  figures:
+    - { role: patron, pose: sit, x: 0, y: 0, flip: false }
+    - { role: wife, pose: sit, x: 8, y: 22, flip: false }
+- id: kissing
+  figures:
+    - { role: wife, pose: stand, x: -12, y: 0, flip: false }
+    - { role: patron, pose: stand, x: 12, y: 0, flip: true }
+- id: patron_groping
+  figures:
+    - { role: wife, pose: stand, x: 4, y: 0, flip: false }
+    - { role: patron, pose: stand, x: -12, y: 0, flip: false }
+- id: patron_lap_dance
+  figures:
+    - { role: patron, pose: sit, x: 0, y: 0, flip: false }
+    - { role: wife, pose: straddle, x: 14, y: 26, flip: true }
+- id: patron_handjob
+  figures:
+    - { role: patron, pose: sit, x: 8, y: 0, flip: true }
+    - { role: wife, pose: kneel, x: -26, y: 0, flip: false }
+- id: patron_blowjob
+  figures:
+    - { role: patron, pose: stand, x: 18, y: 0, flip: true }
+    - { role: wife, pose: kneel, x: -16, y: 0, flip: false }
+- id: patron_cunnilingus
+  figures:
+    - { role: wife, pose: lie_back, x: -4, y: 0, flip: false }
+    - { role: patron, pose: kneel, x: 44, y: 0, flip: true }
+- id: patron_sex
+  figures:
+    - { role: wife, pose: lie_back, x: -10, y: 0, flip: false }
+    - { role: patron, pose: kneel, x: 32, y: 0, flip: true }
+- id: patron_riding
+  figures:
+    - { role: patron, pose: lie_back, x: 0, y: 0, flip: false }
+    - { role: wife, pose: straddle, x: 8, y: 14, flip: true }
+- id: patron_anal
+  figures:
+    - { role: wife, pose: all_fours, x: -8, y: 0, flip: false }
+    - { role: patron, pose: kneel, x: -44, y: 0, flip: false }

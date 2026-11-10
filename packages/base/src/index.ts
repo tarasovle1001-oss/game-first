@@ -7,6 +7,7 @@ import { newHeroine, registerHeroine } from "./systems/heroine";
 import { registerPatrons } from "./systems/patrons";
 import { PHASES, registerPlaces, ticksDone } from "./systems/places";
 import { registerShift } from "./systems/shift";
+import { registerEncounters } from "./systems/encounters";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -24,6 +25,8 @@ export const baseMod: Mod = {
       patrons: {},
       nextPatron: 1,
       shift: null,
+      encounter: null,
+      proposals: [],
       today: emptyLedger(1),
       history: [],
     };
@@ -44,15 +47,19 @@ export const baseMod: Mod = {
     registerHeroine(api);
     registerPatrons(api);
     registerShift(api);
+    registerEncounters(api);
   },
 };
 
 export const baseLocales: Record<string, Dict> = content.locales;
 export { content, patronType, room } from "./content";
 export * from "./state";
-export type { Content, PatronType, Room, Balance } from "./content/schema";
+export type { Content, PatronType, Room, Balance, Act, SceneLayout } from "./content/schema";
+export { CONSENT_FORMULA, nextProposal, verdictOf } from "./systems/encounters";
+export type { ConsentInput } from "./systems/encounters";
 export { PHASES } from "./systems/places";
-export { TIP_FORMULA, WAIT, visitOf } from "./systems/shift";
+export { TIP_FORMULA, WAIT, WAIT_MINUTES, visitOf } from "./systems/shift";
+export { clockText, TICKS_PER_SHIFT, HALL } from "./systems/places";
 export type { TipInput } from "./systems/shift";
 export { BUY_SUPPLIES, REPAY_DEBT, addMoney, addReputation } from "./systems/economy";
 export { changeHeroine } from "./systems/heroine";

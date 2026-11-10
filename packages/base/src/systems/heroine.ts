@@ -1,4 +1,5 @@
 import type { Ctx, ModApi } from "@tc/core";
+import { content } from "../content";
 import { bs, clamp } from "../state";
 import type { Heroine } from "../state";
 
@@ -36,6 +37,16 @@ export function registerHeroine(api: ModApi) {
       changeHeroine(ctx, "mood", Math.round((55 - h.mood) * 0.3), "sleep");
       changeHeroine(ctx, "arousal", Math.round((h.traits.libido * 0.3 - h.arousal) * 0.5), "sleep");
     }
+  });
+
+  // During the evening things cool down on their own when nothing feeds them.
+  api.events.on("shift:tick", (ctx) => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const rest = h.traits.libido * 0.3;
+    if (!b.encounter && h.arousal > rest) h.arousal = Math.max(rest, h.arousal - content.balance.heroine.arousalCoolPerTick);
+    h.mood += (55 - h.mood) * content.balance.heroine.moodSettlePerTick;
+    h.drunk = Math.max(0, h.drunk - content.balance.heroine.soberPerTick);
   });
 
   api.invariants.add("heroine-bounds", (s) => {

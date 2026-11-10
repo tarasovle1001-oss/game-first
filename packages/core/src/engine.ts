@@ -173,6 +173,7 @@ export function createEngine(modList: Mod[]): Engine {
   core.actions.register({
     id: CORE_MOVE,
     labelKey: "core.action.move",
+    describe: (action) => ({ key: "core.action.move", params: { to: `loc.${action.payload!.to}` } }),
     enumerate(state) {
       const out: Action[] = [];
       for (const [actor, at] of Object.entries(state.where)) {
@@ -213,7 +214,7 @@ export function createEngine(modList: Mod[]): Engine {
         seed,
         rng: seed | 0,
         turn: 0,
-        time: { day: 1, phase: list[0]!.id },
+        time: { day: 1, phase: list[0]!.id, minute: 0 },
         where: {},
         mods: { core: { controllable: [] } },
         log: [],
@@ -246,8 +247,8 @@ export function createEngine(modList: Mod[]): Engine {
         rng: makeRng(draft),
         engine: view,
         emit: (type, payload) => void queue.push({ type, payload }),
-        log(key, params) {
-          draft.log.push({ turn: draft.turn, day: draft.time.day, phase: draft.time.phase, key, params });
+        log(key, params, tags) {
+          draft.log.push({ turn: draft.turn, day: draft.time.day, phase: draft.time.phase, minute: draft.time.minute, key, params, ...(tags ? { tags } : {}) });
           if (draft.log.length > LOG_LIMIT) draft.log.splice(0, draft.log.length - LOG_LIMIT);
         },
       };

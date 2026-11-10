@@ -6,6 +6,13 @@ import type { Patron } from "../state";
 const POOL_LIMIT = 40;
 const FORGET_AFTER_DAYS = 14;
 
+/** A first name nobody she knows carries yet; falls back to any name when all are taken. */
+function freeName(ctx: Ctx): number {
+  const used = new Set(Object.values(bs(ctx.state).patrons).map((p) => p.name));
+  const free = content.names.map((_, i) => i).filter((i) => !used.has(i));
+  return free.length > 0 ? ctx.rng.pick(free) : ctx.rng.int(0, content.names.length - 1);
+}
+
 /** A new person walks in: everything is rolled once from his type and then stays. */
 export function generatePatron(ctx: Ctx): Patron {
   const b = bs(ctx.state);
@@ -17,7 +24,7 @@ export function generatePatron(ctx: Ctx): Patron {
   const patron: Patron = {
     id: `p${b.nextPatron++}`,
     type: type.id,
-    name: ctx.rng.int(0, content.names.length - 1),
+    name: freeName(ctx),
     age: roll(type.age),
     build: ctx.rng.pick(type.builds),
     size: roll(type.size),
@@ -31,7 +38,7 @@ export function generatePatron(ctx: Ctx): Patron {
     },
     approach,
     regular: false,
-    memory: { visits: 0, lastDay: 0, served: 0, tipsTotal: 0, affinity: 0, interest: ctx.rng.int(5, 35) },
+    memory: { visits: 0, lastDay: 0, served: 0, tipsTotal: 0, affinity: 0, interest: ctx.rng.int(5, 35), tier: -1, acts: {}, refusals: 0 },
   };
   b.patrons[patron.id] = patron;
   return patron;

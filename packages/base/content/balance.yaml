@@ -1,19 +1,31 @@
 # Economy and pacing numbers. Change here, not in code.
 start:
   money: 400
-  debt: 3000
+  debt: 6000
   reputation: 40
   stock: 30
-rentPerDay: 110
-debtInterestPerDay: 0.004 # fraction of the debt added every day
+rentPerDay: 380
+debtInterestPerDay: 0.008 # fraction of the debt added every day
 supplies:
   packCost: 60
-  packServings: 20
+  packServings: 12
+heroine: # how her state settles during the evening, per 10 minutes
+  arousalCoolPerTick: 0.35
+  moodSettlePerTick: 0.02
+  soberPerTick: 0.6
+clock: # minute of the day each phase starts at
+  prep: 960     # 16:00
+  night: 30     # 00:30
+  summary: 60   # 01:00
 shift:
-  ticks: 12
+  opensAt: 18
+  hours: 6
+  minutesPerTick: 10
   seats: 8
-  arrivalsBase: 1.1 # expected new patrons per tick at reputation 50
-  stayTicks: [3, 6]
+  arrivalsPerHour: 2.2 # expected new guests per hour at reputation 50
+  stayMinutes: [50, 130]
+  orderEveryMinutes: 35 # a guest wants a new order this often
+  maxWaitMinutes: 45 # he walks out after waiting this long
   energyPerServe: 2
   regularAfterVisits: 3
-  returnChance: 0.35 # chance that an arriving patron is someone who has been here before
+  returnChance: 0.35 # chance that an arriving guest has been here before

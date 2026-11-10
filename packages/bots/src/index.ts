@@ -11,16 +11,30 @@ export const randomStrategy: Strategy = (actions, _state, roll) => {
 };
 
 /** Only advances time: the fastest smoke test of the day cycle. */
+const hourWait = (actions: Action[]) => actions.find((a) => a.type === "base/wait" && a.payload?.minutes === 60);
+
 export const rushStrategy: Strategy = (actions) =>
-  actions.find((a) => a.type === CORE_ADVANCE) ?? actions.find((a) => a.type !== CORE_MOVE) ?? actions[0]!;
+  actions.find((a) => a.type === CORE_ADVANCE) ?? hourWait(actions) ?? actions.find((a) => a.type !== CORE_MOVE) ?? actions[0]!;
 
 /** Plays like a careful owner: buys supplies and pays the debt in prep, never moves. */
-export const ownerStrategy: Strategy = (actions) =>
-  actions.find((a) => a.type === "base/buy-supplies") ??
-  actions.find((a) => a.type === "base/repay-debt") ??
+export const ownerStrategy: Strategy = (actions, state) =>
+  (state.mods.base.stock < 45 ? actions.find((a) => a.type === "base/buy-supplies") : undefined) ??
+  (state.mods.base.money > 400 ? actions.find((a) => a.type === "base/repay-debt") : undefined) ??
   actions.find((a) => a.type === CORE_ADVANCE) ??
+  hourWait(actions) ??
   actions.find((a) => a.type !== CORE_MOVE) ??
   actions[0]!;
+
+/** Owner who spends the shift in the kitchen: shows what happens when nobody is watching. */
+export const awayStrategy: Strategy = (actions, state) => {
+  const at = state.where.husband;
+  const moveTo = (to: string) => actions.find((a) => a.type === CORE_MOVE && a.payload?.to === to);
+  if (state.time.phase === "shift" && at !== "cafe.kitchen") {
+    const step = at === "cafe.hall" ? moveTo("cafe.bar") : at === "cafe.bar" ? moveTo("cafe.kitchen") : at === "cafe.staff" ? moveTo("cafe.kitchen") : moveTo("cafe.hall");
+    if (step) return step;
+  }
+  return ownerStrategy(actions, state, () => 0);
+};
 
 export interface BotReport {
   seed: number;

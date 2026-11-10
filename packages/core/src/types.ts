@@ -9,15 +9,17 @@ export interface LogEntry {
   turn: number;
   day: number;
   phase: string;
+  minute: number;
   key: string; // translation key
   params?: Params;
+  tags?: string[]; // free-form marks, e.g. "unseen" for things the player did not witness
 }
 
 export interface GameState {
   seed: number;
   rng: number; // generator state, advances with every roll
   turn: number; // number of dispatched actions
-  time: { day: number; phase: string };
+  time: { day: number; phase: string; minute: number }; // minute of the day, kept by the game mod
   where: Record<string, string>; // entity id -> location id
   mods: Record<string, any>; // each mod owns state.mods[modId]
   log: LogEntry[];
@@ -47,7 +49,7 @@ export interface Ctx {
   state: GameState;
   rng: Rng;
   emit(type: string, payload?: Record<string, Json>): void;
-  log(key: string, params?: Params): void;
+  log(key: string, params?: Params, tags?: string[]): void;
   /** Read-only access to registries and derived data. */
   engine: EngineView;
 }
@@ -55,6 +57,8 @@ export interface Ctx {
 export interface ActionDef {
   id: string;
   labelKey: string;
+  /** Label for one concrete action when it depends on the payload. Falls back to labelKey. */
+  describe?(action: Action): { key: string; params?: Params };
   /** Concrete actions available right now. Used by UI and bots. Must be pure. */
   enumerate(state: GameState, engine: EngineView): Action[];
   /** Extra guard, checked on dispatch. Defaults to "is in enumerate()". */

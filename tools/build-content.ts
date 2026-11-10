@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { balanceSchema, nameSchema, patronTypeSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -72,6 +72,21 @@ unique(patronTypes, "patron type");
 const names = load(join(base, "content/names.yaml"), nameSchema.array().min(1)) ?? [];
 const balance = load(join(base, "content/balance.yaml"), balanceSchema);
 
+// --- acts, scenes, consent tuning ---
+const acts = load(join(base, "content/acts.yaml"), actSchema.array().min(1)) ?? [];
+const scenes = load(join(base, "content/scenes.yaml"), sceneSchema.array().min(1)) ?? [];
+const consent = load(join(base, "content/consent.yaml"), consentSchema);
+unique(acts, "act");
+unique(scenes, "scene");
+const sceneIds = new Set(scenes.map((s) => s.id));
+for (const a of acts) if (!sceneIds.has(a.scene)) errors.push(`act "${a.id}" uses unknown scene "${a.scene}"`);
+if (acts.length > 0) {
+  const tiers = new Set(acts.map((a) => a.tier));
+  const top = Math.max(...tiers);
+  for (let t = 0; t <= top; t++) if (!tiers.has(t)) errors.push(`acts: no act on tier ${t}, the ladder has a gap`);
+  if (rooms.every((r) => !r.tags.includes("private"))) errors.push("acts need at least one room tagged private");
+}
+
 // --- locales ---
 const locales: Record<string, Record<string, string>> = {};
 for (const file of yamlFiles(join(base, "locales"))) {
@@ -103,17 +118,22 @@ const need = (key: string) => {
 rooms.forEach((r) => need(`loc.${r.id}`));
 new Set(rooms.map((r) => r.zone)).forEach((z) => need(`ui.zone.${z}`));
 patronTypes.forEach((t) => need(`patron.type.${t.id}`));
+acts.forEach((a) => {
+  need(`act.${a.id}`);
+  for (const outcome of ["eager", "hesitant", "refuse"]) need(`log.act.${a.id}.${outcome}`);
+});
+scenes.forEach((s) => need(`scene.${s.id}`));
 
-if (errors.length > 0 || !balance) {
+if (errors.length > 0 || !balance || !consent) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { rooms, patronTypes, names, balance, locales };
+const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));
 console.log(
-  `content ok: ${rooms.length} rooms, ${patronTypes.length} patron types, ${names.length} names, ${langs.map((l) => `${l}=${Object.keys(locales[l]!).length}`).join(" ")} keys`,
+  `content ok: ${rooms.length} rooms, ${patronTypes.length} patron types, ${names.length} names, ${acts.length} acts, ${scenes.length} scenes, ${langs.map((l) => `${l}=${Object.keys(locales[l]!).length}`).join(" ")} keys`,
 );

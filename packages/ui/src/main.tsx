@@ -1,18 +1,21 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { bs, patronName, renderLog, TIP_FORMULA } from "@tc/base";
-import { CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
+import { bs, WAIT } from "@tc/base";
+import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { engine, mods, newSeed, SAVE_KEY, translator } from "./game";
 import type { Lang } from "./game";
-import { FormulaTable, HeroineCard, Patrons, RoomMap, StatusBar } from "./panels";
+import { actionLabel, GuestsTab, HeroineTab, Log, Rooms, ScenePanel, TopBar, WhyTab } from "./panels";
 import "./style.css";
+
+type Tab = "her" | "guests" | "why";
 
 // The UI only reads state and dispatches actions. No game rules live here.
 function App() {
   const [state, setState] = useState<GameState>(() => engine.init(newSeed()));
   const [lang, setLang] = useState<Lang>("ru");
   const [debug, setDebug] = useState(false);
+  const [tab, setTab] = useState<Tab>("her");
   const [error, setError] = useState("");
   const t = useMemo(() => translator(lang), [lang]);
 
@@ -24,87 +27,120 @@ function App() {
       setError((e as Error).message);
     }
   };
+
+  const all = engine.listActions(state);
+  const waits = all.filter((a) => a.type === WAIT);
+  const advance = all.find((a) => a.type === CORE_ADVANCE);
+  const other = all.filter((a) => a.type !== WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE);
+
+  // keys 1-4 for the waits, Enter for the next phase
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement) return;
+      const n = Number(e.key);
+      if (n >= 1 && n <= waits.length) act(waits[n - 1]!);
+      else if (e.key === "Enter" && advance) act(advance);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const scene = engine.currentScene(state);
   const problems = engine.checkInvariants(state);
-  const actions = engine.listActions(state).filter((a) => a.type !== CORE_MOVE); // moves live on the map
   const common = { state, t, lang };
   const b = bs(state);
 
   return (
-    <main>
+    <div className="app">
       <header>
-        <strong>
-          {t("ui.day", { day: state.time.day })} - {t(`base.phase.${state.time.phase}`)}
-        </strong>
-        <span className="spacer" />
-        <button onClick={() => setState(engine.init(newSeed()))}>{t("ui.new")}</button>
-        <button onClick={() => localStorage.setItem(SAVE_KEY, saveGame(state, engine))}>{t("ui.save")}</button>
-        <button
-          onClick={() => {
-            const raw = localStorage.getItem(SAVE_KEY);
-            if (raw) setState(loadGame(raw, mods).state);
-          }}
-        >
-          {t("ui.load")}
-        </button>
-        <button onClick={() => setDebug(!debug)}>{t("ui.debug")}</button>
-        <button onClick={() => setLang(lang === "en" ? "ru" : "en")}>{lang === "en" ? "RU" : "EN"}</button>
+        <TopBar {...common} />
+        <div className="tools">
+          <button onClick={() => setState(engine.init(newSeed()))}>{t("ui.new")}</button>
+          <button onClick={() => localStorage.setItem(SAVE_KEY, saveGame(state, engine))}>{t("ui.save")}</button>
+          <button
+            onClick={() => {
+              const raw = localStorage.getItem(SAVE_KEY);
+              if (raw) setState(loadGame(raw, mods).state);
+            }}
+          >
+            {t("ui.load")}
+          </button>
+          <button className={debug ? "on" : ""} onClick={() => setDebug(!debug)}>
+            {t("ui.debug")}
+          </button>
+          <button onClick={() => setLang(lang === "en" ? "ru" : "en")}>{lang === "en" ? "RU" : "EN"}</button>
+        </div>
       </header>
-      <StatusBar {...common} />
 
       {(error || problems.length > 0) && <pre className="error">{[error, ...problems].filter(Boolean).join("\n")}</pre>}
 
-      <div className="columns">
-        <div>
-          <h2>{t("ui.map")}</h2>
-          <RoomMap {...common} onAct={act} />
+      <div className="layout">
+        <aside className="col-log">
+          <div className="cap">{t("ui.log")}</div>
+          <Log {...common} debug={debug} />
+        </aside>
 
-          <h2>{t("ui.actions")}</h2>
-          <div className="actions">
-            {actions.map((a, i) => (
-              <button key={i} onClick={() => act(a)}>
-                {t(engine.actionDef(a.type)!.labelKey)}
+        <section className="col-main">
+          <ScenePanel {...common} scene={scene} />
+          <div className="cap gap">{t("ui.where")}</div>
+          <Rooms {...common} onAct={act} />
+          {debug && (
+            <p className="muted small mono">
+              scene {scene ? sceneKey(scene) : "-"} · seed {state.seed} · turn {state.turn}
+              {b.encounter && ` · encounter ${b.encounter.act}@${b.encounter.loc} with ${b.encounter.patron}`}
+            </p>
+          )}
+        </section>
+
+        <aside className="col-side">
+          {waits.length > 0 && (
+            <div className="card">
+              <div className="card-title">{t("ui.wait")}</div>
+              <div className="muted small">{t("ui.wait.hint")}</div>
+              <div className="waits">
+                {waits.map((a, i) => (
+                  <button key={i} className={a.payload?.until ? "wide" : ""} onClick={() => act(a)}>
+                    <kbd>{i + 1}</kbd> {actionLabel(a, t, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {state.time.phase === "shift" && waits.length === 0 && <div className="muted">{t("ui.closing")}</div>}
+          {other.length > 0 && (
+            <div className="card">
+              <div className="card-title">{t("ui.business")}</div>
+              <div className="stack">
+                {other.map((a, i) => (
+                  <button key={i} onClick={() => act(a)}>
+                    {actionLabel(a, t, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {advance && (
+            <button className="primary" onClick={() => act(advance)}>
+              <kbd>↵</kbd> {actionLabel(advance, t, lang)}
+            </button>
+          )}
+
+          <div className="tabs">
+            {(["her", "guests", "why"] as Tab[]).map((k) => (
+              <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>
+                {t(`ui.tab.${k}`)}
+                {k === "guests" && b.shift ? ` ${b.shift.visits.length}` : ""}
               </button>
             ))}
           </div>
-
-          <h2>{t("ui.log")}</h2>
-          <ul className="log">
-            {state.log
-              .slice(-40)
-              .reverse()
-              .map((e, i) => (
-                <li key={`${e.turn}-${i}`}>{renderLog(e, t, lang)}</li>
-              ))}
-          </ul>
-        </div>
-
-        <div>
-          <h2>{t("ui.heroine")}</h2>
-          <HeroineCard {...common} />
-          <Patrons {...common} />
-        </div>
-      </div>
-
-      {debug && (
-        <section className="debug">
-          <h2>{t("ui.debug")}</h2>
-          <p>
-            {t("ui.scene")}: <code>{scene ? sceneKey(scene) : "-"}</code> · seed <code>{state.seed}</code> · turn <code>{state.turn}</code>
-          </p>
-          <div className="formulas">
-            {(b.shift?.visits ?? []).map((v) => (
-              <FormulaTable
-                key={v.patron}
-                t={t}
-                title={`${patronName(b.patrons[v.patron]!.name, lang)}: tip @20`}
-                result={engine.evaluate(TIP_FORMULA, state, { patron: v.patron, bill: 20 })}
-              />
-            ))}
+          <div className="tab-body">
+            {tab === "her" && <HeroineTab {...common} />}
+            {tab === "guests" && <GuestsTab {...common} />}
+            {tab === "why" && <WhyTab {...common} debug={debug} />}
           </div>
-        </section>
-      )}
-    </main>
+        </aside>
+      </div>
+    </div>
   );
 }
 

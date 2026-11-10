@@ -11,7 +11,19 @@ pnpm check     # typecheck + тесты + боты
 pnpm bot       # боты без экрана: --days 14 --seeds 20
 pnpm dev       # игра в браузере с горячей перезагрузкой
 pnpm build     # dist/index.html - один файл, открывается с диска
+pnpm content   # проверить YAML и пересобрать контент (вызывается остальными командами сама)
 ```
+
+Полезное для отладки:
+
+```
+pnpm exec tsx packages/bots/src/probe.ts 14 1     # что она отвечала гостям за 14 дней, сид 1
+pnpm exec tsx packages/bots/src/run.ts --days 60 --seeds 8   # длинный прогон, сводка по балансу
+pnpm exec tsx tools/scene-sheet.ts sheet.html    # все схемы сцен на одной странице
+pnpm exec tsx tools/make-save.ts save.json 12 2  # сейв с идущей сценой (день от 12, сид 2)
+```
+
+Решения, принятые по ходу: [docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Пакеты
 
@@ -19,6 +31,7 @@ pnpm build     # dist/index.html - один файл, открывается с 
 |---|---|---|
 | `packages/core` | Движок: состояние, действия, события, сид, фазы, локации, формулы, сцены, сейвы | только immer |
 | `packages/base` | Сама игра как мод поверх core | core |
+| `packages/schematics` | SVG-схемы сцен из манекенов | ничего |
 | `packages/mods/example` | Пример стороннего мода на публичном API | core |
 | `packages/bots` | Боты, инварианты, интеграционные тесты | core, base, моды |
 | `packages/ui` | React: читает состояние, шлёт действия | core, base, моды |
@@ -37,3 +50,11 @@ pnpm build     # dist/index.html - один файл, открывается с 
 `dispatch(state, action)` -> проверка, что действие есть в `listActions` -> `apply` -> очередь событий до опустошения -> новое состояние.
 
 События ядра: `game:init`, `day:start`, `phase:enter`, `phase:exit`, `day:end`, `entity:moved`.
+
+События игры (`base`): `shift:start`, `shift:tick`, `shift:end`, `patron:arrived`, `patron:served`, `patron:left`, `patron:forgotten`, `encounter:proposed`, `encounter:started`, `encounter:refused`, `encounter:ended`, `money:changed`, `heroine:changed`.
+
+Формулы: `base/consent` (согласие), `base/tip` (чаевые). Мод добавляет свою строку через `api.formulas.addFactor`.
+
+## Контент
+
+Всё в `packages/base/content`: `locations/`, `patron-types/`, `acts.yaml`, `scenes.yaml`, `consent.yaml`, `balance.yaml`, `names.yaml`. Тексты в `packages/base/locales/en.yaml` и `ru.yaml`.

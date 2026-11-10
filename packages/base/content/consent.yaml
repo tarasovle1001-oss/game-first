@@ -1,0 +1,29 @@
+# Tuning of the consent formula. Every number here is a visible row in the debug panel.
+eagerAt: 20      # total >= this: she is glad to
+hesitantAt: 0    # total >= this: she agrees, reluctantly; below: she refuses
+proposalsPerTick: 3 # how many guests can speak up within one tick (only one of them can take her off the floor)
+askChancePerHour: 0.5 # base chance that a guest makes a move within an hour
+askChancePerInterest: 0.016 # added per point of his interest
+
+# row weights
+arousal: 0.6    # per point of arousal, grows with the tier of the act
+drunk: 0.35      # per point of drunkenness
+mood: 0.2        # per point of mood above 50
+openness: 0.5    # per point of openness above 50, grows with the tier
+fidelity: 0.5   # per point of fidelity, grows with the tier (always against)
+libido: 0.3      # per point of libido above 50, intimate acts only
+affinity: 0.35   # per point of her opinion of him
+charm: 0.25      # per point of his charm above 50
+familiar: 14     # she has already done this with him
+jumpPerTier: 14  # per tier he tries to skip with her
+witnesses: 0.15   # other guests can see, scaled by how closed she is
+husbandWatching: 38 # her husband is in the room
+money: 0.3       # per unit of money offered, scaled by how badly they need it
+pressure: 0.25   # he insists: his persistence against her confidence
+tired: 15        # she has no energy left
+
+# how fast her character moves when she says yes (per tier of the act)
+drift:
+  openness: 0.12
+  fidelity: 0.1
+  confidence: 0.05

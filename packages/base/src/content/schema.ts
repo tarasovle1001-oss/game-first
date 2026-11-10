@@ -42,17 +42,76 @@ export const balanceSchema = z
     rentPerDay: z.number().min(0),
     debtInterestPerDay: z.number().min(0), // fraction, 0.01 = 1%
     supplies: z.object({ packCost: z.number().positive(), packServings: z.number().int().positive() }).strict(),
+    heroine: z.object({ arousalCoolPerTick: z.number().min(0), moodSettlePerTick: z.number().min(0).max(1), soberPerTick: z.number().min(0) }).strict(),
+    // clock: minute of the day each phase starts at (for the log and the top bar)
+    clock: z.object({ prep: z.number().int(), night: z.number().int(), summary: z.number().int() }).strict(),
     shift: z
       .object({
-        ticks: z.number().int().positive(),
+        opensAt: z.number().int().min(0).max(23), // hour
+        hours: z.number().positive(),
+        minutesPerTick: z.number().int().positive(),
         seats: z.number().int().positive(),
-        arrivalsBase: z.number().min(0), // expected new patrons per tick at reputation 50
-        stayTicks: range,
+        arrivalsPerHour: z.number().min(0), // expected new guests per hour at reputation 50
+        stayMinutes: range,
+        orderEveryMinutes: z.number().positive(), // a guest wants a new order this often
+        maxWaitMinutes: z.number().positive(), // he walks out after waiting this long
         energyPerServe: z.number().min(0),
         regularAfterVisits: z.number().int().positive(),
-        returnChance: z.number().min(0).max(1), // chance a known regular shows up on a given evening
+        returnChance: z.number().min(0).max(1), // chance that an arriving guest has been here before
       })
       .strict(),
+  })
+  .strict();
+
+export const actSchema = z
+  .object({
+    id,
+    tier: z.number().int().min(0),
+    base: z.number(),
+    scene: id,
+    place: z.enum(["public", "private"]),
+    effects: z.object({ arousal: z.number(), mood: z.number(), energy: z.number(), interest: z.number(), affinity: z.number() }).strict(),
+    minutes: z.number().int().min(0), // how long it takes; 0 = happens in passing
+    tip: z.number().min(0),
+    zones: z.array(z.enum(["mouth", "vagina", "anus", "hands"])),
+  })
+  .strict();
+
+export const POSES = ["stand", "sit", "kneel", "lie_back", "lie_front", "bend", "all_fours", "straddle"] as const;
+export const sceneSchema = z
+  .object({
+    id,
+    figures: z
+      .array(z.object({ role: z.string(), pose: z.enum(POSES), x: z.number(), y: z.number().default(0), flip: z.boolean().default(false) }).strict())
+      .min(1),
+  })
+  .strict();
+
+export const consentSchema = z
+  .object({
+    eagerAt: z.number(), // total >= this: she is glad to
+    hesitantAt: z.number(), // total >= this: she agrees, reluctantly; below: refusal
+    proposalsPerTick: z.number().int().positive(),
+    askChancePerHour: z.number().min(0), // base chance that a guest makes a move within an hour
+    askChancePerInterest: z.number().min(0), // added per point of his interest
+    // row weights
+    arousal: z.number(),
+    drunk: z.number(),
+    mood: z.number(),
+    openness: z.number(),
+    fidelity: z.number(),
+    libido: z.number(),
+    affinity: z.number(),
+    charm: z.number(),
+    familiar: z.number(), // bonus when she has already done this with him
+    jumpPerTier: z.number(), // penalty per tier skipped on the ladder with him
+    witnesses: z.number(),
+    husbandWatching: z.number(),
+    money: z.number(),
+    pressure: z.number(),
+    tired: z.number(),
+    // how fast her character moves when she says yes
+    drift: z.object({ openness: z.number(), fidelity: z.number(), confidence: z.number() }).strict(),
   })
   .strict();
 
@@ -60,11 +119,17 @@ export type Room = z.infer<typeof roomSchema> & { zone: string };
 export type PatronType = z.infer<typeof patronTypeSchema>;
 export type Balance = z.infer<typeof balanceSchema>;
 export type NameEntry = z.infer<typeof nameSchema>;
+export type Act = z.infer<typeof actSchema>;
+export type SceneLayout = z.infer<typeof sceneSchema>;
+export type ConsentTuning = z.infer<typeof consentSchema>;
 
 export interface Content {
   rooms: Room[];
   patronTypes: PatronType[];
   names: NameEntry[];
   balance: Balance;
+  acts: Act[];
+  scenes: SceneLayout[];
+  consent: ConsentTuning;
   locales: Record<string, Record<string, string>>;
 }

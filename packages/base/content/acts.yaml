@@ -1,0 +1,134 @@
+# What a patron can propose, from small talk up. One escalation ladder for everyone.
+# tier:  step on the ladder; he climbs one tier at a time
+# base:  first row of the consent formula (higher = easier to agree)
+# place: public = on the cafe floor, private = they need a room without other guests
+# effects on accept: her arousal / mood / energy, his interest in her, her opinion of him (affinity)
+# minutes: how long it takes them, 0 = happens in passing
+# tip:   extra money he leaves, scaled by his generosity
+# zones: body zones involved, used by body progression
+- id: chat
+  tier: 0
+  base: 45
+  scene: patron_chatting
+  place: public
+  effects: { arousal: 1, mood: 2, energy: 0, interest: 2, affinity: 3 }
+  minutes: 0
+  tip: 0
+  zones: []
+- id: drink
+  tier: 1
+  base: 18
+  scene: patron_drinking
+  place: public
+  effects: { arousal: 1, mood: 3, energy: 0, interest: 1, affinity: 1 }
+  minutes: 0
+  tip: 2
+  zones: []
+- id: flirt
+  tier: 1
+  base: 22
+  scene: patron_flirting
+  place: public
+  effects: { arousal: 4, mood: 2, energy: 0, interest: 3, affinity: 3 }
+  minutes: 0
+  tip: 2
+  zones: []
+- id: touch
+  tier: 2
+  base: 2
+  scene: patron_touching
+  place: public
+  effects: { arousal: 5, mood: 1, energy: 0, interest: 4, affinity: 1 }
+  minutes: 10
+  tip: 4
+  zones: []
+- id: sit_on_lap
+  tier: 3
+  base: -8
+  scene: patron_moment_sit_on_lap
+  place: public
+  effects: { arousal: 7, mood: 1, energy: -1, interest: 5, affinity: 2 }
+  minutes: 10
+  tip: 8
+  zones: []
+- id: kiss
+  tier: 3
+  base: -10
+  scene: kissing
+  place: public
+  effects: { arousal: 9, mood: 2, energy: 0, interest: 5, affinity: 3 }
+  minutes: 10
+  tip: 6
+  zones: [mouth]
+- id: grope
+  tier: 4
+  base: -28
+  scene: patron_groping
+  place: public
+  effects: { arousal: 11, mood: 0, energy: -1, interest: 6, affinity: 1 }
+  minutes: 10
+  tip: 12
+  zones: []
+- id: lap_dance
+  tier: 4
+  base: -34
+  scene: patron_lap_dance
+  place: public
+  effects: { arousal: 10, mood: 1, energy: -4, interest: 7, affinity: 2 }
+  minutes: 10
+  tip: 20
+  zones: []
+- id: handjob
+  tier: 5
+  base: -46
+  scene: patron_handjob
+  place: private
+  effects: { arousal: 8, mood: 0, energy: -4, interest: 8, affinity: 2 }
+  minutes: 20
+  tip: 30
+  zones: [hands]
+- id: blowjob
+  tier: 6
+  base: -58
+  scene: patron_blowjob
+  place: private
+  effects: { arousal: 10, mood: 0, energy: -6, interest: 9, affinity: 3 }
+  minutes: 20
+  tip: 45
+  zones: [mouth]
+- id: cunnilingus
+  tier: 6
+  base: -50
+  scene: patron_cunnilingus
+  place: private
+  effects: { arousal: 22, mood: 4, energy: -3, interest: 7, affinity: 5 }
+  minutes: 20
+  tip: 15
+  zones: [vagina]
+- id: sex
+  tier: 7
+  base: -74
+  scene: patron_sex
+  place: private
+  effects: { arousal: 20, mood: 2, energy: -10, interest: 10, affinity: 4 }
+  minutes: 30
+  tip: 70
+  zones: [vagina]
+- id: riding
+  tier: 7
+  base: -78
+  scene: patron_riding
+  place: private
+  effects: { arousal: 22, mood: 2, energy: -12, interest: 10, affinity: 4 }
+  minutes: 30
+  tip: 75
+  zones: [vagina]
+- id: anal
+  tier: 8
+  base: -96
+  scene: patron_anal
+  place: private
+  effects: { arousal: 14, mood: -1, energy: -12, interest: 11, affinity: 3 }
+  minutes: 30
+  tip: 110
+  zones: [anus]

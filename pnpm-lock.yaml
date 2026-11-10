@@ -47,6 +47,9 @@ importers:
       '@tc/mod-example':
         specifier: workspace:*
         version: link:../mods/example
+      '@tc/schematics':
+        specifier: workspace:*
+        version: link:../schematics
 
   packages/core:
     dependencies:
@@ -60,6 +63,8 @@ importers:
         specifier: workspace:*
         version: link:../../core
 
+  packages/schematics: {}
+
   packages/ui:
     dependencies:
       '@tc/base':
@@ -71,6 +76,9 @@ importers:
       '@tc/mod-example':
         specifier: workspace:*
         version: link:../mods/example
+      '@tc/schematics':
+        specifier: workspace:*
+        version: link:../schematics
       react:
         specifier: ^18.3.1
         version: 18.3.1
