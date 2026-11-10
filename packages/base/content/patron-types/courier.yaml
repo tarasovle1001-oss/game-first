@@ -1,0 +1,19 @@
+id: courier
+weight: 8
+age: [21, 29]
+builds: ["slim", "athletic"]
+size: [13, 19] # cm
+stamina: [2, 4] # rounds in a row
+traits:
+  persistence: [30, 60]
+  charm: [40, 70]
+  honesty: [50, 85]
+  jealousy: [10, 35]
+  generosity: [10, 35]
+approach: # how he pursues, relative weights
+  court: 3
+  drink: 1
+  pay: 0
+  push: 1
+onRefusal: sulks
+spend: [8, 15] # money per order

@@ -4,18 +4,21 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "bot": "tsx packages/bots/src/run.ts",
-    "dev": "pnpm --filter @tc/ui dev",
-    "build": "pnpm --filter @tc/ui build",
-    "check": "pnpm typecheck && pnpm test && pnpm bot"
+    "content": "tsx tools/build-content.ts",
+    "typecheck": "pnpm content && tsc -p tsconfig.json --noEmit",
+    "test": "pnpm content && vitest run",
+    "bot": "pnpm content && tsx packages/bots/src/run.ts",
+    "dev": "pnpm content && pnpm --filter @tc/ui dev",
+    "build": "pnpm content && pnpm --filter @tc/ui build",
+    "check": "pnpm content && tsc -p tsconfig.json --noEmit && vitest run && tsx packages/bots/src/run.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "yaml": "^2.9.1",
+    "zod": "^3.25.76"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

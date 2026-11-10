@@ -1,0 +1,19 @@
+id: businessman
+weight: 5
+age: [35, 55]
+builds: ["average", "heavy"]
+size: [12, 17] # cm
+stamina: [1, 2] # rounds in a row
+traits:
+  persistence: [45, 80]
+  charm: [45, 75]
+  honesty: [15, 55]
+  jealousy: [20, 50]
+  generosity: [55, 95]
+approach: # how he pursues, relative weights
+  court: 1
+  drink: 2
+  pay: 4
+  push: 1
+onRefusal: insists
+spend: [25, 45] # money per order

@@ -1,25 +1,21 @@
 import { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { baseLocales, baseMod } from "@tc/base";
-import { createEngine, createTranslator, loadGame, saveGame, sceneKey } from "@tc/core";
+import { bs, patronName, renderLog, TIP_FORMULA } from "@tc/base";
+import { CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
-import { exampleLocales, exampleMod } from "@tc/mod-example";
+import { engine, mods, newSeed, SAVE_KEY, translator } from "./game";
+import type { Lang } from "./game";
+import { FormulaTable, HeroineCard, Patrons, RoomMap, StatusBar } from "./panels";
 import "./style.css";
 
 // The UI only reads state and dispatches actions. No game rules live here.
-const mods = [baseMod, exampleMod];
-const engine = createEngine(mods);
-const SAVE_KEY = "test-city.save";
-const dicts = { en: [baseLocales.en!, exampleLocales.en!], ru: [baseLocales.ru!, exampleLocales.ru!] };
-const newSeed = () => (Date.now() % 2147483647) | 0; // the only non-deterministic input, outside the core
-
 function App() {
   const [state, setState] = useState<GameState>(() => engine.init(newSeed()));
-  const [lang, setLang] = useState<"en" | "ru">("ru");
+  const [lang, setLang] = useState<Lang>("ru");
+  const [debug, setDebug] = useState(false);
   const [error, setError] = useState("");
-  const t = useMemo(() => createTranslator(dicts, lang), [lang]);
+  const t = useMemo(() => translator(lang), [lang]);
 
-  const room = (id: string) => t(engine.location(id)?.nameKey ?? id);
   const act = (a: Action) => {
     try {
       setState(engine.dispatch(state, a));
@@ -28,13 +24,11 @@ function App() {
       setError((e as Error).message);
     }
   };
-  const label = (a: Action) => {
-    const def = engine.actionDef(a.type)!;
-    const to = a.payload?.to;
-    return t(def.labelKey, typeof to === "string" ? { to: room(to) } : undefined);
-  };
   const scene = engine.currentScene(state);
   const problems = engine.checkInvariants(state);
+  const actions = engine.listActions(state).filter((a) => a.type !== CORE_MOVE); // moves live on the map
+  const common = { state, t, lang };
+  const b = bs(state);
 
   return (
     <main>
@@ -53,49 +47,63 @@ function App() {
         >
           {t("ui.load")}
         </button>
+        <button onClick={() => setDebug(!debug)}>{t("ui.debug")}</button>
         <button onClick={() => setLang(lang === "en" ? "ru" : "en")}>{lang === "en" ? "RU" : "EN"}</button>
       </header>
+      <StatusBar {...common} />
 
       {(error || problems.length > 0) && <pre className="error">{[error, ...problems].filter(Boolean).join("\n")}</pre>}
 
-      <section>
-        <h2>{t("ui.scene")}</h2>
-        {scene && (
-          <p>
-            <code>{sceneKey(scene)}</code>
-            <br />
-            {room(scene.location)}: {scene.participants.map((p) => t(`base.entity.${p.id}`)).join(", ")}
-          </p>
-        )}
-      </section>
+      <div className="columns">
+        <div>
+          <h2>{t("ui.map")}</h2>
+          <RoomMap {...common} onAct={act} />
 
-      <section>
-        <h2>{t("ui.actions")}</h2>
-        <div className="actions">
-          {engine.listActions(state).map((a, i) => (
-            <button key={i} onClick={() => act(a)}>
-              {label(a)}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2>{t("ui.log")}</h2>
-        <ul className="log">
-          {state.log
-            .slice(-30)
-            .reverse()
-            .map((e, i) => (
-              <li key={i}>
-                {t(
-                  e.key,
-                  e.params && Object.fromEntries(Object.entries(e.params).map(([k, v]) => [k, typeof v === "string" ? t(v) : v])),
-                )}
-              </li>
+          <h2>{t("ui.actions")}</h2>
+          <div className="actions">
+            {actions.map((a, i) => (
+              <button key={i} onClick={() => act(a)}>
+                {t(engine.actionDef(a.type)!.labelKey)}
+              </button>
             ))}
-        </ul>
-      </section>
+          </div>
+
+          <h2>{t("ui.log")}</h2>
+          <ul className="log">
+            {state.log
+              .slice(-40)
+              .reverse()
+              .map((e, i) => (
+                <li key={`${e.turn}-${i}`}>{renderLog(e, t, lang)}</li>
+              ))}
+          </ul>
+        </div>
+
+        <div>
+          <h2>{t("ui.heroine")}</h2>
+          <HeroineCard {...common} />
+          <Patrons {...common} />
+        </div>
+      </div>
+
+      {debug && (
+        <section className="debug">
+          <h2>{t("ui.debug")}</h2>
+          <p>
+            {t("ui.scene")}: <code>{scene ? sceneKey(scene) : "-"}</code> · seed <code>{state.seed}</code> · turn <code>{state.turn}</code>
+          </p>
+          <div className="formulas">
+            {(b.shift?.visits ?? []).map((v) => (
+              <FormulaTable
+                key={v.patron}
+                t={t}
+                title={`${patronName(b.patrons[v.patron]!.name, lang)}: tip @20`}
+                result={engine.evaluate(TIP_FORMULA, state, { patron: v.patron, bill: 20 })}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

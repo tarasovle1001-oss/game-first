@@ -65,6 +65,8 @@ export interface PhaseDef {
   id: string;
   labelKey: string;
   order: number;
+  /** When false, core/advance is not offered while this phase is active. */
+  canLeave?(state: GameState, engine: EngineView): boolean;
 }
 
 export interface LocationDef {
@@ -73,6 +75,7 @@ export interface LocationDef {
   nameKey: string;
   links: string[]; // ids reachable from here
   tags?: string[];
+  meta?: Record<string, Json>; // free-form data for UI and mods (map position etc.)
 }
 
 /** One named row of a formula, visible in the debug panel. */

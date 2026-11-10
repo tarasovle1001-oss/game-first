@@ -1,0 +1,19 @@
+id: gentleman
+weight: 3
+age: [55, 68]
+builds: ["slim", "average", "heavy"]
+size: [10, 16] # cm
+stamina: [1, 1] # rounds in a row
+traits:
+  persistence: [10, 40]
+  charm: [55, 90]
+  honesty: [50, 90]
+  jealousy: [5, 25]
+  generosity: [50, 90]
+approach: # how he pursues, relative weights
+  court: 5
+  drink: 1
+  pay: 2
+  push: 0
+onRefusal: backs_off
+spend: [15, 30] # money per order

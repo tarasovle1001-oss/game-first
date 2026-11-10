@@ -1,0 +1,19 @@
+id: biker
+weight: 4
+age: [28, 48]
+builds: ["athletic", "heavy"]
+size: [15, 22] # cm
+stamina: [2, 4] # rounds in a row
+traits:
+  persistence: [60, 95]
+  charm: [30, 65]
+  honesty: [35, 75]
+  jealousy: [30, 70]
+  generosity: [20, 50]
+approach: # how he pursues, relative weights
+  court: 1
+  drink: 2
+  pay: 0
+  push: 4
+onRefusal: insists
+spend: [12, 25] # money per order

@@ -1,0 +1,19 @@
+id: musician
+weight: 4
+age: [23, 38]
+builds: ["slim", "average"]
+size: [13, 19] # cm
+stamina: [2, 3] # rounds in a row
+traits:
+  persistence: [35, 70]
+  charm: [65, 95]
+  honesty: [15, 55]
+  jealousy: [15, 45]
+  generosity: [5, 30]
+approach: # how he pursues, relative weights
+  court: 4
+  drink: 2
+  pay: 0
+  push: 1
+onRefusal: sulks
+spend: [8, 18] # money per order

@@ -1,0 +1,24 @@
+# Rooms of one zone. Links must be listed on both sides (the build checks it).
+# map: position on the room map grid (x, y, w, h in cells).
+zone: cafe
+rooms:
+  - id: cafe.hall
+    links: [cafe.bar, cafe.toilet, home.bedroom]
+    tags: [public, work]
+    map: { x: 0, y: 0, w: 2, h: 2 }
+  - id: cafe.bar
+    links: [cafe.hall, cafe.kitchen]
+    tags: [public, work]
+    map: { x: 2, y: 0, w: 1, h: 1 }
+  - id: cafe.kitchen
+    links: [cafe.bar, cafe.staff]
+    tags: [staff, work]
+    map: { x: 3, y: 0, w: 1, h: 1 }
+  - id: cafe.staff
+    links: [cafe.kitchen]
+    tags: [staff, private]
+    map: { x: 3, y: 1, w: 1, h: 1 }
+  - id: cafe.toilet
+    links: [cafe.hall]
+    tags: [public, private]
+    map: { x: 2, y: 1, w: 1, h: 1 }

@@ -142,7 +142,10 @@ export function createEngine(modList: Mod[]): Engine {
   core.actions.register({
     id: CORE_ADVANCE,
     labelKey: "core.action.advance",
-    enumerate: () => [{ type: CORE_ADVANCE }],
+    enumerate(state) {
+      const phase = phases.get(state.time.phase);
+      return phase?.canLeave && !phase.canLeave(state, view) ? [] : [{ type: CORE_ADVANCE }];
+    },
     apply(ctx) {
       const list = sortedPhases();
       const i = list.findIndex((p) => p.id === ctx.state.time.phase);

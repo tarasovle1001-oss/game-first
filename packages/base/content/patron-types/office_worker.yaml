@@ -1,0 +1,19 @@
+id: office_worker
+weight: 10
+age: [26, 45]
+builds: ["slim", "average"]
+size: [11, 16] # cm
+stamina: [1, 2] # rounds in a row
+traits:
+  persistence: [20, 50]
+  charm: [35, 65]
+  honesty: [40, 80]
+  jealousy: [10, 40]
+  generosity: [30, 60]
+approach: # how he pursues, relative weights
+  court: 3
+  drink: 2
+  pay: 1
+  push: 0
+onRefusal: backs_off
+spend: [12, 22] # money per order

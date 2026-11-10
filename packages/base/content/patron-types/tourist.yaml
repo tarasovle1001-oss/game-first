@@ -1,0 +1,19 @@
+id: tourist
+weight: 6
+age: [24, 50]
+builds: ["slim", "average", "athletic"]
+size: [12, 18] # cm
+stamina: [1, 3] # rounds in a row
+traits:
+  persistence: [25, 55]
+  charm: [50, 85]
+  honesty: [30, 70]
+  jealousy: [0, 15]
+  generosity: [40, 80]
+approach: # how he pursues, relative weights
+  court: 2
+  drink: 3
+  pay: 1
+  push: 0
+onRefusal: leaves
+spend: [15, 35] # money per order

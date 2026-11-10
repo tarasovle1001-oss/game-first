@@ -1,4 +1,4 @@
-import { CORE_ADVANCE, loadGame, makeRng, saveGame } from "@tc/core";
+import { CORE_ADVANCE, CORE_MOVE, loadGame, makeRng, saveGame } from "@tc/core";
 import type { Action, Engine, GameState, Mod } from "@tc/core";
 
 export type Strategy = (actions: Action[], state: GameState, roll: () => number) => Action;
@@ -11,7 +11,16 @@ export const randomStrategy: Strategy = (actions, _state, roll) => {
 };
 
 /** Only advances time: the fastest smoke test of the day cycle. */
-export const rushStrategy: Strategy = (actions) => actions.find((a) => a.type === CORE_ADVANCE)!;
+export const rushStrategy: Strategy = (actions) =>
+  actions.find((a) => a.type === CORE_ADVANCE) ?? actions.find((a) => a.type !== CORE_MOVE) ?? actions[0]!;
+
+/** Plays like a careful owner: buys supplies and pays the debt in prep, never moves. */
+export const ownerStrategy: Strategy = (actions) =>
+  actions.find((a) => a.type === "base/buy-supplies") ??
+  actions.find((a) => a.type === "base/repay-debt") ??
+  actions.find((a) => a.type === CORE_ADVANCE) ??
+  actions.find((a) => a.type !== CORE_MOVE) ??
+  actions[0]!;
 
 export interface BotReport {
   seed: number;

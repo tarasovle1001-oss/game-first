@@ -1,0 +1,10 @@
+zone: home
+rooms:
+  - id: home.bedroom
+    links: [home.bathroom, cafe.hall]
+    tags: [home, private]
+    map: { x: 0, y: 3, w: 2, h: 1 }
+  - id: home.bathroom
+    links: [home.bedroom]
+    tags: [home, private]
+    map: { x: 2, y: 3, w: 1, h: 1 }
