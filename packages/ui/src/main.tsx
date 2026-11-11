@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BED, bs, content, WAIT } from "@tc/base";
+import { BED, TALK, TELL, bs, content, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -80,11 +80,15 @@ function App() {
     if (input) input.value = "";
   };
 
+  const [herOpen, setHerOpen] = useState<string | null>(null);
   const all = engine.listActions(state);
   const waits = all.filter((a) => a.type === WAIT);
   const advance = all.find((a) => a.type === CORE_ADVANCE);
   const bed = all.filter((a) => a.type === BED);
-  const other = all.filter((a) => a.type !== WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED);
+  const withHer = all.filter((a) => a.type === TALK || a.type === TELL);
+  const herGroups = (["chat", "touch", "tell"] as const).filter((g) => withHer.some((a) => (a.type === TELL ? "tell" : a.payload?.group) === g));
+  const herTab = herGroups.includes(herOpen as never) ? herOpen : null;
+  const other = all.filter((a) => a.type !== WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== TALK && a.type !== TELL);
 
   // keys 1-4 for the waits, Enter for the next phase
   useEffect(() => {
@@ -205,6 +209,29 @@ function App() {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+          {withHer.length > 0 && (
+            <div className="card">
+              <div className="card-title">{t("ui.her.title")}</div>
+              <div className="chips">
+                {herGroups.map((g) => (
+                  <button key={g} className={herTab === g ? "on" : ""} onClick={() => setHerOpen(herTab === g ? null : g)}>
+                    {t(`ui.her.${g}`)}
+                  </button>
+                ))}
+              </div>
+              {herTab && (
+                <div className="stack sub">
+                  {withHer
+                    .filter((a) => (a.type === TELL ? "tell" : a.payload?.group) === herTab)
+                    .map((a, i) => (
+                      <button key={i} className={a.payload?.say === "forbid" ? "deny" : ""} onClick={() => act(a)}>
+                        {actionLabel(a, t, lang)}
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
           )}
           {other.length > 0 && (

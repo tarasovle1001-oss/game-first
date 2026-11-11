@@ -667,3 +667,5 @@ header {
 .chips button { padding: 5px 10px; font-size: 0.9em; }
 .card-title.sub { margin-top: 10px; }
 .small { font-size: 0.88em; margin-top: 4px; }
+.stack.sub { margin-top: 8px; }
+button.deny { border-color: #7a3340; }

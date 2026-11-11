@@ -76,6 +76,7 @@ export interface Visit {
   pressure: number; // times he insisted after a "no"
   retry: string | null; // act he is going to ask for again
   rounds: number; // intimate acts he has had tonight
+  pushed?: boolean; // the husband nudged her toward him tonight
 }
 
 /** The two of them in bed, turn by turn. */
@@ -167,6 +168,8 @@ export interface BaseState {
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
   told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
+  talked: string[]; // what he already said or did with her today (each thing once a day)
+  dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now
   outfitAsked: boolean;
   today: Ledger;

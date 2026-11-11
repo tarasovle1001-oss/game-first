@@ -99,7 +99,7 @@ describe("save", () => {
 
   it("migrates a mod slice and initializes a newly added mod", () => {
     const save = saveGame(engine.init(1), createEngine([baseMod]));
-    const base2: Mod = { ...baseMod, version: 2, migrate: (slice) => ({ ...slice, added: true }) };
+    const base2: Mod = { ...baseMod, version: baseMod.version + 1, migrate: (slice) => ({ ...slice, added: true }) };
     const { state, warnings } = loadGame(save, [base2, exampleMod]);
     expect(state.mods.base.added).toBe(true);
     expect(state.mods.example.rainyDays).toBeDefined();

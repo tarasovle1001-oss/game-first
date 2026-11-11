@@ -11,3 +11,31 @@ taste: # her taste for an act (and for a type of man) moves with experience
   min: -30
   max: 40
   typeEager: 0.4
+
+talk: # small things between the two of them; each once a day
+  options:
+    - { id: ask_day, group: chat, effects: { mood: 2, desire: 0.5 } }
+    - { id: compliment, group: chat, effects: { mood: 3, desire: 1 } }
+    - { id: thank, group: chat, effects: { mood: 2, resent: -2 } }
+    - { id: joke, group: chat, effects: { mood: 4 }, needs: { stat: mood, min: 35 }, fail: { mood: -1 } }
+    - { id: flirt_her, group: chat, effects: { arousal: 4, desire: 1 }, needs: { stat: desire, min: 40 }, fail: { mood: -1 } }
+    - { id: dirty, group: chat, effects: { arousal: 8 }, needs: { stat: openness, min: 40, publicExtra: 20 }, fail: { mood: -3, resent: 0.5 } }
+    - { id: hug, group: touch, effects: { mood: 2, desire: 0.5, resent: -0.5 } }
+    - { id: hold_hand, group: touch, effects: { mood: 1, desire: 0.5 } }
+    - { id: shoulders, group: touch, effects: { energy: 6, mood: 2 } }
+    - { id: kiss_her, group: touch, effects: { arousal: 4, desire: 1 }, needs: { stat: desire, min: 30, publicExtra: 10 }, fail: { resent: 0.5 } }
+    - { id: grab_ass, group: touch, effects: { arousal: 5 }, needs: { stat: openness, min: 35, publicExtra: 20 }, fail: { mood: -3, resent: 1 } }
+    - { id: pour_drink, group: touch, effects: { drunk: 10, mood: 2 }, stock: 1, phases: [shift, night] }
+  groups: # what he can say "go on" or "don't" about
+    - { id: flirting, tiers: [1, 2] }
+    - { id: touching, tiers: [3, 4] }
+    - { id: hands_mouth, tiers: [5, 6] }
+    - { id: sex, tiers: [7, 9] }
+  shockFromTier: 5
+  shockAtFidelity: 65
+  confessAtHonesty: 60
+  confessUpToTier: 4
+guest: # what the husband can do about a guest who is with her
+  round: { interest: 6, stay: 2, drunk: 7 }
+  encourage: { tiersAhead: 2, expect: 60, consent: 10 }
+  throwOut: { affinity: 30, reputation: 1 }

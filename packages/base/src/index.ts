@@ -16,11 +16,19 @@ import { registerManners } from "./systems/manners";
 import { registerLatents } from "./systems/latents";
 import { registerSetup } from "./systems/setup";
 import { registerExpectations } from "./systems/expectations";
+import { registerCouple } from "./systems/couple";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 1,
+  version: 2,
+  // older saves: whatever the new version added starts from its default
+  migrate: (slice: any) => {
+    const fresh = (baseMod.initState as () => any)();
+    for (const k of Object.keys(fresh)) if (slice[k] === undefined) slice[k] = fresh[k];
+    if (slice.night && slice.night.sex === undefined) slice.night.sex = null;
+    return slice;
+  },
   initState: () => {
     const start = content.balance.start;
     const state: BaseState = {
@@ -52,6 +60,8 @@ export const baseMod: Mod = {
       expect: {},
       told: [],
       reaction: null,
+      talked: [],
+      dayTop: null,
       outfitAsked: false,
       today: emptyLedger(1),
       history: [],
@@ -81,6 +91,7 @@ export const baseMod: Mod = {
     registerManners(api);
     registerLatents(api);
     registerExpectations(api);
+    registerCouple(api);
     registerSetup(api);
   },
 };
@@ -107,3 +118,4 @@ export { ASK_OUTFIT, SET_DIRECTIVE } from "./systems/manners";
 export { TIP_SHARE } from "./systems/economy";
 export type { BaseSetup } from "./systems/setup";
 export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
+export { GUEST, TALK, TELL, guestInView, together } from "./systems/couple";

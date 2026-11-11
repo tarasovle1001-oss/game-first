@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BED, baseMod, bs, expectOf, REACT_APPROVE, REACT_STOP, CAUGHT_STOP, CAUGHT_WATCH, CONFRONT, fitOf, NIGHT_ACT, pleasureFromSize, WAIT } from "@tc/base";
+import { BED, GUEST, TALK, TELL, baseMod, bs, expectOf, REACT_APPROVE, REACT_STOP, CAUGHT_STOP, CAUGHT_WATCH, CONFRONT, fitOf, NIGHT_ACT, pleasureFromSize, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 import { awayStrategy } from "../src";
@@ -275,5 +275,40 @@ describe("what she thinks he allows", () => {
     s = engine.dispatch(s, { type: REACT_APPROVE });
     expect(weight(s)).toBeGreaterThan(before);
     expect(weight(s)).toBeCloseTo(0);
+  });
+});
+
+describe("the two of them", () => {
+  it("each small thing works once a day", () => {
+    let s = engine.init(5);
+    const before = bs(s).heroine.mood;
+    expect(engine.listActions(s).some((a) => a.type === TALK && a.payload?.do === "compliment")).toBe(true);
+    s = engine.dispatch(s, { type: TALK, payload: { do: "compliment", group: "chat" } });
+    expect(bs(s).heroine.mood).toBeGreaterThan(before);
+    expect(engine.listActions(s).some((a) => a.type === TALK && a.payload?.do === "compliment")).toBe(false);
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("saying it in words sets what she thinks he allows, for the whole kind of thing", () => {
+    let s = engine.init(5);
+    s = engine.dispatch(s, { type: TELL, payload: { group: "touching", say: "allow" } });
+    expect(expectOf(s, "kiss")).toBeGreaterThanOrEqual(70);
+    expect(expectOf(s, "sex")).toBeLessThan(70); // a yes to kisses is not a yes to everything
+    s = engine.dispatch(s, { type: TELL, payload: { group: "touching", say: "forbid" } });
+    expect(expectOf(s, "kiss")).toBeLessThan(-70);
+    expect(bs(s).told.at(-1)!.key).toBe("told.say.forbid");
+  });
+  it("a guest in view can be thrown out, and he is gone", () => {
+    let s = engine.init(3, { base: { preset: "hungry" } });
+    for (let i = 0; i < 20000 && !engine.listActions(s).some((a) => a.type === GUEST); i++) {
+      const actions = engine.listActions(s);
+      s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? actions.find((a) => a.type === WAIT && a.payload?.minutes === 10) ?? actions.find((a) => a.type !== CORE_MOVE)!);
+    }
+    const out = engine.listActions(s).find((a) => a.type === GUEST && a.payload?.do === "throw_out")!;
+    const rep = bs(s).reputation;
+    s = engine.dispatch(s, out);
+    expect(bs(s).encounter).toBeNull();
+    expect(bs(s).reputation).toBeLessThan(rep);
+    expect(bs(s).shift!.visits.find((v) => v.patron === out.payload!.patron)?.stay ?? 0).toBe(0);
+    expect(engine.checkInvariants(s)).toEqual([]);
   });
 });

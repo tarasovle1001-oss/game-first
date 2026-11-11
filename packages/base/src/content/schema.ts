@@ -274,6 +274,37 @@ export const mannersSchema = z
     // what the husband asked her to be like tonight: consent shift with guests and share added to tips
     directives: z.record(z.enum(["reserved", "natural", "friendly"]), z.object({ consent: z.number(), maxTier: z.number().int(), tip: z.number() }).strict()),
     askOutfitBonus: z.number(), // how much his asking lowers the openness an outfit needs
+    // small things between the two of them, each once a day
+    talk: z
+      .object({
+        options: z.array(
+          z
+            .object({
+              id,
+              group: z.enum(["chat", "touch"]),
+              effects: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()),
+              needs: z.object({ stat: z.string(), min: z.number(), publicExtra: z.number().optional() }).strict().optional(),
+              fail: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()).optional(),
+              phases: z.array(z.string()).optional(),
+              stock: z.number().optional(),
+            })
+            .strict(),
+        ),
+        // what he can say "go on" or "don't" about, by act tier (inclusive)
+        groups: z.array(z.object({ id, tiers: z.tuple([z.number().int(), z.number().int()]) }).strict()),
+        shockFromTier: z.number().int(), // "I do not mind" about things from this tier up hurts a faithful wife
+        shockAtFidelity: z.number(),
+        confessAtHonesty: z.number(), // asked about the evening, she owns up from this honesty...
+        confessUpToTier: z.number().int(), // ...to things up to this tier
+      })
+      .strict(),
+    guest: z
+      .object({
+        round: z.object({ interest: z.number(), stay: z.number().int(), drunk: z.number() }).strict(),
+        encourage: z.object({ tiersAhead: z.number().int(), expect: z.number(), consent: z.number() }).strict(),
+        throwOut: z.object({ affinity: z.number(), reputation: z.number() }).strict(),
+      })
+      .strict(),
     taste: z.object({ came: z.number(), eager: z.number(), hesitant: z.number(), min: z.number(), max: z.number(), typeEager: z.number() }).strict(),
   })
   .strict();
