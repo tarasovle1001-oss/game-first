@@ -1,4 +1,4 @@
-import type { ModApi } from "@tc/core";
+import type { GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { HUSBAND, WIFE } from "../state";
 
@@ -14,6 +14,15 @@ export const clockText = (minute: number) => {
   const m = ((minute % 1440) + 1440) % 1440;
   return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 };
+
+const sight = new Map(content.rooms.map((r) => [r.id, new Set([r.id, ...r.sees])]));
+const linked = new Map(content.rooms.map((r) => [r.id, new Set(r.links)]));
+/** True when the husband has `loc` in view: he is in it, or in a room that looks onto it. */
+export const husbandSees = (state: GameState, loc: string) => sight.get(state.where[HUSBAND] ?? "")?.has(loc) ?? false;
+/** True when he is in the room itself, close enough to touch. */
+export const husbandIn = (state: GameState, loc: string) => state.where[HUSBAND] === loc;
+/** True when he is next door: he sees nothing but may hear. */
+export const husbandNextTo = (state: GameState, loc: string) => !husbandSees(state, loc) && (linked.get(state.where[HUSBAND] ?? "")?.has(loc) ?? false);
 
 /** Rooms from content, the cast, and the fallback "who is here" scene. */
 export function registerPlaces(api: ModApi) {

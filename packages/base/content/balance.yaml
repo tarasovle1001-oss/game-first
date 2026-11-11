@@ -5,6 +5,7 @@ start:
   reputation: 40
   stock: 30
 rentPerDay: 380
+debtLimit: 20000 # supplies can be bought on credit until the debt reaches this
 debtInterestPerDay: 0.008 # fraction of the debt added every day
 supplies:
   packCost: 60

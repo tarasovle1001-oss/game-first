@@ -2,6 +2,10 @@
 styleFactor: { naive: 0.4, jealous: 1.5, encouraging: 0.8 } # how fast each kind of husband gets suspicious
 sawPublicPerTier: 2   # he watched something happen on the floor, per tier of the act
 sawThemLeave: 10      # he saw her walk off with a guest
+heardNextDoor: 6      # he was next door and heard something
+oddTips: 3            # the tips do not match the evening
+oddTipsShare: 0.45    # tips above this share of the sales look odd
+guiltyLook: 4         # at home she cannot look him in the eye; the more honest she is, the more it shows
 tracePerSecretAct: 4  # traces of what he did not see, counted at the end of the day
 fadePerDay: 0.5
 confrontAt: 60        # suspicion at which he may confront her at night

@@ -60,7 +60,7 @@ export function registerMarriage(api: ModApi) {
       if (verdict === "refuse") {
         b.night!.scene = "cold_back";
         feel(0, 1);
-        ctx.log("log.husband.refuse", { act: `act.${act.id}` });
+        ctx.log("log.husband.refuse", { act: `action.night.${act.id}` });
         ctx.emit("husband:refused", { act: act.id });
         return;
       }

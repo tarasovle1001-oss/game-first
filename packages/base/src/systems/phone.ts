@@ -6,6 +6,7 @@ import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Patron } from "../state";
 import { actById, isIntimate } from "./encounters";
 import { changeHeroine } from "./heroine";
+import { husbandSees } from "./places";
 
 export const PHONE_PEEK = "base/phone-peek";
 export const CALL_WIFE = "base/call-wife";
@@ -70,7 +71,7 @@ export function registerPhone(api: ModApi) {
     if (!p || p.memory.hasNumber || e.payload!.reason !== "done") return;
     if (p.memory.tier >= P.numberAtTier && p.memory.affinity >= P.numberAffinity) {
       p.memory.hasNumber = true;
-      ctx.log("log.phone.number", { name: `@name:${p.name}` }, ctx.state.where[HUSBAND] === "cafe.hall" || b.mode === "open" ? undefined : ["unseen"]);
+      ctx.log("log.phone.number", { name: `@name:${p.name}` }, husbandSees(ctx.state, "cafe.hall") || b.mode === "open" ? undefined : ["unseen"]);
       ctx.emit("phone:number", { patron: p.id });
     }
   });

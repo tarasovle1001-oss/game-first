@@ -29,9 +29,14 @@ export function registerEconomy(api: ModApi) {
   api.actions.register({
     id: BUY_SUPPLIES,
     labelKey: "action.buy_supplies",
-    enumerate: (state) => (state.time.phase === "prep" && bs(state).money >= bal.supplies.packCost ? [{ type: BUY_SUPPLIES }] : []),
+    // no cash is not the end: the supplier gives credit until the debt hits the limit
+    enumerate: (state) => {
+      const b = bs(state);
+      return state.time.phase === "prep" && (b.money >= bal.supplies.packCost || b.debt < bal.debtLimit) ? [{ type: BUY_SUPPLIES }] : [];
+    },
     apply(ctx) {
       const b = bs(ctx.state);
+      if (b.money < bal.supplies.packCost) ctx.log("log.supplies.credit");
       addMoney(ctx, -bal.supplies.packCost, "supplies");
       b.stock += bal.supplies.packServings;
       b.today.supplies += bal.supplies.packCost;

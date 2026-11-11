@@ -3,11 +3,11 @@
 import type { GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import type { Act, Latent } from "../content/schema";
-import { bs, HUSBAND } from "../state";
+import { bs } from "../state";
 import type { Patron } from "../state";
 import { actById, CONSENT_FORMULA, isIntimate } from "./encounters";
 import type { ConsentInput } from "./encounters";
-import { HALL } from "./places";
+import { HALL, husbandSees } from "./places";
 
 type Rule = (state: GameState, input: ConsentInput, act: Act, p: Patron, l: Latent) => number | null;
 
@@ -24,8 +24,8 @@ const RULES: Record<string, Rule> = {
     if (!p.memory.sizeKnown || !(act.zones.includes("vagina") || act.zones.includes("anus"))) return null;
     return (p.size - bs(state).husband.size) * content.consent.size * l.strength;
   },
-  guilt_thrill: (state, input, act, _p, l) => (bs(state).mode === "hidden" && isIntimate(act) && state.where[HUSBAND] !== input.loc ? l.strength : null),
-  likes_watched: (state, input, act, _p, l) => (bs(state).mode === "open" && act.tier >= 2 && state.where[HUSBAND] === input.loc ? l.strength : null),
+  guilt_thrill: (state, input, act, _p, l) => (bs(state).mode === "hidden" && isIntimate(act) && !husbandSees(state, input.loc) ? l.strength : null),
+  likes_watched: (state, input, act, _p, l) => (bs(state).mode === "open" && act.tier >= 2 && husbandSees(state, input.loc) ? l.strength : null),
 };
 
 export function registerLatents(api: ModApi) {

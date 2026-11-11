@@ -56,6 +56,7 @@ for (const file of yamlFiles(join(base, "content/locations"))) {
 }
 unique(rooms, "room");
 const roomIds = new Map(rooms.map((r) => [r.id, r]));
+for (const r of rooms) for (const seen of r.sees) if (!roomIds.has(seen)) errors.push(`room "${r.id}" sees unknown room "${seen}"`);
 for (const r of rooms)
   for (const link of r.links) {
     const other = roomIds.get(link);

@@ -10,6 +10,7 @@ export const roomSchema = z
     id,
     links: z.array(id),
     tags: z.array(z.string()).default([]),
+    sees: z.array(id).default([]), // rooms in plain view from here (the bar looks onto the hall)
     map: z.object({ x: z.number().int(), y: z.number().int(), w: z.number().int().min(1), h: z.number().int().min(1) }),
   })
   .strict();
@@ -40,6 +41,7 @@ export const balanceSchema = z
   .object({
     start: z.object({ money: z.number(), debt: z.number().min(0), reputation: z.number().min(0).max(100), stock: z.number().int().min(0) }).strict(),
     rentPerDay: z.number().min(0),
+    debtLimit: z.number().min(0), // supplies can be bought on credit until the debt reaches this
     debtInterestPerDay: z.number().min(0), // fraction, 0.01 = 1%
     supplies: z.object({ packCost: z.number().positive(), packServings: z.number().int().positive() }).strict(),
     heroine: z.object({ arousalCoolPerTick: z.number().min(0), moodSettlePerTick: z.number().min(0).max(1), soberPerTick: z.number().min(0) }).strict(),
@@ -155,6 +157,10 @@ export const secrecySchema = z
     styleFactor: z.object({ naive: z.number(), jealous: z.number(), encouraging: z.number() }).strict(), // how fast each husband gets suspicious
     sawPublicPerTier: z.number(), // he watched something on the floor
     sawThemLeave: z.number(), // he saw her walk off with a guest
+    heardNextDoor: z.number(), // he was next door and heard something
+    oddTips: z.number(), // tips do not match the evening
+    oddTipsShare: z.number(), // tips above this share of the sales look odd
+    guiltyLook: z.number(), // at home she cannot look him in the eye (the more honest she is, the more it shows)
     tracePerSecretAct: z.number(), // traces of what he did not see, counted at the end of the day
     fadePerDay: z.number(),
     confrontAt: z.number(), // suspicion at which he may confront her at night

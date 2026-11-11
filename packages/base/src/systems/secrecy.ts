@@ -5,7 +5,7 @@ import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { actById, endEncounter, isIntimate } from "./encounters";
 import { changeHeroine } from "./heroine";
-import { HALL } from "./places";
+import { HALL, husbandNextTo, husbandSees } from "./places";
 
 export const CAUGHT_STOP = "base/caught-stop";
 export const CAUGHT_WATCH = "base/caught-watch";
@@ -38,11 +38,42 @@ export function registerSecrecy(api: ModApi) {
       if (witnessed && tier >= 2) suspect(ctx, tier * S.sawPublicPerTier);
       if (!witnessed && intimate) {
         b.secretActsToday += 1;
-        if (ctx.state.where[HUSBAND] === HALL) suspect(ctx, S.sawThemLeave);
+        const { patron, loc } = e.payload as { patron: string; loc: string };
+        const name = `@name:${b.patrons[patron]!.name}`;
+        if (husbandSees(ctx.state, HALL)) {
+          // he watches them walk off together
+          suspect(ctx, S.sawThemLeave);
+          ctx.log("log.hint.left_together", { name, room: `loc.${loc}` });
+          if (b.shift) b.shift.interrupt = true;
+        } else if (husbandNextTo(ctx.state, loc)) {
+          // he is next door: he hears something
+          suspect(ctx, S.heardNextDoor);
+          ctx.log("log.hint.noise", { room: `loc.${loc}` });
+          if (b.shift) b.shift.interrupt = true;
+        }
       }
     } else if (tier >= 2) {
       b.power = clamp(b.power + (witnessed ? S.powerPerSeen : intimate ? S.powerPerTold : 0));
     }
+  });
+
+  // Things that do not add up, noticed when the evening is over.
+  api.events.on("shift:end", (ctx, e) => {
+    const b = bs(ctx.state);
+    if (b.mode !== "hidden" || b.secretKnows) return;
+    const { income, tips } = e.payload as { income: number; tips: number };
+    if (tips > income * S.oddTipsShare && b.secretActsToday > 0) {
+      suspect(ctx, S.oddTips);
+      ctx.log("log.hint.tips", { tips });
+    }
+  });
+  // The morning after: a woman with nothing to hide looks you in the eye.
+  api.events.on("phase:enter", (ctx, e) => {
+    const b = bs(ctx.state);
+    if (e.payload!.phase !== "night" || b.mode !== "hidden" || b.secretKnows || b.secretActsToday === 0) return;
+    if (ctx.rng.chance((100 - b.heroine.traits.honesty) / 100 + 0.2)) return; // she carries it off
+    suspect(ctx, S.guiltyLook);
+    ctx.log("log.hint.guilty");
   });
 
   api.events.on("day:end", (ctx) => {

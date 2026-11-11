@@ -283,7 +283,7 @@ export function Summary({ state, t }: Common) {
   const line = (key: string, value: number, sign = 1) => (
     <div className="sum-line">
       <span>{t(key)}</span>
-      <b className={sign < 0 ? "neg" : ""}>{sign < 0 ? `-${value}` : value}</b>
+      <b className={sign < 0 && value > 0 ? "neg" : ""}>{sign < 0 && value > 0 ? `-${value}` : value}</b>
     </div>
   );
   return (

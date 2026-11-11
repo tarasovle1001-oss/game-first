@@ -6,7 +6,7 @@ import { addMoney, addReputation } from "./economy";
 import { endEncounter, runProposals } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { generatePatron, pickReturning } from "./patrons";
-import { HALL, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
+import { HALL, husbandSees, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
 export { HALL };
 
 export const WAIT = "base/wait";
@@ -272,8 +272,7 @@ export function registerShift(api: ModApi) {
     priority: 0,
     match(state) {
       const b = bs(state);
-      const at = state.where[HUSBAND];
-      if (!b.shift || b.shift.visits.length === 0 || at !== HALL || state.where[WIFE] !== HALL) return null;
+      if (!b.shift || b.shift.visits.length === 0 || !husbandSees(state, HALL) || state.where[WIFE] !== HALL) return null;
       return {
         type: "serving",
         location: HALL,

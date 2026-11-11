@@ -1,14 +1,17 @@
 # Rooms of one zone. Links must be listed on both sides (the build checks it).
 # map: position on the room map grid (x, y, w, h in cells).
+# sees: rooms in plain view from here. From behind the bar he sees the hall, and she knows it.
 zone: cafe
 rooms:
   - id: cafe.hall
     links: [cafe.bar, cafe.toilet, home.bedroom]
     tags: [public, work]
+    sees: [cafe.bar]
     map: { x: 0, y: 0, w: 2, h: 2 }
   - id: cafe.bar
     links: [cafe.hall, cafe.kitchen]
     tags: [public, work]
+    sees: [cafe.hall]
     map: { x: 2, y: 0, w: 1, h: 1 }
   - id: cafe.kitchen
     links: [cafe.bar, cafe.staff]
