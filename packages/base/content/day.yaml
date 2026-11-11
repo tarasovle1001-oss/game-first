@@ -62,6 +62,7 @@ shop:                 # in town; she also buys for herself from her purse
 upgrades:             # one-off, paid from the till (or on credit while the limit allows)
   - { id: coffee_machine, cost: 600, bill: 0.15 }
   - { id: interior, cost: 900, tip: 0.1, reputation: 5 }
+  - { id: sauna, cost: 800 }              # a sauna off the hall: companies book it, and nobody sees in
   - { id: soundproof, cost: 500 }         # the staff room door: nothing is heard from the kitchen any more
 
 rhythm:               # the day around the clock: sleep, his own state, the bathroom, money on the mind

@@ -534,7 +534,7 @@ export const lookSchema = z
     words: z
       .object({
         outfit: z.record(z.string(), z.string()), bare: z.record(z.string(), z.array(z.string())), panties: z.record(z.string(), z.string()), skirtUp: z.string(),
-        mood: z.array(z.object({ when: z.string(), tags: z.array(z.string()) }).strict()), drunk: steps, stretch: z.record(z.string(), steps),
+        mood: z.array(z.object({ when: z.string(), tags: z.array(z.string()) }).strict()), drunk: steps, stretch: z.record(z.string(), steps), sore: z.record(z.string(), steps).default({}),
         cum: z.record(z.string(), z.string()), after: z.record(z.string(), z.string()), size: z.array(z.string()).length(5), man: z.record(z.string(), z.array(z.string())),
         hisCum: z.string(), hisStretch: steps, room: z.record(z.string(), z.string()), act: z.record(z.string(), z.string()),
       })
@@ -612,18 +612,33 @@ export const floorSchema = z
       })
       .strict(),
     deal: z.object({ fromTier: z.number(), chance: z.number(), drunkGenerous: z.tuple([z.number(), z.number()]), priceFactor: z.number(), hourFactor: z.number(), raise: z.array(z.number()), acceptPerGenerosity: z.number(), acceptPerInterest: z.number(), wantBonus: z.number(), expires: z.number(), soldTrust: z.number(), soldResent: z.number(), refusedAffinity: z.number(), refuseHerLiked: nums, refuseHerRelief: nums }).strict(),
-    groups: z.object({ fromDay: z.number(), chancePerDay: z.number(), arriveTick: z.tuple([z.number(), z.number()]), stay: z.number(), size: z.tuple([z.number().int(), z.number().int()]), kinds: z.array(id), trayEvery: z.number(), trayWait: z.number(), bill: z.tuple([z.number(), z.number()]), tipHer: z.number(), tipHusband: z.number(), heatPerRound: z.number(), heatHer: z.number(), restlessReputation: z.number(), inside: z.tuple([z.number(), z.number()]), longInside: z.tuple([z.number(), z.number()]), tierByHeat: z.array(z.tuple([z.number(), z.number()])), pressurePerMan: z.number(), manyBonus: z.number(), tipPerTier: z.number(), husbandEnergy: z.number(), refusedHeat: z.number() }).strict(),
+    groups: z.object({ fromDay: z.number(), chancePerDay: z.number(), arriveTick: z.tuple([z.number(), z.number()]), stay: z.number(), size: z.tuple([z.number().int(), z.number().int()]), kinds: z.array(id), saunaChance: z.number(), saunaHeat: z.number(), saunaTier: z.number(), trayEvery: z.number(), trayWait: z.number(), bill: z.tuple([z.number(), z.number()]), tipHer: z.number(), tipHusband: z.number(), heatPerRound: z.number(), heatHer: z.number(), restlessReputation: z.number(), inside: z.tuple([z.number(), z.number()]), longInside: z.tuple([z.number(), z.number()]), tierByHeat: z.array(z.tuple([z.number(), z.number()])), pressurePerMan: z.number(), manyBonus: z.number(), tipPerTier: z.number(), husbandEnergy: z.number(), refusedHeat: z.number() }).strict(),
     table: z.object({ minutes: z.number().int(), perEvening: z.number().int(), slipDrunk: z.number(), slipHonesty: z.number(), slipSuspicion: z.number(), cards: z.object({ bet: z.array(z.number().int()), winChance: z.number(), perDrunk: z.number(), stayTicks: z.number() }).strict(), rivalCools: z.number() }).strict(),
     join: z.object({ consentBonus: z.number(), hersRate: z.number(), power: z.number(), done: nums, refused: nums }).strict(),
   })
   .strict();
 export type Floor = z.infer<typeof floorSchema>;
 
+export const intimacySchema = z
+  .object({
+    lead: z.object({ takesAtPower: z.number(), takesChance: z.number(), cruelTakes: z.number(), hisActsPower: z.number(), holdAt: z.number(), slipPerTurn: z.number(), slipped: nums, minTurns: z.number(), maxTurns: z.number(), begAllowDesire: z.number(), begDenied: nums, takeBack: nums, ending: z.object({ ruined: z.number(), snowball: z.number(), lickClean: z.number() }).strict(), ruinedPower: z.number(), snowballPower: z.number(), snowballOpenness: z.number(), lickPower: z.number(), power: z.number() }).strict(),
+    finish: z.object({ dodgeConfidence: z.number(), holdArousal: z.number(), holdDesire: z.number(), holdChance: z.number() }).strict(),
+    after: z.object({ willingOpenness: z.number(), reversePower: z.number(), done: nums, reversed: nums, refused: nums }).strict(),
+    talk: z.object({ sayMine: nums, sayMineLaugh: nums, sayMinePower: z.number(), lookAtMe: nums }).strict(),
+    zones: z.object({ perMinute: z.number(), perOversize: z.number(), mouth: z.number(), slickCuts: z.number(), slickArousal: z.number(), slickConsent: z.number(), fade: z.number(), night: z.number(), consentFrom: z.number(), consent: z.number(), enoughAt: z.number(), enough: z.number(), thoughtAt: z.number() }).strict(),
+    marks: z.object({ visible: z.array(z.string()), guests: nums, husbandSuspicion: z.number(), husbandOpen: z.record(z.string(), nums), cleanPerMark: z.number(), cleanAfter: z.number(), skipChance: z.number() }).strict(),
+    dress: z.object({ lowMood: z.number(), lowMoodStep: z.number(), fearStep: z.number(), wantStep: z.number(), wishStep: z.number() }).strict(),
+    wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string() }).strict(),
+  })
+  .strict();
+export type Intimacy = z.infer<typeof intimacySchema>;
+
 export interface Content {
   look: Look;
   mind: Mind;
   terms: Terms;
   floor: Floor;
+  intimacy: Intimacy;
   rooms: Room[];
   patronTypes: PatronType[];
   names: NameEntry[];

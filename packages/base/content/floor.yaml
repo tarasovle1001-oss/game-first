@@ -52,6 +52,9 @@ groups:               # a company takes the back room
   stay: 150                     # minutes
   size: [3, 5]
   kinds: [stag, office, bikers, team]
+  saunaChance: 0.5              # with a sauna built, how often a company takes it instead
+  saunaHeat: 30                 # they start warmer, and she is in a towel
+  saunaTier: 15                 # counts as this much extra heat when she walks in
   trayEvery: 30                 # minutes between rounds
   trayWait: 20                  # after this long without a round they get restless
   bill: [18, 30]                # per man per round

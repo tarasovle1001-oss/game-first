@@ -24,6 +24,9 @@ export interface Heroine {
   bare?: Bare; // what she has taken off, on top of the outfit
   /** What is on her and in her, by place: minutes it still shows. */
   cum?: Record<string, number>;
+  /** For each mark: true while it is only her husband's. */
+  cumHis?: Record<string, boolean>;
+  sore?: Record<string, number>; // soreness by zone, 0..100
   /** How she looks after something: flushed, sweat, hair, clothes - minutes left. */
   after?: Record<string, number>;
   panties?: "on" | "aside" | "off";
@@ -131,6 +134,11 @@ export interface BedScene {
   out: boolean; // she has checked out: she lies there and waits for it to be over
   byHand: boolean; // he is finishing himself
   looseSaid: boolean;
+  lead?: boolean; // she runs the scene
+  heldSaid?: boolean;
+  switched?: number;
+  panties?: "on" | "aside" | "off";
+  naked?: boolean;
 }
 
 export type Verdict = "eager" | "hesitant" | "refuse";
@@ -184,10 +192,13 @@ export interface Shift {
   upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight
+  cleanUntil?: number; // minute she is done cleaning herself up
+  marksSeen?: boolean;
+  marksGuests?: boolean;
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
   groupAt?: number; // minute a company walks in
-  group?: { kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number }; // the company in the back room
+  group?: { kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number; sauna?: boolean }; // the company in the back room
   tableSat?: number;
   tableWith?: string[];
 }
@@ -226,7 +237,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
@@ -265,6 +276,7 @@ export interface BaseState {
   slept?: { him: number; her: number }; // hours each of them got last night
   sentWash?: string;
   walkedIn?: number;
+  washedWith?: number;
   promised?: number; // day she teased him: she will want him that night
   remarked: string[]; // things she has already said once about her body, his, and other men
   complaint: string | null; // what she has brought up tonight and he has not answered yet

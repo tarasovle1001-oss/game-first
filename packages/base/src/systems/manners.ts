@@ -10,6 +10,7 @@ import { HALL, husbandSees } from "./places";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
 
+import { dressShift } from "./bodystate";
 export const SET_DIRECTIVE = "base/directive";
 export const ASK_OUTFIT = "base/ask-outfit";
 export const OUTFIT_BACK = "base/outfit-back";
@@ -25,7 +26,7 @@ export function registerManners(api: ModApi) {
   api.events.on("phase:enter", (ctx, e) => {
     if (e.payload!.phase !== "prep") return;
     const b = bs(ctx.state);
-    const own = ownChoice(b.heroine.traits.openness, b.owned);
+    const own = ownChoice(b.heroine.traits.openness + (ctx.state.time.day > 1 ? dressShift(ctx.state) : 0), b.owned);
     if (own.id !== b.heroine.outfit && ctx.state.time.day > 1) ctx.log("log.outfit.own", { outfit: `outfit.${own.id}` });
     b.heroine.outfit = own.id;
     b.directive = "natural";

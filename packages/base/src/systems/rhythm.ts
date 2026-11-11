@@ -15,6 +15,7 @@ export const SLEEP = "base/sleep";
 export const NIGHT_WAIT = "base/night-wait";
 export const WASH = "base/wash";
 export const SEND_WASH = "base/send-wash";
+export const WASH_TOGETHER = "base/wash-together";
 const R = content.day.rhythm;
 const BATH = "home.bathroom";
 const MIDNIGHT = 1440;
@@ -267,6 +268,30 @@ export function registerRhythm(api: ModApi) {
         ctx.state.where[WIFE] = BATH;
       } else passNight(ctx, R.bath.sendMinutes);
       ctx.emit("bath:sent", { marks });
+    },
+  });
+  // She let him stay: they can wash together.
+  api.actions.register({
+    id: WASH_TOGETHER,
+    labelKey: "action.wash_together",
+    enumerate(state) {
+      const b = bs(state);
+      const ok = state.time.phase === "prep" && b.day?.her?.task === "wash" && !b.day.busy && state.where[HUSBAND] === BATH && state.where[WIFE] === BATH && b.washedWith !== state.time.day;
+      return ok ? [{ type: WASH_TOGETHER }] : [];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      b.washedWith = ctx.state.time.day;
+      b.husband.washed = stamp(ctx.state);
+      b.husband.cumOn = 0;
+      const warm = b.heroine.marriage.desire >= 50;
+      changeHim(ctx, "arousal", warm ? 12 : 6, "bath");
+      changeHim(ctx, "mood", 3, "bath");
+      changeHeroine(ctx, "arousal", warm ? 8 : 2, "bath");
+      changeHeroine(ctx, "mood", 2, "bath");
+      ctx.log(warm ? "log.bath.together.warm" : "log.bath.together");
+      ctx.emit("couple:talk", { do: "cuddle", ok: true });
+      passPrep(ctx, R.bath.washMinutes);
     },
   });
   // Walking in on her while she washes: welcome or not, by what she feels for him just now.

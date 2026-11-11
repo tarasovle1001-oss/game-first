@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
+import { soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -455,6 +455,12 @@ export function HeroineTab({ state, t, open, lang }: Common) {
       {!open && <div className="muted small">{t("ui.hidden.hint")}</div>}
       {open && (
         <>
+          {(["vagina", "anus", "mouth"] as const).some((z) => soreOf(state, z) >= 5) && <div className="cap gap">{t("ui.sore")}</div>}
+          {(["vagina", "anus", "mouth"] as const)
+            .filter((z) => soreOf(state, z) >= 5)
+            .map((z) => (
+              <Bar key={z} label={t(`zone.${z}`) + (z !== "mouth" && slick(state, z) ? ` (${t("ui.slick")})` : "")} value={soreOf(state, z)} tone="amber" />
+            ))}
           <div className="cap gap">{t("ui.feelings")}</div>
           {feelingsOf(state).length === 0 && <div className="muted small">{t("ui.feelings.none")}</div>}
           {feelingsOf(state).map(([e, v]) => (
@@ -500,6 +506,11 @@ export function HeroineTab({ state, t, open, lang }: Common) {
             ))}
           </div>
         </>
+      )}
+      {wearOf(state) !== h.outfit && (!h.bare || h.bare === "none") && (
+        <div className="small">
+          {t("ui.wear")}: <b>{t(`outfit.${wearOf(state)}`)}</b>
+        </div>
       )}
       <div className="cap gap">{t("ui.memory")}</div>
       {days.map((d) => {

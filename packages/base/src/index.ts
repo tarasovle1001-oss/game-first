@@ -30,11 +30,12 @@ import { registerRhythm } from "./systems/rhythm";
 import { registerMind } from "./systems/mind";
 import { registerTerms } from "./systems/terms";
 import { registerFloor } from "./systems/floor";
+import { registerBodyState } from "./systems/bodystate";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 20,
+  version: 21,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -144,6 +145,7 @@ export const baseMod: Mod = {
     registerMind(api);
     registerTerms(api);
     registerFloor(api);
+    registerBodyState(api);
     registerSetup(api);
   },
 };
@@ -182,7 +184,7 @@ export { PREP_WAIT, DAY_STOP, passPrep } from "./systems/day";
 export { TASTES, TASTE_LATENT } from "./systems/setup";
 export { STRIP, bareOf, bareMargin, dressOf, eyesOn } from "./systems/dress";
 export { HIS_ACTS, hisActOpen } from "./systems/marriage";
-export { NIGHT_DECLINE, NIGHT_SELF, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
+export { AFTER, NIGHT_DECLINE, NIGHT_SELF, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
 export { installment, LOAN_PAY } from "./systems/loan";
 export { ORDER } from "./systems/manners";
 export { husbandSees, husbandIn, husbandNextTo } from "./systems/places";
@@ -191,5 +193,6 @@ export { ATTRS, EMOTIONS, attrOf, feelingOf, feelingsOf, latitudeOf, trustOf, wa
 export type { Attr, Emotion } from "./systems/mind";
 export { WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, wished } from "./systems/terms";
 export { DEAL, GROUP, TABLE, JOIN, LOUNGE } from "./systems/floor";
-export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, himOf, tired, worryOf } from "./systems/rhythm";
+export { soreOf, slick, wearOf, foreignMarks, visibleMarks, dressShift } from "./systems/bodystate";
+export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryOf } from "./systems/rhythm";
 export { pleasureFor, sizeClass } from "./systems/body";

@@ -14,6 +14,7 @@ const W = L.words;
 const INSIDE = new Set(["inside", "anus"]);
 
 import { cumPlaces } from "./terms";
+import { wearOf } from "./bodystate";
 export interface SceneWords {
   /** The same blocks an image pipeline works with: who she is right now, who is with her, where, what is going on. */
   heroine: string[];
@@ -59,7 +60,8 @@ export function describeScene(state: GameState, open = false): SceneWords {
   const actId = sex?.act ?? (enc && seen ? enc.act : (b.shift?.moment?.act ?? null));
   const partner = sex ? HUSBAND : enc && seen ? enc.patron : (b.shift?.moment?.patron ?? null);
   const heroine: string[] = ["1girl"];
-  const dress = dressOf(state);
+  const worn = wearOf(state);
+  const dress = bareOf(state) === "none" ? worn : dressOf(state);
   heroine.push(W.outfit[dress] ?? dress);
   const bare = bareOf(state);
   if (bare !== "none") heroine.push(...(W.bare[bare] ?? []));
@@ -76,7 +78,11 @@ export function describeScene(state: GameState, open = false): SceneWords {
     for (const zone of ["vagina", "anus"] as const) {
       const t = step(W.stretch[zone] ?? [], h.body[zone].stretch);
       if (t) heroine.push(t);
+      const s = step(W.sore[zone] ?? [], h.sore?.[zone] ?? 0);
+      if (s) heroine.push(s);
     }
+  const lips = step(W.sore.mouth ?? [], h.sore?.mouth ?? 0);
+  if (lips) heroine.push(lips);
   for (const [place, left] of Object.entries(h.cum ?? {})) if (left > 0 && W.cum[place]) heroine.push(W.cum[place]!);
   for (const [k, left] of Object.entries(h.after ?? {})) if (left > 0 && W.after[k]) heroine.push(W.after[k]!);
 
@@ -101,9 +107,11 @@ export function describeScene(state: GameState, open = false): SceneWords {
   return { heroine, second, environment, action, prompt };
 }
 
-const mark = (ctx: Ctx, place: string) => {
+const mark = (ctx: Ctx, place: string, his = false) => {
   const h = bs(ctx.state).heroine;
   h.cum = { ...(h.cum ?? {}), [place]: Math.max(h.cum?.[place] ?? 0, L.marks.lasts[place] ?? 30) };
+  // whose it is matters to who may see it
+  h.cumHis = { ...(h.cumHis ?? {}), [place]: his && (h.cumHis?.[place] ?? true) };
 };
 export const wash = (ctx: Ctx, only?: string[]) => {
   const h = bs(ctx.state).heroine;
@@ -137,7 +145,7 @@ export function registerLook(api: ModApi) {
     const { by, act, where } = e.payload as { by: string; act: string; where?: string };
     const options = L.marks.byAct[act];
     const place = by === HUSBAND && where ? L.marks.husbandWhere[where] : options ? ctx.rng.pick(cumPlaces(ctx, options)) : "body";
-    if (place) mark(ctx, place);
+    if (place) mark(ctx, place, by === HUSBAND);
     if (by === HUSBAND) b.husband.cumOn = L.marks.onHim;
     else {
       const v = b.shift?.visits.find((x) => x.patron === by);

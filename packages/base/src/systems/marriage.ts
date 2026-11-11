@@ -20,13 +20,16 @@ const NEEDS_TOY = new Set(["dildo_him", "pegging"]);
 export const BED = "base/bed";
 export const NIGHT_DECLINE = "base/night-decline";
 export const NIGHT_SELF = "base/night-self";
+export const AFTER = "base/after";
 export const UPSTAIRS = "base/upstairs";
 /** What he can pull her away from work for. */
 export const UPSTAIRS_ACTS = ["mutual_touching", "blowjob", "cunnilingus", "sex"];
 /** What a bedroom scene can turn into once it is going. */
 export const BED_ACTS = ["grinding", "mutual_touching", "breast_play", "fingering", "handjob", "blowjob", "cunnilingus", "sixty_nine", "rimming_her", "sex", "riding", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him"];
 /** Where he can finish, by what they are doing. "inside" is the plain ending. */
-const FINISH: Record<string, string[]> = { blowjob: ["mouth", "face"], sixty_nine: ["mouth"], handjob: ["on_her"], sex: ["inside", "on_her", "face"], riding: ["inside"], anal: ["inside", "on_her"] };
+const FINISH: Record<string, string[]> = { blowjob: ["mouth", "face", "chest"], sixty_nine: ["mouth"], handjob: ["on_her", "chest"], sex: ["inside", "belly", "chest", "face"], riding: ["inside", "belly"], anal: ["inside", "back"], grinding: ["belly"], mutual_touching: ["on_her"] };
+const PULL_OUT = new Set(["on_her", "belly", "back", "chest"]);
+const LEAD = content.intimacy.lead;
 /** The toy she would use on him: the biggest one he can take, or the smallest one there is. */
 const toyForHim = (state: GameState) => {
   const b = bs(state);
@@ -560,30 +563,179 @@ export function registerMarriage(api: ModApi) {
     ctx.emit("bed:ended", { act: sex.act, came: sex.came > 0, outcome, turns: sex.turns });
   };
 
-  // What he can do while it lasts.
+  /** She ends it the way she wants it ended. */
+  const herFinish = (ctx: Ctx) => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const sex = b.night!.sex!;
+    const inside = sex.act === "sex" || sex.act === "riding" || sex.act === "anal";
+    const cruel = h.latents.cruel_streak !== undefined;
+    let where = FINISH[sex.act]?.[0] ?? "on_her";
+    let how = "plain";
+    if (!HIS_ACTS.includes(sex.act) && sex.act !== "rimming_him") {
+      if ((b.power >= LEAD.ruinedPower || cruel) && ctx.rng.chance(LEAD.ending.ruined)) how = "ruined";
+      else if (b.power >= LEAD.snowballPower && h.traits.openness >= LEAD.snowballOpenness && ctx.rng.chance(LEAD.ending.snowball)) how = "snowball";
+      else if (inside && b.power >= LEAD.lickPower && ctx.rng.chance(LEAD.ending.lickClean)) how = "lick_clean";
+      else if (inside) how = "inside";
+    }
+    if (how === "ruined") {
+      // she lets go of him at the last moment: it happens, and it is worth nothing to him
+      b.husband.cumOn = content.look.marks.onHim;
+      ctx.emit("bed:her_ending", { how });
+      ctx.log("log.bed.lead.end.ruined");
+    } else {
+      where = how === "snowball" ? "mouth" : how === "plain" ? where : "inside";
+      ctx.emit("cum:landed", { by: HUSBAND, act: sex.act, where });
+      ctx.emit("bed:her_ending", { how });
+      ctx.log(`log.bed.lead.end.${how}`);
+    }
+    if (how !== "plain" && how !== "inside") b.power = clamp(b.power + LEAD.power);
+    if (how === "snowball" || how === "lick_clean") delete h.cum?.[how === "snowball" ? "mouth" : "inside"]; // it ends up in him
+    finish(ctx, "choice");
+    if (b.night && how !== "plain" && how !== "inside") b.night.scene = `lead_${how}`;
+  };
+  /** One turn of a scene she runs: clothes, what they do, the pace, and when he is allowed. */
+  const herTurn = (ctx: Ctx) => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const sex = b.night!.sex!;
+    const R = B.reward;
+    if (!sex.top) {
+      sex.top = true;
+      ctx.log("log.bed.lead.top");
+      return void turn(ctx, 3, B.undress);
+    }
+    if (sex.panties !== "off") {
+      sex.panties = "off";
+      sex.skirt = true;
+      h.panties = "off";
+      ctx.log("log.bed.lead.panties");
+      return void turn(ctx, 3, B.undress);
+    }
+    // what is best for her right now, including what she may decide he takes
+    const own = (a: string) => !HIS_ACTS.includes(a) || b.power >= LEAD.hisActsPower || h.latents.cruel_streak !== undefined;
+    const now = rewardOf(ctx.state, sex.act, sex.pleasure);
+    const best = BED_ACTS.filter((a) => a !== sex.act && hisActOpen(ctx.state, a) && own(a))
+      .map((a) => ({ a, r: rewardOf(ctx.state, a, HIS_ACTS.includes(a) ? herFromHis(ctx.state, a) : pleasureFor(ctx.state, actById(a), b.husband.size)) }))
+      .sort((x, y) => y.r - x.r || x.a.localeCompare(y.a))[0];
+    if (best && best.r >= now + R.better && (sex.switched ?? 0) < 3) {
+      sex.switched = (sex.switched ?? 0) + 1;
+      setAct(ctx, best.a);
+      ctx.log("log.bed.lead.switch", { act: `act.${best.a}` });
+      return void turn(ctx, 2, 3);
+    }
+    const r = rates(ctx.state);
+    // done: she has had hers, or it has gone on long enough
+    if ((sex.came > 0 && (sex.his >= B.cumAt || sex.turns >= LEAD.minTurns)) || sex.turns >= LEAD.maxTurns) return void herFinish(ctx);
+    // he is close and she is not there yet: she holds him back, and sometimes he cannot be held
+    if (sex.his >= LEAD.holdAt && sex.came === 0) {
+      if (ctx.rng.chance(LEAD.slipPerTurn * Math.min(2, 12 / b.husband.minutes))) {
+        feel(ctx, 0, LEAD.slipped.resent ?? 0);
+        ctx.emit("bed:her_ending", { how: "slipped" });
+        ctx.log("log.bed.lead.slipped");
+        ctx.emit("cum:landed", { by: HUSBAND, act: sex.act, where: FINISH[sex.act]?.[0] ?? "on_her" });
+        return void finish(ctx, "choice");
+      }
+      sex.his = LEAD.holdAt;
+      if (!sex.heldSaid) {
+        sex.heldSaid = true;
+        ctx.log("log.bed.lead.hold");
+      }
+      return void turn(ctx, 0, r.hers * 1.4);
+    }
+    // otherwise she takes her time, for herself
+    turn(ctx, r.his * (sex.hers < 60 ? 0.6 : 1), r.hers * (sex.hers < 60 ? 1.5 : 1.3));
+  };
+  // Some nights, once she holds the reins in the marriage, she does not wait to be given them.
+  api.events.on("bed:started", (ctx) => {
+    const b = bs(ctx.state);
+    const sex = b.night?.sex;
+    if (!sex || b.mode !== "open" || ctx.state.time.phase !== "night") return;
+    const cruel = b.heroine.latents.cruel_streak !== undefined;
+    if (b.power < LEAD.takesAtPower && !cruel) return;
+    if (!ctx.rng.chance(cruel ? LEAD.cruelTakes : LEAD.takesChance)) return;
+    sex.lead = true;
+    ctx.log("log.bed.lead.takes");
+    ctx.emit("bed:lead", { given: false });
+  });
+
+  // Afterwards: "lick it up", "clean me". She does, or she turns it round on him.
   api.actions.register({
-    id: BED,
-    labelKey: "action.bed",
-    describe: (a) => (a.payload!.do === "give" ? { key: "action.bed.give", params: { act: `act.${a.payload!.act}` } } : a.payload!.to ? { key: "action.bed.switch", params: { act: `act.${a.payload!.to}` } } : a.payload!.where ? { key: `action.bed.finish.${a.payload!.where}` } : { key: `action.bed.${a.payload!.do}` }),
+    id: AFTER,
+    labelKey: "action.after",
+    describe: (a) => ({ key: `action.after.${a.payload!.do}` }),
     enumerate(state) {
+      const n = bs(state).night;
+      if (state.time.phase !== "night" || !n || n.sex || !n.after || bs(state).complaint) return [];
+      const dos = [...(PULL_OUT.has(n.after) || n.after === "face" ? ["lick_it"] : []), "clean_me"];
+      return dos.map((d) => ({ type: AFTER, payload: { do: d } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const A = content.intimacy.after;
+      const what = action.payload!.do as string;
+      const where = b.night!.after!;
+      b.night!.after = undefined;
+      const willing = h.traits.openness >= A.willingOpenness || h.latents.oral_fixation !== undefined || h.latents.submissive !== undefined;
+      if (b.mode === "open" && b.power >= A.reversePower) {
+        b.power = clamp(b.power + (A.reversed.power ?? 0));
+        ctx.log(`log.after.${what}.reversed`);
+        ctx.emit("bed:after", { do: what, outcome: "reversed", where });
+        if (what === "lick_it") for (const k of ["face", "chest", "body"]) delete h.cum?.[k];
+      } else if (willing) {
+        changeHeroine(ctx, "arousal", A.done.arousal ?? 0, "husband");
+        ctx.log(`log.after.${what}`);
+        ctx.emit("bed:after", { do: what, outcome: "done", where });
+        if (what === "lick_it") for (const k of ["face", "chest", "body"]) delete h.cum?.[k];
+        else b.husband.cumOn = 0;
+      } else {
+        ctx.log(`log.after.${what}.no`);
+        ctx.emit("bed:after", { do: what, outcome: "refused", where });
+      }
+    },
+  });
+
+  const bedOptions = (state: GameState): { type: string; payload: Record<string, string> }[] => {
       const sex = bs(state).night?.sex;
       if (!sex) return [];
-      const dos = ["keep", "faster", "slower", "talk", "kiss"];
+      // she runs it: he follows, asks, or takes it back
+      if (sex.lead) return ["follow", ...(sex.his >= B.cumAt ? ["beg"] : []), "take_back", "stop"].map((d) => ({ type: BED, payload: { do: d } }));
+      const dos = ["keep", "faster", "slower", "talk", "kiss", "say_mine", "look_at_me"];
 
       if (!sex.byHand) dos.push("hand");
       if (!sex.top) dos.push("top");
       if (!sex.skirt) dos.push("skirt");
+      if (!sex.naked && (sex.panties ?? "on") === "on") dos.push("panties_aside");
+      if (!sex.naked && sex.panties !== "off") dos.push("panties_off");
+      if (!sex.naked && sex.top && sex.panties === "off") dos.push("naked");
+      dos.push("give_lead");
       const out = dos.map((d) => ({ type: BED, payload: { do: d } as Record<string, string> }));
       if (sex.asks && sex.asks !== "finish") out.unshift({ type: BED, payload: { do: "give", act: sex.asks } });
       if (sex.his >= B.cumAt) for (const where of FINISH[sex.act] ?? ["inside"]) out.push({ type: BED, payload: { do: "finish", where } });
       for (const to of BED_ACTS) if (to !== sex.act && hisActOpen(state, to)) out.push({ type: BED, payload: { do: "switch", to } });
       out.push({ type: BED, payload: { do: "stop" } });
       return out;
+    };
+  // What he can do while it lasts.
+  api.actions.register({
+    id: BED,
+    labelKey: "action.bed",
+    describe: (a) => (a.payload!.do === "give" ? { key: "action.bed.give", params: { act: `act.${a.payload!.act}` } } : a.payload!.to ? { key: "action.bed.switch", params: { act: `act.${a.payload!.to}` } } : a.payload!.where ? { key: `action.bed.finish.${a.payload!.where}` } : { key: `action.bed.${a.payload!.do}` }),
+    enumerate: (state) => bedOptions(state),
+    // while she leads, anything he tries to do on his own is simply her next move
+    accepts: (state, a) => {
+      const sex = bs(state).night?.sex;
+      if (!sex) return false;
+      if (sex.lead && ["keep", "faster", "slower", "talk", "kiss"].includes(a.payload?.do as string)) return true;
+      const key = (p: Record<string, unknown> | undefined) => JSON.stringify(Object.entries(p ?? {}).sort(([x], [y]) => x.localeCompare(y)));
+      return bedOptions(state).some((o) => key(o.payload) === key(a.payload));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const sex = b.night!.sex!;
-      const what = action.payload!.do as string;
+      let what = action.payload!.do as string;
+      if (sex.lead && ["keep", "faster", "slower", "talk", "kiss"].includes(what)) what = "follow";
       const r = rates(ctx.state);
       switch (what) {
         case "give": {
@@ -624,15 +776,90 @@ export function registerMarriage(api: ModApi) {
           sex[what] = true;
           turn(ctx, 2, B.undress);
           break;
+        case "panties_aside":
+        case "panties_off":
+          sex.panties = what === "panties_off" ? "off" : "aside";
+          b.heroine.panties = sex.panties;
+          sex.skirt = true;
+          turn(ctx, 2, B.undress);
+          break;
+        case "naked":
+          sex.naked = true;
+          sex.panties = "off";
+          b.heroine.panties = "off";
+          turn(ctx, 3, B.undress);
+          break;
+        case "say_mine": {
+          // a wife who holds the reins laughs at it; one who wants him says it
+          const Tk = content.intimacy.talk;
+          if (b.power >= Tk.sayMinePower && b.mode === "open") {
+            b.power = clamp(b.power + (Tk.sayMineLaugh.power ?? 0));
+            ctx.log("log.bed.say_mine.laughs");
+            turn(ctx, 1, 0);
+          } else if (b.heroine.marriage.desire >= 45) {
+            ctx.emit("bed:said", { what: "mine" });
+            ctx.log("log.bed.say_mine");
+            turn(ctx, Tk.sayMine.his ?? 0, Tk.sayMine.hers ?? 0);
+          } else {
+            ctx.log("log.bed.say_mine.no");
+            turn(ctx, 0, -3);
+          }
+          break;
+        }
+        case "look_at_me":
+          ctx.log(sex.out ? "log.bed.look_at_me.out" : "log.bed.look_at_me");
+          turn(ctx, sex.out ? 0 : (content.intimacy.talk.lookAtMe.his ?? 0), sex.out ? 0 : (content.intimacy.talk.lookAtMe.hers ?? 0));
+          break;
+        case "give_lead":
+          sex.lead = true;
+          ctx.log("log.bed.lead.given");
+          ctx.emit("bed:lead", { given: true });
+          herTurn(ctx);
+          break;
+        case "follow":
+          herTurn(ctx);
+          break;
+        case "beg": {
+          // "please": she decides
+          const lets = b.heroine.marriage.desire >= LEAD.begAllowDesire && sex.came > 0;
+          if (lets || sex.turns >= LEAD.maxTurns) herFinish(ctx);
+          else {
+            sex.his = clamp(sex.his + (LEAD.begDenied.his ?? 0));
+            b.power = clamp(b.power + (LEAD.begDenied.power ?? 0));
+            ctx.log(`log.bed.lead.denied.${ctx.rng.int(1, 2)}`);
+            turn(ctx, 0, r.hers);
+          }
+          break;
+        }
+        case "take_back":
+          sex.lead = false;
+          if (b.power >= LEAD.takesAtPower) {
+            feel(ctx, 0, LEAD.takeBack.resent ?? 0);
+            ctx.emit("bed:lead", { given: false, taken: true });
+            ctx.log("log.bed.lead.taken_back.sulk");
+          } else ctx.log("log.bed.lead.taken_back");
+          turn(ctx, r.his, r.hers * 0.5);
+          break;
         case "finish": {
           // where he finishes is a small thing she either likes or puts up with
-          const where = (action.payload!.where as string) ?? "inside";
+          let where = (action.payload!.where as string) ?? "inside";
+          const Fn = content.intimacy.finish;
+          const hh = b.heroine;
+          // she has her own mind about it
+          if (where === "face" && hh.traits.openness < 60 && hh.latents.oral_fixation === undefined && hh.traits.confidence >= Fn.dodgeConfidence) {
+            where = "chest";
+            ctx.log("log.bed.finish.dodged");
+          } else if (PULL_OUT.has(where) && (sex.act === "sex" || sex.act === "riding") && hh.arousal >= Fn.holdArousal && hh.marriage.desire >= Fn.holdDesire && ctx.rng.chance(Fn.holdChance)) {
+            where = "inside";
+            ctx.log("log.bed.finish.held");
+          }
+          if (b.night && ctx.state.time.phase === "night") b.night.after = where;
           if (where === "face" || where === "mouth") {
             const likes = b.heroine.traits.openness >= (where === "face" ? 60 : 45) || b.heroine.latents.oral_fixation !== undefined;
             if (likes) changeHeroine(ctx, "arousal", 4, "finish");
             else feel(ctx, 0, where === "face" ? 1.5 : 0.5);
             ctx.log(`log.bed.finish.${where}${likes ? "" : ".no"}`);
-          } else if (where === "on_her") ctx.log("log.bed.finish.on_her");
+          } else if (PULL_OUT.has(where)) ctx.log(`log.bed.finish.${where}`);
           ctx.emit("cum:landed", { by: HUSBAND, act: bs(ctx.state).night!.sex!.act, where });
           finish(ctx, "choice");
           break;

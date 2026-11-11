@@ -22,6 +22,7 @@ export const GROUP = "base/group";
 export const TABLE = "base/table";
 export const JOIN = "base/join";
 export const LOUNGE = "cafe.lounge";
+export const SAUNA = "cafe.sauna";
 const F = content.floor;
 const E = content.consent.expect;
 type Fx = Record<string, number>;
@@ -231,9 +232,10 @@ export function registerFloor(api: ModApi) {
       b.patrons[lead.id] = lead;
       lead.memory.visits = 1;
       lead.memory.lastDay = ctx.state.time.day;
-      sh.group = { kind: ctx.rng.pick(Gr.kinds), size: ctx.rng.int(Gr.size[0], Gr.size[1]), lead: lead.id, until: sh.tick + Gr.stay, heat: 10, nextTray: sh.tick + 5, rounds: 0, bill: 0 };
+      const sauna = b.upgrades.includes("sauna") && ctx.rng.chance(Gr.saunaChance);
+      sh.group = { kind: ctx.rng.pick(Gr.kinds), size: ctx.rng.int(Gr.size[0], Gr.size[1]), lead: lead.id, until: sh.tick + Gr.stay, heat: sauna ? Gr.saunaHeat : 10, nextTray: sh.tick + 5, rounds: 0, bill: 0, ...(sauna ? { sauna: true } : {}) };
       sh.interrupt = true;
-      ctx.log(`log.group.arrive.${sh.group.kind}`, { n: sh.group.size });
+      ctx.log(sauna ? "log.group.arrive.sauna" : `log.group.arrive.${sh.group.kind}`, { n: sh.group.size });
       return;
     }
     const g = sh.group;
@@ -242,7 +244,7 @@ export function registerFloor(api: ModApi) {
     if (g.herOut !== undefined && sh.tick >= g.herOut) {
       g.herOut = undefined;
       ctx.state.where[WIFE] = HALL;
-      ctx.log("log.group.her_back");
+      ctx.log(`log.group.her_back${g.sauna ? ".sauna" : ""}`);
       sh.interrupt = true;
     }
     if (sh.tick >= g.until && g.herOut === undefined) {
@@ -256,12 +258,12 @@ export function registerFloor(api: ModApi) {
     if (!g.wants && sh.tick >= g.nextTray && sh.tick < g.until - 10) {
       g.wants = sh.tick;
       sh.interrupt = true;
-      ctx.log("log.group.wants");
+      ctx.log(`log.group.wants${g.sauna ? ".sauna" : ""}`);
     }
     if (g.wants !== undefined && sh.tick - g.wants === Gr.trayWait) {
       addReputation(ctx, -Gr.restlessReputation);
       g.heat = clamp(g.heat - 5);
-      ctx.log("log.group.restless");
+      ctx.log(`log.group.restless${g.sauna ? ".sauna" : ""}`);
     }
   });
   /** She is in the back room with a tray and a company that has been drinking. What happens is counted in one go. */
@@ -271,19 +273,20 @@ export function registerFloor(api: ModApi) {
     const g = sh.group!;
     const h = b.heroine;
     const lead = b.patrons[g.lead]!;
+    const venue = g.sauna ? SAUNA : LOUNGE;
     g.heat = clamp(g.heat + Gr.heatHer);
-    const seen = husbandSees(ctx.state, LOUNGE) || b.mode === "open";
+    const seen = husbandSees(ctx.state, venue) || b.mode === "open";
     const tags = seen ? undefined : ["unseen"];
     let minutes = ctx.rng.int(Gr.inside[0], Gr.inside[1]);
-    const tier = tierFor(g.heat);
+    const tier = tierFor(g.heat + (g.sauna ? Gr.saunaTier : 0));
     const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
     const act = options.length > 0 ? ctx.rng.pick(options) : null;
     if (act && tier >= 1) {
       // several men at once push harder than one
-      const input: ConsentInput = { act: act.id, partner: lead.id, loc: LOUNGE, offer: 0, pressure: (g.size - 1) * Gr.pressurePerMan };
+      const input: ConsentInput = { act: act.id, partner: lead.id, loc: venue, offer: 0, pressure: (g.size - 1) * Gr.pressurePerMan };
       const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
       const verdict = verdictOf(res.total);
-      b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: lead.id, act: act.id, loc: LOUNGE, verdict, seen, total: res.total, rows: res.rows });
+      b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: lead.id, act: act.id, loc: venue, verdict, seen, total: res.total, rows: res.rows });
       if (b.proposals.length > 12) b.proposals.shift();
       if (verdict === "refuse") {
         g.heat = clamp(g.heat + Gr.refusedHeat);
@@ -318,16 +321,16 @@ export function registerFloor(api: ModApi) {
         h.traits.fidelity = clamp(h.traits.fidelity - content.consent.drift.fidelity * Math.max(0, tier - 1));
         ctx.log(`log.group.in.${isIntimate(act) ? "far" : "play"}.${verdict}`, { act: `act.${act.id}`, n: many, tip }, tags);
         // the same event a single guest raises, so the diary, the feelings and his reaction all see it
-        ctx.emit("encounter:started", { patron: lead.id, act: act.id, loc: LOUNGE, verdict, witnessed: seen, came: false, tier: act.tier, intimate: isIntimate(act), switched: false, group: g.size });
-        ctx.emit("encounter:ended", { patron: lead.id, act: act.id, loc: LOUNGE, minutes, came: 0 });
+        ctx.emit("encounter:started", { patron: lead.id, act: act.id, loc: venue, verdict, witnessed: seen, came: false, tier: act.tier, intimate: isIntimate(act), switched: false, group: g.size });
+        ctx.emit("encounter:ended", { patron: lead.id, act: act.id, loc: venue, minutes, came: 0 });
       }
     }
     // from the hall he only sees how long the door stays shut
-    if (!seen && minutes >= Gr.longInside[0]) ctx.log("log.group.long");
+    if (!seen && minutes >= Gr.longInside[0]) ctx.log(`log.group.long${g.sauna ? ".sauna" : ""}`);
     g.herOut = sh.tick + minutes;
     sh.awayUntil = g.herOut;
     sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, g.herOut);
-    ctx.state.where[WIFE] = LOUNGE;
+    ctx.state.where[WIFE] = venue;
   };
   api.actions.register({
     id: GROUP,
@@ -358,12 +361,12 @@ export function registerFloor(api: ModApi) {
         const till = addHerTips(ctx, Math.round(round * Gr.tipHer));
         sh.tips += till;
         b.today.tips += till;
-        ctx.log("log.group.send_her");
+        ctx.log(`log.group.send_her${g.sauna ? ".sauna" : ""}`);
         herRound(ctx);
       } else {
         addMoney(ctx, Math.round(round * Gr.tipHusband), "tips");
         changeHim(ctx, "energy", -Gr.husbandEnergy, "tray");
-        ctx.log("log.group.self", { heat: Math.round(g.heat) });
+        ctx.log(`log.group.self${g.sauna ? ".sauna" : ""}`, { heat: Math.round(g.heat) });
       }
       ctx.emit("group:round", { her, heat: g.heat });
     },

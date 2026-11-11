@@ -4,7 +4,7 @@
 zone: cafe
 rooms:
   - id: cafe.hall
-    links: [cafe.bar, cafe.toilet, cafe.lounge, home.bedroom, hotel.landing, town.square]
+    links: [cafe.bar, cafe.toilet, cafe.lounge, cafe.sauna, home.bedroom, hotel.landing, town.square]
     tags: [public, work]
     sees: [cafe.bar]
     map: { x: 1, y: 1, w: 2, h: 1 }
@@ -29,3 +29,7 @@ rooms:
     links: [cafe.hall]
     tags: [public, work]
     map: { x: 6, y: 1, w: 1, h: 1 }
+  - id: cafe.sauna           # built as an upgrade: a company can take it instead of the back room
+    links: [cafe.hall]
+    tags: [public, work]
+    map: { x: 7, y: 1, w: 1, h: 1 }
