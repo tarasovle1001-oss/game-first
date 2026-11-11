@@ -454,6 +454,12 @@ export function registerEncounters(api: ModApi) {
   row("affinity", 30, (_s, _i, _a, p) => (p ? p.memory.affinity * c.affinity : null));
   row("charm", 31, (_s, _i, _a, p) => (p ? (p.traits.charm - 50) * c.charm : null));
   row("familiar", 32, (_s, _i, act, p) => (p && (p.memory.acts[act.id] ?? 0) > 0 ? c.familiar : null));
+  // a man she hardly knows: a faithful wife does not kiss him or sit on his lap, whatever her mood
+  row("stranger", 32, (s, i, act, p) => {
+    if (!p || act.tier < 2 || i.offer > 0 || her(s).latents.new_faces !== undefined) return null;
+    const gap = Math.max(0, c.strangerBelow - p.memory.affinity);
+    return gap > 0 ? -(her(s).traits.fidelity / 100) * gap * c.stranger * (act.tier === 2 ? 0.4 : 1) || null : null;
+  });
   row("jump", 33, (_s, _i, act, p) => {
     if (!p) return null;
     const skipped = act.tier - (p.memory.tier + 1);
@@ -476,11 +482,18 @@ export function registerEncounters(api: ModApi) {
     const size = p ? p.size : bs(s).husband.size;
     const diff = size - fitOf(s, "vagina"); // against what she is used to by now
     // with her husband it is habit and duty as much as wanting: his size counts for half
-    return clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap) * (p ? 1 : 0.5);
+    return clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap) * (p ? 1 : c.sizeHusband);
   });
   // him: her husband
   row("marital", 36, (_s, _i, _a, p) => (p ? null : c.marital));
   row("desire", 37, (s, _i, _a, p) => (p ? null : (her(s).marriage.desire - 50) * c.desire));
+  // he has gone without for nights: a wife who still cares lets him, out of tenderness or pity. One who holds the power does not
+  row("pity", 38, (s, _i, _a, p) => {
+    const b = bs(s);
+    const h = her(s);
+    if (p || b.denied < 2 || h.marriage.resent >= 40 || b.power >= 30 || h.latents.cruel_streak !== undefined) return null;
+    return Math.min(c.pityMax, (b.denied - 1) * c.pity) * (h.marriage.desire / 100) || null;
+  });
   row("resent", 38, (s, _i, _a, p) => (p ? null : -her(s).marriage.resent * c.resent));
   row("power_denies", 39, (s, _i, act, p) => (p || bs(s).mode !== "open" || act.tier < 5 ? null : -bs(s).power * sec.powerDenies));
   // the situation

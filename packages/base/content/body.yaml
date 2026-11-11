@@ -38,6 +38,7 @@ bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
   herCloseAt: 70      # if she is this far when he finishes, it tips her over
   afterOrgasm: 35     # her meter after she comes: she can come again
   looseForHim: 0.05   # what he still feels in a wife stretched far beyond his size: next to nothing
+  counter: { power: 15, confidence: 60, sizeTaste: 40, maxResent: 70, chance: 0.6, peggingPower: 30 } # she says no to sex and names what he may do instead
   selfResent: 60      # above this she will not have him doing it next to her
   looseNoneAt: 0.34   # his size / what she takes: at this ratio and below he is at that minimum
   looseFullAt: 0.95   # ...and from this ratio up he feels everything

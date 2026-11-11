@@ -46,6 +46,11 @@ fidelity: 0.5   # per point of fidelity, grows with the tier (always against)
 libido: 0.3      # per point of libido above 50, intimate acts only
 affinity: 0.35   # per point of her opinion of him
 charm: 0.25      # per point of his charm above 50
+stranger: 0.45   # per point her opinion of him is below strangerBelow, times her fidelity/100 (tier 3+; 40% of it at tier 2)
+strangerBelow: 30
+sizeHusband: 0.25 # with her husband his size counts for this share: what she is used to decides what happens in bed, not whether
+pity: 9          # per night her husband has gone without (from the second), times her desire for him / 100
+pityMax: 27
 familiar: 14     # she has already done this with him
 jumpPerTier: 14  # per tier he tries to skip with her
 witnesses: 0.15   # other guests can see, scaled by how closed she is
@@ -66,3 +71,5 @@ drift:
   openness: 0.12
   fidelity: 0.1
   confidence: 0.05
+  husbandSize: 0.05   # desire for her husband lost per day, per cm she is used to above his size, times her taste for size / 50
+  husbandSizeGap: 12  # cm counted at most: past that it is no longer about how stretched she is

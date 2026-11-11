@@ -39,7 +39,7 @@ for (const [name, tune] of Object.entries(cases)) {
         const id = `${e.turn}:${e.key}`;
         if (e.turn < mark || counted.has(id)) continue;
         counted.add(id);
-        const k = /^log\.(bed|husband)\./.test(e.key) ? e.key.replace("log.", "") : null;
+        const k = /^log\.(bed|husband|night\.counter)\./.test(e.key) ? e.key.replace("log.", "") : null;
         if (k) lines[k] = (lines[k] ?? 0) + 1;
       }
       mark = s.turn - 1;

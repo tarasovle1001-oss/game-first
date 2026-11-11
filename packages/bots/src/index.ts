@@ -57,7 +57,7 @@ export const lovingStrategy: Strategy = (actions, state, roll) => {
     if (sex.came > 0) return pick("finish") ?? pick("faster")!;
     return (sex.his > sex.hers ? pick("slower") : pick("keep"))!;
   }
-  return actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") ?? actions.find((a) => a.type === "base/night-self") ?? awayStrategy(actions, state, roll);
+  return actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") ?? (roll() < 0.3 ? actions.find((a) => a.type === "base/night-self") : undefined) ?? awayStrategy(actions, state, roll);
 };
 
 /** Kitchen owner who checks the back room when she disappears, and stays to watch. */

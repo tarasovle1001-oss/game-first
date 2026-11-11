@@ -179,6 +179,7 @@ export function registerMarriage(api: ModApi) {
       const b = bs(state);
       if (state.time.phase !== "night" || !b.night || b.night.asked || b.night.sex || b.husband.spentDay === state.time.day) return [];
       if (state.where[HUSBAND] !== BEDROOM || state.where[WIFE] !== BEDROOM) return [];
+      if (b.night.counter) return [{ type: NIGHT_ACT, payload: { act: b.night.counter } }]; // tonight it is this or nothing
       return NIGHT_ACTS.filter((act) => act !== "pegging" || b.toys.length > 0).map((act) => ({ type: NIGHT_ACT, payload: { act } }));
     },
     apply(ctx, action) {
@@ -188,8 +189,24 @@ export function registerMarriage(api: ModApi) {
       b.night!.asked = true;
       const wanted = b.night!.wants === true;
       b.night!.wants = false;
-      const verdict = ask(ctx, act.id, wanted ? content.body.night.wants.consent : 0, "wants");
+      const countered = b.night!.counter === act.id;
+      b.night!.counter = undefined;
+      const verdict = countered ? "eager" : ask(ctx, act.id, wanted ? content.body.night.wants.consent : 0, "wants");
       if (verdict === "refuse") {
+        // not what he asked for, but she has her own idea of what he is good for tonight
+        const C = content.body.bed.counter;
+        const leads = b.power >= C.power || h.latents.cruel_streak !== undefined || (h.traits.confidence >= C.confidence && h.sizeTaste >= C.sizeTaste);
+        const inside = act.zones.includes("vagina") || act.zones.includes("anus");
+        if (leads && inside && h.marriage.resent < C.maxResent && ctx.rng.chance(C.chance)) {
+          const options = ["cunnilingus", "rimming_her", ...(b.toys.length > 0 && (b.power >= C.peggingPower || h.latents.cruel_streak !== undefined) ? ["pegging", "prostate"] : [])];
+          const offer = options[ctx.rng.int(0, options.length - 1)]!;
+          b.night!.counter = offer;
+          b.night!.asked = false;
+          b.night!.scene = "wants_him";
+          ctx.log(`log.night.counter.${offer}`);
+          ctx.emit("husband:countered", { asked: act.id, offer });
+          return;
+        }
         b.night!.scene = "cold_back";
         feel(ctx, 0, 1);
         ctx.log("log.husband.refuse", { act: `action.night.${act.id}` });
@@ -295,7 +312,7 @@ export function registerMarriage(api: ModApi) {
       const mocks = b.mode === "open" && (b.power >= 30 || h.latents.cruel_streak !== undefined);
       if (mocks) b.power = clamp(b.power + 2);
       const kind = h.marriage.desire >= content.body.bed.reward.lovingDesire;
-      feel(ctx, mocks ? -1 : kind ? 0 : -0.5, 0);
+      feel(ctx, mocks ? -0.5 : 0, 0); // she does not think less of him for it unless she was already looking down
       ctx.log(mocks ? "log.night.self.mock" : kind ? "log.night.self.kind" : `log.night.self.ignored.${ctx.rng.int(1, 3)}`);
       ctx.emit("bed:ended", { act: "self", came: false, outcome: "by_hand", turns: 0 });
     },
@@ -676,7 +693,9 @@ export function registerMarriage(api: ModApi) {
   api.events.on("day:end", (ctx) => {
     const b = bs(ctx.state);
     const gap = fitOf(ctx.state, "vagina") - b.husband.size;
-    if (gap > 1) b.heroine.marriage.desire = clamp(b.heroine.marriage.desire - gap * content.consent.drift.fidelity * 2);
+    const Dr = content.consent.drift;
+    // what counts is how much she has come to want more than he has, not the stretch itself
+    if (gap > 1) b.heroine.marriage.desire = clamp(b.heroine.marriage.desire - Math.min(gap, Dr.husbandSizeGap) * Dr.husbandSize * (b.heroine.sizeTaste / 50));
   });
 
   api.scenes.register({

@@ -191,7 +191,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea

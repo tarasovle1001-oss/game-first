@@ -176,11 +176,16 @@ export const consentSchema = z
     satisfied: z.number(), // she has just had her fill
     size: z.number(), // per cm of his size above what she takes comfortably, intimate acts only
     sizeCap: z.number(),
+    pity: z.number(),
+    pityMax: z.number(),
+    stranger: z.number(),
+    strangerBelow: z.number(),
+    sizeHusband: z.number(),
     marital: z.number(), // husband only: flat, he is her husband
     desire: z.number(), // husband only: her desire for him
     resent: z.number(), // husband only: her resentment
     // how fast her character moves when she says yes
-    drift: z.object({ openness: z.number(), fidelity: z.number(), confidence: z.number() }).strict(),
+    drift: z.object({ openness: z.number(), fidelity: z.number(), confidence: z.number(), husbandSize: z.number(), husbandSizeGap: z.number() }).strict(),
   })
   .strict();
 
@@ -230,6 +235,7 @@ export const bodySchema = z
         looseForHim: z.number().min(0).max(1), // what he still feels in a wife stretched far beyond his size
         looseNoneAt: z.number(),
         selfResent: z.number(),
+        counter: z.object({ power: z.number(), confidence: z.number(), sizeTaste: z.number(), maxResent: z.number(), chance: z.number(), peggingPower: z.number() }).strict(),
         looseFullAt: z.number(),
         handRate: z.number(),
         reward: z
