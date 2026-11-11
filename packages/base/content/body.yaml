@@ -11,10 +11,20 @@ orgasmAt: 66        # climax meter (her arousal, how well he fits, how long it l
 satisfiedCoolPerTick: 1.2
 sizeTasteGain: 4    # taste for size gained per orgasm with someone bigger than her husband
 
+night: # what she does when she lies awake wanting more
+  restlessArousal: 40     # she cannot sleep above this arousal if nobody satisfied her tonight
+  selfChance: 0.6         # she slips into the bathroom and takes care of herself
+  slipOutChance: 0.35     # ...or goes to a lover, if there is a man she has slept with and has his number
+  slipOutFidelityBelow: 45
+  husbandWakesChance: 0.3 # he wakes up and finds the bed empty
+  wakesSuspicion: 14
+
 husband:
   size: 13
   stamina: 1
   minutes: 12       # how long he lasts
+  prematureChance: 0.12 # any night he can simply finish too early
+  prematureChancePerDeniedNight: 0.04
   shorterPerDeniedNight: 0.12 # share of his minutes lost per night he has gone without
   skillHalvesAt: 100   # her skill at which he lasts half as long
   tooSoonBelow: 2.5    # minutes: below this he finishes before it even starts

@@ -21,7 +21,7 @@ export interface Heroine {
   marriage: { desire: number; resent: number }; // what she feels for her husband, 0..100
   outfit: string;
   tastes: { acts: Record<string, number>; types: Record<string, number> }; // what she has come to like
-  latents: Record<string, { fired: number; noticed: boolean }>; // hidden sides she has; absent = she does not have it
+  latents: Record<string, true>; // hidden sides she has; absent = she does not have it
 }
 
 export type Directive = "reserved" | "natural" | "friendly";
@@ -98,6 +98,7 @@ export interface ProposalRecord {
   loc: string;
   verdict: Verdict;
   seen: boolean; // the husband was close enough to notice
+  rolled?: number; // chance of a yes when she hesitated (absent when there was no roll)
   total: number;
   rows: { id: string; labelKey: string; value: number }[];
 }
@@ -112,6 +113,7 @@ export interface Shift {
   moment: { patron: string; act: string } | null; // last light act of this tick
   interrupt: boolean; // something worth stopping "wait until" for has happened
   stockWarned: boolean;
+  stolen?: number; // taken from the unwatched till tonight
 }
 
 export interface Ledger {

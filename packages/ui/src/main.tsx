@@ -17,6 +17,22 @@ function App() {
   const [extra, setExtra] = useState<ModPack[]>([]);
   const [lang, setLang] = useState<Lang>("ru");
   const [debug, setDebug] = useState(false);
+  // transparent: everything is shown; immersive: only what the husband could know. Remembered between visits.
+  const [transparent, setTransparentState] = useState(() => {
+    try {
+      return localStorage.getItem("test-city.transparent") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const setTransparent = (v: boolean) => {
+    setTransparentState(v);
+    try {
+      localStorage.setItem("test-city.transparent", v ? "1" : "0");
+    } catch {
+      /* no storage: the setting just lasts for this visit */
+    }
+  };
   const [menu, setMenu] = useState(false);
   const [tab, setTab] = useState<Tab>("her");
   const [error, setError] = useState("");
@@ -81,7 +97,7 @@ function App() {
 
   const scene = engine.currentScene(state);
   const problems = engine.checkInvariants(state);
-  const common = { state, t, lang };
+  const common = { state, t, lang, open: transparent };
   const b = bs(state);
 
   return (
@@ -89,6 +105,9 @@ function App() {
       <header>
         <TopBar {...common} />
         <div className="tools">
+          <button className={transparent ? "on" : ""} title={t("ui.transparent.hint")} onClick={() => setTransparent(!transparent)}>
+            {t("ui.transparent")}
+          </button>
           <button className={debug ? "on" : ""} onClick={() => setDebug(!debug)}>
             {t("ui.debug")}
           </button>
@@ -120,7 +139,7 @@ function App() {
       <div className="layout">
         <aside className="col-log">
           <div className="cap">{t("ui.log")}</div>
-          <Log {...common} debug={debug} />
+          <Log {...common} debug={transparent} />
         </aside>
 
         <section className="col-main">
@@ -183,8 +202,8 @@ function App() {
             {tab === "her" && <HeroineTab {...common} />}
             {tab === "you" && <CoupleTab {...common} />}
             {tab === "guests" && <GuestsTab {...common} />}
-            {tab === "why" && <WhyTab {...common} debug={debug} />}
-            {tab === "phone" && <PhoneTab {...common} debug={debug} />}
+            {tab === "why" && <WhyTab {...common} debug={transparent} />}
+            {tab === "phone" && <PhoneTab {...common} debug={transparent} />}
           </div>
         </aside>
       </div>

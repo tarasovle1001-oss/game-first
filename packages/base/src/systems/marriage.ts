@@ -76,7 +76,10 @@ export function registerMarriage(api: ModApi) {
       // how long he lasts tonight: less after days without, less the better she has become at this
       const H = content.body.husband;
       const skill = h.skills[act.id] ?? 0;
-      const lasts = oral ? 15 : b.husband.minutes * Math.max(0.15, 1 - Math.max(0, b.denied) * H.shorterPerDeniedNight) * (1 - skill / H.skillHalvesAt / 2);
+      const unlucky = !oral && ctx.rng.chance(H.prematureChance + Math.max(0, b.denied) * H.prematureChancePerDeniedNight);
+      const lasts = oral
+        ? 15
+        : b.husband.minutes * Math.max(0.15, 1 - Math.max(0, b.denied) * H.shorterPerDeniedNight) * (1 - skill / H.skillHalvesAt / 2) * (unlucky ? 0.3 : 1);
       changeHeroine(ctx, "energy", act.effects.energy, "husband");
 
       if (!oral && lasts < H.tooSoonBelow) {
@@ -125,6 +128,49 @@ export function registerMarriage(api: ModApi) {
       ctx.emit("husband:act", { act: act.id, came: out.came, pleasure: out.pleasure, outcome });
     },
   });
+
+  // The small hours. If the evening left her wanting, she does not just fall asleep.
+  api.events.on(
+    "phase:exit",
+    (ctx, e) => {
+      if (e.payload!.phase !== "night") return;
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const N = content.body.night;
+      if (h.satisfied >= 50 || h.arousal < N.restlessArousal) return;
+      const open = b.mode === "open";
+      const wakes = ctx.rng.chance(N.husbandWakesChance);
+      const tags = open || wakes ? undefined : ["unseen"];
+      const factor = content.secrecy.styleFactor[b.husband.style];
+      // a lover: someone she has gone all the way with and can text
+      const lovers = Object.values(b.patrons)
+        .filter((p) => p.memory.hasNumber && p.memory.tier >= 7)
+        .sort((x, y) => y.memory.affinity - x.memory.affinity || x.id.localeCompare(y.id));
+      if (lovers.length > 0 && h.traits.fidelity < N.slipOutFidelityBelow && ctx.rng.chance(N.slipOutChance)) {
+        const p = lovers[0]!;
+        const out = resolveBody(ctx, actById("sex"), { size: p.size, minutes: 30 });
+        p.memory.acts.sex = (p.memory.acts.sex ?? 0) + 1;
+        p.memory.interest = clamp(p.memory.interest + 6);
+        p.memory.affinity = clamp(p.memory.affinity + (out.came ? 8 : 3), -100, 100);
+        if (out.came) p.memory.orgasms += 1;
+        h.marriage.desire = clamp(h.marriage.desire - 2);
+        if (!open) {
+          b.secretActsToday += 1;
+          if (wakes) b.suspicion = clamp(b.suspicion + N.wakesSuspicion * factor);
+        } else b.power = clamp(b.power + content.secrecy.powerPerTold * 2);
+        ctx.log(open ? "log.night.slips_out.open" : wakes ? "log.night.empty_bed" : "log.night.slips_out", { name: `@name:${p.name}` }, tags);
+        ctx.emit("night:slipped_out", { patron: p.id, came: out.came, noticed: open || wakes });
+        return;
+      }
+      if (ctx.rng.chance(N.selfChance)) {
+        h.satisfied = 60;
+        h.arousal = clamp(h.arousal * 0.4);
+        ctx.log(open || wakes ? "log.night.self.heard" : "log.night.self", undefined, tags);
+        ctx.emit("night:self", { noticed: open || wakes });
+      }
+    },
+    10, // before sleep takes the edge off
+  );
 
   // Once she is used to more than he has, wanting him fades a little every day.
   api.events.on("day:end", (ctx) => {

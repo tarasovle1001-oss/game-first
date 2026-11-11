@@ -133,10 +133,7 @@ acts.forEach((a) => {
 });
 scenes.forEach((s) => need(`scene.${s.id}`));
 outfits.forEach((o) => need(`outfit.${o.id}`));
-latents.forEach((l) => {
-  need(`latent.${l.id}`);
-  need(`log.latent.${l.id}`);
-});
+latents.forEach((l) => need(`latent.${l.id}`));
 
 if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners) {
   console.error(`content: ${errors.length} problem(s)`);

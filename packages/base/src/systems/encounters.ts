@@ -77,10 +77,14 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
     act = drink ? actById("drink") : options[roll(options.length)]!;
   }
   if (isIntimate(act) && v.rounds >= p.stamina) return null; // he is spent for tonight
-  const loc = act.place === "private" ? privateRoomFor(state, engine) : HALL;
-  if (!loc) return null;
   const offer = p.approach === "pay" && act.tier >= 3 ? Math.round((p.traits.generosity * act.tier) / 4) : 0;
-  return { act: act.id, partner: p.id, loc, offer, pressure: v.pressure };
+  const at = (loc: string): ConsentInput => ({ act: act.id, partner: p.id, loc, offer, pressure: v.pressure });
+  if (!isIntimate(act)) return at(HALL);
+  // anything can happen right on the floor, it is just much harder for her. She steers it to where she minds least
+  const room = privateRoomFor(state, engine);
+  if (!room) return at(HALL);
+  const score = (i: ConsentInput) => engine.evaluate<ConsentInput>(CONSENT_FORMULA, state, i).total;
+  return score(at(HALL)) > score(at(room)) ? at(HALL) : at(room);
 }
 
 /** Ends the running encounter once its time is up (or right away when forced, e.g. at closing). */
@@ -235,8 +239,15 @@ export function runProposals(ctx: Ctx) {
     if (!isLight(act) && b.encounter) continue; // she is already with someone
     spoke += 1;
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
-    const verdict = verdictOf(res.total);
-    b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: input.act, loc: input.loc, verdict, seen: husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc), total: res.total, rows: res.rows });
+    let verdict = verdictOf(res.total);
+    // hesitating can go either way: the closer to "gladly", the surer the yes
+    let rolled: number | undefined;
+    if (verdict === "hesitant") {
+      const c = content.consent;
+      rolled = c.hesitantYesAtZero + ((1 - c.hesitantYesAtZero) * (res.total - c.hesitantAt)) / Math.max(1, c.eagerAt - c.hesitantAt);
+      if (!ctx.rng.chance(rolled)) verdict = "refuse";
+    }
+    b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: input.act, loc: input.loc, verdict, seen: husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc), total: res.total, rows: res.rows, ...(rolled === undefined ? {} : { rolled }) });
     if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
     const seen = husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc);
     ctx.emit("encounter:proposed", { patron: p.id, act: input.act, verdict, total: res.total, seen, rowIds: res.rows.map((r) => r.id) });
@@ -310,6 +321,7 @@ export function registerEncounters(api: ModApi) {
     const others = (bs(s).shift?.visits.length ?? 0) - 1;
     return p && i.loc === HALL && act.tier >= 3 && others > 0 ? -(100 - her(s).traits.openness) * c.witnesses : null;
   });
+  row("plain_sight", 40.5, (_s, i, act, p) => (p && isIntimate(act) && i.loc === HALL ? -c.inPlainSight : null));
   row("husband", 41, (s, i, act, p) => {
     if (!p || act.tier < 2) return null;
     const b = bs(s);
@@ -368,8 +380,6 @@ export function registerEncounters(api: ModApi) {
     if (s.where[WIFE] !== enc.loc || s.where[enc.patron] !== enc.loc) return "encounter participants are not in its room";
     const act = acts.get(enc.act);
     if (!act) return `encounter with unknown act "${enc.act}"`;
-    const room = content.rooms.find((r) => r.id === enc.loc);
-    if (act.place === "private" && !room?.tags.includes("private")) return `private act "${act.id}" in a public room`;
     return null;
   });
 }

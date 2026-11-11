@@ -1,6 +1,7 @@
 import type { Ctx, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, emptyLedger } from "../state";
+import { HALL, husbandSees } from "./places";
 
 export const BUY_SUPPLIES = "base/buy-supplies";
 export const REPAY_DEBT = "base/repay-debt";
@@ -94,6 +95,36 @@ export function registerEconomy(api: ModApi) {
       if (b.purseShare === 0) b.heroine.marriage.resent = clamp(b.heroine.marriage.resent + 0.5);
     }
     b.purseToday = 0;
+  });
+
+  // Something breaks: the coffee machine, the fridge, a pipe. It has to be fixed today.
+  api.events.on("phase:enter", (ctx, e) => {
+    if (e.payload!.phase !== "prep" || ctx.state.time.day < 3) return;
+    const t = bal.trouble;
+    if (!ctx.rng.chance(t.breakdownChancePerDay)) return;
+    const cost = ctx.rng.int(t.breakdownCost[0], t.breakdownCost[1]);
+    const what = ctx.rng.pick(["coffee_machine", "fridge", "pipe", "wiring"]);
+    addMoney(ctx, -cost, "repair");
+    bs(ctx.state).today.supplies += cost; // shows up in the day's costs
+    ctx.log(`log.trouble.${what}`, { cost });
+    ctx.emit("trouble:breakdown", { what, cost });
+  });
+  // Nobody at the till: she is in a back room, he cannot see the hall. Someone helps himself.
+  api.events.on("shift:tick", (ctx) => {
+    const b = bs(ctx.state);
+    const sh = b.shift;
+    if (!sh || !b.encounter || b.encounter.loc === HALL || husbandSees(ctx.state, HALL) || sh.income <= 0 || sh.visits.length < 2) return;
+    if (!ctx.rng.chance(bal.trouble.tillTheftChancePerTick)) return;
+    const taken = Math.min(b.money, Math.round((sh.income * ctx.rng.int(bal.trouble.tillTheftShare[0], bal.trouble.tillTheftShare[1])) / 100));
+    if (taken <= 0) return;
+    addMoney(ctx, -taken, "theft");
+    sh.stolen = (sh.stolen ?? 0) + taken;
+    ctx.emit("trouble:theft", { taken });
+  });
+  // He finds out when he counts the money.
+  api.events.on("shift:end", (ctx) => {
+    const sh = bs(ctx.state).shift;
+    if (sh?.stolen) ctx.log("log.trouble.theft", { taken: sh.stolen });
   });
 
   // Day summary: rent and interest land when the summary phase starts.

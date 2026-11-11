@@ -11,6 +11,11 @@ purse: # tips the men leave her for more than coffee: part goes into her purse, 
   moodAtNone: -3   # her mood per day when she keeps nothing of what she earned
   moodAtAll: 2
   actTipScale: 0.6 # overall size of those tips
+trouble: # things break, and an unwatched till gets robbed
+  breakdownChancePerDay: 0.07
+  breakdownCost: [120, 420]
+  tillTheftChancePerTick: 0.05 # per 10 minutes while she is away in a back room and he cannot see the hall
+  tillTheftShare: [10, 30]     # percent of tonight's takings
 debtLimit: 20000 # supplies can be bought on credit until the debt reaches this
 debtInterestPerDay: 0.008 # fraction of the debt added every day
 supplies:

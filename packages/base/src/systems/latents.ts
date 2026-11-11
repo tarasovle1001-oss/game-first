@@ -16,8 +16,10 @@ const RULES: Record<string, Rule> = {
   // other guests watching: cancels the "witnesses" wall and then some
   exhibitionist(state, input, act, _p, l) {
     const others = (bs(state).shift?.visits.length ?? 0) - 1;
-    if (input.loc !== HALL || act.tier < 3 || others <= 0) return null;
-    return (100 - bs(state).heroine.traits.openness) * content.consent.witnesses * l.strength;
+    if (input.loc !== HALL || act.tier < 3) return null;
+    const eyes = others > 0 ? (100 - bs(state).heroine.traits.openness) * content.consent.witnesses * l.strength : 0;
+    // on the floor in front of everyone is exactly her thing: most of that wall is gone
+    return eyes + (isIntimate(act) ? content.consent.inPlainSight * 0.8 : 0) || null;
   },
   submissive: (_s, input, _a, _p, l) => (input.pressure > 0 ? l.strength : null),
   size_queen(state, _i, act, p, l) {
@@ -33,7 +35,7 @@ export function registerLatents(api: ModApi) {
     "game:init",
     (ctx) => {
       const h = bs(ctx.state).heroine;
-      for (const l of content.latents) if (RULES[l.id] && ctx.rng.chance(l.chance)) h.latents[l.id] = { fired: 0, noticed: false };
+      for (const l of content.latents) if (RULES[l.id] && ctx.rng.chance(l.chance)) h.latents[l.id] = true;
     },
     -10,
   );
@@ -45,41 +47,16 @@ export function registerLatents(api: ModApi) {
     return RULES[l.id]!(state, input, actById(input.act), p, l);
   };
 
+  // One row per trait. Its id starts with "consent.latent.": an immersive UI shows such rows without naming them.
   for (const l of content.latents) {
     if (!RULES[l.id]) continue;
-    // two rows per trait: a named one once the player has figured it out, a vague one before that
     api.formulas.addFactor<ConsentInput>(CONSENT_FORMULA, {
       id: `consent.latent.${l.id}`,
       labelKey: `latent.${l.id}`,
       order: 50,
-      eval: (state, input) => (bs(state).heroine.latents[l.id]?.noticed ? valueOf(state, input, l) : null),
-    });
-    api.formulas.addFactor<ConsentInput>(CONSENT_FORMULA, {
-      id: `consent.latent.unknown.${l.id}`,
-      labelKey: "factor.consent.latent",
-      order: 51,
-      eval: (state, input) => (bs(state).heroine.latents[l.id]?.noticed === false ? valueOf(state, input, l) : null),
+      eval: (state, input) => valueOf(state, input, l),
     });
   }
-
-  // Each time a trait tips an accepted act in front of him (or once it is all in the open), he gets closer to seeing it.
-  api.events.on("encounter:proposed", (ctx, e) => {
-    const b = bs(ctx.state);
-    if (e.payload!.verdict === "refuse") return;
-    const { seen, rowIds } = e.payload as { seen: boolean; rowIds: string[] };
-    if (!seen && b.mode !== "open") return;
-    for (const l of content.latents) {
-      const mine = b.heroine.latents[l.id];
-      if (!mine || mine.noticed) continue;
-      if (!rowIds.includes(`consent.latent.unknown.${l.id}`)) continue;
-      mine.fired += 1;
-      if (mine.fired >= l.noticeAfter) {
-        mine.noticed = true;
-        ctx.log(`log.latent.${l.id}`);
-        ctx.emit("latent:noticed", { id: l.id });
-      }
-    }
-  });
 
   api.invariants.add("latents-known", (s) => {
     for (const id of Object.keys(bs(s).heroine.latents)) if (!RULES[id]) return `unknown latent "${id}"`;

@@ -43,6 +43,15 @@ export const balanceSchema = z
     rentPerDay: z.number().min(0),
     // what she keeps of the tips men leave her: the options offered, the default, and how each sits with her (mood per day)
     purse: z.object({ shares: z.array(z.number().min(0).max(1)).min(1), start: z.number().min(0).max(1), moodAtNone: z.number(), moodAtAll: z.number(), actTipScale: z.number().min(0) }).strict(),
+    // things break, and an unwatched till gets robbed
+    trouble: z
+      .object({
+        breakdownChancePerDay: z.number().min(0).max(1),
+        breakdownCost: range,
+        tillTheftChancePerTick: z.number().min(0).max(1), // while she is in a back room and he cannot see the hall
+        tillTheftShare: range, // percent of tonight's takings
+      })
+      .strict(),
     debtLimit: z.number().min(0), // supplies can be bought on credit until the debt reaches this
     debtInterestPerDay: z.number().min(0), // fraction, 0.01 = 1%
     supplies: z.object({ packCost: z.number().positive(), packServings: z.number().int().positive() }).strict(),
@@ -99,6 +108,8 @@ export const consentSchema = z
   .object({
     eagerAt: z.number(), // total >= this: she is glad to
     hesitantAt: z.number(), // total >= this: she agrees, reluctantly; below: refusal
+    hesitantYesAtZero: z.number().min(0).max(1), // chance she says yes at the very bottom of the hesitant zone; 1 at its top
+    inPlainSight: z.number(), // intimate acts on the cafe floor instead of a back room
     proposalsPerTick: z.number().int().positive(),
     askChancePerHour: z.number().min(0), // base chance that a guest makes a move within an hour
     askChancePerInterest: z.number().min(0), // added per point of his interest
@@ -128,6 +139,17 @@ export const consentSchema = z
   })
   .strict();
 
+export const nightSchema = z
+  .object({
+    restlessArousal: z.number(), // she cannot sleep above this arousal when the evening left her unsatisfied
+    selfChance: z.number().min(0).max(1), // she takes care of herself in the bathroom
+    slipOutChance: z.number().min(0).max(1), // she goes to a lover instead, if she has one
+    slipOutFidelityBelow: z.number(),
+    husbandWakesChance: z.number().min(0).max(1),
+    wakesSuspicion: z.number(),
+  })
+  .strict();
+
 const zoneFit = z.object({ base: z.number().positive(), perStretch: z.number().min(0) }).strict();
 export const bodySchema = z
   .object({
@@ -139,6 +161,7 @@ export const bodySchema = z
     skillGain: z.number().min(0), // per practice, shrinking as the skill grows
     orgasmAt: z.number(), // climax meter needed for her to come
     satisfiedCoolPerTick: z.number().min(0),
+    night: nightSchema,
     sizeTasteGain: z.number().min(0), // taste for size gained per orgasm with someone bigger than her husband
     husband: z
       .object({
@@ -146,6 +169,8 @@ export const bodySchema = z
         stamina: z.number().int().positive(),
         minutes: z.number().positive(), // how long he lasts
         style: z.enum(["naive", "jealous", "encouraging"]),
+        prematureChance: z.number().min(0).max(1), // any night, on top of everything else
+        prematureChancePerDeniedNight: z.number().min(0),
         shorterPerDeniedNight: z.number().min(0), // share of his minutes lost per night he has gone without
         skillHalvesAt: z.number().positive(), // her skill at which he lasts half as long
         tooSoonBelow: z.number(), // minutes: below this he finishes before it starts
@@ -193,7 +218,7 @@ export const outfitSchema = z
     openness: z.number().min(0).max(100), // she wears it on her own from this openness up
   })
   .strict();
-export const latentSchema = z.object({ id, chance: z.number().min(0).max(1), noticeAfter: z.number().int().positive(), strength: z.number() }).strict();
+export const latentSchema = z.object({ id, chance: z.number().min(0).max(1), strength: z.number() }).strict();
 export const mannersSchema = z
   .object({
     // what the husband asked her to be like tonight: consent shift with guests and share added to tips

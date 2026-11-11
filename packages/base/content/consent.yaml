@@ -1,6 +1,8 @@
 # Tuning of the consent formula. Every number here is a visible row in the debug panel.
 eagerAt: 20      # total >= this: she is glad to
 hesitantAt: 0    # total >= this: she agrees, reluctantly; below: she refuses
+hesitantYesAtZero: 0.5 # when she hesitates it can go either way: this chance at total 0, rising to certain at eagerAt
+inPlainSight: 45       # how much harder an intimate act is on the cafe floor than in a back room
 proposalsPerTick: 3 # how many guests can speak up within one tick (only one of them can take her off the floor)
 askChancePerHour: 0.5 # base chance that a guest makes a move within an hour
 askChancePerInterest: 0.016 # added per point of his interest

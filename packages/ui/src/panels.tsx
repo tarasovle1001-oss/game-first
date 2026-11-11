@@ -11,6 +11,8 @@ export interface Common {
   state: GameState;
   t: T;
   lang: Lang;
+  /** Transparent mode: show what the husband could not know (unseen log lines, her hidden sides, every answer). */
+  open?: boolean;
 }
 
 export const actionLabel = (a: Action, t: T, lang: Lang) => {
@@ -98,7 +100,7 @@ export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
 
 // ---------------------------------------------------------------- scene
 
-export function ScenePanel({ state, t, lang, scene }: Common & { scene: SceneDesc | null }) {
+export function ScenePanel({ state, t, lang, scene, open }: Common & { scene: SceneDesc | null }) {
   const b = bs(state);
   const layout = scene ? (content.scenes.find((s) => s.id === scene.type) ?? content.scenes.find((s) => s.id === "idle")!) : null;
   const wifeHere = state.where[WIFE] === state.where[HUSBAND];
@@ -124,7 +126,7 @@ export function ScenePanel({ state, t, lang, scene }: Common & { scene: SceneDes
     <div className="scene">
       <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
       {!wifeHere && <div className="hint">{t("ui.not_here")}</div>}
-      {record && <WhyLine record={record} state={state} t={t} lang={lang} />}
+      {record && <WhyLine record={record} state={state} t={t} lang={lang} open={open} />}
     </div>
   );
 }
@@ -134,7 +136,7 @@ function fmt(v: number) {
 }
 
 /** One line "who, what, verdict" + the three biggest reasons; the full table opens on click. */
-export function WhyLine({ record, state, t, lang }: Common & { record: ProposalRecord }) {
+export function WhyLine({ record, state, t, lang, open: transparent }: Common & { record: ProposalRecord }) {
   const [open, setOpen] = useState(false);
   const p = bs(state).patrons[record.patron];
   const top = [...record.rows].sort((a, c) => Math.abs(c.value) - Math.abs(a.value)).slice(0, 3);
@@ -150,6 +152,7 @@ export function WhyLine({ record, state, t, lang }: Common & { record: ProposalR
         <span className="pill">
           {t(`verdict.${record.verdict}`)} {fmt(record.total)}
         </span>
+        {record.rolled !== undefined && <span className="muted small">{t("verdict.rolled", { percent: Math.round(record.rolled * 100) })}</span>}
         <button className="link" onClick={() => setOpen(!open)}>
           {open ? t("ui.why.less") : t("ui.why.more")}
         </button>
@@ -157,7 +160,7 @@ export function WhyLine({ record, state, t, lang }: Common & { record: ProposalR
       <div className={open ? "rows open" : "rows"}>
         {rows.map((r) => (
           <span key={r.id} className="row">
-            {t(r.labelKey)} <b className={r.value < 0 ? "neg" : "pos"}>{fmt(r.value)}</b>
+            {t(!transparent && r.id.startsWith("consent.latent.") ? "factor.consent.latent" : r.labelKey)} <b className={r.value < 0 ? "neg" : "pos"}>{fmt(r.value)}</b>
           </span>
         ))}
       </div>
@@ -227,7 +230,7 @@ function Bar({ label, value, tone }: { label: string; value: number; tone?: stri
   );
 }
 
-export function HeroineTab({ state, t }: Common) {
+export function HeroineTab({ state, t, open }: Common) {
   const h = bs(state).heroine;
   const tones = { energy: "green", mood: "green", arousal: "pink", drunk: "amber" };
   return (
@@ -246,17 +249,19 @@ export function HeroineTab({ state, t }: Common) {
       <div>
         {t("ui.outfit")}: <b>{t(`outfit.${h.outfit}`)}</b> · {t(`directive.${bs(state).directive}`)}
       </div>
-      <div className="cap gap">{t("ui.latents")}</div>
-      {Object.entries(h.latents).filter(([, l]) => l.noticed).length === 0 && <div className="muted">{t("ui.latents.none")}</div>}
-      <div className="chips">
-        {Object.entries(h.latents)
-          .filter(([, l]) => l.noticed)
-          .map(([id]) => (
-            <span key={id} className="chip latent">
-              {t(`latent.${id}`)}
-            </span>
-          ))}
-      </div>
+      {open && (
+        <>
+          <div className="cap gap">{t("ui.latents")}</div>
+          {Object.keys(h.latents).length === 0 && <div className="muted">{t("ui.latents.none")}</div>}
+          <div className="chips">
+            {Object.keys(h.latents).map((id) => (
+              <span key={id} className="chip latent">
+                {t(`latent.${id}`)}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
       {Object.keys(h.tastes.acts).length > 0 && (
         <>
           <div className="cap gap">{t("ui.tastes")}</div>
@@ -400,7 +405,7 @@ export function WhyTab({ state, t, lang, debug }: Common & { debug: boolean }) {
   return (
     <div className="why-list">
       {list.map((p, i) => (
-        <WhyLine key={`${p.day}-${p.tick}-${p.patron}-${i}`} record={p} state={state} t={t} lang={lang} />
+        <WhyLine key={`${p.day}-${p.tick}-${p.patron}-${i}`} record={p} state={state} t={t} lang={lang} open={debug} />
       ))}
     </div>
   );
