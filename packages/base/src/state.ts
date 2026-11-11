@@ -308,6 +308,8 @@ export interface BaseState {
   bareOwn?: boolean; // she came down like that on her own
   today: Ledger;
   history: Ledger[]; // last days, newest last
+  /** How she took the last thing asked of her: shown as a card under the scene. Drives nothing. */
+  outcome?: { turn: number; day: number; minute: number; how: "wants" | "agrees" | "unsure" | "away" | "upset"; who: string; seen: boolean };
   /** For the inspector: the reasons numbers moved during the last action. Drives nothing. */
   trace?: { turn: number; why: { k: string; r: string; a: number }[] };
 }

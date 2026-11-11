@@ -2,7 +2,7 @@
 // Root = what the phase offers; "her" = talk, touch, ask, by section; a group = one kind of action with many targets.
 // Items are cards with a hotkey, a title and (where the texts have one) a line of explanation.
 import { useEffect, useState } from "react";
-import { DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, renderLog } from "@tc/base";
+import { HEAR, CAUGHT_STOP, CAUGHT_WATCH, REACT_APPROVE, REACT_STOP, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, renderLog } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { engine } from "./game";
@@ -17,6 +17,9 @@ const SECTION: Record<string, string> = {
   [TELL]: "allow", [ALLOW]: "allow", "base/directive": "want", "base/order": "want", [WISH]: "want", [DARE]: "dare",
   [ABOUT]: "about", [STANCE]: "about", [PROMISE]: "about", [PRESS]: "sex",
 };
+// things that take the whole column until he answers, and things happening in front of him that he may answer
+const SITUATION = new Set<string>([ANSWER, PERMIT, DEAL, HEAR, CAUGHT_STOP, CAUGHT_WATCH]);
+const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE]);
 const SECTIONS = ["chat", "touch", "sex", "ask", "want", "dare", "allow", "about"] as const;
 const LETTERS = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const sectionOf = (a: Action) => (a.type === TALK ? (a.payload?.group as string) : SECTION[a.type]);
@@ -54,12 +57,13 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   const waits = all.filter(isWait);
   const advance = all.find((a) => a.type === CORE_ADVANCE);
   const bed = all.filter((a) => a.type === BED);
-  const answers = all.filter((a) => a.type === ANSWER || a.type === PERMIT || a.type === DEAL);
+  const answers = all.filter((a) => SITUATION.has(a.type));
+  const urgent = all.filter((a) => URGENT.has(a.type));
   const withHer = all.filter((a) => sectionOf(a) !== undefined);
   const herSecs = SECTIONS.filter((g) => withHer.some((a) => sectionOf(a) === g));
   const herName = b.heroine.name ?? t("role.wife");
   const herNear = state.where[WIFE] === state.where[HUSBAND];
-  const other = all.filter((a) => !isWait(a) && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== ANSWER && a.type !== PERMIT && a.type !== DEAL && sectionOf(a) === undefined);
+  const other = all.filter((a) => !isWait(a) && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && !SITUATION.has(a.type) && !URGENT.has(a.type) && sectionOf(a) === undefined);
   const groups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
   const direct = groups.filter(([, list]) => list.length < 3).flatMap(([, list]) => list);
   const folders = groups.filter(([, list]) => list.length >= 3);
@@ -153,7 +157,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
         <div className="m-title warn">{t("ui.situation")}</div>
         <div className="m-context">{lines.length > 0 ? lines.map((e, i) => <p key={i}>{renderLog(e, t, lang)}</p>) : t("ui.her.came")}</div>
         {answers.map((a, i) => (
-          <Item key={i} hot={num(i)} title={t(`action.answer.${a.payload!.kind}.${a.payload!.say}`)} onClick={() => act(a)} />
+          <Item key={i} hot={num(i)} title={a.type === ANSWER || a.type === PERMIT || a.type === DEAL ? t(`action.answer.${a.payload!.kind}.${a.payload!.say}`) : label(a)} onClick={() => act(a)} />
         ))}
       </div>
     );
@@ -256,6 +260,10 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
       <div className="muted small m-hint">
         {phase === "prep" && b.day?.busy ? t("ui.busy", { what: t(`day.${b.day.busy.id}`), minutes: b.day.busy.left }) : phase === "shift" && waits.length === 0 && advance ? t("ui.closing") : t(`ui.act.hint.${phase}`)}
       </div>
+      {urgent.length > 0 && <div className="m-section warn">{t("ui.urgent")}</div>}
+      {urgent.map((a, i) => (
+        <Item key={`u${i}`} tone="strong" title={label(a)} onClick={() => act(a)} />
+      ))}
       {waits.length > 0 && (
         <div className="mwait">
           <div className="mi-title">{t("ui.wait")}</div>

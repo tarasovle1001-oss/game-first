@@ -836,3 +836,26 @@ header { padding: 6px 12px; gap: 10px; align-items: center; }
 .rg-who .husband { background: var(--husband); }
 .rg-who .wife { background: var(--wife); }
 .rg-who .patron { background: #9a6a22; }
+
+/* how she took it */
+.outcome { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); border-left-width: 4px; background: var(--panel); }
+.outcome p { margin: 4px 0 0; font-style: italic; }
+.o-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.o-head b { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.82rem; }
+.o-age { margin-left: auto; }
+.o-wants { border-left-color: var(--good); background: #16241d; } .o-wants b { color: var(--good); }
+.o-agrees { border-left-color: #7fbf9a; } .o-agrees b { color: #9fd3b5; }
+.o-unsure { border-left-color: var(--accent); } .o-unsure b { color: var(--accent); }
+.o-away { border-left-color: var(--bad); background: #261819; } .o-away b { color: var(--bad); }
+.o-upset { border-left-color: #c0392b; background: #2d1516; } .o-upset b { color: #ff7b6e; }
+.m-section.warn { color: var(--bad); }
+
+/* "what if" */
+.calc { padding: 8px 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+.calc > summary { cursor: pointer; }
+.calc-pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.calc-pick select, .calc-pick input { font: inherit; font-size: 0.82rem; color: inherit; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; max-width: 100%; }
+.calc-pick input { width: 5em; }
+.calc-total { margin-bottom: 4px; }
+.calc-total.verdict-eager b { color: var(--good); } .calc-total.verdict-hesitant b { color: var(--accent); } .calc-total.verdict-refuse b { color: var(--bad); }
+.calc .rows.open { font-size: 0.8rem; }

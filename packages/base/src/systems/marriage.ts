@@ -2,6 +2,7 @@
 // and through the same body rules, so a husband who does little for her shows up in the numbers.
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
+import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { fitOf, orgasm, pleasureFor, resolveBody, useBody } from "./body";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
@@ -98,6 +99,7 @@ export function registerMarriage(api: ModApi) {
     const verdict = verdictOf(total);
     b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: actId, loc: BEDROOM, verdict, seen: true, total, rows: bonus ? [...res.rows, { id: `consent.${why}`, labelKey: `factor.consent.${why}`, value: bonus }] : res.rows });
     if (b.proposals.length > 12) b.proposals.shift();
+    setOutcome(ctx, outcomeOf(verdict), HUSBAND);
     return verdict;
   };
   /** Starts or changes what they are doing: her body takes it, the scene picture follows. */
@@ -235,7 +237,9 @@ export function registerMarriage(api: ModApi) {
         }
         b.night!.scene = "cold_back";
         feel(ctx, 0, 1);
-        ctx.log("log.husband.refuse", { act: `action.night.${act.id}` });
+        // the "no" says why: whatever pulled hardest against it
+        const why = refusalKey("log.husband.refuse", b.proposals.at(-1)?.rows ?? []);
+        ctx.log(why, { act: `action.night.${act.id}` }, slurTags(ctx.state, why));
         ctx.emit("husband:refused", { act: act.id });
         return;
       }
@@ -265,7 +269,9 @@ export function registerMarriage(api: ModApi) {
         looseSaid: false,
       };
       setAct(ctx, act.id);
-      ctx.log("log.bed.start", { act: `act.${act.id}` });
+      // a yes she had to talk herself into does not look like one she was waiting for
+      const start = verdict === "hesitant" ? "log.bed.start.hesitant" : "log.bed.start";
+      ctx.log(start, { act: `act.${act.id}` }, slurTags(ctx.state, start));
       ctx.emit("bed:started", { act: act.id });
     },
   });

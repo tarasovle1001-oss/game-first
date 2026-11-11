@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { inspect, annoyedLevel, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
-import type { DeltaRow, DeltaVia, Patron, ProposalRecord } from "@tc/base";
+import { CONSENT_FORMULA, verdictOf, inspect, annoyedLevel, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
+import type { ConsentInput, DeltaRow, DeltaVia, Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
 import { renderSchematic } from "@tc/schematics";
@@ -97,7 +97,11 @@ function kindOf(key: string, params: Record<string, unknown> | undefined): "mone
 }
 const MONEY_KEYS = new Set(["tip", "money", "cost", "offer", "price", "income", "rent", "amount"]);
 /** A log line with its names, acts and sums picked out: every guest has his own colour, acts are pink, money is gold. */
-function richLine(e: { key: string; params?: Record<string, unknown> }, t: T, lang: Lang) {
+/** Drunk: what she says inside the quotes trails off. The narration around it stays sober. */
+const slur = (text: string) =>
+  text.replace(/"([^"]+)"/g, (_m, inner: string) => `"${inner.replace(/, /, "... ").replace(/([^.!?…])[.!]+(\s|$)/g, "$1...$2").replace(/([^.!?…])$/, "$1...")}"`);
+
+function richLine(e: { key: string; params?: Record<string, unknown>; tags?: string[] }, t: T, lang: Lang) {
   const spans: { text: string; cls: string; hue?: number }[] = [];
   const params: Record<string, string | number> = {};
   for (const [k, v] of Object.entries(e.params ?? {})) {
@@ -110,7 +114,8 @@ function richLine(e: { key: string; params?: Record<string, unknown> }, t: T, la
       spans.push(span);
     } else params[k] = typeof v === "string" ? t(v) : (v as number);
   }
-  const text = t(e.key, params);
+  const plain = t(e.key, params);
+  const text = e.tags?.includes("slur") ? slur(plain) : plain;
   return text.split(/(\u0001\d+\u0002)/).map((part, i) => {
     const m = /\u0001(\d+)\u0002/.exec(part);
     if (!m) return <span key={i}>{part}</span>;
@@ -515,6 +520,96 @@ export function HerCard({ state, t, open }: Common) {
         </div>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- how she took it
+
+/** The card under the scene: how she took the last thing asked of her, in one coloured line, and what she said. */
+export function OutcomeCard({ state, t, lang, open }: Common) {
+  const o = bs(state).outcome;
+  if (!o || (!o.seen && !open)) return null;
+  const lines = state.log.filter((e) => e.turn === o.turn && e.day === o.day && e.minute === o.minute && (open || !e.tags?.includes("unseen")) && !e.tags?.includes("thought")).slice(-3);
+  if (lines.length === 0) return null;
+  const mins = (state.time.day - o.day) * 1440 + state.time.minute - o.minute;
+  const age = mins <= 0 || o.turn === state.turn ? t("ui.outcome.now") : mins < 1440 ? t("ui.outcome.ago", { n: mins }) : t("ui.outcome.days", { n: Math.floor(mins / 1440) });
+  return (
+    <div className={`outcome o-${o.how}`}>
+      <div className="o-head">
+        <b>{t(`ui.outcome.${o.how}`)}</b>
+        <span className="muted small">{o.who === HUSBAND ? t("ui.outcome.you") : t("ui.outcome.with", { name: who(o.who, state, t, lang) })}</span>
+        <span className="muted small o-age">{age}</span>
+      </div>
+      {lines.map((e, i) => (
+        <p key={i}>{richLine(e, t, lang)}</p>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------- "what if": the consent formula on demand
+
+/** Pick any act, any partner, any place: the rows of her answer right now, without waiting for it to happen. */
+export function ConsentCalc({ state, t, lang }: Common) {
+  const b = bs(state);
+  const [act, setAct] = useState(content.acts.find((a) => a.tier >= 2)?.id ?? content.acts[0]!.id);
+  const [partner, setPartner] = useState<string>(HUSBAND);
+  const [loc, setLoc] = useState<string>("");
+  const [offer, setOffer] = useState(0);
+  const here = b.shift?.visits.map((v) => v.patron) ?? [];
+  const partners = [HUSBAND, ...here, ...Object.values(b.lodgers).map((l) => l.patron).filter((id) => !here.includes(id))];
+  const who = partners.includes(partner) ? partner : HUSBAND;
+  const where = loc || state.where[WIFE] || "";
+  const res = engine.evaluate<ConsentInput>(CONSENT_FORMULA, state, { act, partner: who, loc: where, offer, pressure: 0 });
+  const verdict = verdictOf(res.total);
+  return (
+    <details className="calc">
+      <summary className="cap">{t("calc.title")}</summary>
+      <div className="calc-pick">
+        <select value={act} onChange={(e) => setAct(e.target.value)}>
+          {content.acts.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.tier} · {t(`act.${a.id}`)}
+            </option>
+          ))}
+        </select>
+        <select value={who} onChange={(e) => setPartner(e.target.value)}>
+          {partners.map((id) => (
+            <option key={id} value={id}>
+              {id === HUSBAND ? t("ui.you") : b.patrons[id] ? patronName(b.patrons[id]!.name, lang) : id}
+            </option>
+          ))}
+        </select>
+        <select value={where} onChange={(e) => setLoc(e.target.value)}>
+          {engine.locations().map((l) => (
+            <option key={l.id} value={l.id}>
+              {t(l.nameKey)}
+            </option>
+          ))}
+        </select>
+        {who !== HUSBAND && (
+          <label className="small muted">
+            {t("calc.offer")} <input type="number" min={0} max={5000} value={offer} onChange={(e) => setOffer(Math.max(0, Number(e.target.value) || 0))} />
+          </label>
+        )}
+      </div>
+      <div className={`calc-total verdict-${verdict}`}>
+        <b>{t(`verdict.${verdict}`)}</b> {fmt(res.total)}
+        <span className="muted small">
+          {" "}
+          · {t("calc.need", { yes: content.consent.hesitantAt, glad: content.consent.eagerAt })}
+        </span>
+      </div>
+      <div className="rows open">
+        {[...res.rows]
+          .sort((a, c) => Math.abs(c.value) - Math.abs(a.value))
+          .map((r) => (
+            <span key={r.id} className="row">
+              {t(r.labelKey)} <b className={r.value < 0 ? "neg" : "pos"}>{fmt(r.value)}</b>
+            </span>
+          ))}
+      </div>
+    </details>
   );
 }
 

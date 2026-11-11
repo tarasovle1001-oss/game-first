@@ -8,7 +8,7 @@ import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
 import { loadPack, packInfo, pictureFor } from "./pack";
-import { actionLabel, HerCard, InspectorBlock, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
+import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
 import { ActionMenu } from "./menu";
 import "./style.css";
 
@@ -230,7 +230,9 @@ function App() {
 
         <section className="col-focus">
           {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
+          {state.time.phase !== "summary" && <OutcomeCard {...common} />}
           {inspector && state.time.phase !== "summary" && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
+          {inspector && state.time.phase !== "summary" && <ConsentCalc {...common} />}
           <div className="tabs">
             {(["her", "you", "why", "phone", "stats"] as Tab[]).map((k) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(tab === k ? "none" : k)}>

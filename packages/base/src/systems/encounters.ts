@@ -2,6 +2,7 @@
 // Every row of that formula is named and visible; mods add rows with api.formulas.addFactor(CONSENT_FORMULA, ...).
 import type { Ctx, EngineView, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
+import { outcomeOf, refusalWhy, setOutcome } from "./voice";
 import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Encounter, Patron, Verdict, Visit } from "../state";
@@ -283,6 +284,7 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   const b = bs(ctx.state);
   const act = actById(input.act);
   const eager = verdict === "eager";
+  if (!isLight(actById(input.act)) || actById(input.act).tier >= 2) setOutcome(ctx, outcomeOf(verdict), p.id, husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc) || bs(ctx.state).mode === "open");
   const k = eager ? 1 : 0.5; // reluctant yes: she gets half of the good out of it
   const e = act.effects;
 
@@ -387,6 +389,13 @@ function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
   b.heroine.traits.confidence = clamp(b.heroine.traits.confidence + 0.2);
   const seen = husbandSees(ctx.state, HALL) || b.mode === "open"; // he asks on the floor, wherever he wanted to go
   ctx.log(variantKey(`log.act.${act.id}.refuse`, (n) => ctx.rng.int(0, n - 1)), { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip: 0 }, seen ? undefined : ["unseen"]);
+  // past the lightest things a "no" has a reason, and it shows
+  const last = b.proposals.at(-1);
+  if (act.tier >= 2 && last && last.patron === p.id && last.act === act.id) {
+    const why = `log.refuse.why.${refusalWhy(last.rows)}`;
+    if (content.locales.ru?.[why] !== undefined) ctx.log(why, { name: `@name:${p.name}` }, seen ? undefined : ["unseen"]);
+  }
+  setOutcome(ctx, "away", p.id, seen);
 
   const cool = (interest: number, affinity: number) => {
     p.memory.interest = clamp(p.memory.interest + interest);

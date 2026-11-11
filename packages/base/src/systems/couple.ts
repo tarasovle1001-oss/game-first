@@ -10,6 +10,7 @@ import { actById, CONSENT_FORMULA, endEncounter } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { annoyedLevel } from "./annoy";
+import { setOutcome, slurTags, voiced } from "./voice";
 import { HALL, husbandSees } from "./places";
 
 export const TALK = "base/talk";
@@ -132,6 +133,7 @@ export function registerCouple(api: ModApi) {
       const b = bs(state);
       if (!together(state)) return [];
       const out = T.options.filter((o) => !b.talked.includes(o.id) && (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
+      if (!b.talked.includes("how_are_you")) out.unshift({ type: TALK, payload: { do: "how_are_you", group: "chat" } });
       if (!b.talked.includes("where_we_stand")) out.push({ type: TALK, payload: { do: "where_we_stand", group: "chat" } });
       if (state.time.phase === "night" && !b.talked.includes("how_tonight")) out.push({ type: TALK, payload: { do: "how_tonight", group: "chat" } });
       return out;
@@ -141,6 +143,20 @@ export function registerCouple(api: ModApi) {
       const h = b.heroine;
       const what = action.payload!.do as string;
       b.talked.push(what);
+      if (what === "how_are_you") {
+        // "How are you?": the answer is whatever is uppermost in her right now
+        const sore = Object.values(h.sore ?? {}).some((v) => v >= 40);
+        const level = annoyedLevel(ctx.state);
+        const key =
+          h.drunk >= 50 ? "drunk" : level === "done" ? "fedup" : h.energy < 25 ? "tired" : h.marriage.resent >= 45 ? "resent" : level === "tired" ? "annoyed" : sore ? "sore" : h.mood < 30 ? "low" : h.arousal >= 60 && h.marriage.desire >= 50 ? "wanting" : h.mood >= 72 ? "glad" : "fine";
+        const when = ctx.state.time.phase === "prep" ? "prep" : ctx.state.time.phase === "night" ? "night" : "shift";
+        ctx.log(`log.talk.how.${key}`);
+        if (key === "fine" || key === "glad") ctx.log(`log.talk.how.when.${when}`);
+        changeHeroine(ctx, "mood", key === "fedup" ? 0 : 1, "husband");
+        setOutcome(ctx, key === "fedup" ? "upset" : key === "resent" || key === "low" || key === "annoyed" ? "unsure" : "agrees", HUSBAND);
+        ctx.emit("couple:talk", { do: what, ok: true });
+        return;
+      }
       if (what === "where_we_stand") {
         // an honest reading of the marriage, in her words
         const m = h.marriage;
@@ -174,7 +190,9 @@ export function registerCouple(api: ModApi) {
       const level = annoyedLevel(ctx.state, "him");
       if (o.group === "touch" && level !== "calm") {
         applyFx(ctx, level === "done" ? { mood: -6, resent: 1 } : { mood: -3 }, "had enough");
-        ctx.log(`log.annoyed.${level}.${ctx.rng.int(1, 2)}`);
+        const no = `log.annoyed.${level}.${ctx.rng.int(1, 2)}`;
+        ctx.log(no, undefined, slurTags(ctx.state, no));
+        setOutcome(ctx, level === "done" ? "upset" : "away", HUSBAND);
         ctx.emit("couple:talk", { do: o.id, ok: false });
         return;
       }
@@ -183,7 +201,9 @@ export function registerCouple(api: ModApi) {
       const need = o.needs ? o.needs.min + (publicNow ? (o.needs.publicExtra ?? 0) : 0) : 0;
       const ok = !o.needs || statOf(ctx.state, o.needs.stat) >= need;
       applyFx(ctx, ok ? scaled(o.effects, talkScale(ctx.state)) : (o.fail ?? {}), "husband");
-      ctx.log(`log.talk.${o.id}${ok ? "" : ".no"}`);
+      const line = voiced(ctx.state, `log.talk.${o.id}${ok ? "" : ".no"}`);
+      ctx.log(line, undefined, slurTags(ctx.state, line));
+      setOutcome(ctx, !ok ? "away" : (o.effects.arousal ?? 0) >= 4 ? "wants" : "agrees", HUSBAND);
       // a husband who has gone without long enough can lose it from a kiss
       const TC = T.touchCum;
       if (ok && o.group === "touch" && TC.from.includes(o.id) && b.denied >= TC.fromDenied && ctx.rng.chance(Math.min(TC.max, TC.base + b.denied * TC.perDenied))) {

@@ -207,3 +207,5 @@ export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryO
 export { pleasureFor, sizeClass } from "./systems/body";
 export { inspect, note, tracer, resetTracer } from "./systems/inspect";
 export type { DeltaRow, DeltaVia, DeltaGroup, Inspection } from "./systems/inspect";
+export { voiceOf, refusalWhy } from "./systems/voice";
+export type { Outcome, Voice } from "./systems/voice";
