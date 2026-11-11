@@ -88,17 +88,47 @@ export function registerHotel(api: ModApi) {
       p.memory.interest = Math.min(100, p.memory.interest + act.effects.interest);
       p.memory.affinity = Math.min(100, p.memory.affinity + act.effects.affinity);
       changeHeroine(ctx, "arousal", act.effects.arousal, act.id);
+      let hours = 0;
       if (isIntimate(act)) {
         const out = resolveBody(ctx, act, { size: p.size, minutes: act.minutes });
         p.memory.sizeKnown = true;
         if (out.came) p.memory.orgasms += 1;
+        // it was good, and she likes him: she does not come back down. One more time for as long as he has it in him
+        const T = H.towels;
+        if (verdict === "eager" && (out.came || p.memory.affinity >= T.hoursAffinity) && ctx.rng.chance(T.hoursChance)) {
+          hours = 1;
+          for (let round = 1; round < Math.max(2, p.stamina); round++) {
+            const more = content.acts.filter((a) => !a.only && isIntimate(a) && a.tier <= p.memory.tier + 1 && a.tier >= Math.min(5, p.memory.tier));
+            const next = more.length ? ctx.rng.pick(more) : null;
+            if (!next || verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { ...input, act: next.id }).total + content.consent.scene.goingBonus) === "refuse") break;
+            const again = resolveBody(ctx, next, { size: p.size, minutes: next.minutes });
+            p.memory.tier = Math.max(p.memory.tier, next.tier);
+            p.memory.acts[next.id] = (p.memory.acts[next.id] ?? 0) + 1;
+            if (again.came) p.memory.orgasms += 1;
+            p.memory.affinity = Math.min(100, p.memory.affinity + 3);
+            hours += 1;
+          }
+          changeHeroine(ctx, "energy", -T.hoursEnergy * hours, "hours upstairs");
+          b.heroine.frustration = Math.max(0, b.heroine.frustration - 20);
+          if (b.night) {
+            b.night.asked = true; // the bed next to him stays empty: nothing is going to happen in it tonight
+            b.night.wants = false;
+          }
+          if (open) b.power = Math.min(100, b.power + T.hoursPower);
+          else b.suspicion = Math.min(100, b.suspicion + T.hoursSuspicion * hours * content.secrecy.styleFactor[b.husband.style]);
+        }
       }
       const tip = Math.round((act.tip * p.traits.generosity) / 50);
       if (tip > 0) addHerTips(ctx, tip);
       if (!open) b.secretActsToday += 1;
-      ctx.log(open ? "log.towels.open" : "log.towels.long", { room: `loc.${room}`, name, act: `act.${act.id}` });
-      if (!open) ctx.log("log.towels.truth", { name, act: `act.${act.id}` }, ["unseen"]);
-      ctx.emit("hotel:towels", { patron: p.id, act: act.id });
+      if (hours > 0) {
+        ctx.log(open ? "log.towels.hours.open" : "log.towels.hours", { room: `loc.${room}`, name, hours });
+        if (!open) ctx.log("log.towels.hours.truth", { name, hours }, ["unseen"]);
+      } else {
+        ctx.log(open ? "log.towels.open" : "log.towels.long", { room: `loc.${room}`, name, act: `act.${act.id}` });
+        if (!open) ctx.log("log.towels.truth", { name, act: `act.${act.id}` }, ["unseen"]);
+      }
+      ctx.emit("hotel:towels", { patron: p.id, act: act.id, hours });
     },
     -40,
   );

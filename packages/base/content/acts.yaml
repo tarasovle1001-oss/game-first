@@ -244,6 +244,39 @@
   zones: [hands]
   only: husband
   motives: [power, giving]
+- id: rimming_him
+  tier: 7
+  base: -40
+  scene: rimming_him
+  place: private
+  effects: { arousal: 6, mood: 0, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [mouth]
+  only: husband
+  motives: [giving]
+- id: dildo_him
+  tier: 7
+  base: -40
+  scene: dildo_him
+  place: private
+  effects: { arousal: 10, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 20
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power, giving]
+- id: fisting_him
+  tier: 9
+  base: -52
+  scene: fisting_him
+  place: private
+  effects: { arousal: 14, mood: 2, energy: -4, interest: 0, affinity: 0 }
+  minutes: 25
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
 - id: pegging
   tier: 8
   base: -46

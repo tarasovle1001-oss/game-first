@@ -60,7 +60,7 @@ export const balanceSchema = z
     // clock: minute of the day each phase starts at (for the log and the top bar)
     clock: z.object({ prep: z.number().int(), night: z.number().int(), summary: z.number().int() }).strict(),
     loan: z.object({ everyDays: z.number().int().positive(), firstDueDay: z.number().int().positive(), share: z.number(), min: z.number(), lateFee: z.number(), visitsAfterMiss: z.number().int(), forgivePerTier: z.number(), consent: z.number(), suspicion: z.number(), lender: z.object({ size: z.number(), persistence: z.number(), generosity: z.number(), interest: z.number(), arrivesAtTick: z.number().int() }).strict() }).strict(),
-    hotel: z.object({ roomPrice: z.number(), takeChance: z.number().min(0).max(1), returningChance: z.number().min(0).max(1), nights: z.tuple([z.number().int().positive(), z.number().int().positive()]), comesDownAtTick: z.number().int(), nightVisitTier: z.number().int(), towels: z.object({ interest: z.number(), chance: z.number().min(0).max(1), maxTier: z.number().int() }).strict() }).strict(),
+    hotel: z.object({ roomPrice: z.number(), takeChance: z.number().min(0).max(1), returningChance: z.number().min(0).max(1), nights: z.tuple([z.number().int().positive(), z.number().int().positive()]), comesDownAtTick: z.number().int(), nightVisitTier: z.number().int(), towels: z.object({ interest: z.number(), chance: z.number().min(0).max(1), maxTier: z.number().int(), hoursAffinity: z.number(), hoursChance: z.number().min(0).max(1), hoursEnergy: z.number(), hoursSuspicion: z.number(), hoursPower: z.number() }).strict() }).strict(),
     shift: z
       .object({
         opensAt: z.number().int().min(0).max(23), // hour
@@ -100,12 +100,23 @@ export const actSchema = z
   })
   .strict();
 
-export const POSES = ["stand", "sit", "kneel", "lie_back", "lie_front", "bend", "all_fours", "straddle"] as const;
+export const POSES = ["stand", "sit", "kneel", "kneel_sit", "lie_back", "lie_open", "lie_front", "lie_side", "bend", "all_fours", "straddle", "squat"] as const;
+const limbSchema = z.union([z.tuple([z.number(), z.number()]), z.object({ to: z.union([z.string(), z.tuple([z.number(), z.number()])]), dx: z.number().optional(), dy: z.number().optional(), bend: z.union([z.literal(1), z.literal(-1)]).optional() }).strict()]);
+const propSchema = z.object({ len: z.number().optional(), angle: z.number().optional(), to: z.string().optional(), dx: z.number().optional(), dy: z.number().optional(), hand: z.enum(["R", "L"]).optional(), from: z.string().optional(), curve: z.number().optional(), then: z.string().optional() }).strict();
 export const sceneSchema = z
   .object({
     id,
     figures: z
-      .array(z.object({ role: z.string(), pose: z.enum(POSES), x: z.number(), y: z.number().default(0), flip: z.boolean().default(false) }).strict())
+      .array(
+        z
+          .object({
+            role: z.string(), pose: z.enum(POSES), x: z.number(), y: z.number().default(0), flip: z.boolean().default(false),
+            scale: z.number().optional(), torso: z.number().optional(), head: z.number().optional(),
+            armR: limbSchema.optional(), armL: limbSchema.optional(), legR: limbSchema.optional(), legL: limbSchema.optional(),
+            penis: z.union([z.boolean(), propSchema]).optional(), toy: propSchema.optional(),
+          })
+          .strict(),
+      )
       .min(1),
   })
   .strict();
@@ -129,6 +140,14 @@ export const consentSchema = z
         reserved: z.number(), // "keep your distance", for everything
         behindBack: z.number(), // weight of a believed "no" when he is not looking (times how honest she is)
         permission: z.number(), // bonus of a believed "yes" anywhere
+      })
+      .strict(),
+    guest: z
+      .object({
+        drunkPerTick: z.number(), boldDrunk: z.number(), boldHeat: z.number(), boldBonus: z.number(), deafDrunk: z.number(), deafChance: z.number(), sloppyFrom: z.number(), sloppy: z.number(),
+        heatPerInterest: z.number(), heatBare: z.number(), heatTouched: z.number(), heatCool: z.number(), heatAsks: z.number(), heatFinish: z.number(), heatAfter: z.number(),
+        rewardAffinity: z.number(), rewardPaid: z.number(), rewardRough: z.number(), rewardEnough: z.number(), rewardBetter: z.number(), boredLimit: z.number(),
+        her: z.object({ perShift: z.number(), arousalFrom: z.number(), perArousal: z.number(), perFrustration: z.number(), perDrunk: z.number(), perResent: z.number(), trait: z.number(), urgeFrom: z.number(), chancePerMinute: z.number(), maxChance: z.number(), pullFrom: z.number(), traitPull: z.number(), margin: z.number(), interest: z.number() }).strict(),
       })
       .strict(),
     scene: z
@@ -213,7 +232,7 @@ export const bodySchema = z
     skillGain: z.number().min(0), // per practice, shrinking as the skill grows
     orgasmAt: z.number(), // climax meter needed for her to come
     satisfiedCoolPerTick: z.number().min(0),
-    his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number() }).strict(),
+    his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number(), fingerSize: z.number(), fistSize: z.number(), rimmingRate: z.number(), power: z.record(z.string(), z.number()), herShare: z.record(z.string(), z.number()), hisShare: z.record(z.string(), z.number()) }).strict(),
     sizeClasses: z.tuple([z.number(), z.number(), z.number(), z.number()]),
     night: nightSchema,
     // the bedroom scene, turn by turn: both of them have a pleasure meter 0..100
@@ -336,10 +355,12 @@ export const daySchema = z
           withHer: z.boolean().optional(), // needs her to be around this afternoon
           stock: z.number().optional(),
           gossip: z.boolean().optional(), // he hears what the town says about her
+          gym: z.enum(["alone", "together"]).optional(),
           her: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()).optional(),
         })
         .strict(),
     ),
+    gym: z.object({ fitness: z.number(), minutesPerSession: z.number(), minutesMax: z.number(), herDesireSteps: z.array(z.number()), herDesire: z.number(), lockerChance: z.number(), meetChance: z.number(), meetAffinity: z.number(), maxTier: z.number().int(), lateSuspicion: z.number() }).strict(),
     shop: z
       .object({
         toys: z.array(z.object({ id, size: z.number().positive(), price: z.number().positive() }).strict()),

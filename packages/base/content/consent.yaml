@@ -14,6 +14,43 @@ expect: # what she thinks her husband allows: -100 he made clear he does not wan
   reserved: -20     # "keep your distance" (everything)
   behindBack: 28    # how much a believed "no" holds her back when he is not looking, times her honesty
   permission: 12    # how much a believed "yes" helps, anywhere
+guest: # what a guest's evening does to him, and what she does about a guest herself
+  drunkPerTick: 4      # per ten minutes once he has been served (the one who buys drinks: half as much again)
+  boldDrunk: 50        # from here he dares as if he wanted her this much more...
+  boldHeat: 60
+  boldBonus: 12
+  deafDrunk: 55        # from here a man who would have backed off may ask again
+  deafChance: 0.5
+  sloppyFrom: 70       # past this he is less of a temptation
+  sloppy: 0.4          # per point over
+  heatPerInterest: 0.05
+  heatBare: 3
+  heatTouched: 2
+  heatCool: 1.5
+  heatAsks: 100        # at 100 heat he speaks up twice as often
+  heatFinish: 150      # at 100 heat he finishes two thirds faster
+  heatAfter: 0.3       # share of it left once he has come
+  rewardAffinity: 0.4  # liking the man stands in for what her body does not get
+  rewardPaid: 25
+  rewardRough: 25
+  rewardEnough: 35
+  rewardBetter: 15
+  boredLimit: 3        # tries in a row with too little in it for her
+  her:
+    perShift: 3
+    arousalFrom: 40
+    perArousal: 1      # urge per point of arousal above arousalFrom
+    perFrustration: 0.5
+    perDrunk: 0.4
+    perResent: 0.3     # for the disappointed kind
+    trait: 10
+    urgeFrom: 30
+    chancePerMinute: 0.05  # at urge 100
+    maxChance: 0.06
+    pullFrom: 25       # how much she has to be drawn to him
+    traitPull: 30
+    margin: 6          # above "gladly"
+    interest: 10       # what her coming on to him does to him
 scene: # a thing with a guest runs minute by minute; every so often he tries to move it on
   tryEvery: [4, 8]          # minutes between his attempts to change what they are doing
   goingBonus: 10            # it is easier to say yes to the next thing once it is going

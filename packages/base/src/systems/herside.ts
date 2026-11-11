@@ -86,6 +86,12 @@ const remark = (ctx: Ctx) => {
   // what his body has learned
   const hisStep = A.hisSteps.filter((s) => b.husband.stretch >= s).at(-1);
   if (hisStep !== undefined && !b.remarked.includes(`his.${hisStep}`)) return say(`his.${hisStep}`, `log.her.his.${hisStep}${cruel ? ".cruel" : ""}`, true);
+  // what the gym has done for him: this one she likes
+  const fitStep = content.day.gym.herDesireSteps.filter((s) => (b.husband.fitness ?? 0) >= s).at(-1);
+  if (fitStep !== undefined && !b.remarked.includes(`fit.${fitStep}`)) {
+    h.marriage.desire = clamp(h.marriage.desire + content.day.gym.herDesire);
+    return say(`fit.${fitStep}`, `log.her.fit.${fitStep}${cruel ? ".cruel" : ""}`, true);
+  }
   return false;
 };
 

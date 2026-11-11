@@ -540,6 +540,11 @@ export function GuestsTab({ state, t, lang }: Common) {
                 {b.patrons[v.patron]!.memory.tier >= 3 && b.patrons[v.patron]!.likes?.length ? `${t("ui.likes")}: ${b.patrons[v.patron]!.likes!.map((a) => t(`act.${a}`)).join(", ")}` : ""}
               </div>
             )}
+            {((v.drunk ?? 0) >= 40 || (v.heat ?? 0) >= 40) && (
+              <div className="small muted" style={{ marginLeft: 8 }}>
+                {[(v.drunk ?? 0) >= 40 ? `${t("ui.guest.drunk")} ${Math.round(v.drunk ?? 0)}` : "", (v.heat ?? 0) >= 40 ? `${t("ui.guest.heat")} ${Math.round(v.heat ?? 0)}` : ""].filter(Boolean).join(" · ")}
+              </div>
+            )}
           </div>
         ))}
       </ul>

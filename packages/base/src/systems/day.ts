@@ -5,7 +5,8 @@ import { content } from "../content";
 import { bs, clamp } from "../state";
 import { fitOf, resolveBody } from "./body";
 import { addMoney, addReputation } from "./economy";
-import { actById } from "./encounters";
+import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
+import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
@@ -97,6 +98,65 @@ function herMorning(ctx: Ctx) {
   }
 }
 
+/** An hour and a half at the gym in town. He trains; if she came along, the women's changing room is out of his sight. */
+function gym(ctx: Ctx, together: boolean) {
+  const b = bs(ctx.state);
+  const h = b.heroine;
+  const G = D.gym;
+  const base = content.body.husband.minutes;
+  b.husband.fitness = clamp((b.husband.fitness ?? 0) + G.fitness);
+  b.husband.minutes = Math.min(Math.max(b.husband.minutes, base + G.minutesMax), b.husband.minutes + G.minutesPerSession);
+  ctx.log(together ? "log.gym.together" : "log.gym.alone");
+  // the men's changing room: nobody hides anything there
+  if (ctx.rng.chance(G.lockerChance)) ctx.log(`log.gym.locker.${b.husband.size < 14 ? "small" : "plain"}.${ctx.rng.int(1, 3)}`);
+  if (!together) return;
+  // her side of the wall: a man she knows from the cafe trains here too
+  const known = Object.values(b.patrons)
+    .filter((p) => p.regular && p.memory.affinity >= G.meetAffinity)
+    .sort((x, y) => y.memory.interest - x.memory.interest || x.id.localeCompare(y.id))[0];
+  if (!known || !ctx.rng.chance(G.meetChance)) return;
+  const tier = Math.max(1, Math.min(known.memory.tier + 1, G.maxTier));
+  const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
+  if (options.length === 0) return;
+  const act = ctx.rng.pick(options);
+  const input: ConsentInput = { act: act.id, partner: known.id, loc: "town.gym", offer: 0, pressure: 0 };
+  const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
+  const verdict = verdictOf(res.total);
+  const open = b.mode === "open";
+  const name = `@name:${known.name}`;
+  b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: known.id, act: act.id, loc: "town.gym", verdict, seen: open, total: res.total, rows: res.rows });
+  if (b.proposals.length > 12) b.proposals.shift();
+  if (verdict === "refuse") {
+    known.memory.refusals += 1;
+    ctx.log("log.gym.met.no", { name }, open ? undefined : ["unseen"]);
+    return;
+  }
+  known.memory.tier = Math.max(known.memory.tier, act.tier);
+  known.memory.acts[act.id] = (known.memory.acts[act.id] ?? 0) + 1;
+  known.memory.interest = clamp(known.memory.interest + act.effects.interest + 4);
+  known.memory.affinity = clamp(known.memory.affinity + act.effects.affinity + 2, -100, 100);
+  changeHeroine(ctx, "arousal", act.effects.arousal, act.id);
+  const intimate = act.place === "private";
+  if (intimate) {
+    const out = resolveBody(ctx, act, { size: known.size, minutes: act.minutes });
+    known.memory.sizeKnown = true;
+    if (out.came) known.memory.orgasms += 1;
+    b.sizeToday = Math.max(b.sizeToday ?? 0, known.size);
+  }
+  if (open) {
+    ctx.log(intimate ? "log.gym.met.open.long" : "log.gym.met.open", { name, act: `act.${act.id}` });
+    if (intimate) b.power = clamp(b.power + 2);
+  } else {
+    if (intimate) {
+      b.secretActsToday += 1;
+      b.suspicion = clamp(b.suspicion + G.lateSuspicion * content.secrecy.styleFactor[b.husband.style]);
+      ctx.log("log.gym.late"); // what he sees: she took a long time in the showers
+    }
+    ctx.log(intimate ? "log.gym.met.truth.long" : "log.gym.met.truth", { name, act: `act.${act.id}` }, ["unseen"]);
+  }
+  ctx.emit("gym:met", { patron: known.id, act: act.id, intimate });
+}
+
 export function registerDay(api: ModApi) {
   api.events.on(
     "phase:enter",
@@ -145,6 +205,11 @@ export function registerDay(api: ModApi) {
       for (const [k, v] of Object.entries(a.her ?? {})) {
         if (k === "desire" || k === "resent") b.heroine.marriage[k] = clamp(b.heroine.marriage[k] + v);
         else changeHeroine(ctx, k as "mood", v, a.id);
+      }
+      if (a.gym) {
+        gym(ctx, a.gym === "together");
+        ctx.emit("day:did", { do: a.id });
+        return;
       }
       if (a.gossip) {
         // what he hears depends on how much there is to hear; hearing it is not the same as knowing

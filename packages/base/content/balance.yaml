@@ -47,7 +47,7 @@ hotel: # two rooms upstairs
   returningChance: 0.5  # a known face rather than a stranger
   nights: [1, 3]
   comesDownAtTick: 4
-  towels: { interest: 45, chance: 0.4, maxTier: 6 } # after closing he rings down for towels; she takes them up
+  towels: { interest: 45, chance: 0.4, maxTier: 6, hoursAffinity: 35, hoursChance: 0.6, hoursEnergy: 8, hoursSuspicion: 4, hoursPower: 3 } # after closing he rings down for towels; she takes them up
   nightVisitTier: 5     # how far it must have gone for her to go up to him at night
 shift:
   opensAt: 18

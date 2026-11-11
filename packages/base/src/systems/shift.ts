@@ -3,7 +3,7 @@ import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Patron, Visit } from "../state";
 import { addMoney, addReputation } from "./economy";
-import { advanceEncounter, endEncounter, runProposals } from "./encounters";
+import { advanceEncounter, endEncounter, runProposals, warmGuests } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { generatePatron, pickReturning } from "./patrons";
 import { HALL, husbandSees, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
@@ -195,7 +195,10 @@ function tick(ctx: Ctx) {
   if (!bs(ctx.state).encounter && !bs(ctx.state).night) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
   depart(ctx);
   ctx.emit("shift:minute", { minute: sh.tick });
-  if (sh.tick % TEN === 0) ctx.emit("shift:tick", { tick: sh.tick / TEN });
+  if (sh.tick % TEN === 0) {
+    warmGuests(ctx);
+    ctx.emit("shift:tick", { tick: sh.tick / TEN });
+  }
   ctx.flush(); // every minute is fully resolved before the next one, however long the wait
 }
 const TEN = ticks(10);

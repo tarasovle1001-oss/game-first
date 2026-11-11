@@ -542,3 +542,42 @@ describe("after she says no", () => {
     expect(has(no, NIGHT_SELF)).toBe(false);
   });
 });
+
+describe("what she does to him", () => {
+  const start = (act: string, tune: (b: ReturnType<typeof bs>) => void) => {
+    const s = structuredClone(toNight(engine.init(4)));
+    s.mods.base.heroine.marriage.desire = 100;
+    s.mods.base.heroine.arousal = 80;
+    s.mods.base.heroine.traits.openness = 100;
+    s.mods.base.night!.counter = act; // she named it herself, so it happens
+    tune(bs(s));
+    return engine.dispatch(s, { type: NIGHT_ACT, payload: { act } });
+  };
+  it("a toy in her hand needs a toy; her whole hand needs a body that has learned", () => {
+    const s = toNight(engine.init(4));
+    const offered = (st: GameState) => engine.listActions(st).filter((a) => a.type === NIGHT_ACT).map((a) => a.payload!.act);
+    expect(offered(s)).toContain("prostate");
+    expect(offered(s)).toContain("rimming_him");
+    expect(offered(s)).not.toContain("dildo_him");
+    expect(offered(s)).not.toContain("fisting_him");
+    const ready = structuredClone(s);
+    ready.mods.base.toys = ["toy_small"];
+    ready.mods.base.husband.stretch = 100;
+    expect(offered(ready)).toContain("dildo_him");
+    expect(offered(ready)).toContain("fisting_him");
+  });
+  it("each of them ends in its own picture when he comes", () => {
+    for (const act of ["prostate", "dildo_him", "pegging", "fisting_him", "rimming_him"]) {
+      const s = playOut(start(act, (b) => {
+        b.toys = ["toy_small"];
+        b.husband.stretch = 100;
+      }));
+      expect(bs(s).night!.sex).toBeNull();
+      expect([`came_${act}`, "went_soft", "cold_back"]).toContain(bs(s).night!.scene);
+      expect(engine.checkInvariants(s)).toEqual([]);
+    }
+    const s = playOut(start("prostate", () => {}));
+    expect(bs(s).night!.scene).toBe("came_prostate");
+    expect(bs(s).husband.stretch).toBeGreaterThanOrEqual(0);
+  });
+});

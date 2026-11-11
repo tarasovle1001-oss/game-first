@@ -66,6 +66,12 @@ his: # the husband's own body, for what she does to him
   powerPerPegging: 2
   peggingHerBase: 40  # what it gives her, plus her power over him
   peggingHerPerPower: 0.4
+  fingerSize: 6       # cm, for what her finger teaches his body
+  fistSize: 20        # her hand: possible once he takes this much (with the tooBig margin)
+  rimmingRate: 0.7    # his pace when she uses her tongue on him, against a plain handjob
+  power: { prostate: 1, dildo_him: 1, pegging: 2, fisting_him: 3 }           # her power gained each time
+  herShare: { prostate: 0.6, dildo_him: 0.8, pegging: 1, fisting_him: 1.2 }  # of peggingHerBase
+  hisShare: { prostate: 1.1, dildo_him: 0.95, pegging: 0.9, fisting_him: 1 } # of his usual pace
 
 husband:
   size: 13

@@ -161,6 +161,7 @@ export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
 export { OUTFIT_BACK } from "./systems/manners";
 export { ANSWER } from "./systems/herside";
 export { STRIP, bareOf, bareMargin, dressOf, eyesOn } from "./systems/dress";
+export { HIS_ACTS, hisActOpen } from "./systems/marriage";
 export { NIGHT_DECLINE, NIGHT_SELF, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
 export { installment, LOAN_PAY } from "./systems/loan";
 export { ORDER } from "./systems/manners";

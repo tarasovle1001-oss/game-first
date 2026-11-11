@@ -4,13 +4,14 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 type P = [number, number] | null;
-interface Variant { w: number; h: number; figures: { role: string; k: P[] }[] }
+interface Variant { w: number; h: number; figures: { role: string; k: P[]; x?: { kind: string; p: [number, number][] }[] }[] }
 const [file, out = "pose-export"] = process.argv.slice(2);
 if (!file) throw new Error("usage: pose-render.ts poses.json [outDir]");
 const data = JSON.parse(readFileSync(file, "utf8")) as { scenes: Record<string, Variant[]> };
 const LIMBS: [number, number, string][] = [
   [1, 2, "#ff0000"], [1, 5, "#ff5500"], [2, 3, "#ffaa00"], [3, 4, "#ffff00"], [5, 6, "#aaff00"], [6, 7, "#55ff00"],
   [1, 8, "#00ff00"], [8, 9, "#00ff55"], [9, 10, "#00ffaa"], [1, 11, "#00ffff"], [11, 12, "#00aaff"], [12, 13, "#0055ff"], [1, 0, "#0000ff"],
+  [0, 14, "#ff00ff"], [14, 16, "#aa00ff"],
 ];
 mkdirSync(out, { recursive: true });
 let n = 0;
@@ -23,6 +24,9 @@ for (const [id, variants] of Object.entries(data.scenes)) {
       .map(({ k }) => LIMBS.map(([a, b, c]) => (k[a] && k[b] ? `<line x1="${k[a]![0]}" y1="${k[a]![1]}" x2="${k[b]![0]}" y2="${k[b]![1]}" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" opacity="0.75"/>` : "")).join("") + k.map((p, j) => (p ? `<circle cx="${p[0]}" cy="${p[1]}" r="${sw * 0.7}" fill="${LIMBS[Math.min(j, LIMBS.length - 1)]![2]}"/>` : "")).join(""))
       .join("");
     writeFileSync(join(out, `${name}.pose.svg`), svg(body));
+    // what is not a bone goes to its own layer: white = his, grey = a toy. Feed it to a scribble or lineart control, or skip it
+    const props = v.figures.flatMap((f) => f.x ?? []).map((x) => `<polyline points="${x.p.map((q) => q.join(",")).join(" ")}" fill="none" stroke="${x.kind === "penis" ? "#fff" : "#999"}" stroke-width="${sw * 1.6}" stroke-linecap="round" stroke-linejoin="round"/>`).join("");
+    if (props) writeFileSync(join(out, `${name}.props.svg`), svg(props));
     v.figures.forEach((f, j) => {
       const pts = f.k.filter((p): p is [number, number] => p !== null);
       const pad = v.w * 0.06;

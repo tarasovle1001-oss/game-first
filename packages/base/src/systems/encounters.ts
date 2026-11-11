@@ -5,7 +5,7 @@ import { content } from "../content";
 import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Encounter, Patron, Verdict, Visit } from "../state";
-import { fitOf, orgasm, useBody } from "./body";
+import { fitOf, orgasm, pleasureFor, useBody } from "./body";
 import { expectOf } from "./expectations";
 import { addHerTips } from "./economy";
 import { changeHeroine } from "./heroine";
@@ -29,7 +29,7 @@ export interface ConsentInput {
 }
 
 const acts = new Map(content.acts.map((a) => [a.id, a]));
-const topTier = Math.max(...content.acts.map((a) => a.tier));
+const topTier = Math.max(...content.acts.filter((a) => !a.only).map((a) => a.tier)); // what guests can reach: acts kept for the marriage do not count
 export const actById = (id: string): Act => {
   const a = acts.get(id);
   if (!a) throw new Error(`unknown act "${id}"`);
@@ -66,7 +66,12 @@ const privateRoomFor = (state: GameState, engine: EngineView, partner?: string):
 const offerOf = (p: Patron, act: Act, paid: boolean) => (p.approach === "pay" && act.tier >= 3 && !paid ? Math.round((p.traits.generosity * act.tier) / 4) : 0);
 
 /** How far a man dares to go depends on how much he wants her. */
-const tierCap = (p: Patron) => (p.memory.interest >= 65 ? topTier : p.memory.interest >= 45 ? 6 : p.memory.interest >= 30 ? 4 : 3);
+const G = content.consent.guest;
+/** A drunk or worked-up man dares more than his interest alone would let him. */
+const tierCap = (p: Patron, v?: Visit) => {
+  const dare = p.memory.interest + ((v?.drunk ?? 0) >= G.boldDrunk ? G.boldBonus : 0) + ((v?.heat ?? 0) >= G.boldHeat ? G.boldBonus : 0);
+  return dare >= 65 ? topTier : dare >= 45 ? 6 : dare >= 30 ? 4 : 3;
+};
 
 /**
  * What this guest would ask for right now. Pure: the debug panel calls it to show the formula
@@ -79,7 +84,7 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   let act: Act;
   if (v.retry) act = actById(v.retry);
   else {
-    const tier = Math.min(v.tier + 1, tierCap(p), topTier);
+    const tier = Math.min(v.tier + 1, tierCap(p, v), topTier);
     const options = content.acts.filter((a) => a.tier === tier && !a.only && (a.id !== "drink" || p.approach === "drink"));
     // the one who buys drinks keeps doing so while she is still fairly sober
     const drink = p.approach === "drink" && tier >= 1 && b.heroine.drunk < 45 && v.tier >= 0 && roll(10) < 4;
@@ -117,7 +122,7 @@ export function endEncounter(ctx: Ctx, _force = true) {
 /** What he would move on to from where they are: what he likes if he can get there, otherwise the next step. */
 function nextInScene(ctx: Ctx, v: Visit, p: Patron, enc: Encounter): Act | null {
   const now = actById(enc.act);
-  const cap = Math.min(topTier, tierCap(p) + 1); // in the middle of it a man dares a little more
+  const cap = Math.min(topTier, tierCap(p, v) + 1); // in the middle of it a man dares a little more
   const options = content.acts.filter(
     (a) => !a.only && a.id !== enc.act && a.id !== "drink" && a.minutes > 0 && a.tier <= cap && a.tier <= now.tier + 2 && a.tier >= now.tier && (!isIntimate(a) || v.rounds < p.stamina),
   );
@@ -147,7 +152,7 @@ export function advanceEncounter(ctx: Ctx) {
   v.waited = 0;
 
   if (isIntimate(act)) {
-    enc.his = clamp(enc.his + enc.hisRate);
+    enc.his = clamp(enc.his + enc.hisRate * (1 + (v.heat ?? 0) / G.heatFinish)); // worked up, he does not last as long
     enc.hers = clamp(enc.hers + S.herRate * (enc.pleasure / 60) * (0.6 + h.arousal / 120) * (1 - h.satisfied / 160));
     if (enc.hers >= 100) {
       enc.came += 1;
@@ -164,6 +169,7 @@ export function advanceEncounter(ctx: Ctx) {
     if (enc.his >= 100) {
       v.rounds += 1;
       enc.his = 0;
+      v.heat = (v.heat ?? 0) * G.heatAfter;
       ctx.log("log.enc.he_finishes", { name }, tags);
       if (v.rounds >= p.stamina || !ctx.rng.chance(S.continueChance)) return endEncounter(ctx);
       enc.nextTry = sh.tick; // he still has it in him and wants something else
@@ -177,6 +183,30 @@ export function advanceEncounter(ctx: Ctx) {
 
   // he tries to move it on
   enc.nextTry = sh.tick + ctx.rng.int(S.tryEvery[0], S.tryEvery[1]);
+  // is she getting anything out of this? Her body, or her reasons for being with this man
+  if (isIntimate(act)) {
+    const worth = clamp(Math.max(enc.pleasure, enc.pleasure * 0.6 + Math.max(0, p.memory.affinity) * G.rewardAffinity + (enc.paid && h.latents.money_hungry !== undefined ? G.rewardPaid : 0) + (p.approach === "push" && h.latents.likes_rough !== undefined ? G.rewardRough : 0)));
+    enc.bored = worth < G.rewardEnough ? (enc.bored ?? 0) + 1 : Math.max(0, (enc.bored ?? 0) - 1);
+    if ((enc.bored ?? 0) >= G.boredLimit) {
+      // she steers it to something that does more for her, or she has had enough
+      const better = content.acts
+        .filter((a) => !a.only && isIntimate(a) && a.id !== act.id && a.tier <= Math.max(act.tier, p.memory.tier) && (v.rounds < p.stamina))
+        .map((a) => ({ a, r: pleasureFor(ctx.state, a, p.size) }))
+        .filter((x) => x.r >= enc.pleasure + G.rewardBetter)
+        .sort((x, y) => y.r - x.r || x.a.id.localeCompare(y.a.id))[0];
+      enc.bored = 0;
+      if (better) {
+        ctx.log("log.enc.she_steers", { name, act: `act.${better.a.id}` }, tags);
+        return accept(ctx, v, p, { act: better.a.id, partner: p.id, loc: enc.loc, offer: 0, pressure: 0 }, "eager");
+      }
+      if (h.latents.submissive === undefined && !enc.paid) {
+        ctx.log("log.enc.she_bored", { name }, tags);
+        p.memory.affinity = clamp(p.memory.affinity - 2, -100, 100);
+        h.frustration = clamp(h.frustration + 6);
+        return endEncounter(ctx);
+      }
+    }
+  }
   const next = nextInScene(ctx, v, p, enc);
   if (!next) return ranOut ? endEncounter(ctx) : undefined;
   const offer = offerOf(p, next, enc.paid);
@@ -336,6 +366,14 @@ function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
   };
   switch (type.onRefusal) {
     case "backs_off":
+      if ((v.drunk ?? 0) >= G.deafDrunk && v.pressure < 1 && ctx.rng.chance(G.deafChance)) {
+        // sober he would have let it go; with this much in him he asks again
+        v.pressure += 1;
+        v.retry = act.id;
+        cool(0, -3);
+        ctx.log("log.guest.drunk_again", { name: `@name:${p.name}` }, seen ? undefined : ["unseen"]);
+        break;
+      }
       cool(-2, 1); // he takes it well, she notices
       v.blocked = true;
       break;
@@ -364,8 +402,66 @@ function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
   ctx.emit("encounter:refused", { patron: p.id, act: act.id, reaction: type.onRefusal });
 }
 
+/**
+ * She is the one who starts it: wanting it, tipsy, left wanting at home, and a man in the room she likes.
+ * She takes the next step with him herself, as far as she would gladly go anyway.
+ */
+function herOwnMove(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const sh = b.shift!;
+  const h = b.heroine;
+  const H = G.her;
+  if (b.encounter || sh.tick < (sh.restUntil ?? 0) || (sh.herMoves ?? 0) >= H.perShift || ctx.state.where[WIFE] !== HALL) return;
+  const urge = Math.max(0, h.arousal - H.arousalFrom) * H.perArousal + h.frustration * H.perFrustration + h.drunk * H.perDrunk + (h.latents.exhibitionist !== undefined ? H.trait : 0) + (h.latents.disappointed !== undefined ? h.marriage.resent * H.perResent : 0);
+  if (urge < H.urgeFrom || !ctx.rng.chance(Math.min(H.maxChance, (urge / 100) * H.chancePerMinute))) return;
+  // whom: a man she likes; or a stranger, or a rough one, if that is her thing
+  const drawn = (p: Patron) =>
+    p.memory.affinity + (h.tastes.types[p.type] ?? 0) * 0.5 + (h.latents.new_faces !== undefined && p.memory.visits <= 1 ? H.traitPull : 0) + (h.latents.likes_rough !== undefined && p.approach === "push" ? H.traitPull : 0) + (h.latents.size_queen !== undefined && p.memory.sizeKnown ? (p.size - b.husband.size) * 2 : 0);
+  const best = sh.visits
+    .filter((v) => !v.blocked && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && v.served > 0)
+    .map((v) => ({ v, p: b.patrons[v.patron]!, pull: drawn(b.patrons[v.patron]!) }))
+    .filter((x) => x.pull >= H.pullFrom)
+    .sort((x, y) => y.pull - x.pull || x.p.id.localeCompare(y.p.id))[0];
+  if (!best) return;
+  const { v, p } = best;
+  const tier = Math.max(1, Math.min(v.tier + 1, p.memory.tier + 1, topTier));
+  const score = (i: ConsentInput) => ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, i);
+  const options = content.acts
+    .filter((a) => a.tier === tier && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina))
+    .map((a) => {
+      const at = (loc: string): ConsentInput => ({ act: a.id, partner: p.id, loc, offer: 0, pressure: 0 });
+      const room = isIntimate(a) ? privateRoomFor(ctx.state, ctx.engine, p.id) : null;
+      const input = room && score(at(room)).total > score(at(HALL)).total ? at(room) : at(HALL);
+      return { input, res: score(input) };
+    })
+    .sort((x, y) => y.res.total - x.res.total || x.input.act.localeCompare(y.input.act));
+  const pick = options[0];
+  if (!pick || pick.res.total < content.consent.eagerAt + H.margin) return; // she wants to, but not that much
+  sh.herMoves = (sh.herMoves ?? 0) + 1;
+  const seen = husbandSees(ctx.state, HALL) || husbandSees(ctx.state, pick.input.loc);
+  b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: pick.input.act, loc: pick.input.loc, verdict: "eager", seen, total: pick.res.total, rows: [...pick.res.rows, { id: "consent.her_own", labelKey: "factor.consent.her_own", value: 0 }] });
+  if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
+  p.memory.interest = clamp(p.memory.interest + H.interest);
+  ctx.log(`log.her.starts.${actById(pick.input.act).tier <= 2 ? "light" : isIntimate(actById(pick.input.act)) ? "takes" : "close"}`, { name: `@name:${p.name}` }, seen || b.mode === "open" ? undefined : ["unseen"]);
+  accept(ctx, v, p, pick.input, "eager");
+  if (seen) sh.interrupt = true;
+  ctx.emit("her:started", { patron: p.id, act: pick.input.act, seen });
+}
+
 /** Small talk, a drink, a bit of flirting: it happens in passing and does not take her off the floor. */
 const isLight = (act: Act) => act.minutes === 0;
+
+/** Every ten minutes: guests who have been served get drunker, and the ones who want her get worked up watching. */
+export function warmGuests(ctx: Ctx) {
+  const b = bs(ctx.state);
+  for (const v of b.shift?.visits ?? []) {
+    const p = b.patrons[v.patron];
+    if (!p) continue;
+    if (v.served > 0) v.drunk = clamp((v.drunk ?? 0) + (p.approach === "drink" ? G.drunkPerTick * 1.5 : G.drunkPerTick));
+    const watching = p.memory.interest * G.heatPerInterest + (v.sawBare && v.sawBare !== "none" ? G.heatBare : 0) + (v.tier >= 2 ? G.heatTouched : 0);
+    v.heat = clamp((v.heat ?? 0) + watching - G.heatCool);
+  }
+}
 
 export function runProposals(ctx: Ctx) {
   const b = bs(ctx.state);
@@ -376,11 +472,13 @@ export function runProposals(ctx: Ctx) {
   const eligible = sh.visits
     .filter((v) => !v.blocked && (v.served > 0 || v.waited > 0))
     .sort((a, c) => b.patrons[c.patron]!.memory.interest - b.patrons[a.patron]!.memory.interest || a.patron.localeCompare(c.patron));
+  herOwnMove(ctx);
+  if (b.encounter) return;
   let spoke = 0;
   for (const v of eligible) {
     if (spoke >= content.consent.proposalsPerTick) break;
     const p = b.patrons[v.patron]!;
-    const perHour = content.consent.askChancePerHour + p.memory.interest * content.consent.askChancePerInterest;
+    const perHour = (content.consent.askChancePerHour + p.memory.interest * content.consent.askChancePerInterest) * (1 + (v.heat ?? 0) / G.heatAsks);
     if (!ctx.rng.chance((perHour * content.balance.shift.minutesPerTick) / 60)) continue;
     const input = nextProposal(ctx.state, ctx.engine, v, (len) => ctx.rng.int(0, len - 1));
     if (!input) continue;
@@ -409,7 +507,7 @@ export function runProposals(ctx: Ctx) {
         const over = content.acts.filter((a) => a.tier === act.tier + 1 && !a.only && a.id !== "drink");
         const glad = over.length > 0 && over.every((a) => verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { ...input, act: a.id }).total) === "eager");
         if (glad) {
-          v.tier = Math.min(v.tier + 1, tierCap(p), topTier);
+          v.tier = Math.min(v.tier + 1, tierCap(p, v), topTier);
           p.memory.tier = Math.max(p.memory.tier, v.tier); // it counts as a step taken, not as one he jumped over
         }
       }
@@ -459,6 +557,13 @@ export function registerEncounters(api: ModApi) {
     if (!p || act.tier < 2 || i.offer > 0 || her(s).latents.new_faces !== undefined) return null;
     const gap = Math.max(0, c.strangerBelow - p.memory.affinity);
     return gap > 0 ? -(her(s).traits.fidelity / 100) * gap * c.stranger * (act.tier === 2 ? 0.4 : 1) || null : null;
+  });
+  // a man who can hardly stand is not much of a temptation, unless rough and sloppy is what she likes
+  row("drunk_guest", 32, (s, _i, act, p) => {
+    const v = p ? bs(s).shift?.visits.find((x) => x.patron === p.id) : undefined;
+    const over = (v?.drunk ?? 0) - G.sloppyFrom;
+    if (!v || over <= 0 || act.tier < 2) return null;
+    return her(s).latents.likes_rough !== undefined ? over * G.sloppy * 0.5 : -over * G.sloppy;
   });
   row("jump", 33, (_s, _i, act, p) => {
     if (!p) return null;

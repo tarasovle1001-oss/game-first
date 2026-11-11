@@ -37,6 +37,7 @@ export interface Husband {
   minutes: number; // how long he lasts
   style: "naive" | "jealous" | "encouraging";
   stretch: number; // 0..100, his own: what she has got him used to
+  fitness?: number; // 0..100, what the gym has done for him
   spentDay?: number; // the day he came from a touch alone: nothing more from him that day
 }
 
@@ -75,6 +76,8 @@ export type Bare = "none" | "top" | "bottom" | "all";
 
 export interface Visit {
   sawBare?: Bare; // how undressed he has already seen her tonight
+  drunk?: number; // 0..100, how much he has had tonight
+  heat?: number; // 0..100, how worked up he is
   patron: string;
   stay: number; // ticks left
   served: number;
@@ -125,6 +128,7 @@ export interface Encounter {
   came: number; // times she came in this one
   refusals: number; // changes she said no to
   paid: boolean; // his offer of money is already on the table
+  bored?: number; // attempts in a row that gave her too little
 }
 
 /** Kept for the debug panel: why she answered the way she did. */
@@ -150,6 +154,7 @@ export interface Shift {
   turnedAway: number;
   moment: { patron: string; act: string; until: number } | null; // last light act of this tick
   interrupt: boolean; // something worth stopping "wait until" for has happened
+  herMoves?: number; // times she started something with a guest herself tonight
   wifeFreeAt?: number; // minute she is done with the order in her hands
   restUntil?: number; // minute before which nobody takes her off the floor
   upstairs?: boolean; // he already took her away from the floor tonight

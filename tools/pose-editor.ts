@@ -8,7 +8,7 @@ import { toOpenPose } from "../packages/schematics/src";
 const out = process.argv[2] ?? "pose-editor.html";
 const W = 1216;
 const H = 832;
-const scenes = content.scenes.map((s) => ({ id: s.id, figures: toOpenPose(s.figures, W, H).map((f) => ({ role: f.role, k: f.keypoints })) }));
+const scenes = content.scenes.map((s) => ({ id: s.id, figures: toOpenPose(s.figures, W, H).map((f) => ({ role: f.role, k: f.keypoints, x: f.extras.map((e) => ({ kind: e.kind, p: e.pts })) })) }));
 const names = Object.fromEntries(content.scenes.map((s) => [s.id, content.locales.ru?.[`scene.${s.id}`] ?? s.id]));
 
 const html = `<!doctype html>
@@ -41,21 +41,24 @@ svg{background:#000;border:1px solid var(--line);touch-action:none}
   <button id="flip" title="Отразить выбранную фигуру">отразить</button>
   <button id="bigger" title="Увеличить выбранную фигуру">+ рост</button><button id="smaller">- рост</button>
   <button id="reset" title="Вернуть вариант к исходной позе">сброс</button>
+  <button id="addP" title="Добавить выбранной фигуре пенис (жене - игрушку)">+ пенис/игрушка</button><button id="delP">- убрать</button><button id="addN" title="Ещё один узел на конце пениса или игрушки">+ узел</button><button id="delN">- узел</button>
+  <button id="props" title="Показывать и выгружать в PNG пенис и игрушки">пенис и игрушки: да</button>
   <span class="sep"></span>
   <button id="look" title="Как это увидит ControlNet">вид: правка</button>
   <button id="png">PNG</button><button id="exp">Экспорт poses.json</button><button id="imp">Импорт</button><input id="file" type="file" accept=".json" hidden>
  </div>
  <div id="stage"><svg id="svg"></svg></div>
- <div id="help"><span id="roles"></span> Тяни точку - двигается сустав. Shift + тяни - вся фигура. Клик по фигуре выбирает её для "отразить" и "рост". Правки хранятся в этом браузере, для переноса - экспорт.</div>
+ <div id="help"><span id="roles"></span> Тяни точку - двигается сустав. Белая линия - пенис, сиреневая - игрушка: каждый узел тянется, узлы добавляются кнопкой. Shift + тяни - вся фигура. Клик по фигуре выбирает её для "отразить" и "рост". Правки хранятся в этом браузере, для переноса - экспорт.</div>
 </div>
 <script>
 const BASE=${JSON.stringify(scenes)};
 const NAMES=${JSON.stringify(names)};
 const BW=${W},BH=${H};
-const LIMBS=[[1,2,"#ff0000"],[1,5,"#ff5500"],[2,3,"#ffaa00"],[3,4,"#ffff00"],[5,6,"#aaff00"],[6,7,"#55ff00"],[1,8,"#00ff00"],[8,9,"#00ff55"],[9,10,"#00ffaa"],[1,11,"#00ffff"],[11,12,"#00aaff"],[12,13,"#0055ff"],[1,0,"#0000ff"]];
+const LIMBS=[[1,2,"#ff0000"],[1,5,"#ff5500"],[2,3,"#ffaa00"],[3,4,"#ffff00"],[5,6,"#aaff00"],[6,7,"#55ff00"],[1,8,"#00ff00"],[8,9,"#00ff55"],[9,10,"#00ffaa"],[1,11,"#00ffff"],[11,12,"#00aaff"],[12,13,"#0055ff"],[1,0,"#0000ff"],[0,14,"#ff00ff"],[14,16,"#aa00ff"]];
+const XCOL={penis:"#ffffff",toy:"#a78bfa"};let props=true;
 const ROLE={wife:"#f472b6",patron:"#60a5fa",husband:"#4ade80"};
 const ROLE_RU={wife:"жена",patron:"гость",husband:"муж"};
-const KEY="test-city-poses-v1";
+const KEY="test-city-poses-v3";
 let store={};try{store=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
 let cur=BASE[0].id,vi=0,sel=0,raw=false;
@@ -73,22 +76,29 @@ function draw(){const p=pose(),svg=$("svg");svg.setAttribute("viewBox","0 0 "+p.
   if(!raw){const pts=k.filter(Boolean);const x0=Math.min(...pts.map(q=>q[0]))-30,y0=Math.min(...pts.map(q=>q[1]))-40,x1=Math.max(...pts.map(q=>q[0]))+30,y1=Math.max(...pts.map(q=>q[1]))+30;h+='<rect x="'+x0+'" y="'+y0+'" width="'+(x1-x0)+'" height="'+(y1-y0)+'" rx="18" fill="'+(ROLE[f.role]||"#ccc")+'" opacity="'+(fi===sel?0.16:0.07)+'" data-f="'+fi+'"/><text x="'+(x0+8)+'" y="'+(y0+18)+'" fill="'+(ROLE[f.role]||"#ccc")+'" font-size="15">'+(ROLE_RU[f.role]||f.role)+"</text>";
    if(k[0]&&k[1]){const r=Math.hypot(k[0][0]-k[1][0],k[0][1]-k[1][1])*0.75;h+='<circle cx="'+k[0][0]+'" cy="'+k[0][1]+'" r="'+r+'" fill="none" stroke="'+(ROLE[f.role]||"#ccc")+'" stroke-width="2" opacity="0.6"/>'}}
   for(const [a,b,c] of LIMBS)if(k[a]&&k[b])h+='<line x1="'+k[a][0]+'" y1="'+k[a][1]+'" x2="'+k[b][0]+'" y2="'+k[b][1]+'" stroke="'+c+'" stroke-width="'+sw+'" stroke-linecap="round" opacity="0.75"/>';
-  k.forEach((q,i)=>{if(q)h+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="'+(raw?sw*0.7:sw*1.5)+'" fill="'+LIMBS[Math.min(i,LIMBS.length-1)][2]+'" '+(raw?"":'stroke="#fff" stroke-width="1.5" style="cursor:grab" ')+'data-f="'+fi+'" data-k="'+i+'"/>'})});
+  k.forEach((q,i)=>{if(q)h+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="'+(raw?sw*0.7:sw*1.5)+'" fill="'+LIMBS[Math.min(i,LIMBS.length-1)][2]+'" '+(raw?"":'stroke="#fff" stroke-width="1.5" style="cursor:grab" ')+'data-f="'+fi+'" data-k="'+i+'"/>'});
+  if(props)(f.x||[]).forEach((x,xi)=>{h+='<polyline points="'+x.p.map(q=>q[0]+","+q[1]).join(" ")+'" fill="none" stroke="'+XCOL[x.kind]+'" stroke-width="'+(sw*1.4)+'" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>';if(!raw)x.p.forEach((q,e)=>{h+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="'+sw*1.2+'" fill="'+XCOL[x.kind]+'" stroke="#000" stroke-width="1.5" style="cursor:grab" data-f="'+fi+'" data-x="'+xi+'" data-e="'+e+'"/>'})})});
  svg.innerHTML=h;$("look").textContent=raw?"вид: как в ControlNet":"вид: правка"}
 let drag=null;
 const pt=(e)=>{const svg=$("svg"),r=svg.getBoundingClientRect(),p=pose();return[(e.clientX-r.left)/r.width*p.w,(e.clientY-r.top)/r.height*p.h]};
-$("svg").addEventListener("pointerdown",(e)=>{const t=e.target;if(t.dataset.f===undefined)return;sel=+t.dataset.f;if(t.dataset.k!==undefined||e.shiftKey){drag={f:sel,k:t.dataset.k===undefined?-1:+t.dataset.k,all:e.shiftKey,last:pt(e)};$("svg").setPointerCapture(e.pointerId)}draw()});
-$("svg").addEventListener("pointermove",(e)=>{if(!drag)return;const q=pt(e),dx=q[0]-drag.last[0],dy=q[1]-drag.last[1];drag.last=q;const k=pose().figures[drag.f].k;if(drag.all||drag.k<0)k.forEach(p=>{if(p){p[0]+=dx;p[1]+=dy}});else{k[drag.k][0]+=dx;k[drag.k][1]+=dy}draw()});
-const drop=()=>{if(drag){pose().figures.forEach(f=>f.k.forEach(p=>{if(p){p[0]=Math.round(p[0]);p[1]=Math.round(p[1])}}));drag=null;save();list()}};
+$("svg").addEventListener("pointerdown",(e)=>{const t=e.target;if(t.dataset.f===undefined)return;sel=+t.dataset.f;if(t.dataset.k!==undefined||t.dataset.x!==undefined||e.shiftKey){drag={f:sel,k:t.dataset.k===undefined?-1:+t.dataset.k,x:t.dataset.x===undefined?-1:+t.dataset.x,e:+t.dataset.e,all:e.shiftKey,last:pt(e)};$("svg").setPointerCapture(e.pointerId)}draw()});
+$("svg").addEventListener("pointermove",(e)=>{if(!drag)return;const q=pt(e),dx=q[0]-drag.last[0],dy=q[1]-drag.last[1];drag.last=q;const fg=pose().figures[drag.f],k=fg.k,xs=fg.x||[];if(drag.all){k.forEach(p=>{if(p){p[0]+=dx;p[1]+=dy}});xs.forEach(x=>x.p.forEach(q=>{q[0]+=dx;q[1]+=dy}))}else if(drag.x>=0){xs[drag.x].p[drag.e][0]+=dx;xs[drag.x].p[drag.e][1]+=dy}else if(drag.k>=0){k[drag.k][0]+=dx;k[drag.k][1]+=dy}draw()});
+const drop=()=>{if(drag){pose().figures.forEach(f=>{f.k.forEach(p=>{if(p){p[0]=Math.round(p[0]);p[1]=Math.round(p[1])}});(f.x||[]).forEach(x=>{x.p=x.p.map(q=>q.map(Math.round))})});drag=null;save();list()}};
 $("svg").addEventListener("pointerup",drop);$("svg").addEventListener("pointercancel",drop);
 const centre=(k)=>{const pts=k.filter(Boolean);return[pts.reduce((s,p)=>s+p[0],0)/pts.length,Math.max(...pts.map(p=>p[1]))]};
-const scale=(m)=>{const k=pose().figures[sel].k,[cx,cy]=centre(k);k.forEach(p=>{if(p){p[0]=Math.round(cx+(p[0]-cx)*m);p[1]=Math.round(cy+(p[1]-cy)*m)}});save();draw()};
+const each=(fn)=>{const f=pose().figures[sel];f.k.forEach(p=>{if(p)fn(p)});(f.x||[]).forEach(x=>x.p.forEach(fn))};
+const scale=(m)=>{const [cx,cy]=centre(pose().figures[sel].k);each(p=>{p[0]=Math.round(cx+(p[0]-cx)*m);p[1]=Math.round(cy+(p[1]-cy)*m)});save();draw()};
 $("bigger").onclick=()=>scale(1.06);$("smaller").onclick=()=>scale(1/1.06);
-$("flip").onclick=()=>{const k=pose().figures[sel].k,[cx]=centre(k);k.forEach(p=>{if(p)p[0]=Math.round(2*cx-p[0])});save();draw()};
+$("flip").onclick=()=>{const [cx]=centre(pose().figures[sel].k);each(p=>{p[0]=Math.round(2*cx-p[0])});save();draw()};
+$("props").onclick=()=>{props=!props;$("props").textContent="пенис и игрушки: "+(props?"да":"нет");draw()};
+$("addP").onclick=()=>{const f=pose().figures[sel],k=f.k,h=k[8]||k[1];const L=f.role==="patron"?150:60;(f.x=f.x||[]).push({kind:f.role==="wife"?"toy":"penis",p:[0,1,2,3].map(i=>[Math.round(h[0]+L*i/3),Math.round(h[1]+10-10*i)])});save();draw()};
+$("addN").onclick=()=>{const f=pose().figures[sel],x=f.x&&f.x[f.x.length-1];if(!x)return;const a=x.p[x.p.length-2],b=x.p[x.p.length-1];x.p.push([2*b[0]-a[0],2*b[1]-a[1]]);save();draw()};
+$("delN").onclick=()=>{const f=pose().figures[sel],x=f.x&&f.x[f.x.length-1];if(x&&x.p.length>2){x.p.pop();save();draw()}};
+$("delP").onclick=()=>{const f=pose().figures[sel];if(f.x&&f.x.length){f.x.pop();save();draw()}};
 $("reset").onclick=()=>{variants(cur)[vi]=baseOf(cur);save();draw()};
 $("addVar").onclick=()=>{const v=variants(cur);if(v.length>=4)return;v.push(clone(pose()));vi=v.length-1;save();draw();list()};
 $("delVar").onclick=()=>{const v=variants(cur);if(v.length<=1){delete store[cur];vi=0}else{v.splice(vi,1);vi=Math.max(0,vi-1)}save();draw();list()};
-$("size").onchange=()=>{const [w,h]=$("size").value.split("x").map(Number),p=pose(),s=Math.min(w/p.w,h/p.h),ox=(w-p.w*s)/2,oy=(h-p.h*s)/2;p.figures.forEach(f=>f.k.forEach(q=>{if(q){q[0]=Math.round(q[0]*s+ox);q[1]=Math.round(q[1]*s+oy)}}));p.w=w;p.h=h;save();draw()};
+$("size").onchange=()=>{const [w,h]=$("size").value.split("x").map(Number),p=pose(),s=Math.min(w/p.w,h/p.h),ox=(w-p.w*s)/2,oy=(h-p.h*s)/2;const mv=(q)=>{q[0]=Math.round(q[0]*s+ox);q[1]=Math.round(q[1]*s+oy)};p.figures.forEach(f=>{f.k.forEach(q=>{if(q)mv(q)});(f.x||[]).forEach(x=>x.p.forEach(mv))});p.w=w;p.h=h;save();draw()};
 $("look").onclick=()=>{raw=!raw;draw()};
 $("q").oninput=list;
 const down=(name,url)=>{const a=document.createElement("a");a.href=url;a.download=name;a.click()};

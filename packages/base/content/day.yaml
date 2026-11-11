@@ -14,7 +14,20 @@ activities:           # each once a day
   - { id: town, minutes: 60, withHer: true }             # go to town together: opens the shops and the walk for today
   - { id: market, minutes: 30, cost: 45, needs: town, stock: 14 }   # cheaper than the supplier, if you are in town anyway
   - { id: ask_around, minutes: 60, cost: 15, needs: town, gossip: true } # a beer with the men who drink at your place: what do they say
+  - { id: gym, minutes: 90, cost: 20, needs: town, gym: alone }                 # he trains; she is in the shops meanwhile
+  - { id: gym_together, minutes: 90, cost: 35, needs: town, withHer: true, gym: together, her: { mood: 3, energy: -8 } } # both train; the changing rooms are separate
   - { id: date, minutes: 90, cost: 40, needs: town, her: { mood: 6, desire: 3, resent: -2 } }
+gym:
+  fitness: 3            # what one session gives him, 0..100
+  minutesPerSession: 0.1  # he lasts a little longer for it
+  minutesMax: 4         # at most this much above where he started
+  herDesireSteps: [20, 50, 80] # she notices, and says so
+  herDesire: 2          # what noticing does for her wanting him
+  lockerChance: 0.5     # in the men's changing room he sees what other men have
+  meetChance: 0.45      # a regular of the cafe trains here too and finds her
+  meetAffinity: 15      # how much she has to like him for it to be him
+  maxTier: 7
+  lateSuspicion: 3
 shop:                 # in town; she also buys for herself from her purse
   toys:               # size in cm; she uses the biggest one she can take when a night leaves her wanting
     - { id: toy_small, size: 14, price: 90 }
