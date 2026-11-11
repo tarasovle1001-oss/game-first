@@ -859,3 +859,7 @@ header { padding: 6px 12px; gap: 10px; align-items: center; }
 .calc-total { margin-bottom: 4px; }
 .calc-total.verdict-eager b { color: var(--good); } .calc-total.verdict-hesitant b { color: var(--accent); } .calc-total.verdict-refuse b { color: var(--bad); }
 .calc .rows.open { font-size: 0.8rem; }
+
+.since { text-align: center; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); border-top: 1px solid #6b5a3a; margin: 6px 0 2px; padding-top: 2px; opacity: 0.8; }
+.log .entry.old { opacity: 0.62; }
+.hc-seems { font-style: italic; margin-top: 2px; }

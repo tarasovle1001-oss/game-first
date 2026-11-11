@@ -97,9 +97,12 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
             ? (folders.find(([type]) => type === here.type)?.[1] ?? [])
             : [];
   const digitsFree = answers.length === 0 && bed.length === 0 && here.at === "root";
+  // she is a room away and the door is right there: one card walks over
+  const goToHer = !herNear ? all.find((a) => a.type === CORE_MOVE && a.actor === HUSBAND && a.payload?.to === state.where[WIFE]) : undefined;
   // root cards that take a letter: her, then the plain actions, then the folders
   const rootCards: (() => void)[] = [];
   if (withHer.length > 0) rootCards.push(() => setPath({ at: "her", sec: null }));
+  else if (goToHer && phase !== "summary") rootCards.push(() => act(goToHer));
   for (const a of direct) rootCards.push(() => act(a));
   for (const [type] of folders) rootCards.push(() => setPath({ at: "group", type }));
 
@@ -281,7 +284,13 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
       {withHer.length > 0 ? (
         <Item hot={hot()} tone="her" title={herName} sub={t(herNear ? "ui.her.card.near" : "ui.her.card.far")} onClick={() => setPath({ at: "her", sec: null })} />
       ) : (
-        phase !== "summary" && !herNear && <Item tone="her" disabled title={herName} sub={t("ui.her.far", { name: herName, where: t(`loc.${state.where[WIFE]}`) })} />
+        phase !== "summary" &&
+        !herNear &&
+        (goToHer ? (
+          <Item hot={hot()} tone="her" title={t("ui.her.walk", { name: herName, where: t(`loc.${state.where[WIFE]}`) })} sub={t("ui.her.walk.hint")} onClick={() => act(goToHer)} />
+        ) : (
+          <Item tone="her" disabled title={herName} sub={t("ui.her.far", { name: herName, where: t(`loc.${state.where[WIFE]}`) })} />
+        ))
       )}
       {(direct.length > 0 || folders.length > 0) && <div className="m-section">{t(`ui.todo.${phase}`)}</div>}
       {direct.map((a, i) => {

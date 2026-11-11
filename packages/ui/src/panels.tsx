@@ -151,6 +151,7 @@ export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
     } else rows.push({ e, n: 1, from: e.minute });
   }
   rows.reverse();
+  const shownRows = rows.slice(0, 80);
   let lastDay = -1;
   return (
     <div className="log">
@@ -162,14 +163,18 @@ export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
         ))}
         {hidden > 0 && <span className="muted small">{t("ui.log.hidden", { n: hidden })}</span>}
       </div>
-      {rows.slice(0, 80).map(({ e, n, from }, i) => {
+      {shownRows.map(({ e, n, from }, i) => {
         const dayMark = e.day !== lastDay;
         lastDay = e.day;
         const unseen = e.tags?.includes("unseen");
+        // what the last action brought sits above a line; everything older is dimmed
+        const fresh = e.turn === state.turn;
+        const edge = !fresh && i > 0 && shownRows[i - 1]!.e.turn === state.turn;
         return (
           <div key={`${e.turn}-${i}`}>
+            {edge && <div className="since">{t("ui.log.since")}</div>}
             {dayMark && <div className="daymark">{t("ui.day", { day: e.day })}</div>}
-            <div className={`entry k-${kindOf(e.key, e.params)}${unseen ? " unseen" : ""}${e.tags?.includes("thought") ? " thought" : ""}`} title={unseen ? t("ui.unseen") : undefined}>
+            <div className={`entry k-${kindOf(e.key, e.params)}${unseen ? " unseen" : ""}${e.tags?.includes("thought") ? " thought" : ""}${fresh ? "" : " old"}`} title={unseen ? t("ui.unseen") : undefined}>
               <span className="time">{clockText(e.minute)}</span>
               <span>
                 {richLine(e, t, lang)}
@@ -449,7 +454,7 @@ export function RoomGrid({ state, t, lang, onAct }: Common & { onAct(a: Action):
 // ---------------------------------------------------------------- her, at a glance
 
 /** The card in the middle column: how she is right now, in one word, a few chips and two short columns of bars. */
-export function HerCard({ state, t, open }: Common) {
+export function HerCard({ state, t, open, lang }: Common) {
   const [more, setMore] = useState(true);
   const b = bs(state);
   const h = b.heroine;
@@ -467,6 +472,21 @@ export function HerCard({ state, t, open }: Common) {
   const topWant = top[1] >= content.mind.wants.hintFrom && (open || top[0] === "rest" || top[0] === "attention") ? top[0] : null;
   const task = state.time.phase === "prep" ? b.day?.her?.task : undefined;
   const feelings = feelingsOf(state).slice(0, 4);
+  // in the morning and through the day: how she carries last night, as far as anyone could tell by looking
+  const f = (e: "guilt" | "shame" | "longing" | "tenderness" | "delight" | "anger") => h.feel?.[e] ?? 0;
+  const sore = (["vagina", "anus", "mouth"] as const).some((z) => soreOf(state, z) >= 35);
+  const seems =
+    state.time.phase !== "prep" ? null : sore ? "careful" : f("anger") >= 25 || h.marriage.resent >= 50 ? "sharp" : f("guilt") + f("shame") >= 35 ? "quiet" : f("longing") >= 30 || h.frustration >= 40 ? "restless" : f("tenderness") + f("delight") >= 30 || h.mood >= 72 ? "humming" : h.energy < 45 ? "worn" : null;
+  const last = (b.diary ?? []).find((d) => d.day === state.time.day - 1);
+  const yesterday = last
+    ? Object.entries(last.with)
+        .filter(([id]) => open || id === HUSBAND || last.seen[id])
+        // small talk and a shared drink are not what stays with her
+        .map(([id, acts]) => [id, Object.keys(acts).filter((a) => (content.acts.find((x) => x.id === a)?.tier ?? 0) >= 2)] as const)
+        .filter(([, acts]) => acts.length > 0)
+        .map(([id, acts]) => `${who(id, state, t, lang)} - ${acts.map((a) => t(`act.${a}`)).join(", ")}`)
+        .join("; ")
+    : "";
   return (
     <div className="hercard">
       <div className="hc-head">
@@ -486,6 +506,12 @@ export function HerCard({ state, t, open }: Common) {
         {task ? ` · ${t(`her.task.${task}`)}` : ""}
         {topWant ? ` · ${t("ui.wants.hint", { what: t(`want.${topWant}`) })}` : ""}
       </div>
+      {seems && <div className="small hc-seems">{t(`ui.seems.${seems}`)}</div>}
+      {yesterday && (
+        <div className="small muted">
+          {t("ui.memory.yesterday")}: {yesterday}
+        </div>
+      )}
       {more && (
         <div className="hc-cols">
           <div>
@@ -532,6 +558,7 @@ export function OutcomeCard({ state, t, lang, open }: Common) {
   const lines = state.log.filter((e) => e.turn === o.turn && e.day === o.day && e.minute === o.minute && (open || !e.tags?.includes("unseen")) && !e.tags?.includes("thought")).slice(-3);
   if (lines.length === 0) return null;
   const mins = (state.time.day - o.day) * 1440 + state.time.minute - o.minute;
+  if (mins > 180) return null; // it was hours ago: no longer how she is taking things
   const age = mins <= 0 || o.turn === state.turn ? t("ui.outcome.now") : mins < 1440 ? t("ui.outcome.ago", { n: mins }) : t("ui.outcome.days", { n: Math.floor(mins / 1440) });
   return (
     <div className={`outcome o-${o.how}`}>
