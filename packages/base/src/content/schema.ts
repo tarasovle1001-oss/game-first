@@ -544,7 +544,7 @@ export const lookSchema = z
     words: z
       .object({
         outfit: z.record(z.string(), z.string()), bare: z.record(z.string(), z.array(z.string())), panties: z.record(z.string(), z.string()), skirtUp: z.string(),
-        mood: z.array(z.object({ when: z.string(), tags: z.array(z.string()) }).strict()), drunk: steps, stretch: z.record(z.string(), steps), sore: z.record(z.string(), steps).default({}),
+        mood: z.array(z.object({ when: z.string(), tags: z.array(z.string()) }).strict()), drunk: steps, stretch: z.record(z.string(), steps), sore: z.record(z.string(), steps).default({}), fin: z.record(z.string(), z.array(z.string())).default({}),
         cum: z.record(z.string(), z.string()), after: z.record(z.string(), z.string()), size: z.array(z.string()).length(5), man: z.record(z.string(), z.array(z.string())),
         hisCum: z.string(), hisStretch: steps, room: z.record(z.string(), z.string()), act: z.record(z.string(), z.string()),
       })
@@ -625,6 +625,8 @@ export const floorSchema = z
     groups: z.object({ fromDay: z.number(), chancePerDay: z.number(), arriveTick: z.tuple([z.number(), z.number()]), stay: z.number(), size: z.tuple([z.number().int(), z.number().int()]), kinds: z.array(id), saunaChance: z.number(), saunaHeat: z.number(), saunaTier: z.number(), trayEvery: z.number(), trayWait: z.number(), bill: z.tuple([z.number(), z.number()]), tipHer: z.number(), tipHusband: z.number(), heatPerRound: z.number(), heatHer: z.number(), restlessReputation: z.number(), inside: z.tuple([z.number(), z.number()]), longInside: z.tuple([z.number(), z.number()]), tierByHeat: z.array(z.tuple([z.number(), z.number()])), pressurePerMan: z.number(), manyBonus: z.number(), tipPerTier: z.number(), husbandEnergy: z.number(), refusedHeat: z.number() }).strict(),
     table: z.object({ minutes: z.number().int(), perEvening: z.number().int(), slipDrunk: z.number(), slipHonesty: z.number(), slipSuspicion: z.number(), cards: z.object({ bet: z.array(z.number().int()), winChance: z.number(), perDrunk: z.number(), stayTicks: z.number() }).strict(), rivalCools: z.number() }).strict(),
     join: z.object({ consentBonus: z.number(), hersRate: z.number(), power: z.number(), done: nums, refused: nums }).strict(),
+    crowd: z.object({ fromTier: z.number(), max: z.number().int(), gatherPerMinute: z.number(), privateFollow: z.number(), heatPerMinute: z.number(), perWatcher: nums, boldOpenness: z.number(), watcherMinute: nums, joinAfter: z.number(), joinHeat: z.number(), joinPerMinute: z.number(), joinWatchBonus: z.number(), joinMax: z.number().int(), joinPressure: z.number(), invited: z.number(), joinerRate: z.number(), joinTip: z.number(), refusedHeat: z.number(), reactEvery: z.number().int(), leaveChance: z.number(), leaveReputation: z.number(), gossipPerWatcher: z.number(), afterInterest: z.number(), dispersed: nums, dispersedBold: nums, dispersedShy: nums }).strict(),
+    finish: z.object({ wants: nums, likedAffinity: z.number(), drunk: z.number(), holdConfidence: z.number(), offendedAffinity: z.number(), offendedConfidence: z.number(), swallowOpenness: z.number(), held: nums, unwilling: nums, glad: nums, shows: z.number().int() }).strict(),
   })
   .strict();
 export type Floor = z.infer<typeof floorSchema>;

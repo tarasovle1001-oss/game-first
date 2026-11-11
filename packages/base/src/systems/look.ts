@@ -103,6 +103,22 @@ export function describeScene(state: GameState, open = false): SceneWords {
   const where = (seen || open ? state.where[WIFE] : state.where[HUSBAND]) ?? "";
   const environment = [W.room[where] ?? where];
   const action = actId ? [W.act[actId] ?? actId] : [];
+  // more than one man on her, and men standing round
+  const men = enc && seen ? (enc.men ?? []) : [];
+  if (men.length > 0) {
+    second.push(men.length === 1 ? "2boys, threesome, mmf threesome" : `${1 + men.length}boys, gangbang`);
+    const slots = new Set(men.map((m) => m.slot));
+    const main = actId ? content.acts.find((a) => a.id === actId)?.zones ?? [] : [];
+    const inPussy = slots.has("pussy") || main.includes("vagina");
+    const inAss = slots.has("anus") || main.includes("anus");
+    if (inPussy && inAss) action.push("double penetration");
+    if ((slots.has("mouth") || main.includes("mouth")) && (inPussy || inAss)) action.push("spitroast");
+    if (slots.has("hand")) action.push("handjob");
+    if (slots.has("mouth") && !main.includes("mouth")) action.push("fellatio");
+  }
+  if (enc && seen && (enc.crowd?.length ?? 0) > 0) environment.push("crowd, onlookers");
+  const fin = sex ? null : enc ? null : b.shift?.fin && (b.shift.tick ?? 0) < b.shift.fin.until ? b.shift.fin.place : (b.night?.fin ?? null);
+  if (fin) action.push(...(W.fin?.[fin] ?? []));
   const prompt = [...heroine, ...second, ...action, ...environment].join(", ");
   return { heroine, second, environment, action, prompt };
 }
@@ -144,7 +160,7 @@ export function registerLook(api: ModApi) {
     const b = bs(ctx.state);
     const { by, act, where } = e.payload as { by: string; act: string; where?: string };
     const options = L.marks.byAct[act];
-    const place = by === HUSBAND && where ? L.marks.husbandWhere[where] : options ? ctx.rng.pick(cumPlaces(ctx, options)) : "body";
+    const place = by === HUSBAND && where ? L.marks.husbandWhere[where] : where ? where : options ? ctx.rng.pick(cumPlaces(ctx, options)) : "body";
     if (place) mark(ctx, place, by === HUSBAND);
     if (by === HUSBAND) b.husband.cumOn = L.marks.onHim;
     else {

@@ -161,6 +161,12 @@ export interface Encounter {
   paid: boolean; // his offer of money is already on the table
   bored?: number; // attempts in a row that gave her too little
   joined?: string; // her husband joined in: how
+  men?: { patron: string; slot: string; act: string }[]; // other men who joined in
+  crowd?: string[]; // men who have come over to watch
+  crowdSince?: Record<string, number>; // minute each of them came over
+  reacted?: number; // minute of the last line about the room
+  invited?: string[]; // men her husband already waved over
+  lastLine?: number;
 }
 
 /** Kept for the debug panel: why she answered the way she did. */
@@ -192,6 +198,8 @@ export interface Shift {
   upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight
+  fin?: { patron: string; place: string; act: string; loc: string; until: number }; // how the last one ended, while it still shows
+  lastCrowd?: { crowd: string[]; men: { patron: string; slot: string; act: string }[] }; // who was around the encounter that is running
   cleanUntil?: number; // minute she is done cleaning herself up
   marksSeen?: boolean;
   marksGuests?: boolean;
@@ -237,7 +245,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
@@ -272,6 +280,8 @@ export interface BaseState {
   aboutSaid?: number;
   promises?: { kind: string; day: number; due: number; topic?: string }[];
   ignoredHer?: boolean;
+  ignoredSaid?: number;
+  reachedDay?: number;
   weather?: string;
   wakeAt?: number; // hour he sleeps till tonight, when it is not the usual one
   slept?: { him: number; her: number }; // hours each of them got last night

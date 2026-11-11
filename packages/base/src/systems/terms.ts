@@ -607,13 +607,18 @@ export function registerTerms(api: ModApi) {
     },
   });
 
+  // reaching for her counts even when she says no
+  for (const ev of ["husband:refused", "bed:started", "her:answered", "couple:wish", "couple:about", "bare:asked"])
+    api.events.on(ev, (ctx) => {
+      bs(ctx.state).reachedDay = ctx.state.time.day;
+    });
   // --- 9. the morning after ---------------------------------------------------------------------------
   api.events.on(
     "phase:exit",
     (ctx, e) => {
       if (e.payload!.phase !== "night") return;
       const b = bs(ctx.state);
-      b.ignoredHer = b.talked.length === 0 && !b.diary?.find((d) => d.day === ctx.state.time.day)?.with[HUSBAND];
+      b.ignoredHer = b.talked.length === 0 && b.reachedDay !== ctx.state.time.day && !b.diary?.find((d) => d.day === ctx.state.time.day)?.with[HUSBAND];
     },
     40,
   );
@@ -623,7 +628,8 @@ export function registerTerms(api: ModApi) {
       const b = bs(ctx.state);
       if (e.payload!.phase !== "prep" || !b.ignoredHer || ctx.state.time.day <= 2) return;
       b.ignoredHer = false;
-      if (b.heroine.marriage.desire < T.morning.ignoredDesire) return;
+      if (b.heroine.marriage.desire < T.morning.ignoredDesire || ctx.state.time.day - (b.ignoredSaid ?? -9) < 3) return;
+      b.ignoredSaid = ctx.state.time.day;
       fx(ctx, T.morning.ignored, "ignored");
       ctx.log("log.morning.ignored");
     },

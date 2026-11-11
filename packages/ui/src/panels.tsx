@@ -818,6 +818,16 @@ export function GuestsTab({ state, t, lang, open }: Common) {
           </ul>
         </>
       )}
+      {b.encounter && (open || husbandSees(state, b.encounter.loc)) && ((b.encounter.crowd?.length ?? 0) > 0 || (b.encounter.men?.length ?? 0) > 0) && (
+        <div className="small bad">
+          {[
+            (b.encounter.men?.length ?? 0) > 0 ? t("ui.men", { names: b.encounter.men!.map((m) => (b.patrons[m.patron] ? patronName(b.patrons[m.patron]!.name, lang) : "?")).join(", ") }) : "",
+            (b.encounter.crowd?.length ?? 0) > 0 ? t("ui.crowd", { n: b.encounter.crowd!.length }) : "",
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </div>
+      )}
       {b.shift?.group && (
         <div className="small">
           {t("ui.group", { n: b.shift.group.size, heat: Math.round(b.shift.group.heat) })}

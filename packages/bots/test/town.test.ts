@@ -23,7 +23,7 @@ describe("the gym in town", () => {
   });
   it("together: a regular she likes may find her there, and what her husband sees depends on the marriage", () => {
     let met = 0;
-    for (let seed = 1; seed <= 6; seed++) {
+    for (let seed = 1; seed <= 16; seed++) {
       let first = engine.init(seed, { base: { preset: "hungry" } });
       for (let i = 0; i < 800 && first.time.day === 1; i++) {
         const acts = engine.listActions(first);
@@ -32,6 +32,7 @@ describe("the gym in town", () => {
       const s = structuredClone(first);
       const b = bs(s);
       b.money = 500;
+      b.husband.energy = 100;
       if (b.day) b.day.herOut = false;
       const p = Object.values(b.patrons)[0];
       if (!p) continue;

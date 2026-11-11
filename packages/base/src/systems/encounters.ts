@@ -170,8 +170,12 @@ export function advanceEncounter(ctx: Ctx) {
       v.rounds += 1;
       enc.his = 0;
       v.heat = (v.heat ?? 0) * G.heatAfter;
-      ctx.log("log.enc.he_finishes", { name }, tags);
-      ctx.emit("cum:landed", { by: p.id, act: enc.act });
+      // where it goes and what she makes of it is its own small scene
+      if (!gate.finish?.(ctx, v, p, enc)) {
+        ctx.log("log.enc.he_finishes", { name }, tags);
+        ctx.emit("cum:landed", { by: p.id, act: enc.act });
+      }
+      if (!b.encounter) return; // she made a scene of it and it is over
       if (v.rounds >= p.stamina || !ctx.rng.chance(S.continueChance)) return endEncounter(ctx);
       enc.nextTry = sh.tick; // he still has it in him and wants something else
     }
@@ -465,7 +469,7 @@ export function warmGuests(ctx: Ctx) {
 }
 
 /** A hook for the terms between husband and wife: return true when she asks him before saying yes. */
-export const gate: { ask?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean; deal?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean } = {};
+export const gate: { ask?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean; deal?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean; finish?: (ctx: Ctx, v: Visit, p: Patron, enc: Encounter) => boolean } = {};
 /** Start an act with a guest outright (a dare taken, a yes given after asking). */
 export function startWith(ctx: Ctx, patronId: string, actId: string, verdict: Verdict) {
   const b = bs(ctx.state);
@@ -665,8 +669,18 @@ export function registerEncounters(api: ModApi) {
           { id: WIFE, role: "wife" },
           { id: enc.patron, role: "patron" },
         ],
-        tags: { outfit: dressOf(state) },
+        tags: { outfit: dressOf(state), ...((enc.men?.length ?? 0) > 0 ? { men: String(1 + enc.men!.length) } : {}), ...((enc.crowd?.length ?? 0) > 0 ? { crowd: "yes" } : {}) },
       };
+    },
+  });
+  // He has just finished: for a few minutes the picture is the ending, not the act.
+  api.scenes.register({
+    id: "base.finish",
+    priority: 90,
+    match(state) {
+      const f = bs(state).shift?.fin;
+      if (!f || bs(state).encounter || (bs(state).shift?.tick ?? 0) >= f.until || !husbandSees(state, f.loc)) return null;
+      return { type: actById(f.act).scene, location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), fin: f.place } };
     },
   });
 

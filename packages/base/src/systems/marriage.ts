@@ -854,6 +854,7 @@ export function registerMarriage(api: ModApi) {
             ctx.log("log.bed.finish.held");
           }
           if (b.night && ctx.state.time.phase === "night") b.night.after = where;
+          if (b.night) b.night.fin = where;
           if (where === "face" || where === "mouth") {
             const likes = b.heroine.traits.openness >= (where === "face" ? 60 : 45) || b.heroine.latents.oral_fixation !== undefined;
             if (likes) changeHeroine(ctx, "arousal", 4, "finish");
@@ -966,6 +967,7 @@ export function registerMarriage(api: ModApi) {
           { id: WIFE, role: "wife" },
           { id: HUSBAND, role: "husband" },
         ],
+        ...(b.night.fin && !b.night.sex ? { tags: { fin: b.night.fin } } : {}),
       };
     },
   });

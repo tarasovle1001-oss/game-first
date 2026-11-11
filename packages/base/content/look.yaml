@@ -50,6 +50,18 @@ words:
     - { when: happy, tags: [smile] }
     - { when: plain, tags: [neutral expression] }
   drunk: [[35, tipsy], [65, drunk]]
+  fin:              # the moment he finishes, by where
+    face: [facial, cum on face, ejaculation]
+    mouth: [cum in mouth, open mouth, tongue out]
+    chest: [cum on breasts, ejaculation]
+    body: [cum on stomach, ejaculation]
+    belly: [cum on stomach, ejaculation, pull out]
+    back: [cum on back, cum on ass, ejaculation]
+    hands: [cum on hands, ejaculation]
+    inside: [cum in pussy, creampie, overflow]
+    anus: [cum in ass, anal creampie]
+    thighs: [cum on thighs]
+    on_her: [cum on body, ejaculation]
   sore:             # from this much soreness, per zone
     vagina: [[40, reddened pussy], [70, swollen pussy]]
     anus: [[40, reddened anus], [70, puffy anus]]

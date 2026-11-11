@@ -31,11 +31,12 @@ import { registerMind } from "./systems/mind";
 import { registerTerms } from "./systems/terms";
 import { registerFloor } from "./systems/floor";
 import { registerBodyState } from "./systems/bodystate";
+import { registerCrowd } from "./systems/crowd";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 21,
+  version: 22,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -146,6 +147,7 @@ export const baseMod: Mod = {
     registerTerms(api);
     registerFloor(api);
     registerBodyState(api);
+    registerCrowd(api);
     registerSetup(api);
   },
 };
@@ -193,6 +195,7 @@ export { ATTRS, EMOTIONS, attrOf, feelingOf, feelingsOf, latitudeOf, trustOf, wa
 export type { Attr, Emotion } from "./systems/mind";
 export { WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, wished } from "./systems/terms";
 export { DEAL, GROUP, TABLE, JOIN, LOUNGE } from "./systems/floor";
+export { CROWD, crowdOf, menOf } from "./systems/crowd";
 export { soreOf, slick, wearOf, foreignMarks, visibleMarks, dressShift } from "./systems/bodystate";
 export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryOf, weekdayOf, fameOf, fameTier } from "./systems/rhythm";
 export { pleasureFor, sizeClass } from "./systems/body";

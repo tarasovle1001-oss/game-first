@@ -221,6 +221,22 @@ export function registerFloor(api: ModApi) {
     if (ctx.state.time.day < Gr.fromDay || !ctx.rng.chance(Gr.chancePerDay)) return;
     sh.groupAt = ctx.rng.int(Gr.arriveTick[0], Gr.arriveTick[1]);
   });
+  /** The company settles up and goes. A company that was never brought anything leaves angry. */
+  const leave = (ctx: Ctx) => {
+    const b = bs(ctx.state);
+    const sh = b.shift!;
+    const g = sh.group!;
+    sh.group = undefined;
+    if (g.rounds === 0) {
+      addReputation(ctx, -2 * Gr.restlessReputation);
+      ctx.log("log.group.leave.nothing");
+      return;
+    }
+    addMoney(ctx, g.bill, "group");
+    sh.income += g.bill;
+    b.today.income += g.bill;
+    ctx.log("log.group.leave", { bill: g.bill, n: g.size });
+  };
   const tierFor = (heat: number) => Gr.tierByHeat.filter(([from]) => heat >= from).at(-1)?.[1] ?? 1;
   api.events.on("shift:minute", (ctx) => {
     const b = bs(ctx.state);
@@ -248,11 +264,7 @@ export function registerFloor(api: ModApi) {
       sh.interrupt = true;
     }
     if (sh.tick >= g.until && g.herOut === undefined) {
-      addMoney(ctx, g.bill, "group");
-      sh.income += g.bill;
-      b.today.income += g.bill;
-      ctx.log("log.group.leave", { bill: g.bill, n: g.size });
-      sh.group = undefined;
+      leave(ctx);
       return;
     }
     if (!g.wants && sh.tick >= g.nextTray && sh.tick < g.until - 10) {
@@ -375,11 +387,7 @@ export function registerFloor(api: ModApi) {
     const b = bs(ctx.state);
     const sh = b.shift;
     if (e.payload!.phase !== "shift" || !sh?.group) return;
-    addMoney(ctx, sh.group.bill, "group");
-    sh.income += sh.group.bill;
-    b.today.income += sh.group.bill;
-    ctx.log("log.group.leave", { bill: sh.group.bill, n: sh.group.size });
-    sh.group = undefined;
+    leave(ctx);
   }, 60);
 
   // === 4. sitting down with a guest ===============================================================

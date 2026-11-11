@@ -85,3 +85,42 @@ join:                 # the husband joins her and a guest (only once it is in th
   power: 3
   done: { delight: 6, shame: 4, arousal: 6 }
   refused: { annoy: 5 }
+crowd:                # when something goes on where others can see: some gather to watch, some want in
+  fromTier: 3
+  max: 4
+  gatherPerMinute: 0.12       # chance one more man comes over, times his interest share
+  privateFollow: 0.008        # per minute: someone saw them leave the hall and comes to the door
+  heatPerMinute: 2            # what watching does to a watcher
+  perWatcher: { shy: -2, bold: 3 }   # consent per watcher, by whether she likes being looked at
+  boldOpenness: 65
+  watcherMinute: { shame: 0.6, arousalBold: 0.8 }
+  joinAfter: 4                # minutes of watching before a man asks for more
+  joinHeat: 55
+  joinPerMinute: 0.2
+  joinWatchBonus: 0.5         # consent per minute he has been watching (she got used to him there)
+  joinMax: 3
+  joinPressure: 1             # per man already on her
+  invited: 10                 # her husband invites him over
+  joinerRate: 1.2             # her pleasure per joiner
+  joinTip: 20
+  refusedHeat: -20
+  reactEvery: 8               # minutes between a line about what the room does
+  leaveChance: 0.15           # a prudish guest gets up and leaves, per reaction
+  leaveReputation: 1
+  gossipPerWatcher: 0.8
+  afterInterest: 5            # a man who watched wants her more
+  dispersed: { affinity: -4 }
+  dispersedBold: { resent: 1.5 }      # she liked the audience
+  dispersedShy: { tenderness: 4, trust: 2 }
+finish:               # where a guest finishes, and what she makes of it
+  wants: { face: 60, mouth: 45 }      # openness from which she takes it gladly
+  likedAffinity: 40           # or from a man she likes this much
+  drunk: 50                   # or drunk enough
+  holdConfidence: 55          # not wanted and sure of herself: she pulls clear
+  offendedAffinity: 0         # ...and from a man she dislikes she makes a scene of it
+  offendedConfidence: 70
+  swallowOpenness: 65
+  held: { affinity: -6, disgust: 6, annoy: 5 }
+  unwilling: { shame: 6, disgust: 4, annoy: 4 }
+  glad: { arousal: 3, affinity: 2 }
+  shows: 4                    # minutes the ending stays as the scene

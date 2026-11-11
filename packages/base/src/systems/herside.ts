@@ -56,7 +56,7 @@ const approach = (ctx: Ctx) => {
   b.approach = { kind: what.kind, patron: what.patron, public: pub };
   b.approached[what.kind] = ctx.state.time.day;
   if (b.shift) b.shift.interrupt = true;
-  const name = what.patron ? (b.patrons[what.patron]?.name ?? "") : "";
+  const name = what.patron && b.patrons[what.patron] ? `@name:${b.patrons[what.patron]!.name}` : "";
   ctx.log(`log.approach.${what.kind}${pub && what.kind !== "harassed" ? ".public" : ""}`, { name });
   ctx.emit("her:approached", { kind: what.kind });
 };
