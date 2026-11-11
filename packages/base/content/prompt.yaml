@@ -3,117 +3,111 @@
 # context, `pnpm slots merge <file>` takes the answer back, `pnpm slots check` lints. Empty = not filled yet.
 #
 # Each figure gets its own prompt (regional / masked conditioning), so what the guest is never leaks into her.
+# Who the figures are (hair, eyes, build) is not here: that is the character card, cast.yaml.
 # Counts (1girl, 2boys...) are added by the code; do not write them here.
 style:
-  prefix: ""        # quality / style tags for the checkpoint, go first in the shared prompt
-  negative: ""      # shared negative
-roles:              # who the figure is; appearance only, no pose
-  wife: { who: "adult woman", negative: "" }
-  husband: { who: "adult man", negative: "" }
-  patron: { who: "adult man", negative: "" }
-  patron2: { who: "adult man", negative: "" }
-  patron3: { who: "adult man", negative: "" }
-  watcher: { who: "adult man, background figure", negative: "" }
+  prefix: "masterpiece, best quality, anime style, highly detailed"
+  negative: "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, artist name"
 # per scene layout: "scene" = shared words for the whole frame (composition, camera, what is going on between them),
 # one entry per role = that figure: pose, where the hands are, where the eyes look. Same ids as scenes.yaml.
 poses:
-  idle: { scene: "", wife: "" }
-  serving: { scene: "", wife: "", patron: "" }
-  patron_chatting: { scene: "", wife: "", patron: "" }
-  patron_drinking: { scene: "", wife: "", patron: "" }
-  patron_flirting: { scene: "", wife: "", patron: "" }
-  patron_touching: { scene: "", wife: "", patron: "" }
-  patron_moment_sit_on_lap: { scene: "", patron: "", wife: "" }
-  kissing: { scene: "", wife: "", patron: "" }
-  patron_groping: { scene: "", wife: "", patron: "" }
-  patron_lap_dance: { scene: "", patron: "", wife: "" }
-  patron_handjob: { scene: "", patron: "", wife: "" }
-  patron_blowjob: { scene: "", patron: "", wife: "" }
-  patron_cunnilingus: { scene: "", wife: "", patron: "" }
-  patron_sex: { scene: "", wife: "", patron: "" }
-  patron_riding: { scene: "", patron: "", wife: "" }
-  patron_anal: { scene: "", wife: "", patron: "" }
-  sex: { scene: "", wife: "", husband: "" }
-  left_wanting: { scene: "", husband: "", wife: "" }
-  cunnilingus: { scene: "", wife: "", husband: "" }
-  cold_back: { scene: "", wife: "", husband: "" }
-  sleeping: { scene: "", wife: "", husband: "" }
-  caught: { scene: "", wife: "", patron: "", husband: "" }
-  fd_tease: { scene: "", husband: "", wife: "" }
-  fd_facesit: { scene: "", husband: "", wife: "" }
-  fd_ignore: { scene: "", wife: "", husband: "" }
-  patron_titfuck: { scene: "", patron: "", wife: "" }
-  patron_thigh_job: { scene: "", wife: "", patron: "" }
-  patron_deepthroat: { scene: "", patron: "", wife: "" }
-  patron_standing_sex: { scene: "", wife: "", patron: "" }
-  came_too_soon_foreplay: { scene: "", wife: "", husband: "" }
-  premature_finish: { scene: "", wife: "", husband: "" }
-  finishing_herself: { scene: "", wife: "", husband: "" }
-  faking_it: { scene: "", wife: "", husband: "" }
-  patron_grinding: { scene: "", patron: "", wife: "" }
-  patron_mutual_touching: { scene: "", wife: "", patron: "" }
-  grinding: { scene: "", husband: "", wife: "" }
-  mutual_touching: { scene: "", wife: "", husband: "" }
-  handjob: { scene: "", husband: "", wife: "" }
-  blowjob: { scene: "", husband: "", wife: "" }
-  riding: { scene: "", husband: "", wife: "" }
-  anal: { scene: "", wife: "", husband: "" }
-  rimming_her: { scene: "", wife: "", husband: "" }
-  prostate: { scene: "", husband: "", wife: "" }
-  pegging: { scene: "", husband: "", wife: "" }
-  rimming_him: { scene: "", husband: "", wife: "" }
-  dildo_him: { scene: "", husband: "", wife: "" }
-  fisting_him: { scene: "", husband: "", wife: "" }
-  came_prostate: { scene: "", husband: "", wife: "" }
-  came_dildo_him: { scene: "", husband: "", wife: "" }
-  came_pegging: { scene: "", husband: "", wife: "" }
-  came_fisting_him: { scene: "", husband: "", wife: "" }
-  came_rimming_him: { scene: "", husband: "", wife: "" }
-  came_rimming_her: { scene: "", wife: "", husband: "" }
-  wants_him: { scene: "", husband: "", wife: "" }
-  patron_breast_play: { scene: "", wife: "", patron: "" }
-  patron_fingering: { scene: "", wife: "", patron: "" }
-  patron_sixty_nine: { scene: "", patron: "", wife: "" }
-  breast_play: { scene: "", wife: "", husband: "" }
-  fingering: { scene: "", wife: "", husband: "" }
-  sixty_nine: { scene: "", husband: "", wife: "" }
-  talk: { scene: "", wife: "", husband: "" }
-  by_hand: { scene: "", wife: "", husband: "" }
-  went_soft: { scene: "", wife: "", husband: "" }
-  patron_fin_face: { scene: "", wife: "", patron: "" }
-  patron_fin_mouth: { scene: "", wife: "", patron: "" }
-  patron_fin_chest: { scene: "", wife: "", patron: "" }
-  patron_fin_body: { scene: "", wife: "", patron: "" }
-  patron_fin_hands: { scene: "", patron: "", wife: "" }
-  patron_fin_inside: { scene: "", wife: "", patron: "" }
-  patron_fin_anus: { scene: "", wife: "", patron: "" }
-  patron_fin_thighs: { scene: "", wife: "", patron: "" }
-  patron_fin_held: { scene: "", wife: "", patron: "" }
-  fin_face: { scene: "", wife: "", husband: "" }
-  fin_mouth: { scene: "", husband: "", wife: "" }
-  fin_chest: { scene: "", wife: "", husband: "" }
-  fin_belly: { scene: "", wife: "", husband: "" }
-  fin_back: { scene: "", wife: "", husband: "" }
-  fin_inside: { scene: "", wife: "", husband: "" }
-  lead_ruined: { scene: "", husband: "", wife: "" }
-  lead_snowball: { scene: "", husband: "", wife: "" }
-  lead_lick_clean: { scene: "", husband: "", wife: "" }
-  group_spitroast: { scene: "", wife: "", patron: "", patron2: "" }
-  group_spitroast_hand: { scene: "", wife: "", patron: "", patron2: "", patron3: "" }
-  group_dp: { scene: "", patron: "", wife: "", patron2: "" }
-  group_airtight: { scene: "", patron: "", wife: "", patron2: "", patron3: "" }
-  group_oral_hand: { scene: "", wife: "", patron: "", patron2: "" }
-  group_sex_hand: { scene: "", wife: "", patron: "", patron2: "" }
-  join_hand: { scene: "", wife: "", patron: "", husband: "" }
-  join_mouth: { scene: "", wife: "", patron: "", husband: "" }
-  join_take: { scene: "", patron: "", wife: "", husband: "" }
-  her_cook: { scene: "", wife: "", husband: "" }
-  her_tidy: { scene: "", wife: "", husband: "" }
-  her_rest: { scene: "", wife: "", husband: "" }
-  her_dress: { scene: "", wife: "", husband: "" }
-  bath_walkin: { scene: "", wife: "", husband: "" }
-  bath_together: { scene: "", wife: "", husband: "" }
-  flash: { scene: "", wife: "", patron: "", patron2: "" }
-  walk_naked: { scene: "", patron2: "", wife: "", patron: "" }
-  deal: { scene: "", husband: "", patron: "", wife: "" }
-  table_sit: { scene: "", husband: "", patron: "" }
+  idle: { scene: "medium shot, looking at viewer", wife: "standing, arms at sides, looking forward" }
+  serving: { scene: "medium shot, partner in front of seated partner", wife: "standing, holding tray, looking at another", patron: "sitting, looking at another, hands on table" }
+  patron_chatting: { scene: "medium shot, eye contact, close conversation", wife: "standing, torso turned slightly, looking at another, hands gesturing", patron: "sitting, looking up at partner, one hand raised" }
+  patron_drinking: { scene: "medium shot, intimate framing, eye contact", wife: "sitting, holding glass, looking at another", patron: "sitting, holding glass, looking at another" }
+  patron_flirting: { scene: "medium close-up, close distance, eye contact", wife: "standing, leaning slightly forward, looking at another, one hand near chest", patron: "sitting, looking up at partner, reaching toward her hand" }
+  patron_touching: { scene: "medium shot, close contact, intimate framing", wife: "standing, looking at another, one hand on his shoulder", patron: "sitting, looking at another, one hand on her hip, other on her thigh" }
+  patron_moment_sit_on_lap: { scene: "medium shot, three-quarter view, close embrace, eye contact", patron: "sitting, hands on her hips and thigh, looking at her", wife: "sitting on lap, arms around his neck and chest, looking at him" }
+  kissing: { scene: "close-up, faces close, intimate framing", wife: "standing, arms around his neck and chest, eyes closed", patron: "standing, hands on her hips and butt, eyes closed" }
+  patron_groping: { scene: "medium shot, close contact, dynamic angle", wife: "standing, looking at him, one hand holding his wrist", patron: "standing, one hand on her chest, other on her groin, looking at her" }
+  patron_lap_dance: { scene: "medium shot, three-quarter view, close straddle, eye contact", patron: "sitting, hands on her butt and hips, looking up at her", wife: "straddling, arms around his neck and shoulder, looking at him" }
+  patron_handjob: { scene: "medium close-up, low angle, focused framing", patron: "sitting, one hand on her head, looking down, penis exposed", wife: "kneeling, one hand on his penis tip, other on his knee, looking up" }
+  patron_blowjob: { scene: "medium close-up, low angle, intimate framing", patron: "standing, one hand on her head, looking down, penis in her mouth", wife: "kneeling, one hand on his knee, other near penis base, looking up" }
+  patron_cunnilingus: { scene: "medium close-up, low angle, intimate framing", wife: "lying on back, legs spread, one hand on his head, looking down", patron: "kneeling between legs, head between thighs, hands on her knee and pelvis" }
+  patron_sex: { scene: "medium shot, close contact, intimate framing", wife: "lying on back, legs open, arms around his shoulder and chest, looking at him", patron: "kneeling between legs, one hand on her knee, other on her chest, penetrating" }
+  patron_riding: { scene: "medium shot, three-quarter view, from slightly below, eye contact", patron: "lying on back, hands on her hips and thigh, looking up", wife: "straddling, hands on his chest, riding, looking down at him" }
+  patron_anal: { scene: "medium shot, from behind angle, close contact", wife: "on all fours, looking back over shoulder", patron: "kneeling behind, hands on her hips and butt, penetrating from behind" }
+  sex: { scene: "medium shot, close contact, intimate framing", wife: "lying on back, legs open, arms around his shoulder and chest, looking at him", husband: "kneeling between legs, one hand on her knee, other on her chest, penetrating" }
+  left_wanting: { scene: "medium shot, emotional distance, soft lighting", husband: "lying on back, looking away, arms at sides", wife: "sitting on edge of bed, looking away, arms crossed" }
+  cunnilingus: { scene: "medium close-up, low angle, intimate framing", wife: "lying on back, legs spread, one hand on his head, looking down", husband: "kneeling between legs, head between thighs, hands on her knee and pelvis" }
+  cold_back: { scene: "medium shot, cold atmosphere, distant framing", wife: "lying on side, back turned, eyes closed or looking away", husband: "sitting on edge of bed, looking at her back, shoulders slumped" }
+  sleeping: { scene: "medium shot, high angle, calm bedroom atmosphere, soft lighting", wife: "lying on side, eyes closed, peaceful expression", husband: "lying on back, eyes closed, relaxed" }
+  caught: { scene: "medium shot, dramatic angle, tense framing, multiple figures", wife: "kneeling, one hand on his knee, looking up, mouth occupied", patron: "standing, one hand on her head, looking down", husband: "standing in doorway, shocked expression, looking at them" }
+  fd_tease: { scene: "medium close-up, provocative framing, eye contact", husband: "lying on back, looking at her, penis exposed", wife: "kneeling beside, one hand on his penis tip, teasing, looking at him" }
+  fd_facesit: { scene: "medium shot, from below, dominant framing, close contact", husband: "lying on back, one hand on her thigh, looking up, penis exposed", wife: "straddling his face, one hand on his chest, looking down" }
+  fd_ignore: { scene: "medium shot, cold distant framing", wife: "lying on side, back turned, indifferent expression", husband: "kneeling beside bed, looking at her, penis exposed, pleading posture" }
+  patron_titfuck: { scene: "medium close-up, low angle, focused on chest", patron: "sitting, leaning back, one hand on her shoulder, penis between breasts", wife: "kneeling, both hands pressing breasts around penis, looking up" }
+  patron_thigh_job: { scene: "medium shot, close contact, standing pose", wife: "standing, thighs pressed together, one hand holding his hand, looking at him", patron: "standing behind, one hand on her chest, other on her hip, penis between thighs" }
+  patron_deepthroat: { scene: "medium close-up, low angle, intense framing", patron: "standing, both hands on her head, looking down", wife: "kneeling, hands on his knees, head tilted back, deepthroat" }
+  patron_standing_sex: { scene: "medium shot, from slightly behind, dynamic angle", wife: "bent over, hands on surface, looking back", patron: "standing behind, one hand on her hip, other on her neck, penetrating" }
+  came_too_soon_foreplay: { scene: "medium shot, awkward atmosphere, soft lighting", wife: "sitting, looking at him with mild disappointment", husband: "kneeling, one hand covering groin, embarrassed expression, penis shown" }
+  premature_finish: { scene: "medium shot, post-climax framing, soft light", wife: "lying on back, legs open, looking at him", husband: "sitting back, looking down, spent expression, penis shown" }
+  finishing_herself: { scene: "medium close-up, intimate self-focused framing", wife: "lying on back, legs open, one hand between legs, other on chest, eyes closed", husband: "lying on side, watching her, quiet expression" }
+  faking_it: { scene: "medium shot, close contact, forced intimacy", wife: "lying on back, legs open, arms around his shoulder and chest, forced expression", husband: "kneeling between legs, one hand on her knee, other on her chest, penetrating" }
+  patron_grinding: { scene: "medium shot, three-quarter view, close lap contact, eye contact", patron: "sitting, hands on her hips and chest, looking up at her", wife: "straddling, one hand on his knee, grinding, looking at him" }
+  patron_mutual_touching: { scene: "medium shot, mutual contact, intimate framing", wife: "sitting, one hand on his penis, other on his shoulder, looking at him", patron: "sitting, one hand between her legs, other on her neck, looking at her, penis shown" }
+  grinding: { scene: "medium shot, three-quarter view, close contact, from slightly below", husband: "lying on back, hands on her hips and thigh, looking up", wife: "straddling, both hands on his chest, grinding, looking down" }
+  mutual_touching: { scene: "medium shot, mutual contact, intimate framing", wife: "sitting, one hand on his penis, other on his shoulder, looking at him", husband: "sitting, one hand between her legs, other on her neck, looking at her, penis shown" }
+  handjob: { scene: "medium close-up, focused framing, soft light", husband: "lying on back, looking at her, penis shown", wife: "kneeling beside, one hand stroking his penis, other on his knee, looking at him" }
+  blowjob: { scene: "medium close-up, low angle, intimate framing", husband: "sitting, one hand on her head, looking down", wife: "kneeling, one hand on his knee, other near penis base, performing oral" }
+  riding: { scene: "medium shot, three-quarter view, from slightly below, eye contact", husband: "lying on back, hands on her hips and thigh, looking up", wife: "straddling, both hands on his chest, riding, looking down at him" }
+  anal: { scene: "medium shot, from behind angle, close contact", wife: "on all fours, looking back over shoulder", husband: "kneeling behind, hands on her hips and butt, penetrating from behind" }
+  rimming_her: { scene: "medium close-up, from behind, intimate low angle", wife: "on all fours, looking back", husband: "kneeling behind, head at her rear, hands on her hips and butt" }
+  prostate: { scene: "medium shot, intimate framing, focused contact", husband: "lying on back, legs open, looking at her, penis shown", wife: "kneeling beside, one hand stimulating him, other on his knee, looking at him" }
+  pegging: { scene: "medium shot, from behind, dominant framing", husband: "on all fours, looking forward, penis shown", wife: "kneeling behind, one hand on his hip, other on his neck, holding toy" }
+  rimming_him: { scene: "medium close-up, from behind, intimate low angle", husband: "on all fours, looking forward, penis shown", wife: "kneeling behind, head at his rear, one hand on his penis, other on his butt" }
+  dildo_him: { scene: "medium shot, from behind, focused contact", husband: "on all fours, looking forward, penis shown", wife: "kneeling behind, one hand holding toy at his rear, other on his hip" }
+  fisting_him: { scene: "medium shot, intense close framing", husband: "lying on back, legs open, one hand on his knee, looking at her, penis shown", wife: "kneeling between legs, one hand inside, other on his knee, focused expression" }
+  came_prostate: { scene: "medium close-up, post-climax intimate framing", husband: "lying on back, legs open, orgasm expression, penis shown", wife: "kneeling beside, one hand still stimulating, other on his penis, watching him" }
+  came_dildo_him: { scene: "medium shot, from behind, climax framing", husband: "on all fours, head lowered, orgasm expression, penis shown", wife: "kneeling behind, holding toy, one hand on his groin, watching" }
+  came_pegging: { scene: "medium shot, from above, post-climax framing", husband: "lying face down, spent expression, penis shown", wife: "kneeling over him, one hand on his neck, other on his hip, holding toy" }
+  came_fisting_him: { scene: "medium close-up, intense post-climax framing", husband: "lying on back, legs open, orgasm expression, penis shown", wife: "kneeling between legs, one hand still inside, other on his hip, watching" }
+  came_rimming_him: { scene: "medium close-up, from behind, climax framing", husband: "on all fours, head lowered, orgasm expression, penis shown", wife: "kneeling behind, one hand on his penis, other on his butt, head near rear" }
+  came_rimming_her: { scene: "medium shot, from behind, post-climax intimate framing", wife: "lying face down, relaxed post-orgasm expression", husband: "kneeling behind, head near her rear, hands on her hip and knee" }
+  wants_him: { scene: "medium shot, inviting atmosphere, soft lighting", husband: "lying on back, looking at her", wife: "kneeling over him, hands on his chest and shoulder, leaning in, seductive look" }
+  patron_breast_play: { scene: "medium close-up, focused on chest, intimate framing", wife: "sitting, one hand on his head, looking down at him", patron: "kneeling, both hands on her breasts and hip, face near chest" }
+  patron_fingering: { scene: "medium shot, close contact, intimate low angle", wife: "lying on back, legs open, one hand on his arm, looking at him", patron: "kneeling between legs, one hand between her legs, other on her knee" }
+  patron_sixty_nine: { scene: "medium shot, mutual oral framing, close contact", patron: "lying on back, hands on her butt and hips, receiving oral", wife: "on all fours over him, performing oral, one hand on his knee" }
+  breast_play: { scene: "medium close-up, focused on chest, intimate framing", wife: "sitting, one hand on his head, looking down at him", husband: "kneeling, both hands on her breasts and hip, face near chest" }
+  fingering: { scene: "medium shot, close contact, intimate low angle", wife: "lying on back, legs open, one hand on his arm, looking at him", husband: "kneeling between legs, one hand between her legs, other on her knee" }
+  sixty_nine: { scene: "medium shot, mutual oral framing, close contact", husband: "lying on back, hands on her butt and hips, receiving oral", wife: "on all fours over him, performing oral, one hand on his knee" }
+  talk: { scene: "medium shot, calm conversation framing, soft light", wife: "sitting, looking at him, calm expression", husband: "sitting, looking at her, attentive posture" }
+  by_hand: { scene: "medium shot, solitary action framing", wife: "lying on side, watching him quietly", husband: "kneeling, one hand stroking himself, focused expression, penis shown" }
+  went_soft: { scene: "medium shot, awkward intimate framing", wife: "lying on back, legs open, one hand on his shoulder, concerned look", husband: "kneeling between legs, looking down, soft expression, penis shown" }
+  patron_fin_face: { scene: "medium close-up, climax framing, focused on face", wife: "kneeling, hands on his knee and her own knee, eyes closed or looking up", patron: "standing, one hand on his penis, other on her head, climax expression" }
+  patron_fin_mouth: { scene: "medium close-up, low angle, climax framing", wife: "kneeling, one hand on his knee, other on his hip, receiving", patron: "standing, both hands on her head, climax expression" }
+  patron_fin_chest: { scene: "medium close-up, focused on chest, climax framing", wife: "kneeling, leaning back slightly, looking up", patron: "standing, one hand on his penis, climax expression, aiming at chest" }
+  patron_fin_body: { scene: "medium shot, from above, climax framing", wife: "lying on back, legs open, looking at him", patron: "kneeling between legs, one hand on his penis, other on her knee, climax" }
+  patron_fin_hands: { scene: "medium close-up, focused on hands, climax framing", patron: "sitting, leaning back, climax expression, penis shown", wife: "kneeling, both hands around his penis, looking up at him" }
+  patron_fin_inside: { scene: "medium shot, close embrace, climax framing", wife: "lying on back, legs wrapped around him, arms around his neck and shoulder", patron: "kneeling over her, arms around her, deep penetration, climax expression" }
+  patron_fin_anus: { scene: "medium shot, from behind, climax framing", wife: "on all fours, head lowered, receiving", patron: "kneeling behind, hands on her hip and shoulder, penetrating, climax" }
+  patron_fin_thighs: { scene: "medium shot, standing close contact, climax framing", wife: "bent forward, looking back", patron: "standing behind, hands on her hips and butt, penis between thighs, climax" }
+  patron_fin_held: { scene: "medium shot, abrupt separation, tense framing", wife: "standing, stepping back, looking at him", patron: "standing, one hand on his penis, climax expression, semen visible" }
+  fin_face: { scene: "medium close-up, climax framing, focused on face", wife: "kneeling, hands on his knee and her own knee, eyes closed or looking up", husband: "kneeling, one hand on his penis, other on her head, climax expression" }
+  fin_mouth: { scene: "medium close-up, low angle, climax framing", husband: "sitting, one hand on her head, climax expression", wife: "kneeling, one hand on his knee, other on his hip, receiving" }
+  fin_chest: { scene: "medium close-up, focused on chest, climax framing", wife: "lying on back, looking up", husband: "kneeling beside, one hand on his penis, aiming at chest, climax" }
+  fin_belly: { scene: "medium shot, from above, climax framing", wife: "lying on back, legs open, looking at him", husband: "kneeling between legs, one hand on his penis, other on her knee, climax" }
+  fin_back: { scene: "medium shot, from behind, climax framing", wife: "lying face down, relaxed", husband: "kneeling beside, one hand on his penis, other on her butt, climax" }
+  fin_inside: { scene: "medium shot, close embrace, climax framing", wife: "lying on back, legs wrapped around him, arms around his neck and shoulder", husband: "kneeling over her, arms around her, deep penetration, climax expression" }
+  lead_ruined: { scene: "medium shot, abrupt interruption, tense framing", husband: "lying on back, frustrated expression, penis shown", wife: "kneeling beside, one hand resting on her knee, looking away" }
+  lead_snowball: { scene: "medium close-up, intimate transfer framing", husband: "lying on back, one hand on her hip, receiving", wife: "on all fours over him, head near his face, transferring" }
+  lead_lick_clean: { scene: "medium shot, three-quarter view, from below, intimate cleaning framing", husband: "lying on back, hands on her thigh and butt, looking up", wife: "straddling his face, one hand on his head, looking down" }
+  group_spitroast: { scene: "medium shot, dual contact, dynamic group framing", wife: "on all fours, receiving from both ends", patron: "kneeling behind, hands on her hips and butt, penetrating from behind", patron2: "kneeling in front, one hand on her head, penis in her mouth" }
+  group_spitroast_hand: { scene: "medium shot, wide angle, three-person contact, busy framing", wife: "kneeling, one hand stroking third man, receiving from behind and mouth", patron: "kneeling behind, one hand on her hip, penetrating from behind", patron2: "standing in front, one hand on her head, penis in her mouth", patron3: "standing beside, penis shown, being stroked" }
+  group_dp: { scene: "medium shot, three-quarter view, double penetration, close group framing", patron: "lying on back, one hand on her hip, penetrating from below", wife: "straddling, hands on his shoulder and chest, receiving both", patron2: "kneeling behind, hands on her hip and shoulder, penetrating from behind" }
+  group_airtight: { scene: "medium shot, wide angle, three-way penetration, intense group framing", patron: "lying on back, one hand on her hip, penetrating from below", wife: "straddling, one hand on his shoulder, other on third man's hip, filled", patron2: "kneeling behind, one hand on her hip, penetrating from behind", patron3: "kneeling in front, one hand on her head, penis in her mouth" }
+  group_oral_hand: { scene: "medium shot, dual oral and hand, group framing", wife: "kneeling, one hand on first man's knee, other stroking second man", patron: "standing, one hand on her head, penis in her mouth", patron2: "standing beside, one hand on her shoulder, penis shown" }
+  group_sex_hand: { scene: "medium shot, penetration plus handjob, group framing", wife: "lying on back, legs open, one hand stroking second man, other on first man's chest", patron: "kneeling between legs, hands on her knee and chest, penetrating", patron2: "kneeling beside, one hand near her head, penis shown" }
+  join_hand: { scene: "medium shot, partner joining with handjob, group framing", wife: "lying on back, legs open, one hand stroking partner, other on partner's chest", patron: "kneeling between legs, hands on her knee and chest, penetrating", husband: "kneeling beside, one hand near her head, penis shown" }
+  join_mouth: { scene: "medium shot, dual penetration, group framing", wife: "on all fours, receiving from behind and mouth", patron: "kneeling behind, hands on her hips and butt, penetrating from behind", husband: "kneeling in front, one hand on her head, penis in her mouth" }
+  join_take: { scene: "medium shot, three-quarter view, double penetration with partner, group framing", patron: "lying on back, one hand on her hip, penetrating from below", wife: "straddling, hands on his shoulder and chest, receiving both", husband: "kneeling behind, hands on her hip and shoulder, penetrating from behind" }
+  her_cook: { scene: "medium shot, domestic kitchen framing, calm atmosphere", wife: "standing at counter, cooking posture", husband: "standing nearby, watching her" }
+  her_tidy: { scene: "medium shot, domestic interior, soft lighting", wife: "bent over, tidying posture, looking down", husband: "standing nearby, watching her" }
+  her_rest: { scene: "medium shot, calm resting atmosphere, soft light", wife: "lying on side, relaxed posture, eyes closed or resting", husband: "standing nearby, watching her quietly" }
+  her_dress: { scene: "medium shot, bedroom framing, soft lighting", wife: "standing, dressing posture, looking down at clothes", husband: "sitting nearby, watching her" }
+  bath_walkin: { scene: "medium shot, bathroom framing, surprised atmosphere", wife: "standing in shower, one hand covering chest, other covering groin, surprised look", husband: "standing in doorway, looking at her" }
+  bath_together: { scene: "medium shot, close intimate shower framing", wife: "standing, arms around his neck and shoulder, looking at him", husband: "standing, hands on her hips and butt, looking at her" }
+  flash: { scene: "medium shot, wide angle, room with seated guests, bold framing", wife: "standing, open posture, looking toward guests", patron: "sitting, looking at her", patron2: "sitting, looking at her" }
+  walk_naked: { scene: "medium shot, wide angle, floor view with seated guests, confident framing", patron2: "sitting, looking at her", wife: "walking, nude confident posture", patron: "sitting, looking at her" }
+  deal: { scene: "medium shot, negotiation framing, tense calm atmosphere", husband: "standing, looking at another", patron: "standing, looking at another", wife: "standing slightly aside, watching the exchange" }
+  table_sit: { scene: "medium shot, table conversation framing, calm atmosphere", husband: "sitting, looking at another", patron: "sitting, looking at another" }

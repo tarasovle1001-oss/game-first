@@ -1,11 +1,11 @@
 // A picture key -> the prompt that draws it. Built from the scene description only (type, roles, room, tags),
 // never from live state, so the same key always gives the same prompt and a pack can be planned offline.
 // Every figure gets its own prompt for regional / masked conditioning: the guest's build never leaks into her.
-// Words: look.yaml (clothes, face, marks, act, room, size) and prompt.yaml (style, who each figure is, poses).
+// Words: look.yaml (clothes, face, marks, act, room, size), prompt.yaml (style, poses), cast.yaml (who each figure is).
 import type { SceneDesc } from "@tc/core";
 import { sceneFileName, sceneKey } from "@tc/core";
 import { content } from "../content";
-import type { Act } from "../content/schema";
+import type { Act, Cast } from "../content/schema";
 
 const W = content.look.words;
 const P = content.prompt;
@@ -65,7 +65,18 @@ function wifeWords(t: Record<string, string>): string[] {
 
 const SIZE_TAG: Record<string, string> = { patron: "size", patron2: "size2", patron3: "size3", husband: "hsize" };
 
-export function promptFor(desc: SceneDesc): ScenePrompt {
+type Role = "wife" | "husband" | "patron" | "patron2" | "patron3" | "watcher";
+/** Who a figure is: always an adult, then the card - the anchor, the look, the body. */
+function who(cast: Cast, role: string): string[] {
+  const card = cast[role as Role];
+  const adult = role === "wife" ? "adult woman, mature female" : "adult man, mature male";
+  if (!card) return [adult];
+  return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body];
+}
+
+/** `castId`: whose pack this is (cast.yaml); the key does not depend on it. */
+export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
+  const cast = content.casts.find((c) => c.id === castId) ?? content.casts[0]!;
   const key = sceneKey(desc);
   const t = desc.tags ?? {};
   const layout = content.scenes.find((l) => l.id === desc.type);
@@ -96,10 +107,9 @@ export function promptFor(desc: SceneDesc): ScenePrompt {
 
   const regions: Record<string, string> = {};
   for (const role of drawn) {
-    const who = P.roles[role as keyof typeof P.roles]?.who ?? "";
     const size = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? W.size[Number(t[SIZE_TAG[role]!])] : undefined;
-    regions[role] = join([who, role === "wife" ? wifeWords(t) : [], size, slot(role)]);
+    regions[role] = join([...who(cast, role), role === "wife" ? wifeWords(t) : [], size, slot(role)]);
   }
-  const negative = join([P.style.negative, ...drawn.map((r) => P.roles[r as keyof typeof P.roles]?.negative ?? "")]);
+  const negative = join([P.style.negative, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
   return { key, file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive: join([shared, ...Object.values(regions)]), negative, empty };
 }

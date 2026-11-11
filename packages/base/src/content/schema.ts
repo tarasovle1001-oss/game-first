@@ -558,11 +558,14 @@ export const PROMPT_ROLES = ["wife", "husband", "patron", "patron2", "patron3", 
 export const promptSchema = z
   .object({
     style: z.object({ prefix: z.string().default(""), negative: z.string().default("") }).strict(),
-    roles: z.record(z.enum(PROMPT_ROLES), z.object({ who: z.string(), negative: z.string().default("") }).strict()),
     poses: z.record(z.string(), z.record(z.string(), z.string().nullable().transform((s) => s ?? ""))),
   })
   .strict();
 export type PromptWords = z.infer<typeof promptSchema>;
+/** cast.yaml: a character card per role. One cast = one picture pack. */
+const cardSchema = z.object({ anchor: z.string().default(""), strength: z.number().min(0.4).max(1.4).default(1.2), appearance: z.string().default(""), body: z.string().default(""), negative: z.string().default("") }).strict();
+export const castSchema = z.object({ id, name: z.string(), wife: cardSchema, husband: cardSchema, patron: cardSchema, patron2: cardSchema, patron3: cardSchema, watcher: cardSchema }).strict();
+export type Cast = z.infer<typeof castSchema>;
 
 export const EMOTIONS = ["anger", "contempt", "guilt", "shame", "longing", "disgust", "fear", "pride", "tenderness", "delight"] as const;
 export type Emotion = (typeof EMOTIONS)[number];
@@ -659,6 +662,7 @@ export type Intimacy = z.infer<typeof intimacySchema>;
 export interface Content {
   look: Look;
   prompt: PromptWords;
+  casts: Cast[];
   mind: Mind;
   terms: Terms;
   floor: Floor;

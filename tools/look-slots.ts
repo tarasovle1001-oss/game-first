@@ -14,7 +14,7 @@ const scenes = parse(readFileSync(join(root, "packages/base/content/scenes.yaml"
 const acts = parse(readFileSync(join(root, "packages/base/content/acts.yaml"), "utf8")) as { id: string; scene: string }[];
 const ru = parse(readFileSync(join(root, "packages/base/locales/ru.yaml"), "utf8")) as Record<string, string>;
 const en = parse(readFileSync(join(root, "packages/base/locales/en.yaml"), "utf8")) as Record<string, string>;
-type Words = { style: Record<string, string>; roles: Record<string, { who: string; negative?: string }>; poses: Record<string, Record<string, string | null>> };
+type Words = { style: Record<string, string>; poses: Record<string, Record<string, string | null>> };
 const load = () => parse(readFileSync(file, "utf8")) as Words;
 const filled = (v: unknown) => typeof v === "string" && v.trim() !== "";
 
@@ -47,7 +47,8 @@ Rules:
 - "scene" slot: composition and camera only - camera angle, framing, distance, who is in front, eye contact between them.
 - role slot (wife, husband, patron, patron2, patron3, watcher): that figure's pose, where the hands are, where it looks.
 - Do NOT write counts (1girl, 1boy, 2boys...) - the game adds them.
-- Do NOT write appearance (hair, skin, eyes, body type) in pose slots - that lives in "roles".
+- Do NOT use the words wife, husband, patron, watcher - the image model does not know them. Do NOT write "facing left/right", "side view", "profile": the camera angle comes from the 3D mannequin.
+- Do NOT write appearance (hair, skin, eyes, body type) - that comes from the character card.
 - All characters are adults.
 - Return ONLY the YAML block below with the empty strings filled, same keys, nothing else.
 `;
@@ -58,7 +59,6 @@ function exportSlots(size: number, dir: string) {
   const items: Item[] = [];
   if (!filled(w.style.prefix)) items.push({ path: ["style", "prefix"], context: ["Quality / style tags at the start of every prompt."] });
   if (!filled(w.style.negative)) items.push({ path: ["style", "negative"], context: ["Shared negative prompt."] });
-  for (const [role, r] of Object.entries(w.roles)) if (!filled(r.who) || r.who === "adult man" || r.who === "adult woman") items.push({ path: ["roles", role, "who"], context: [`Appearance of the ${role} figure (adult). Currently: "${r.who}".`] });
   for (const s of scenes) {
     const slots = w.poses[s.id] ?? {};
     const act = acts.find((a) => a.scene === s.id) ?? acts.find((a) => a.id === s.id);
@@ -136,11 +136,12 @@ function check(): number {
     if (/\n/.test(v!)) problems.push(`${path}: more than one line`);
     if (tags.length > 20) problems.push(`${path}: ${tags.length} tags, max 20`);
     for (const t of tags) if (COUNT.test(t.replace(/[()]/g, "").replace(/:[\d.]+$/, ""))) problems.push(`${path}: count tag "${t}" - the game adds counts`);
-    if (pose && /[.!?]\s|\b(the|is|are|and then)\b/.test(v!)) problems.push(`${path}: looks like a sentence, want tags`);
+    if (pose && /\b(wife|husband|patron\d?|watcher)\b/i.test(v!)) problems.push(`${path}: names a role ("wife", "patron"...) - the model does not know these words; say "another", "partner", or drop it`);
+    if (pose && /facing (left|right)|side view|from side|profile/i.test(v!)) problems.push(`${path}: fixes the side or a side view - the camera is three quarters round and comes from the mannequin, drop it`);
+    if (pose && /[.!?]\s|\b(is|are|and then)\b/.test(v!)) problems.push(`${path}: looks like a sentence, want tags`);
   };
   lint("style.prefix", w.style.prefix, false);
   lint("style.negative", w.style.negative, false);
-  for (const [r, v] of Object.entries(w.roles)) lint(`roles.${r}.who`, v.who, false);
   for (const [id, slots] of Object.entries(w.poses)) for (const [k, v] of Object.entries(slots)) lint(`poses.${id}.${k}`, v, true);
   console.log(`prompt.yaml: ${total - empty} of ${total} slots filled, ${empty} empty, ${problems.length} problem(s)`);
   for (const p of problems) console.log(`  ${p}`);

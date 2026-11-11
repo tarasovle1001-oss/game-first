@@ -3,14 +3,14 @@
 // The result is the manifest of an image pack: key, file name, how often it is seen, cumulative coverage,
 // the layout to draw it over and the prompt (shared + one per figure). Generate from the top, stop where coverage is enough.
 // Also lists the general keys the game falls back to (scene/roles/room without tags, scene/*), so every scene has something.
-// pnpm exec tsx tools/pack-plan.ts [days=30] [seeds=6] [out=pack-plan.json]
+// pnpm exec tsx tools/pack-plan.ts [days=30] [seeds=6] [out=pack-plan.json] [cast=default]
 import { writeFileSync } from "node:fs";
 import { baseMod, bs, content, pictureScene, promptFor, withLook } from "../packages/base/src";
 import { createEngine, sceneKey } from "../packages/core/src";
 import type { GameState, SceneDesc } from "../packages/core/src";
 import { awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy } from "../packages/bots/src";
 
-const [days = "30", seeds = "6", out = "pack-plan.json"] = process.argv.slice(2);
+const [days = "30", seeds = "6", out = "pack-plan.json", cast = "default"] = process.argv.slice(2);
 const engine = createEngine([baseMod]);
 const counts = new Map<string, { n: number; desc: SceneDesc }>();
 const count = (desc: SceneDesc | null) => {
@@ -57,7 +57,7 @@ for (const { n, desc } of counts.values()) {
 }
 
 const row = (desc: SceneDesc, n: number) => {
-  const p = promptFor(desc);
+  const p = promptFor(desc, cast);
   return { key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, shared: p.shared, regions: p.regions, positive: p.positive, negative: p.negative, empty: p.empty };
 };
 const rows = [...counts.values()].map((v) => row(v.desc, v.n)).sort((a, b) => b.n - a.n);
@@ -66,7 +66,7 @@ let run = 0;
 const plan = rows.map((r) => ({ ...r, share: +(r.n / total).toFixed(5), coverage: +((run += r.n) / total).toFixed(5) }));
 const base = [...general.values()].map((v) => row(v.desc, v.n)).sort((a, b) => b.n - a.n);
 const emptySlots = [...new Set(plan.flatMap((r) => r.empty))].sort();
-writeFileSync(out, JSON.stringify({ days: Number(days), seeds: Number(seeds), keys: plan.length, total, emptySlots, base, plan }, null, 1));
+writeFileSync(out, JSON.stringify({ cast, days: Number(days), seeds: Number(seeds), keys: plan.length, total, emptySlots, base, plan }, null, 1));
 
 const at = (c: number) => plan.findIndex((r) => r.coverage >= c) + 1;
 console.log(`${plan.length} exact pictures over ${total} views. For 80% of views: ${at(0.8)}, 95%: ${at(0.95)}, 99%: ${at(0.99)}, 100%: ${plan.length}.`);

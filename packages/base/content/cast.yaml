@@ -1,0 +1,15 @@
+# Character cards: what each figure looks like in pictures. One cast = one picture pack (the keys are the same,
+# the folder differs). The game adds "adult woman" / "adult man" itself; everything here is appearance only -
+# no pose, no clothes, no face expression, those come from the state of the game.
+#   anchor + strength: optional base tag the look is built around, written as (anchor:strength); 0.4..1.4
+#   appearance: hair, eyes, skin, face, marks        body: build, bust, figure
+#   negative: what this figure must not be
+# Men: penis size comes from the game (size class), do not write it here.
+- id: default
+  name: Default
+  wife: { anchor: "", strength: 1.2, appearance: "", body: "", negative: "" }
+  husband: { anchor: "", strength: 1.2, appearance: "", body: "slim male, average build", negative: "muscular male, feminine" }
+  patron: { anchor: "", strength: 1.2, appearance: "faceless male", body: "tall male", negative: "" }
+  patron2: { anchor: "", strength: 1.2, appearance: "faceless male", body: "tall male", negative: "" }
+  patron3: { anchor: "", strength: 1.2, appearance: "faceless male", body: "tall male", negative: "" }
+  watcher: { anchor: "", strength: 1.2, appearance: "faceless male, background figure", body: "", negative: "" }

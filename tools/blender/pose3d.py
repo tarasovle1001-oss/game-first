@@ -170,7 +170,7 @@ def run(scene_id):
         bpy.context.view_layer.update()
         return [cam.matrix_world.inverted() @ p for p in pts]
     cs = place(4.0)
-    wide = (max(c.x for c in cs) - min(c.x for c in cs)) > 1.15 * (max(c.y for c in cs) - min(c.y for c in cs))
+    wide = (max(c.x for c in cs) - min(c.x for c in cs)) > 1.0 * (max(c.y for c in cs) - min(c.y for c in cs))
     w, h = (max(W, H), min(W, H)) if wide and ORIENT == "auto" else (W, H)
     sc.render.resolution_x = w; sc.render.resolution_y = h
     dist = 1.0
