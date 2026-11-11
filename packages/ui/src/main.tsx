@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { tracer, resetTracer, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, withLook } from "@tc/base";
-import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
+import { tracer, resetTracer, bs, withLook } from "@tc/base";
+import { loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
 import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
 import { loadPack, packInfo, pictureFor } from "./pack";
-import { actionLabel, InspectorBlock, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
+import { actionLabel, HerCard, InspectorBlock, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
+import { ActionMenu } from "./menu";
 import "./style.css";
 
-type Tab = "her" | "you" | "guests" | "why" | "phone" | "stats";
+type Tab = "her" | "you" | "why" | "phone" | "stats" | "none";
 
 // The UI only reads state and dispatches actions. No game rules live here.
 function App() {
@@ -56,7 +57,7 @@ function App() {
   const [packCount, setPackCount] = useState(0);
   const packInput = useRef<HTMLInputElement | null>(null);
   const [setupOpen, setSetupOpen] = useState(true); // the first thing a player sees
-  const [tab, setTab] = useState<Tab>("her");
+  const [tab, setTab] = useState<Tab>("none");
   const [error, setError] = useState("");
   // the last few states, to step back from a misclick: states are immutable, so keeping them costs little
   const [past, setPast] = useState<GameState[]>([]);
@@ -120,44 +121,15 @@ function App() {
     if (input) input.value = "";
   };
 
-  const [herOpen, setHerOpen] = useState<string | null>(null);
-  const all = engine.listActions(state);
-  const waits = all.filter((a) => a.type === WAIT || a.type === PREP_WAIT || a.type === NIGHT_WAIT);
-  const advance = all.find((a) => a.type === CORE_ADVANCE);
-  const bed = all.filter((a) => a.type === BED);
-  // Everything he does with her lives in one place, by kind: talk, touch, sex, requests, what he wants from her.
-  const SECTION: Record<string, string> = {
-    "base/night-act": "sex", "base/upstairs": "sex", "base/night-self": "sex", "base/night-decline": "sex",
-    [STRIP]: "ask", "base/ask-outfit": "ask", "base/outfit-back": "ask",
-    [TELL]: "allow", [ALLOW]: "allow", "base/directive": "want", "base/order": "want", [WISH]: "want", [DARE]: "want",
-    [ABOUT]: "about", [STANCE]: "about", [PROMISE]: "about", [PRESS]: "sex",
-  };
-  const sectionOf = (a: Action) => (a.type === TALK ? (a.payload?.group as string) : SECTION[a.type]);
-  const withHer = all.filter((a) => sectionOf(a) !== undefined);
-  const herGroups = (["chat", "touch", "sex", "ask", "want", "allow", "about"] as const).filter((g) => withHer.some((a) => sectionOf(a) === g));
-  const herTab = herOpen === "root" || herGroups.includes(herOpen as never) ? herOpen : null;
-  const herName = bs(state).heroine.name ?? t("role.wife");
-  const herNear = state.where[WIFE] === state.where[HUSBAND];
-  const other = all.filter((a) => a.type !== WAIT && a.type !== PREP_WAIT && a.type !== NIGHT_WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== ANSWER && a.type !== PERMIT && a.type !== DEAL && sectionOf(a) === undefined);
-  const answers = all.filter((a) => a.type === ANSWER || a.type === PERMIT || a.type === DEAL);
-  const otherGroups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
-
-  // the actions that sit on the panel as plain buttons get a letter each
-  const HOT = ["q", "w", "e", "r", "t", "y", "u", "i"];
-  const direct = otherGroups.filter(([, list]) => list.length < 3).flatMap(([, list]) => list).slice(0, HOT.length);
-  // keys 1-4 for the waits, Enter for the next phase
+  // keys that do not belong to the action menu: undo, the inspector, the cheat drawer
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
-      const n = Number(e.key);
-      const quick = HOT.indexOf(e.key.toLowerCase());
-      if (n >= 1 && n <= waits.length) act(waits[n - 1]!);
-      else if (e.key === "Enter" && advance) act(advance);
-      else if (e.key === "F8") {
-        e.preventDefault();
-        setInspector(!inspector);
-      } else if (e.key === "Backspace" || (e.key.toLowerCase() === "z" && (e.ctrlKey || e.metaKey))) undo();
-      else if (quick >= 0 && quick < direct.length && !e.ctrlKey && !e.metaKey && !e.altKey) act(direct[quick]!);
+      if (e.key === "F8") setInspector(!inspector);
+      else if (e.key === "F9") setDebug(!debug);
+      else if (e.target instanceof HTMLInputElement) return;
+      else if (e.key === "Backspace" || (e.key.toLowerCase() === "z" && (e.ctrlKey || e.metaKey))) undo();
+      else return;
+      e.preventDefault();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -182,7 +154,7 @@ function App() {
           <button className={inspector ? "on" : ""} title={t("ui.inspector.hint")} onClick={() => setInspector(!inspector)}>
             {t("ui.inspector")}
           </button>
-          <button className={debug ? "on" : ""} onClick={() => setDebug(!debug)}>
+          <button className={debug ? "on" : ""} title={t("ui.cheats.key")} onClick={() => setDebug(!debug)}>
             {t("ui.debug")}
           </button>
           <button onClick={() => setLang(lang === "en" ? "ru" : "en")}>{lang === "en" ? "RU" : "EN"}</button>
@@ -238,17 +210,43 @@ function App() {
       {(error || problems.length > 0) && <pre className="error">{[error, ...problems].filter(Boolean).join("\n")}</pre>}
 
       <div className="layout">
-        <aside className="col-log">
-          <div className="cap">{t("ui.log")}</div>
+        <aside className="col-story">
           <Log {...common} debug={transparent} />
         </aside>
 
-        <section className="col-main">
+        <section className="col-house">
+          <details className="fold" open>
+            <summary className="cap">{t("ui.house")}</summary>
+            <RoomGrid {...common} onAct={act} />
+          </details>
+          {state.time.phase !== "summary" && <HerCard {...common} />}
+          {(b.shift || Object.keys(b.lodgers).length > 0) && (
+            <div className="house-guests">
+              <GuestsTab {...common} />
+              {b.shift && <div className="muted small today">{t("ui.today.line", { n: b.shift.served, tips: b.shift.tips })}</div>}
+            </div>
+          )}
+        </section>
+
+        <section className="col-focus">
           {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
           {inspector && state.time.phase !== "summary" && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
-          <div className="cap gap">{t("ui.where")}</div>
-          <Rooms {...common} onAct={act} />
-          {debug && <CheatPanel {...common} onAct={act} />}
+          <div className="tabs">
+            {(["her", "you", "why", "phone", "stats"] as Tab[]).map((k) => (
+              <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(tab === k ? "none" : k)}>
+                {t(`ui.tab.${k}`)}
+              </button>
+            ))}
+          </div>
+          {tab !== "none" && (
+            <div className="tab-body">
+              {tab === "her" && <HeroineTab {...common} />}
+              {tab === "stats" && <StatsTab {...common} />}
+              {tab === "you" && <CoupleTab {...common} />}
+              {tab === "why" && <WhyTab {...common} debug={transparent} />}
+              {tab === "phone" && <PhoneTab {...common} debug={transparent} />}
+            </div>
+          )}
           {debug && (
             <p className="muted small mono">
               scene {scene ? sceneKey(scene) : "-"} · seed {state.seed} · turn {state.turn}
@@ -257,190 +255,11 @@ function App() {
           )}
         </section>
 
-        <aside className="col-side">
-          {state.time.phase === "prep" && b.day?.busy && <div className="busy">{t("ui.busy", { what: t(`day.${b.day.busy.id}`), minutes: b.day.busy.left })}</div>}
-          {waits.length > 0 && (
-            <div className="card">
-              <div className="card-title">{t("ui.wait")}</div>
-              <div className="muted small">
-                {t("ui.served", { n: b.shift?.served ?? 0 })} · {t("ui.tips", { n: b.shift?.tips ?? 0 })} · {t("ui.rent", { rent: rentOf(state) })}
-              </div>
-              <div className="waits">
-                {waits.map((a, i) => (
-                  <button key={i} className={a.payload?.until ? "wide" : ""} onClick={() => act(a)}>
-                    <kbd>{i + 1}</kbd> {actionLabel(a, t, lang)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {state.time.phase === "shift" && waits.length === 0 && advance && <div className="muted">{t("ui.closing")}</div>}
-          {bed.length > 0 && (
-            <div className="card">
-              <div className="card-title">{t("action.bed")}</div>
-              <div className="grid2">
-                {bed.filter((a) => !a.payload?.to).map((a, i) => (
-                  <button key={i} className={a.payload?.do === "finish" ? "primary" : ""} onClick={() => act(a)}>
-                    {actionLabel(a, t, lang)}
-                  </button>
-                ))}
-              </div>
-              <div className="card-title sub">{t("ui.bed.switch")}</div>
-              <div className="chips">
-                {bed.filter((a) => a.payload?.to).map((a, i) => (
-                  <button key={i} onClick={() => act(a)}>
-                    {t(`act.${a.payload!.to}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {answers.length > 0 && (
-            <div className="card approach">
-              <div className="card-title">{t("ui.her.came")}</div>
-              <div className="chips">
-                {answers.map((a, i) => (
-                  <button key={i} onClick={() => act(a)}>
-                    {t(`action.answer.${a.payload!.kind}.${a.payload!.say}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {state.time.phase !== "summary" && (withHer.length > 0 || !herNear) && (
-            <div className="card">
-              {!herNear && withHer.length === 0 ? (
-                <div className="muted small">{t("ui.her.far", { name: herName, where: t(`loc.${state.where[WIFE]}`) })}</div>
-              ) : herTab === null ? (
-                <button className="wide" onClick={() => setHerOpen("root")}>
-                  {t("ui.her.go", { name: herName })}
-                </button>
-              ) : herTab === "root" ? (
-                <>
-                  <div className="crumbs">
-                    <button className="link" onClick={() => setHerOpen(null)}>
-                      {t("ui.her.back")}
-                    </button>
-                    <b>{herName}</b>
-                  </div>
-                  <div className="stack">
-                    {herGroups.map((g) => (
-                      <button key={g} onClick={() => setHerOpen(g)}>
-                        {t(`ui.her.sec.${g}`)} <span className="muted">({g === "allow" ? new Set(withHer.filter((a) => sectionOf(a) === g).map((a) => a.type + (a.payload?.group ?? a.payload?.item ?? ""))).size : withHer.filter((a) => sectionOf(a) === g).length})</span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="crumbs">
-                    <button className="link" onClick={() => setHerOpen("root")}>
-                      {t("ui.her.back")}
-                    </button>
-                    <b>
-                      {herName} · {t(`ui.her.sec.${herTab}`)}
-                    </b>
-                  </div>
-                  {herTab === "allow" && (
-                    <div className="stack sub">
-                      {content.terms.items.map((it) => {
-                        const now = b.perm?.[it.id];
-                        return (
-                          <div key={it.id} className="tell-row">
-                            <span>{t(`item.${it.id}`)}</span>
-                            <button className={now === "allow" ? "on" : ""} disabled={now === "allow"} onClick={() => act({ type: ALLOW, payload: { item: it.id, say: "allow" } })}>{t("ui.tell.allow")}</button>
-                            <button className={`deny${now === "forbid" ? " on" : ""}`} disabled={now === "forbid"} onClick={() => act({ type: ALLOW, payload: { item: it.id, say: "forbid" } })}>
-                              {t("ui.tell.forbid")}
-                            </button>
-                          </div>
-                        );
-                      })}
-                      <div className="muted small">{t("ui.allow.groups")}</div>
-                      {[...new Set(withHer.filter((a) => a.type === TELL).map((a) => a.payload!.group as string))].map((g) => (
-                        <div key={g} className="tell-row">
-                          <span>{t(`tell.${g}`)}</span>
-                          <button onClick={() => act({ type: TELL, payload: { group: g, say: "allow" } })}>{t("ui.tell.allow")}</button>
-                          <button className="deny" onClick={() => act({ type: TELL, payload: { group: g, say: "forbid" } })}>
-                            {t("ui.tell.forbid")}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="stack sub">
-                    {withHer
-                      .filter((a) => sectionOf(a) === herTab && a.type !== TELL && a.type !== ALLOW)
-                      .map((a, i) => (
-                        <button key={i} onClick={() => act(a)}>
-                          {actionLabel(a, t, lang)}
-                        </button>
-                      ))}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-          {other.length > 0 && (
-            <div className="card">
-              <div className="card-title">
-                {t(`ui.todo.${state.time.phase}`)}
-                {state.time.phase === "prep" && bs(state).day && (
-                  <span className="muted small">
-                    {" "}
-                    · {Math.floor(bs(state).day!.left / 60)}:{String(bs(state).day!.left % 60).padStart(2, "0")} {t("ui.day.left")} · {t("ui.clean")} {Math.round(bs(state).clean)}
-                  </span>
-                )}
-              </div>
-              <div className="stack">
-                {otherGroups.map(([type, list]) =>
-                  list.length < 3 ? (
-                    list.map((a, i) => (
-                      <button key={type + i} onClick={() => act(a)}>
-                        {direct.indexOf(a) >= 0 && <kbd>{HOT[direct.indexOf(a)]!.toUpperCase()}</kbd>} {actionLabel(a, t, lang)}
-                      </button>
-                    ))
-                  ) : (
-                    <details key={type} open={type === "base/day" || type === "base/guest" || type === "base/hear-her"}>
-                      <summary>
-                        {t(engine.actionDef(type)!.labelKey)} <span className="muted">({list.length})</span>
-                      </summary>
-                      <div className="stack sub">
-                        {list.map((a, i) => (
-                          <button key={i} onClick={() => act(a)}>
-                            {actionLabel(a, t, lang)}
-                          </button>
-                        ))}
-                      </div>
-                    </details>
-                  ),
-                )}
-              </div>
-            </div>
-          )}
-          {advance && (
-            <button className="primary" onClick={() => act(advance)}>
-              <kbd>↵</kbd> {state.time.phase === "night" ? t("action.sleep.default", { hour: content.day.rhythm.wake[0]! }) : actionLabel(advance, t, lang)}
-            </button>
-          )}
-
-          <div className="tabs">
-            {(["her", "you", "guests", "why", "phone", "stats"] as Tab[]).map((k) => (
-              <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>
-                {t(`ui.tab.${k}`)}
-                {k === "guests" && b.shift ? ` ${b.shift.visits.length}` : ""}
-              </button>
-            ))}
-          </div>
-          <div className="tab-body">
-            {tab === "her" && <HeroineTab {...common} />}
-            {tab === "stats" && <StatsTab {...common} />}
-            {tab === "you" && <CoupleTab {...common} />}
-            {tab === "guests" && <GuestsTab {...common} />}
-            {tab === "why" && <WhyTab {...common} debug={transparent} />}
-            {tab === "phone" && <PhoneTab {...common} debug={transparent} />}
-          </div>
+        <aside className="col-actions">
+          <ActionMenu state={state} t={t} lang={lang} act={act} />
         </aside>
       </div>
+      {debug && <CheatPanel {...common} onAct={act} onClose={() => setDebug(false)} />}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { inspect, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
+import { inspect, annoyedLevel, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
 import type { DeltaRow, DeltaVia, Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -399,6 +399,121 @@ export function WhyLine({ record, state, t, lang, open: transparent }: Common & 
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Who is where, as a grid of small room cards by floor: fits a narrow column, a click walks there. */
+export function RoomGrid({ state, t, lang, onAct }: Common & { onAct(a: Action): void }) {
+  const here = state.where[HUSBAND];
+  const moves = engine.listActions(state).filter((a) => a.type === CORE_MOVE && a.actor === HUSBAND);
+  const rooms = engine.locations().map((l) => ({ ...l, m: (l.meta as { map: { x: number; y: number } }).map }));
+  const floors = [...new Set(rooms.map((r) => r.m.y))].sort((a, c) => a - c);
+  return (
+    <div className="rgrid">
+      {floors.map((y) => (
+        <div key={y}>
+          <div className="rg-floor">{t(`ui.floor.${y}`)}</div>
+          <div className="rg-row">
+            {rooms
+              .filter((r) => r.m.y === y)
+              .sort((a, c) => a.m.x - c.m.x)
+              .map((r) => {
+                const move = moves.find((a) => a.payload?.to === r.id);
+                const people = Object.keys(state.where).filter((id) => state.where[id] === r.id);
+                const guests = people.filter((id) => id !== WIFE && id !== HUSBAND);
+                return (
+                  <button key={r.id} className={`rg-room${r.id === here ? " here" : ""}${move ? " reachable" : ""}${people.length === 0 ? " empty" : ""}`} disabled={!move} onClick={() => move && onAct(move)} title={t(r.nameKey)}>
+                    <span className="rg-name">{t(r.nameKey)}</span>
+                    <span className="rg-who">
+                      {people.includes(HUSBAND) && <i className="husband">{t("ui.you")}</i>}
+                      {people.includes(WIFE) && <i className="wife">{who(WIFE, state, t, lang)}</i>}
+                      {guests.length === 1 && <i className="patron">{who(guests[0]!, state, t, lang)}</i>}
+                      {guests.length > 1 && <i className="patron">×{guests.length}</i>}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------- her, at a glance
+
+/** The card in the middle column: how she is right now, in one word, a few chips and two short columns of bars. */
+export function HerCard({ state, t, open }: Common) {
+  const [more, setMore] = useState(true);
+  const b = bs(state);
+  const h = b.heroine;
+  const chips: string[] = [];
+  if (h.drunk >= 70) chips.push("ui.chip.drunk3");
+  else if (h.drunk >= 40) chips.push("ui.chip.drunk2");
+  else if (h.drunk >= 15) chips.push("ui.chip.drunk");
+  const level = annoyedLevel(state);
+  if (level === "done") chips.push("ui.chip.fedup");
+  else if (level === "tired") chips.push("ui.chip.annoyed");
+  if (h.energy < 25) chips.push("ui.chip.tired");
+  if (open && (["vagina", "anus", "mouth"] as const).some((z) => soreOf(state, z) >= 30)) chips.push("ui.chip.sore");
+  const wants = wantsOf(state);
+  const top = (Object.entries(wants) as [string, number][]).sort((a, c) => c[1] - a[1])[0]!;
+  const topWant = top[1] >= content.mind.wants.hintFrom && (open || top[0] === "rest" || top[0] === "attention") ? top[0] : null;
+  const task = state.time.phase === "prep" ? b.day?.her?.task : undefined;
+  const feelings = feelingsOf(state).slice(0, 4);
+  return (
+    <div className="hercard">
+      <div className="hc-head">
+        <b className="hc-name">{h.name ?? t("role.wife")}</b>
+        <span className="hc-face">{t(`face.${faceOf(state)}`)}</span>
+        {chips.map((c) => (
+          <span key={c} className="chip warn">
+            {t(c)}
+          </span>
+        ))}
+        <button className="link" onClick={() => setMore(!more)}>
+          {t(more ? "ui.her.less" : "ui.her.more")}
+        </button>
+      </div>
+      <div className="muted small">
+        {t(`loc.${state.where[WIFE]}`)}
+        {task ? ` · ${t(`her.task.${task}`)}` : ""}
+        {topWant ? ` · ${t("ui.wants.hint", { what: t(`want.${topWant}`) })}` : ""}
+      </div>
+      {more && (
+        <div className="hc-cols">
+          <div>
+            <div className="cap">{t("ui.her.self")}</div>
+            <Bar label={t("stat.energy")} value={h.energy} tone="green" />
+            <Bar label={t("stat.mood")} value={h.mood} tone="green" />
+            {open && <Bar label={t("stat.arousal")} value={h.arousal} tone="pink" />}
+            {h.drunk >= 1 && <Bar label={t("stat.drunk")} value={h.drunk} tone="amber" />}
+            {open && annoyanceOf(state) >= 1 && <Bar label={t("ui.annoyance")} value={annoyanceOf(state)} tone="amber" />}
+          </div>
+          <div>
+            <div className="cap">{t("ui.her.withyou")}</div>
+            {open ? (
+              <>
+                <Bar label={t("ui.trust")} value={trustOf(state)} />
+                <Bar label={t("stat.desire")} value={h.marriage.desire} tone="pink" />
+                <Bar label={t("stat.resent")} value={h.marriage.resent} tone="amber" />
+                <Bar label={t("ui.latitude.short")} value={latitudeOf(state)} />
+              </>
+            ) : (
+              <div className="muted small">{t("ui.hidden.hint")}</div>
+            )}
+          </div>
+        </div>
+      )}
+      {more && open && feelings.length > 0 && (
+        <div className="hc-feel">
+          <div className="cap">{t("ui.her.feel")}</div>
+          {feelings.map(([e, v]) => (
+            <Bar key={e} label={t(`emotion.${e}`)} value={v} tone={e === "tenderness" || e === "delight" || e === "pride" ? "green" : "amber"} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
