@@ -32,6 +32,7 @@ import { registerTerms } from "./systems/terms";
 import { registerFloor } from "./systems/floor";
 import { registerBodyState } from "./systems/bodystate";
 import { registerCrowd } from "./systems/crowd";
+import { registerPictures } from "./systems/pictures";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -148,6 +149,7 @@ export const baseMod: Mod = {
     registerFloor(api);
     registerBodyState(api);
     registerCrowd(api);
+    registerPictures(api);
     registerSetup(api);
   },
 };
@@ -156,7 +158,7 @@ export const baseLocales: Record<string, Dict> = content.locales;
 export { content, patronType, room } from "./content";
 export * from "./state";
 export type { Content, PatronType, Room, Balance, Act, SceneLayout } from "./content/schema";
-export { CONSENT_FORMULA, nextProposal, verdictOf } from "./systems/encounters";
+export { CONSENT_FORMULA, groupScene, nextProposal, verdictOf } from "./systems/encounters";
 export type { ConsentInput } from "./systems/encounters";
 export { PHASES } from "./systems/places";
 export { TIP_FORMULA, WAIT, WAIT_MINUTES, visitOf } from "./systems/shift";

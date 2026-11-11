@@ -223,6 +223,12 @@ export function StatsTab({ state, t, lang, open }: Common) {
 
 // ---------------------------------------------------------------- scene
 
+/** Men standing around and looking on: drawn at the edges of whatever the picture is. */
+const WATCHERS = [
+  { role: "watcher", pose: "stand" as const, x: -106, flip: false },
+  { role: "watcher", pose: "stand" as const, x: 106, flip: true },
+];
+
 export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { scene: SceneDesc | null; picture?: { url: string; key: string; exact: boolean } | null }) {
   const b = bs(state);
   const layout = scene ? (content.scenes.find((s) => s.id === scene.type) ?? content.scenes.find((s) => s.id === "idle")!) : null;
@@ -252,11 +258,11 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
           // "idle" shows whoever is actually in the room; other scenes use their layout
           scene.type === "idle"
             ? scene.participants.filter((p) => p.id !== HUSBAND).slice(0, 4).map((p, i) => ({ role: p.role, pose: "stand" as const, x: -54 + i * 36 }))
-            : layout.figures,
+            : [...layout.figures, ...(scene.tags?.crowd ? WATCHERS : [])],
           {
             title: t(`scene.${layout.id}`),
             subtitle: t(`loc.${scene.location}`),
-            legend: { wife: t("role.wife"), patron: t("role.patron"), husband: t("role.husband") },
+            legend: { wife: t("role.wife"), patron: t("role.patron"), husband: t("role.husband"), patron2: `${t("role.patron")} 2`, patron3: `${t("role.patron")} 3`, watcher: t("role.watcher") },
           },
         )
       : "";

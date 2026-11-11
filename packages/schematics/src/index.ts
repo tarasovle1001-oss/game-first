@@ -49,9 +49,9 @@ export interface SchematicOptions {
 const LEN = { torso: 30, neck: 11, upper: 16, fore: 14, thigh: 24, shin: 24, head: 6.5 };
 const CM = 0.56;
 /** Body size by role: the guest is a tall man, the husband an ordinary one. */
-export const ROLE_SCALE: Record<string, number> = { wife: 0.95, husband: 1, patron: 1.25 }; // in the picture packs the guest towers over her
+export const ROLE_SCALE: Record<string, number> = { wife: 0.95, husband: 1, patron: 1.25, patron2: 1.2, patron3: 1.2, watcher: 1.15 }; // in the picture packs the guest towers over her
 /** What he has, in cm, when a scene shows it. The guest of the picture packs is drawn very large. */
-export const ROLE_PENIS: Record<string, number> = { husband: 11, patron: 33 }; // about the length of his forearm, as the packs draw it
+export const ROLE_PENIS: Record<string, number> = { husband: 11, patron: 33, patron2: 30, patron3: 30, watcher: 28 }; // about the length of his forearm, as the packs draw it
 
 interface Stance {
   pelvis: number; // height of the pelvis above the floor, units
@@ -221,6 +221,9 @@ export const DEFAULT_COLORS: Record<string, string> = {
   wife: "#d6457a",
   husband: "#3b7dd8",
   patron: "#e0932b",
+  patron2: "#8e6bd6",
+  patron3: "#3fae8c",
+  watcher: "#8a8f98",
 };
 const OTHER = "#8a8f98";
 const W = 240;

@@ -267,6 +267,7 @@ export function registerCrowd(api: ModApi) {
           return true;
         }
         ctx.log(`log.fin.held.${ctx.rng.int(1, 2)}`, { name }, tags);
+        show("held");
         ctx.emit("finish:refused", { patron: p.id, place, offended: false });
         return true;
       }

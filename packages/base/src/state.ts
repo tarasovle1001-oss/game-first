@@ -161,6 +161,7 @@ export interface Encounter {
   paid: boolean; // his offer of money is already on the table
   bored?: number; // attempts in a row that gave her too little
   joined?: string; // her husband joined in: how
+  joinUntil?: number; // minute until which the picture is the three of them
   men?: { patron: string; slot: string; act: string }[]; // other men who joined in
   crowd?: string[]; // men who have come over to watch
   crowdSince?: Record<string, number>; // minute each of them came over
@@ -202,6 +203,7 @@ export interface Shift {
   lastCrowd?: { crowd: string[]; men: { patron: string; slot: string; act: string }[] }; // who was around the encounter that is running
   cleanUntil?: number; // minute she is done cleaning herself up
   marksSeen?: boolean;
+  show?: { type: string; until: number; patron?: string }; // a short thing on the floor that is the picture for a few minutes
   marksGuests?: boolean;
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
   momentsSeen?: string[]; // "patron:moment" that already happened tonight

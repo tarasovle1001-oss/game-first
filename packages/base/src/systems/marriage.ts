@@ -53,6 +53,8 @@ const herFromHis = (state: GameState, act: string) => {
 };
 const BEDROOM = "home.bedroom";
 
+const FIN_LAYOUTS = new Set(["fin_face", "fin_mouth", "fin_chest", "fin_belly", "fin_back", "fin_inside"]);
+
 export function registerMarriage(api: ModApi) {
   api.events.on("phase:enter", (ctx, e) => {
     const b = bs(ctx.state);
@@ -960,8 +962,9 @@ export function registerMarriage(api: ModApi) {
     match(state) {
       const b = bs(state);
       if (!b.night || (state.time.phase !== "night" && !b.night.sex) || state.where[HUSBAND] !== state.where[WIFE]) return null;
+      const fin = b.night.fin && !b.night.sex ? `fin_${b.night.fin}` : "";
       return {
-        type: b.night.scene,
+        type: FIN_LAYOUTS.has(fin) ? fin : b.night.scene,
         location: state.where[HUSBAND]!,
         participants: [
           { id: WIFE, role: "wife" },

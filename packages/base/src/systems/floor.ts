@@ -436,6 +436,7 @@ export function registerFloor(api: ModApi) {
       }
       ctx.emit("floor:table", { do: action.payload!.do as string, patron: p.id });
       runUnattended(ctx, Tb.minutes);
+      if (bs(ctx.state).shift) bs(ctx.state).shift!.show = { type: "table_sit", until: bs(ctx.state).shift!.tick + 2, patron: p.id };
     },
   });
 
@@ -465,6 +466,7 @@ export function registerFloor(api: ModApi) {
         ctx.emit("floor:join", { how, ok: false });
         return;
       }
+      enc.joinUntil = b.shift!.tick + 4;
       enc.hers = clamp(enc.hers + 10);
       enc.pleasure = clamp(enc.pleasure * F.join.hersRate);
       apply(ctx, F.join.done, null, null, "joined");

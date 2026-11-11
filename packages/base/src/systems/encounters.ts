@@ -537,6 +537,22 @@ export function runProposals(ctx: Ctx) {
   }
 }
 
+/** The picture of the ending, by where it went. */
+const FIN_SCENE: Record<string, string> = { face: "patron_fin_face", mouth: "patron_fin_mouth", chest: "patron_fin_chest", body: "patron_fin_body", hands: "patron_fin_hands", inside: "patron_fin_inside", anus: "patron_fin_anus", thighs: "patron_fin_thighs", held: "patron_fin_held" };
+/** Which picture it is when more than one man has her: by the parts of her that are taken. */
+export function groupScene(actId: string, joined: string[]): string | null {
+  if (joined.length === 0) return null;
+  const zones = actById(actId).zones as string[];
+  const own = zones.includes("vagina") ? "pussy" : zones.includes("anus") ? "anus" : zones.includes("mouth") ? "mouth" : "hand";
+  const s = new Set([own, ...joined]);
+  const below = s.has("pussy") || s.has("anus");
+  if (s.has("pussy") && s.has("anus")) return s.has("mouth") ? "group_airtight" : "group_dp";
+  if (below && s.has("mouth")) return s.has("hand") ? "group_spitroast_hand" : "group_spitroast";
+  if (below && s.has("hand")) return "group_sex_hand";
+  if (s.has("mouth") && s.has("hand")) return "group_oral_hand";
+  return null;
+}
+
 export function registerEncounters(api: ModApi) {
   const c = content.consent;
   const sec = content.secrecy;
@@ -662,12 +678,14 @@ export function registerEncounters(api: ModApi) {
     match(state) {
       const enc = bs(state).encounter;
       if (!enc || !husbandSees(state, enc.loc)) return null;
+      const joining = enc.joined && enc.joinUntil !== undefined && (bs(state).shift?.tick ?? 0) < enc.joinUntil;
       return {
-        type: actById(enc.act).scene,
+        type: joining ? `join_${enc.joined}` : (groupScene(enc.act, (enc.men ?? []).map((m) => m.slot)) ?? actById(enc.act).scene),
         location: enc.loc,
         participants: [
           { id: WIFE, role: "wife" },
           { id: enc.patron, role: "patron" },
+          ...(joining ? [{ id: HUSBAND, role: "husband" }] : (enc.men ?? []).map((m, i) => ({ id: m.patron, role: `patron${i + 2}` }))),
         ],
         tags: { outfit: dressOf(state), ...((enc.men?.length ?? 0) > 0 ? { men: String(1 + enc.men!.length) } : {}), ...((enc.crowd?.length ?? 0) > 0 ? { crowd: "yes" } : {}) },
       };
@@ -680,7 +698,7 @@ export function registerEncounters(api: ModApi) {
     match(state) {
       const f = bs(state).shift?.fin;
       if (!f || bs(state).encounter || (bs(state).shift?.tick ?? 0) >= f.until || !husbandSees(state, f.loc)) return null;
-      return { type: actById(f.act).scene, location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), fin: f.place } };
+      return { type: FIN_SCENE[f.place] ?? actById(f.act).scene, location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), fin: f.place } };
     },
   });
 

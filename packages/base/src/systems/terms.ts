@@ -409,6 +409,7 @@ export function registerTerms(api: ModApi) {
         fx(ctx, D.done, "dare", h.latents.exhibitionist ? 1 : 0.6);
         if (h.latents.exhibitionist) feel(ctx, "shame", -D.done.shame!);
         ctx.log(`log.dare.${d.id}`);
+        if (d.id === "flash" || d.id === "walk_naked") b.shift!.show = { type: d.id, until: b.shift!.tick + 3 };
         ctx.emit("couple:dare", { id: d.id, ok: true });
         return;
       }

@@ -256,3 +256,177 @@
   figures:
     - { role: wife, pose: lie_open, x: -10, y: 0, flip: false, legR: [40, -50], legL: [48, -44], armR: { to: husband.shoulderR } }
     - { role: husband, pose: kneel_sit, x: 34, y: 0, flip: true, torso: 84, head: 55, penis: { angle: -65, len: 7 }, armR: [-80, -60] }
+
+# --- how it ends: where he comes (the pose of the moment; what is on her afterwards is a tag, not a pose) ---
+- id: patron_fin_face
+  figures:
+    - { role: wife, pose: kneel_sit, x: -16, y: 0, flip: false, torso: 86, head: 112, armR: { to: patron.kneeR, dy: 10 }, armL: { to: self.kneeR, dy: 4 } }
+    - { role: patron, pose: stand, x: 18, y: 0, flip: true, torso: 90, head: 62, penis: { to: wife.head, dx: 10, dy: -2 }, armR: { to: self.penisTip, dx: 9, dy: 1 }, armL: { to: wife.head, dx: -4, dy: 6 } }
+- id: patron_fin_mouth
+  figures:
+    - { role: wife, pose: kneel_sit, x: -14, y: 0, flip: false, torso: 84, head: 104, armR: { to: patron.kneeR, dy: 12 }, armL: { to: patron.pelvis, dx: 4 } }
+    - { role: patron, pose: stand, x: 16, y: 0, flip: true, torso: 94, head: 64, penis: { to: wife.mouth, dx: 3 }, armR: { to: wife.head, dy: 4 }, armL: { to: wife.head, dx: -5, dy: 2 } }
+- id: patron_fin_chest
+  figures:
+    - { role: wife, pose: kneel_sit, x: -16, y: 0, flip: false, torso: 102, head: 104, armR: [-150, -120], armL: [-140, -110] }
+    - { role: patron, pose: stand, x: 18, y: 0, flip: true, torso: 86, head: 58, penis: { to: wife.chest, dx: 10, dy: 2 }, armR: { to: self.penisTip, dx: 9, dy: 2 }, armL: [-85, -75] }
+- id: patron_fin_body
+  figures:
+    - { role: wife, pose: lie_open, x: -14, y: 0, flip: false, legR: [60, 10], legL: [78, 30], armR: [170, 150], armL: [150, 120] }
+    - { role: patron, pose: kneel, x: 26, y: 0, flip: true, torso: 84, head: 60, penis: { to: wife.pelvis, dx: 12, dy: 12 }, armR: { to: self.penisTip, dx: 8, dy: 2 }, armL: { to: wife.kneeR, dy: -4 } }
+- id: patron_fin_hands
+  figures:
+    - { role: patron, pose: sit, x: 12, y: 0, flip: true, torso: 104, head: 110, penis: { angle: 58 }, armR: [-95, -60], armL: [-100, -70] }
+    - { role: wife, pose: kneel_sit, x: -20, y: 0, flip: false, torso: 80, head: 70, armR: { to: patron.penisTip, dy: -2 }, armL: { to: patron.penisTip, dx: -3, dy: 4 } }
+- id: patron_fin_inside
+  figures:
+    - { role: wife, pose: lie_open, x: -12, y: 0, flip: false, legR: { to: patron.butt, dy: 4 }, legL: { to: patron.pelvis, dx: 6, dy: 8 }, armR: { to: patron.neck }, armL: { to: patron.shoulderL } }
+    - { role: patron, pose: kneel, x: 17, y: 0, flip: true, torso: 40, head: 20, penis: { to: wife.groin }, armR: { to: wife.shoulderR, dy: -8 }, armL: { to: wife.neck, dy: -10 } }
+- id: patron_fin_anus
+  figures:
+    - { role: wife, pose: all_fours, x: 8, y: 0, flip: false, torso: -12, head: -30, armR: [-20, 20], armL: [-10, 30] }
+    - { role: patron, pose: kneel, x: -17, y: 0, flip: false, torso: 62, head: 40, penis: { to: wife.butt, dy: 1 }, armR: { to: wife.pelvis, dx: 4, dy: 4 }, armL: { to: wife.shoulderR, dy: 4 } }
+- id: patron_fin_thighs
+  figures:
+    - { role: wife, pose: bend, x: 10, y: 0, flip: false, torso: 46, head: 50, armR: [-75, -85], armL: [-65, -80] }
+    - { role: patron, pose: stand, x: -8, y: 0, flip: false, torso: 82, head: 70, penis: { to: wife.kneeR, dx: 2, dy: 18 }, armR: { to: wife.pelvis, dx: 3, dy: 5 }, armL: { to: wife.butt, dy: 6 } }
+- id: patron_fin_held
+  figures:
+    - { role: wife, pose: stand, x: -34, y: 0, flip: true, torso: 84, head: 130, armR: [-140, -100], armL: [-60, 30] }
+    - { role: patron, pose: stand, x: 22, y: 0, flip: true, torso: 78, head: 50, penis: { angle: 20 }, armR: { to: self.penisTip, dx: 8, dy: 2 }, armL: [-40, 20] }
+- id: fin_face
+  figures:
+    - { role: wife, pose: kneel_sit, x: -16, y: 0, flip: false, torso: 86, head: 112, armR: { to: husband.kneeR, dy: 8 }, armL: { to: self.kneeR, dy: 4 } }
+    - { role: husband, pose: kneel, x: 20, y: 0, flip: true, torso: 92, head: 62, penis: { to: wife.head, dx: 6, dy: -3 }, armR: { to: self.penisTip, dx: 4, dy: 1 }, armL: { to: wife.head, dx: -4, dy: 6 } }
+- id: fin_mouth
+  figures:
+    - { role: husband, pose: sit, x: 12, y: 0, flip: true, torso: 108, head: 118, penis: { to: wife.mouth }, armR: { to: wife.head, dy: 4 }, armL: [-95, -60] }
+    - { role: wife, pose: kneel_sit, x: -18, y: 0, flip: false, torso: 64, head: 46, armR: { to: husband.kneeR, dy: 4 }, armL: { to: husband.pelvis, dx: 6 } }
+- id: fin_chest
+  figures:
+    - { role: wife, pose: lie_back, x: -16, y: 0, flip: false, legR: [14, -20], legL: [8, -14], armR: [170, 150], armL: [20, 10] }
+    - { role: husband, pose: kneel, x: -6, y: 6, flip: false, torso: 84, head: 60, penis: { to: wife.chest, dx: -6, dy: 8 }, armR: { to: self.penisTip, dx: -4, dy: 2 }, armL: [-80, -70] }
+- id: fin_belly
+  figures:
+    - { role: wife, pose: lie_open, x: -14, y: 0, flip: false, legR: [60, 10], legL: [78, 30], armR: [170, 150], armL: [150, 120] }
+    - { role: husband, pose: kneel, x: 24, y: 0, flip: true, torso: 84, head: 60, penis: { to: wife.pelvis, dx: 8, dy: 9 }, armR: { to: self.penisTip, dx: 4, dy: 1 }, armL: { to: wife.kneeR, dy: -4 } }
+- id: fin_back
+  figures:
+    - { role: wife, pose: lie_front, x: 10, y: 0, flip: false, head: 30, armR: [10, 60], armL: [0, 50] }
+    - { role: husband, pose: kneel, x: -20, y: 0, flip: false, torso: 84, head: 60, penis: { to: wife.butt, dx: -8, dy: 10 }, armR: { to: self.penisTip, dx: -4, dy: 1 }, armL: { to: wife.butt, dy: 5 } }
+- id: fin_inside
+  figures:
+    - { role: wife, pose: lie_open, x: -12, y: 0, flip: false, legR: { to: husband.butt, dy: 4 }, legL: { to: husband.pelvis, dx: 6, dy: 8 }, armR: { to: husband.neck }, armL: { to: husband.shoulderL } }
+    - { role: husband, pose: kneel, x: 18, y: 0, flip: true, torso: 40, head: 20, penis: { to: wife.groin }, armR: { to: wife.shoulderR, dy: -8 }, armL: { to: wife.neck, dy: -10 } }
+
+# --- she ran it, and ended it her way ---
+- id: lead_ruined
+  figures:
+    - { role: husband, pose: lie_back, x: -6, y: 0, flip: false, penis: { angle: 82 }, armR: [160, 180], armL: [150, 170], legR: [18, -24], legL: [12, -18] }
+    - { role: wife, pose: kneel_sit, x: 34, y: 0, flip: true, torso: 96, head: 80, armR: [-120, -150], armL: { to: self.kneeR, dy: 4 } }
+- id: lead_snowball
+  figures:
+    - { role: husband, pose: lie_back, x: 6, y: 0, flip: false, legR: [14, -18], legL: [8, -12], armR: { to: wife.pelvis, dy: 4 } }
+    - { role: wife, pose: all_fours, x: -8, y: 7, flip: true, torso: 8, head: -30, armR: { to: husband.head, dx: -8, dy: -4 }, armL: [-100, -80], legR: [-70, 175], legL: [-64, 175] }
+- id: lead_lick_clean
+  figures:
+    - { role: husband, pose: lie_back, x: 14, y: 0, flip: false, legR: [10, -14], legL: [6, -10], armR: { to: wife.kneeR, dy: 6 }, armL: { to: wife.butt, dy: 2 } }
+    - { role: wife, pose: straddle, x: -29, y: 6, flip: false, torso: 88, head: 60, legR: [-20, -160], legL: [-14, -160], armR: { to: husband.head, dx: 2, dy: 6 }, armL: [-110, -130] }
+
+# --- more than one man ---
+- id: group_spitroast
+  figures:
+    - { role: wife, pose: all_fours, x: 2, y: 0, flip: false, head: 14 }
+    - { role: patron, pose: kneel, x: -26, y: 0, flip: false, torso: 82, penis: { to: wife.butt, dy: 1 }, armR: { to: wife.pelvis, dx: 2, dy: 4 }, armL: { to: wife.butt, dy: 6 } }
+    - { role: patron2, pose: kneel, x: 44, y: 0, flip: true, torso: 92, head: 70, penis: { to: wife.mouth, dx: 2 }, armR: { to: wife.head, dy: 4 }, armL: [-85, -75] }
+- id: group_spitroast_hand
+  figures:
+    - { role: wife, pose: kneel, x: 0, y: 0, flip: false, torso: 56, head: 40, armL: { to: patron3.penisTip, dx: 3 }, armR: [-70, -80] }
+    - { role: patron, pose: kneel, x: -24, y: 0, flip: false, torso: 78, penis: { to: wife.butt, dy: 2 }, armR: { to: wife.pelvis, dx: 2, dy: 4 } }
+    - { role: patron2, pose: stand, x: 30, y: 0, flip: true, torso: 92, head: 66, penis: { to: wife.mouth, dx: 2 }, armR: { to: wife.head, dy: 4 } }
+    - { role: patron3, pose: stand, x: 62, y: 0, flip: true, torso: 88, head: 70, penis: { angle: 12, len: 24 }, armR: [-50, 10] }
+- id: group_dp
+  figures:
+    - { role: patron, pose: lie_back, x: -2, y: 0, flip: false, armR: { to: wife.pelvis, dy: 5 }, legR: [20, -30], legL: [14, -24], penis: { to: wife.groin, dy: 3 } }
+    - { role: wife, pose: straddle, x: 1, y: 3, flip: true, torso: 48, head: 30, armR: { to: patron.shoulderR, dy: 2 }, armL: { to: patron.chest, dx: 6 }, legR: [-25, -165], legL: [-18, -165] }
+    - { role: patron2, pose: kneel, x: 30, y: 0, flip: true, torso: 76, head: 56, penis: { to: wife.butt, dy: 2 }, armR: { to: wife.pelvis, dx: -2, dy: 4 }, armL: { to: wife.shoulderR, dy: 2 } }
+- id: group_airtight
+  figures:
+    - { role: patron, pose: lie_back, x: 2, y: 0, flip: false, armR: { to: wife.pelvis, dy: 5 }, legR: [20, -30], legL: [14, -24], penis: { to: wife.groin, dy: 3 } }
+    - { role: wife, pose: straddle, x: 5, y: 3, flip: true, torso: 44, head: 20, armR: { to: patron.shoulderR, dy: 2 }, armL: { to: patron3.pelvis, dx: 4 }, legR: [-25, -165], legL: [-18, -165] }
+    - { role: patron2, pose: kneel, x: 34, y: 0, flip: true, torso: 76, head: 56, penis: { to: wife.butt, dy: 2 }, armR: { to: wife.pelvis, dx: -2, dy: 4 } }
+    - { role: patron3, pose: kneel, x: -54, y: 0, flip: false, torso: 90, head: 66, penis: { to: wife.mouth, dx: -2 }, armR: { to: wife.head, dy: 4 } }
+- id: group_oral_hand
+  figures:
+    - { role: wife, pose: kneel, x: 0, y: 0, flip: false, torso: 84, head: 72, armR: { to: patron.kneeR, dy: 12 }, armL: { to: patron2.penisTip, dx: -3 } }
+    - { role: patron, pose: stand, x: 26, y: 0, flip: true, torso: 92, head: 68, penis: { to: wife.mouth, dx: 1 }, armR: { to: wife.head, dy: 4 } }
+    - { role: patron2, pose: stand, x: -30, y: 0, flip: false, torso: 88, head: 66, penis: { angle: 14, len: 22 }, armR: { to: wife.shoulderL, dy: 2 } }
+- id: group_sex_hand
+  figures:
+    - { role: wife, pose: lie_open, x: -6, y: 0, flip: false, legR: [70, 20], legL: [84, 40], armR: { to: patron2.penisTip, dx: 2 }, armL: { to: patron.chest } }
+    - { role: patron, pose: kneel, x: 27, y: 0, flip: true, torso: 64, head: 44, penis: { to: wife.groin }, armR: { to: wife.kneeR, dy: -6 }, armL: { to: wife.chest, dx: 6, dy: -10 } }
+    - { role: patron2, pose: kneel, x: -52, y: 0, flip: false, torso: 88, head: 60, penis: { angle: -10, len: 22 }, armR: { to: wife.head, dx: -2, dy: 6 } }
+
+# --- her husband joins her and a guest ---
+- id: join_hand
+  figures:
+    - { role: wife, pose: lie_open, x: -6, y: 0, flip: false, legR: [70, 20], legL: [84, 40], armR: { to: husband.penisTip, dx: 2 }, armL: { to: patron.chest } }
+    - { role: patron, pose: kneel, x: 27, y: 0, flip: true, torso: 64, head: 44, penis: { to: wife.groin }, armR: { to: wife.kneeR, dy: -6 }, armL: { to: wife.chest, dx: 6, dy: -10 } }
+    - { role: husband, pose: kneel, x: -50, y: 0, flip: false, torso: 88, head: 60, penis: { angle: -8 }, armR: { to: wife.head, dx: -2, dy: 6 } }
+- id: join_mouth
+  figures:
+    - { role: wife, pose: all_fours, x: 2, y: 0, flip: false, head: 14 }
+    - { role: patron, pose: kneel, x: -26, y: 0, flip: false, torso: 82, penis: { to: wife.butt, dy: 1 }, armR: { to: wife.pelvis, dx: 2, dy: 4 }, armL: { to: wife.butt, dy: 6 } }
+    - { role: husband, pose: kneel, x: 40, y: 0, flip: true, torso: 92, head: 70, penis: { to: wife.mouth, dx: 1 }, armR: { to: wife.head, dy: 4 } }
+- id: join_take
+  figures:
+    - { role: patron, pose: lie_back, x: -2, y: 0, flip: false, armR: { to: wife.pelvis, dy: 5 }, legR: [20, -30], legL: [14, -24], penis: { to: wife.groin, dy: 3 } }
+    - { role: wife, pose: straddle, x: 1, y: 3, flip: true, torso: 48, head: 30, armR: { to: patron.shoulderR, dy: 2 }, armL: { to: patron.chest, dx: 6 }, legR: [-25, -165], legL: [-18, -165] }
+    - { role: husband, pose: kneel, x: 28, y: 0, flip: true, torso: 76, head: 56, penis: { to: wife.butt, dy: 2 }, armR: { to: wife.pelvis, dx: -2, dy: 4 }, armL: { to: wife.shoulderR, dy: 2 } }
+
+# --- her day, when he is in the room ---
+- id: her_cook
+  figures:
+    - { role: wife, pose: stand, x: -18, y: 0, flip: false, torso: 82, head: 60, armR: [-30, 10], armL: [-45, 0] }
+    - { role: husband, pose: stand, x: 54, y: 0, flip: true }
+- id: her_tidy
+  figures:
+    - { role: wife, pose: bend, x: -14, y: 0, flip: false, torso: 30, head: 10, armR: [-80, -70], armL: [-70, -60] }
+    - { role: husband, pose: stand, x: 54, y: 0, flip: true }
+- id: her_rest
+  figures:
+    - { role: wife, pose: lie_side, x: -20, y: 0, flip: false, armR: [170, 120] }
+    - { role: husband, pose: stand, x: 60, y: 0, flip: true }
+- id: her_dress
+  figures:
+    - { role: wife, pose: stand, x: -20, y: 0, flip: false, torso: 80, head: 50, armR: [-60, -80], armL: [-70, -90], legR: [-60, -110] }
+    - { role: husband, pose: sit, x: 50, y: 0, flip: true, torso: 84 }
+- id: bath_walkin
+  figures:
+    - { role: wife, pose: stand, x: -22, y: 0, flip: false, torso: 88, head: 100, armR: { to: self.chest, dx: 4 }, armL: { to: self.groin, dx: 3 } }
+    - { role: husband, pose: stand, x: 56, y: 0, flip: true, armR: [-50, 40] }
+- id: bath_together
+  figures:
+    - { role: wife, pose: stand, x: 12, y: 0, flip: true, torso: 88, head: 110, armR: { to: husband.neck, dx: -2 }, armL: { to: husband.shoulderR }, }
+    - { role: husband, pose: stand, x: -14, y: 0, flip: false, torso: 86, head: 70, armR: { to: wife.pelvis, dx: 6, dy: 2 }, armL: { to: wife.butt, dx: 4 } }
+
+# --- things that happen on the floor and last a few minutes ---
+- id: flash
+  figures:
+    - { role: wife, pose: stand, x: -66, y: 0, flip: false, torso: 92, armR: [10, 100], armL: [0, 95] }
+    - { role: patron, pose: sit, x: 6, y: 0, flip: true, torso: 80, head: 100 }
+    - { role: patron2, pose: sit, x: 72, y: 0, flip: true, torso: 84, head: 104, armR: [-30, 60] }
+- id: walk_naked
+  figures:
+    - { role: patron2, pose: sit, x: -64, y: 0, flip: false, torso: 84 }
+    - { role: wife, pose: stand, x: -4, y: 0, flip: false, torso: 88, head: 96, armR: [-110, -80], armL: [-60, -70], legR: [-72, -98], legL: [-108, -94] }
+    - { role: patron, pose: sit, x: 58, y: 0, flip: true, torso: 82, head: 100 }
+- id: deal
+  figures:
+    - { role: husband, pose: stand, x: -66, y: 0, flip: false, armR: [-70, -40] }
+    - { role: patron, pose: stand, x: -8, y: 0, flip: true, torso: 84, armR: [-50, 10], armL: [-120, 150] }
+    - { role: wife, pose: stand, x: 62, y: 0, flip: true, torso: 88, armR: [-80, -20], armL: [-80, -30] }
+- id: table_sit
+  figures:
+    - { role: husband, pose: sit, x: -46, y: 0, flip: false, torso: 84, armR: [-20, 60] }
+    - { role: patron, pose: sit, x: 46, y: 0, flip: true, torso: 82, armR: [-20, 70] }
