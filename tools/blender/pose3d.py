@@ -135,7 +135,7 @@ def chest_front(arm, fig):
 def skin_points(mesh, step=9):
     """Points of the posed body itself (bones lie: helper bones sit far from the skin)."""
     ev = mesh.evaluated_get(bpy.context.evaluated_depsgraph_get()); me = ev.to_mesh()
-    pts = [ev.matrix_world @ v.co for v in me.vertices[::step]]
+    pts = [ev.matrix_world @ me.vertices[i].co for i in range(0, len(me.vertices), step)]
     ev.to_mesh_clear()
     return pts
 
