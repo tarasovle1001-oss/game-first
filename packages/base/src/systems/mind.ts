@@ -9,6 +9,7 @@ import { bs, clamp, HUSBAND } from "../state";
 import { CONSENT_FORMULA } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { TIP_FORMULA } from "./shift";
+import { note as noteWhy } from "./inspect";
 import type { TipInput } from "./shift";
 
 const M = content.mind;
@@ -29,7 +30,7 @@ export const feelingsOf = (state: GameState): [Emotion, number][] =>
 
 const SOFT: Emotion[] = ["fear", "shame"]; // a composed woman takes less of these in
 /** One feeling moves. A big enough surge may come up as a thought. */
-export function feel(ctx: Ctx, e: Emotion, amount: number, scale = 1) {
+export function feel(ctx: Ctx, e: Emotion, amount: number, scale = 1, reason?: string) {
   const h = bs(ctx.state).heroine;
   let got = amount * scale;
   if (got > 0 && SOFT.includes(e)) got *= 1 - (attrOf(ctx.state, "composure") - 50) * M.attributes.composure.feel;
@@ -37,18 +38,22 @@ export function feel(ctx: Ctx, e: Emotion, amount: number, scale = 1) {
   h.feel = h.feel ?? {};
   const before = h.feel[e] ?? 0;
   h.feel[e] = clamp(before + got);
+  if (reason) noteWhy(ctx, `feel.${e}`, reason, h.feel[e]! - before);
   if (h.feel[e] === 0) delete h.feel[e];
   if (got >= M.thoughts.from) think(ctx, `thought.${e}`);
 }
 const feelAll = (ctx: Ctx, key: string, scale = 1) => {
   const bag = G[key];
   if (!bag || typeof bag === "number") return;
-  for (const [e, v] of Object.entries(bag) as [Emotion, number][]) feel(ctx, e, v, v > 0 ? scale : 1);
+  for (const [e, v] of Object.entries(bag) as [Emotion, number][]) feel(ctx, e, v, v > 0 ? scale : 1, key);
 };
 export function trust(ctx: Ctx, key: string) {
   const m = bs(ctx.state).heroine.marriage;
   const d = M.trust.change[key];
-  if (d) m.trust = clamp((m.trust ?? M.trust.start) + d);
+  if (!d) return;
+  const before = m.trust ?? M.trust.start;
+  m.trust = clamp(before + d);
+  noteWhy(ctx, "bond.trust", key, m.trust - before);
 }
 
 const THOUGHT_LINES = 3;

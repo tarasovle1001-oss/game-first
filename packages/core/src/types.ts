@@ -160,7 +160,16 @@ export interface EngineView {
   checkInvariants(state: GameState): string[];
 }
 
+/** Watches a dispatch from the outside: called around the action itself and around the handlers of every event. */
+export interface Tracer {
+  /** `source` is "action" or the event type. Calls nest when a handler flushes the queue. */
+  before(ctx: Ctx, source: string): void;
+  after(ctx: Ctx, source: string): void;
+}
+
 export interface Engine extends EngineView {
+  /** Debug only: the game must play the same with or without one. Pass null to remove. */
+  setTracer(tracer: Tracer | null): void;
   /** `setup` is handed to mods in the game:init event (payload.setup): new-game choices such as sliders. */
   init(seed: number, setup?: Record<string, Json>): GameState;
   dispatch(state: GameState, action: Action): GameState;

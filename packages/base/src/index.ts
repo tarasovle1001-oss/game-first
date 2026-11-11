@@ -33,6 +33,7 @@ import { registerFloor } from "./systems/floor";
 import { registerBodyState } from "./systems/bodystate";
 import { registerCrowd } from "./systems/crowd";
 import { registerPictures } from "./systems/pictures";
+import { registerInspect } from "./systems/inspect";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -150,6 +151,7 @@ export const baseMod: Mod = {
     registerBodyState(api);
     registerCrowd(api);
     registerPictures(api);
+    registerInspect(api);
     registerSetup(api);
   },
 };
@@ -203,3 +205,5 @@ export { CROWD, crowdOf, menOf } from "./systems/crowd";
 export { soreOf, slick, wearOf, foreignMarks, visibleMarks, dressShift } from "./systems/bodystate";
 export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryOf, weekdayOf, fameOf, fameTier } from "./systems/rhythm";
 export { pleasureFor, sizeClass } from "./systems/body";
+export { inspect, note, tracer, resetTracer } from "./systems/inspect";
+export type { DeltaRow, DeltaVia, DeltaGroup, Inspection } from "./systems/inspect";

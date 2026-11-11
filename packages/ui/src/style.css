@@ -722,3 +722,14 @@ details { border-top: 1px solid var(--line); }
 .log-filters { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
 .log-filters button { padding: 2px 8px; font-size: 12px; }
 .log-filters button.on { border-color: var(--accent, #e0a030); color: var(--accent, #e0a030); }
+
+/* ---- inspector: what the last action changed ---- */
+.inspector { margin-top: 10px; padding: 8px 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+.insp-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.insp-main { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-top: 6px; font-size: 0.95rem; }
+.insp-main b, .insp-row b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.insp-rows { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.74rem; color: var(--muted); display: grid; gap: 1px; }
+.insp-row { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.insp-what { color: var(--text); opacity: 0.85; }
+.insp-via { opacity: 0.75; }
+.flat { color: #c79be8; }

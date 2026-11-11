@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, withLook } from "@tc/base";
+import { tracer, resetTracer, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, withLook } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -8,7 +8,7 @@ import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
 import { loadPack, packInfo, pictureFor } from "./pack";
-import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
+import { actionLabel, InspectorBlock, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
 import "./style.css";
 
 type Tab = "her" | "you" | "guests" | "why" | "phone" | "stats";
@@ -35,6 +35,23 @@ function App() {
       /* no storage: the setting just lasts for this visit */
     }
   };
+  // the inspector: what the last action changed, under the scene. Remembered between visits.
+  const [inspector, setInspectorState] = useState(() => {
+    try {
+      return localStorage.getItem("test-city.inspector") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const setInspector = (v: boolean) => {
+    setInspectorState(v);
+    try {
+      localStorage.setItem("test-city.inspector", v ? "1" : "0");
+    } catch {
+      /* no storage: the setting just lasts for this visit */
+    }
+  };
+  const [lastWhat, setLastWhat] = useState("");
   const [menu, setMenu] = useState(false);
   const [packCount, setPackCount] = useState(0);
   const packInput = useRef<HTMLInputElement | null>(null);
@@ -49,6 +66,7 @@ function App() {
     if (!prev) return;
     setPast(past.slice(0, -1));
     setState(prev);
+    setLastWhat(t("ui.undo"));
   };
   const saveInput = useRef<HTMLInputElement>(null);
   const modInput = useRef<HTMLInputElement>(null);
@@ -64,6 +82,9 @@ function App() {
   };
   const act = (a: Action) =>
     guard(() => {
+      // with the inspector on, every change is put down to the event that made it
+      resetTracer();
+      engine.setTracer(inspector ? tracer : null);
       const next = engine.dispatch(state, a);
       // a new day has started: keep a copy, in case the tab gets closed
       if (next.time.day !== state.time.day) {
@@ -75,6 +96,7 @@ function App() {
       }
       setPast([...past, state].slice(-UNDO_DEPTH));
       setState(next);
+      setLastWhat(actionLabel(a, t, lang));
     });
   const load = (json: string | null) =>
     json &&
@@ -131,7 +153,10 @@ function App() {
       const quick = HOT.indexOf(e.key.toLowerCase());
       if (n >= 1 && n <= waits.length) act(waits[n - 1]!);
       else if (e.key === "Enter" && advance) act(advance);
-      else if (e.key === "Backspace" || (e.key.toLowerCase() === "z" && (e.ctrlKey || e.metaKey))) undo();
+      else if (e.key === "F8") {
+        e.preventDefault();
+        setInspector(!inspector);
+      } else if (e.key === "Backspace" || (e.key.toLowerCase() === "z" && (e.ctrlKey || e.metaKey))) undo();
       else if (quick >= 0 && quick < direct.length && !e.ctrlKey && !e.metaKey && !e.altKey) act(direct[quick]!);
     };
     window.addEventListener("keydown", onKey);
@@ -153,6 +178,9 @@ function App() {
           </button>
           <button className={transparent ? "on" : ""} title={t("ui.transparent.hint")} onClick={() => setTransparent(!transparent)}>
             {t("ui.transparent")}
+          </button>
+          <button className={inspector ? "on" : ""} title={t("ui.inspector.hint")} onClick={() => setInspector(!inspector)}>
+            {t("ui.inspector")}
           </button>
           <button className={debug ? "on" : ""} onClick={() => setDebug(!debug)}>
             {t("ui.debug")}
@@ -217,6 +245,7 @@ function App() {
 
         <section className="col-main">
           {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
+          {inspector && state.time.phase !== "summary" && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
           <div className="cap gap">{t("ui.where")}</div>
           <Rooms {...common} onAct={act} />
           {debug && <CheatPanel {...common} onAct={act} />}

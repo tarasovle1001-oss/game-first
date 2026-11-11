@@ -2,6 +2,7 @@ import type { Ctx, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp } from "../state";
 import type { Heroine } from "../state";
+import { note } from "./inspect";
 
 export const newHeroine = (): Heroine => ({
   energy: 80,
@@ -31,7 +32,10 @@ export function changeHeroine(ctx: Ctx, key: StateKey, amount: number, reason: s
   // a woman with stamina pays less for everything that tires her
   if (key === "energy" && amount < 0) amount *= 1 - ((h.attrs?.stamina ?? 50) - 50) * content.mind.attributes.stamina.energy;
   h[key] = clamp(before + amount);
-  if (h[key] !== before) ctx.emit("heroine:changed", { key, amount: h[key] - before, reason });
+  if (h[key] !== before) {
+    note(ctx, `her.${key}`, reason, h[key] - before);
+    ctx.emit("heroine:changed", { key, amount: h[key] - before, reason });
+  }
 }
 
 export function registerHeroine(api: ModApi) {

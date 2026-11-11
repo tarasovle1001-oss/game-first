@@ -18,6 +18,7 @@ import type {
   PhaseDef,
   SceneDef,
   SceneDesc,
+  Tracer,
 } from "./types";
 
 export const CORE_ADVANCE = "core/advance";
@@ -57,6 +58,7 @@ export function createEngine(modList: Mod[]): Engine {
   const scenes: SceneDef[] = [];
   const handlers = new Map<string, { handler: EventHandler; priority: number; seq: number }[]>();
   const invariants: { id: string; check: Invariant }[] = [];
+  let tracer: Tracer | null = null;
   let seq = 0;
 
   const unique = <T>(map: Map<string, T>, kind: string, id: string, def: T) => {
@@ -208,6 +210,9 @@ export function createEngine(modList: Mod[]): Engine {
 
   return {
     ...view,
+    setTracer(t) {
+      tracer = t;
+    },
     init(seed, setup) {
       const list = sortedPhases();
       if (list.length === 0) throw new EngineError("no phases registered");
@@ -249,7 +254,11 @@ export function createEngine(modList: Mod[]): Engine {
         while (queue.length > 0) {
           if (++processed > MAX_EVENTS_PER_DISPATCH) throw new EngineError("event loop: too many events in one dispatch");
           const event = queue.shift()!;
-          for (const h of handlers.get(event.type) ?? []) h.handler(ctx, event);
+          const list = handlers.get(event.type);
+          if (!list || list.length === 0) continue;
+          tracer?.before(ctx, event.type);
+          for (const h of list) h.handler(ctx, event);
+          tracer?.after(ctx, event.type);
         }
       };
       const ctx: Ctx = {
@@ -263,7 +272,9 @@ export function createEngine(modList: Mod[]): Engine {
           if (draft.log.length > LOG_LIMIT) draft.log.splice(0, draft.log.length - LOG_LIMIT);
         },
       };
+      tracer?.before(ctx, "action");
       body(ctx);
+      tracer?.after(ctx, "action");
       drain();
     });
   }

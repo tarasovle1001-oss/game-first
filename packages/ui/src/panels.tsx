@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
-import type { Patron, ProposalRecord } from "@tc/base";
+import { inspect, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
+import type { DeltaRow, DeltaVia, Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
 import { renderSchematic } from "@tc/schematics";
@@ -403,6 +403,71 @@ export function WhyLine({ record, state, t, lang, open: transparent }: Common & 
   );
 }
 
+// ---------------------------------------------------------------- inspector
+
+const INSPECT_SHORT = 12;
+/** What the last action changed and where it came from: big numbers on one line, the rest as small rows with a source. */
+export function InspectorBlock({ prev, state, t, lang, what }: Common & { prev: GameState | null; what: string }) {
+  const [all, setAll] = useState(false);
+  if (!prev)
+    return (
+      <div className="inspector">
+        <div className="insp-head">
+          <span className="cap">{t("inspect.title")}</span>
+          <span className="muted small">{t("inspect.first")}</span>
+        </div>
+      </div>
+    );
+  const ins = inspect(prev, state);
+  const label = (r: DeltaRow) => t(r.label, renderParams(r.params, t, lang));
+  const amount = (r: DeltaRow) => (r.id.startsWith("perm.") ? t(r.to > 0 ? "inspect.perm.allow" : "inspect.perm.forbid") : `${fmt(r.delta)} ${r.delta > 0 ? "↑" : "↓"}`);
+  const tone = (r: DeltaRow) => (r.good === null ? "flat" : r.good ? "pos" : "neg");
+  const via = (v: DeltaVia) => (v.key.startsWith("told.") ? t(v.key, renderParams(v.params, t, lang)) : reasonLabel(v.key, t)) + (v.amount !== undefined ? ` ${fmt(v.amount)}` : "");
+  const main = ins.rows.filter((r) => r.main);
+  // a big number comes down as a row too when somebody left a reason next to it
+  const small = ins.rows.filter((r) => !r.main || r.via.length > 0);
+  const shown = all ? small : small.slice(0, INSPECT_SHORT);
+  return (
+    <div className="inspector">
+      <div className="insp-head">
+        <span className="cap">{t("inspect.title")}</span>
+        <b>{what}</b>
+        {ins.minutes > 0 && <span className="muted small">{t("inspect.minutes", { n: ins.minutes })}</span>}
+      </div>
+      {ins.rows.length === 0 && <div className="muted small">{t("inspect.none")}</div>}
+      {main.length > 0 && (
+        <div className="insp-main">
+          {main.map((r) => (
+            <span key={r.id} title={`${r.from} → ${r.to}`}>
+              {label(r)} <b className={tone(r)}>{amount(r)}</b>
+            </span>
+          ))}
+        </div>
+      )}
+      {shown.length > 0 && (
+        <div className="insp-rows">
+          {shown.map((r) => (
+            <div key={r.id} className="insp-row" title={`${r.from} → ${r.to}`}>
+              <span className="insp-what">{label(r)}</span>
+              <b className={tone(r)}>{amount(r)}</b>
+              {r.via.length > 0 && (
+                <span className="insp-via">
+                  {t("inspect.via")} {r.via.map(via).join(", ")}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {small.length > INSPECT_SHORT && (
+        <button className="link small" onClick={() => setAll(!all)}>
+          {all ? t("ui.why.less") : t("inspect.more", { n: small.length - INSPECT_SHORT })}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------- rooms
 
 /** Rooms as cards with name chips, like a house plan. Click a linked room to walk there. */
@@ -497,13 +562,16 @@ function Bar({ label, value, tone }: { label: string; value: number; tone?: stri
   );
 }
 
-const reasonLabel = (r: string, t: Common["t"]) => {
-  for (const k of [`reason.${r}`, `act.${r}`, `day.${r}`]) {
+function reasonLabel(r: string, t: Common["t"]) {
+  // an event name ("shift:tick") or "action": where the inspector saw the number move
+  for (const k of [`reason.${r}`, `source.${r.replace(/[:-]/g, "_")}`, `act.${r}`, `day.${r}`]) {
     const s = t(k);
     if (s !== k) return s;
   }
+  // a small thing at a table: named by its id, it has no short name of its own
+  if (t(`log.moment.${r}`) !== `log.moment.${r}`) return `${t("source.moment")} (${r})`;
   return r;
-};
+}
 
 export function HeroineTab({ state, t, open, lang }: Common) {
   const h = bs(state).heroine;

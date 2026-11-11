@@ -308,6 +308,8 @@ export interface BaseState {
   bareOwn?: boolean; // she came down like that on her own
   today: Ledger;
   history: Ledger[]; // last days, newest last
+  /** For the inspector: the reasons numbers moved during the last action. Drives nothing. */
+  trace?: { turn: number; why: { k: string; r: string; a: number }[] };
 }
 
 export const bs = (state: GameState): BaseState => state.mods[BASE_ID] as BaseState;
