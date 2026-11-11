@@ -20,10 +20,11 @@ pnpm content   # проверить YAML и пересобрать контен�
 pnpm exec tsx packages/bots/src/probe.ts 14 1     # что она отвечала гостям за 14 дней, сид 1
 pnpm exec tsx packages/bots/src/run.ts --days 60 --seeds 8   # длинный прогон, сводка по балансу
 pnpm exec tsx tools/scene-sheet.ts sheet.html    # все схемы сцен на одной странице
-pnpm exec tsx tools/make-save.ts save.json 12 2  # сейв с идущей сценой (день от 12, сид 2)
+pnpm exec tsx tools/make-save.ts save.json 12 2  # сейв с идущей сценой (день от 12, сид 2)pnpm exec tsx tools/pack-plan.ts                 # какие картинки нужны паку и как назвать файлы
+pnpm exec tsx tools/pose-export.ts out/          # скелеты OpenPose и маски ролей для генерации
 ```
 
-Решения, принятые по ходу: [docs/DECISIONS.md](docs/DECISIONS.md). Как писать моды: [docs/MODDING.md](docs/MODDING.md).
+Решения, принятые по ходу: [docs/DECISIONS.md](docs/DECISIONS.md). Как писать моды и собирать паки картинок: [docs/MODDING.md](docs/MODDING.md).
 
 ## Пакеты
 

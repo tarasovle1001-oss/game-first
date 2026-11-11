@@ -3,7 +3,11 @@
 import type { GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs } from "../state";
-import { addMoney } from "./economy";
+import { resolveBody } from "./body";
+import { addHerTips, addMoney } from "./economy";
+import { CONSENT_FORMULA, isIntimate, verdictOf } from "./encounters";
+import type { ConsentInput } from "./encounters";
+import { changeHeroine } from "./heroine";
 import { generatePatron, pickReturning } from "./patrons";
 
 const H = content.balance.hotel;
@@ -54,6 +58,51 @@ export function registerHotel(api: ModApi) {
     },
     -20, // after the day's forgetting of one-time visitors
   );
+  // After closing a guest upstairs rings down for towels. She takes them up. How long she stays is up to her.
+  api.events.on(
+    "phase:enter",
+    (ctx, e) => {
+      const b = bs(ctx.state);
+      if (e.payload!.phase !== "night" || b.complaint) return;
+      const entry = Object.entries(b.lodgers).find(([, l]) => (b.patrons[l.patron]?.memory.interest ?? 0) >= H.towels.interest);
+      if (!entry || !ctx.rng.chance(H.towels.chance)) return;
+      const [room, l] = entry;
+      const p = b.patrons[l.patron]!;
+      const tier = Math.max(2, Math.min(p.memory.tier + 1, H.towels.maxTier));
+      const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
+      if (options.length === 0) return;
+      const act = ctx.rng.pick(options);
+      const input: ConsentInput = { act: act.id, partner: p.id, loc: room, offer: 0, pressure: 0 };
+      const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
+      const verdict = verdictOf(res.total);
+      const open = b.mode === "open";
+      b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: p.id, act: act.id, loc: room, verdict, seen: open, total: res.total, rows: res.rows });
+      if (b.proposals.length > 12) b.proposals.shift();
+      const name = `@name:${p.name}`;
+      if (verdict === "refuse") {
+        ctx.log("log.towels.quick", { room: `loc.${room}` });
+        return;
+      }
+      p.memory.tier = Math.max(p.memory.tier, act.tier);
+      p.memory.acts[act.id] = (p.memory.acts[act.id] ?? 0) + 1;
+      p.memory.interest = Math.min(100, p.memory.interest + act.effects.interest);
+      p.memory.affinity = Math.min(100, p.memory.affinity + act.effects.affinity);
+      changeHeroine(ctx, "arousal", act.effects.arousal, act.id);
+      if (isIntimate(act)) {
+        const out = resolveBody(ctx, act, { size: p.size, minutes: act.minutes });
+        p.memory.sizeKnown = true;
+        if (out.came) p.memory.orgasms += 1;
+      }
+      const tip = Math.round((act.tip * p.traits.generosity) / 50);
+      if (tip > 0) addHerTips(ctx, tip);
+      if (!open) b.secretActsToday += 1;
+      ctx.log(open ? "log.towels.open" : "log.towels.long", { room: `loc.${room}`, name, act: `act.${act.id}` });
+      if (!open) ctx.log("log.towels.truth", { name, act: `act.${act.id}` }, ["unseen"]);
+      ctx.emit("hotel:towels", { patron: p.id, act: act.id });
+    },
+    -40,
+  );
+
   api.invariants.add("hotel", (s) => {
     const b = bs(s);
     for (const [room, l] of Object.entries(b.lodgers)) {

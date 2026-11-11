@@ -60,7 +60,7 @@ export const balanceSchema = z
     // clock: minute of the day each phase starts at (for the log and the top bar)
     clock: z.object({ prep: z.number().int(), night: z.number().int(), summary: z.number().int() }).strict(),
     loan: z.object({ everyDays: z.number().int().positive(), firstDueDay: z.number().int().positive(), share: z.number(), min: z.number(), lateFee: z.number(), visitsAfterMiss: z.number().int(), forgivePerTier: z.number(), consent: z.number(), suspicion: z.number(), lender: z.object({ size: z.number(), persistence: z.number(), generosity: z.number(), interest: z.number(), arrivesAtTick: z.number().int() }).strict() }).strict(),
-    hotel: z.object({ roomPrice: z.number(), takeChance: z.number().min(0).max(1), returningChance: z.number().min(0).max(1), nights: z.tuple([z.number().int().positive(), z.number().int().positive()]), comesDownAtTick: z.number().int(), nightVisitTier: z.number().int() }).strict(),
+    hotel: z.object({ roomPrice: z.number(), takeChance: z.number().min(0).max(1), returningChance: z.number().min(0).max(1), nights: z.tuple([z.number().int().positive(), z.number().int().positive()]), comesDownAtTick: z.number().int(), nightVisitTier: z.number().int(), towels: z.object({ interest: z.number(), chance: z.number().min(0).max(1), maxTier: z.number().int() }).strict() }).strict(),
     shift: z
       .object({
         opensAt: z.number().int().min(0).max(23), // hour
