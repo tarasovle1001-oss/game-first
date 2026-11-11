@@ -56,6 +56,8 @@ scene: # a thing with a guest runs minute by minute; every so often he tries to 
   goingBonus: 10            # it is easier to say yes to the next thing once it is going
   maxMinutes: 60            # nobody keeps her off the floor longer than this...
   maxMinutesRoom: 150       # ...except in his own room upstairs
+  paidDone: 1               # share of what the acts came to that he leaves if he finished
+  paidCut: 0.5              # and if it was cut short before that
   restMinutes: 8            # after it ends she works; nobody takes her off the floor for this long
   patronCooldown: 15        # and the same man waits this long before trying again
   skipMargin: 12            # she is this far past "gladly": he reads it and skips a step

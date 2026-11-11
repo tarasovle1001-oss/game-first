@@ -157,6 +157,8 @@ export interface Encounter {
   hisRate: number; // per minute
   pleasure: number; // what the current act gives her, 0..100
   came: number; // times she came in this one
+  finished?: boolean; // he came at least once in this one
+  owed?: number; // what he means to leave her when it is over
   refusals: number; // changes she said no to
   paid: boolean; // his offer of money is already on the table
   bored?: number; // attempts in a row that gave her too little
@@ -262,7 +264,7 @@ export interface BaseState {
   changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   gossip: number; // 0..100, what the town says about her
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
-  approach: { kind: string; patron?: string; public: boolean } | null; // she has come to him with something and waits for an answer
+  approach: { kind: string; patron?: string; public: boolean; at?: number } | null; // she has come to him with something and waits for an answer
   approached: Record<string, number>; // kind -> last day she came with it
   pushedToday: Record<string, number>; // guest -> how hard he pushed her today
   sizeToday?: number; // the biggest guest she has had today, cm

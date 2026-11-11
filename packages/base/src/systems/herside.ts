@@ -30,7 +30,9 @@ const free = (state: GameState) => {
   const b = bs(state);
   if (b.encounter || b.caught || b.reaction || b.complaint || b.night?.sex || b.approach) return false;
   if (state.time.phase === "night") return state.where[HUSBAND] === BEDROOM && state.where[WIFE] === BEDROOM && !b.night?.scene.startsWith("fd_");
-  return state.time.phase === "shift" && !!state.where[HUSBAND]?.startsWith("cafe.");
+  // on shift she has to be able to walk over: not washing up in the toilet, not out back with a company
+  const sh = b.shift;
+  return state.time.phase === "shift" && !!sh && (sh.awayUntil ?? 0) <= sh.tick && !!state.where[HUSBAND]?.startsWith("cafe.");
 };
 const inPublic = (state: GameState) => state.time.phase === "shift" && state.where[HUSBAND] === HALL && (bs(state).shift?.visits.length ?? 0) > 0;
 
@@ -53,7 +55,9 @@ const approach = (ctx: Ctx) => {
   const what = pick(ctx);
   if (!what) return;
   const pub = inPublic(ctx.state);
-  b.approach = { kind: what.kind, patron: what.patron, public: pub };
+  // she comes to where he is; she is back on the floor once he has answered
+  if (ctx.state.time.phase === "shift") ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
+  b.approach = { kind: what.kind, patron: what.patron, public: pub, at: b.shift?.tick };
   b.approached[what.kind] = ctx.state.time.day;
   if (b.shift) b.shift.interrupt = true;
   const name = what.patron && b.patrons[what.patron] ? `@name:${b.patrons[what.patron]!.name}` : "";
@@ -108,7 +112,17 @@ export function registerHerSide(api: ModApi) {
     const p = b.patrons[patron];
     if (p && (zones.includes("vagina") || zones.includes("anus"))) b.sizeToday = Math.max(b.sizeToday ?? 0, p.size);
   });
-  api.events.on("shift:tick", (ctx) => approach(ctx), -50);
+  api.events.on("shift:tick", (ctx) => {
+    const b = bs(ctx.state);
+    // she does not stand next to him waiting all evening: no answer in ten minutes is an answer
+    if (b.approach && b.shift && b.shift.tick - (b.approach.at ?? b.shift.tick) >= 10) {
+      feel(ctx, 0, A.ignoredResent);
+      ctx.log(`log.approach.ignored.${b.approach.kind}`);
+      b.approach = null;
+      return;
+    }
+    approach(ctx);
+  }, -50);
   api.events.on(
     "phase:enter",
     (ctx, e) => {

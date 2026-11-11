@@ -41,6 +41,15 @@ function App() {
   const [setupOpen, setSetupOpen] = useState(true); // the first thing a player sees
   const [tab, setTab] = useState<Tab>("her");
   const [error, setError] = useState("");
+  // the last few states, to step back from a misclick: states are immutable, so keeping them costs little
+  const [past, setPast] = useState<GameState[]>([]);
+  const UNDO_DEPTH = 20;
+  const undo = () => {
+    const prev = past[past.length - 1];
+    if (!prev) return;
+    setPast(past.slice(0, -1));
+    setState(prev);
+  };
   const saveInput = useRef<HTMLInputElement>(null);
   const modInput = useRef<HTMLInputElement>(null);
   const t = useMemo(() => game.translator(lang), [lang, extra]);
@@ -64,9 +73,15 @@ function App() {
           /* storage may be unavailable when opened from a file; the game goes on */
         }
       }
+      setPast([...past, state].slice(-UNDO_DEPTH));
       setState(next);
     });
-  const load = (json: string | null) => json && guard(() => setState(loadGame(json, game.mods).state));
+  const load = (json: string | null) =>
+    json &&
+    guard(() => {
+      setPast([]);
+      setState(loadGame(json, game.mods).state);
+    });
   const addMod = (source: string) =>
     guard(() => {
       const pack = readModFile(source);
@@ -116,6 +131,7 @@ function App() {
       const quick = HOT.indexOf(e.key.toLowerCase());
       if (n >= 1 && n <= waits.length) act(waits[n - 1]!);
       else if (e.key === "Enter" && advance) act(advance);
+      else if (e.key === "Backspace" || (e.key.toLowerCase() === "z" && (e.ctrlKey || e.metaKey))) undo();
       else if (quick >= 0 && quick < direct.length && !e.ctrlKey && !e.metaKey && !e.altKey) act(direct[quick]!);
     };
     window.addEventListener("keydown", onKey);
@@ -132,6 +148,9 @@ function App() {
       <header>
         <TopBar {...common} />
         <div className="tools">
+          <button disabled={past.length === 0} title={t("ui.undo.hint")} onClick={undo}>
+            {t("ui.undo")} {past.length > 0 ? past.length : ""}
+          </button>
           <button className={transparent ? "on" : ""} title={t("ui.transparent.hint")} onClick={() => setTransparent(!transparent)}>
             {t("ui.transparent")}
           </button>
@@ -179,7 +198,10 @@ function App() {
           seed={newSeed()}
           onCancel={state.turn > 0 ? () => setSetupOpen(false) : undefined}
           onStart={(seed, setup) => {
-            guard(() => setState(engine.init(seed, { base: setup as never })));
+            guard(() => {
+              setPast([]);
+              setState(engine.init(seed, { base: setup as never }));
+            });
             setSetupOpen(false);
           }}
         />

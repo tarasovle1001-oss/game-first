@@ -73,6 +73,7 @@ function seat(ctx: Ctx, patron: Patron, known: boolean) {
 function arrive(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
+  if (sh.tick >= bal.hours * 60 - bal.lastArrivalBefore) return; // too late in the evening to start one
   // reputation 0 -> 40% of the base flow, 50 -> 100%, 100 -> 160%
   const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * (0.4 + (b.reputation / 50) * 0.6) * (1 + (b.day?.arrivals ?? 0) + b.gossip * content.secrecy.gossip.arrivals);
   const count = Math.floor(perTick) + (ctx.rng.chance(perTick % 1) ? 1 : 0);
@@ -193,7 +194,7 @@ function tick(ctx: Ctx) {
   runProposals(ctx); // guests try their luck before she gets back to work
   serve(ctx);
   // she is on the floor while there are guests, behind the bar otherwise
-  if (!bs(ctx.state).encounter && !bs(ctx.state).night) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
+  if (!bs(ctx.state).encounter && !bs(ctx.state).night && !bs(ctx.state).approach && !bs(ctx.state).ask && (sh.awayUntil ?? 0) <= sh.tick) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
   depart(ctx);
   ctx.emit("shift:minute", { minute: sh.tick });
   if (sh.tick % TEN === 0) {

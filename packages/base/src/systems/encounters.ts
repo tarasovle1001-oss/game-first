@@ -101,11 +101,28 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   return score(at(HALL)) > score(at(room)) ? at(HALL) : at(room);
 }
 
+/** He settles up when it is over: everything it came to, more if he got what he came for. */
+function payOwed(ctx: Ctx, enc: Encounter) {
+  const b = bs(ctx.state);
+  const p = b.patrons[enc.patron];
+  const done = enc.finished === true;
+  const tip = Math.round((enc.owed ?? 0) * (done ? S.paidDone : S.paidCut));
+  enc.owed = 0;
+  if (!p || tip <= 0) return;
+  const till = addHerTips(ctx, tip);
+  if (b.shift) b.shift.tips += till;
+  b.today.tips += till;
+  p.memory.tipsTotal += tip;
+  const seen = husbandSees(ctx.state, enc.loc) || b.mode === "open";
+  ctx.log(done ? "log.enc.paid.came" : "log.enc.paid", { name: `@name:${p.name}`, tip }, seen ? undefined : ["unseen"]);
+}
+
 /** Ends what is going on between her and a guest. `force` is kept for callers; anything that calls this means it. */
 export function endEncounter(ctx: Ctx, _force = true) {
   const b = bs(ctx.state);
   const enc = b.encounter;
   if (!enc) return;
+  payOwed(ctx, enc);
   b.encounter = null;
   ctx.state.where[WIFE] = HALL;
   if (ctx.state.where[enc.patron]) ctx.state.where[enc.patron] = HALL;
@@ -169,6 +186,7 @@ export function advanceEncounter(ctx: Ctx) {
     if (enc.his >= 100) {
       v.rounds += 1;
       enc.his = 0;
+      enc.finished = true;
       v.heat = (v.heat ?? 0) * G.heatAfter;
       // where it goes and what she makes of it is its own small scene
       if (!gate.finish?.(ctx, v, p, enc)) {
@@ -332,7 +350,10 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
 
   // a skilled hand or mouth is worth more to him
   const tip = Math.round(((act.tip * p.traits.generosity) / 50) * (1 + skill / 100) * content.balance.purse.actTipScale) + input.offer;
-  if (tip > 0) {
+  // behind a door he does not pay act by act: it adds up and he leaves it when they are done
+  const later = act.place === "private" && !!b.encounter && b.encounter.patron === p.id;
+  if (later) b.encounter!.owed = (b.encounter!.owed ?? 0) + tip;
+  else if (tip > 0) {
     const till = addHerTips(ctx, tip); // the ledger counts only what reaches the till
     b.shift!.tips += till;
     b.today.tips += till;
@@ -351,6 +372,8 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   // while she hides it, what he was not there for does not reach his log
   const tags = seen || b.mode === "open" ? undefined : ["unseen"];
   // routine small talk with a familiar face is not worth a log line every hour
+  // where it happens is said once, when it starts, not with every new thing they do
+  if (act.place === "private" && !running && !leaving) ctx.log(input.loc === HALL ? "log.enc.here" : "log.enc.away", { name: `@name:${p.name}`, room: `loc.${input.loc}` }, tags);
   if (!isLight(act) || first || verdict !== "eager")
     ctx.log(variantKey(`log.act.${act.id}.${verdict}`, (n) => ctx.rng.int(0, n - 1)), { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip }, tags);
   ctx.emit("encounter:started", { patron: p.id, act: act.id, loc: input.loc, verdict, witnessed: seen, came, tier: act.tier, intimate: isIntimate(act), switched: running !== null });

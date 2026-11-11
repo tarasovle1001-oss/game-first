@@ -37,14 +37,14 @@ const scene = (seed: number, act: string, loc = "cafe.hall"): GameState => {
 
 describe("it does not stay between two people", () => {
   it("in the open hall men come over to watch, and watching works them up", () => {
-    let s = scene(6, "blowjob");
+    let s = scene(1, "blowjob");
     for (let i = 0; i < 20 && crowdOf(s).length === 0 && bs(s).encounter; i++) s = wait(s, 1);
     expect(crowdOf(s).length).toBeGreaterThan(0);
     expect(s.log.some((e) => e.key.startsWith("log.crowd.gathers."))).toBe(true);
     expect(sceneKey(engine.currentScene(s)!)).toContain("crowd");
   });
   it("a man who has watched long enough asks for a part of her that is free; with two on her the picture says so", () => {
-    let s = scene(6, "blowjob");
+    let s = scene(1, "blowjob");
     for (let i = 0; i < 40 && menOf(s).length === 0 && bs(s).encounter; i++) s = wait(s, 1);
     if (!bs(s).encounter) return;
     expect(menOf(s).length).toBeGreaterThan(0);
@@ -53,7 +53,7 @@ describe("it does not stay between two people", () => {
     expect(sceneKey(engine.currentScene(s)!)).toContain("men");
   });
   it("her husband can send the watchers away, or wave one of them over", () => {
-    const s = scene(6, "sex", "cafe.hall");
+    const s = scene(1, "sex", "cafe.hall");
     const first = bs(s).shift!.visits[1]!.patron;
     bs(s).encounter!.crowd = [first];
     bs(s).encounter!.crowdSince = { [first]: bs(s).shift!.tick - 10 };
@@ -66,7 +66,7 @@ describe("it does not stay between two people", () => {
     expect(has(invited, CROWD, (p) => p.do === "invite" && p.patron === first)).toBe(false);
   });
   it("each watcher counts in what she answers: against it for a shy wife, for it for a bold one", () => {
-    const s = scene(6, "kiss");
+    const s = scene(1, "kiss");
     const partner = bs(s).encounter!.patron;
     const row = (st: GameState) => engine.evaluate("base/consent", st, { act: "grope", partner, loc: "cafe.hall", offer: 0, pressure: 0 }).rows.find((r) => r.id === "consent.crowd")?.value ?? 0;
     expect(row(s)).toBe(0);
@@ -80,7 +80,7 @@ describe("it does not stay between two people", () => {
 
 describe("how it ends with a guest", () => {
   const ending = (act: string, tweak: (b: ReturnType<typeof bs>) => void): GameState => {
-    const s = scene(6, act, "cafe.staff");
+    const s = scene(1, act, "cafe.staff");
     const b = bs(s);
     b.encounter!.his = 99.9;
     b.encounter!.hisRate = 5;
@@ -122,5 +122,32 @@ describe("how it ends with a guest", () => {
     expect(s.log.some((e) => e.key === "log.fin.face.unwilling")).toBe(true);
     expect(bs(s).heroine.cum?.face).toBeGreaterThan(0);
     expect((bs(s).heroine.feel?.shame ?? 0)).toBeGreaterThan(0);
+  });
+});
+
+describe("what a guest pays, and when", () => {
+  it("behind a door he pays once, when it is over, not for each thing they did", () => {
+    const s0 = scene(1, "sex");
+    bs(s0).encounter!.owed = 60;
+    bs(s0).encounter!.his = 95;
+    bs(s0).encounter!.hisRate = 5;
+    const tips = bs(s0).today.tips;
+    let s = s0;
+    for (let i = 0; i < 40 && bs(s).encounter; i++) s = wait(s, 1);
+    expect(bs(s).encounter).toBe(null);
+    const fresh = s.log.slice(s0.log.length);
+    expect(fresh.filter((e) => e.key.startsWith("log.enc.paid")).length).toBe(1);
+    expect(bs(s).today.tips).toBeGreaterThan(tips);
+  });
+  it("nobody new walks in during the last hour, and closing time is said", () => {
+    let s = engine.dispatch(engine.init(2, { base: { preset: "ordinary" } }), { type: CORE_ADVANCE });
+    let late = 0;
+    for (let i = 0; i < 80 && s.time.phase === "shift"; i++) {
+      const before = s.log.length;
+      const acts = engine.listActions(s);
+      s = engine.dispatch(s, acts.find((a) => a.type === "base/wait" && a.payload?.minutes === 5) ?? acts.find((a) => a.type !== CORE_ADVANCE && a.type !== "core/move") ?? acts[0]!);
+      if (bs(s).shift && bs(s).shift!.tick > 306) late += s.log.slice(before).filter((e) => e.key === "log.patron.arrives" || e.key === "log.patron.returns").length;
+    }
+    expect(late).toBe(0);
   });
 });

@@ -135,6 +135,13 @@ export function registerBodyState(api: ModApi) {
       return;
     }
     const minutes = marks.length * I.marks.cleanPerMark + (mussed ? I.marks.cleanAfter : 0);
+    if (sh.cleanUntil !== undefined) {
+      // already on her way there: the second man of the same minute only makes it longer
+      sh.cleanUntil = Math.max(sh.cleanUntil, sh.tick + minutes);
+      sh.awayUntil = Math.max(sh.awayUntil ?? 0, sh.cleanUntil);
+      sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, sh.cleanUntil);
+      return;
+    }
     sh.cleanUntil = sh.tick + minutes;
     sh.awayUntil = Math.max(sh.awayUntil ?? 0, sh.cleanUntil);
     sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, sh.cleanUntil);

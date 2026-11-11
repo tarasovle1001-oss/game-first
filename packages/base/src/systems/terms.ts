@@ -215,6 +215,7 @@ export function registerTerms(api: ModApi) {
     // he has to be somewhere she can walk to
     if (ctx.state.where[HUSBAND]?.startsWith("town.")) return false;
     b.ask = { patron: p.id, act: act.id, tick: b.shift?.tick ?? 0 };
+    ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!; // she comes over to ask
     b.asksToday = (b.asksToday ?? 0) + 1;
     v.retry = act.id;
     v.cooldownUntil = (b.shift?.tick ?? 0) + 10;
@@ -234,7 +235,7 @@ export function registerTerms(api: ModApi) {
   // he said nothing: after a while she takes that for "not now"
   api.events.on("shift:tick", (ctx) => {
     const b = bs(ctx.state);
-    if (!b.ask || (b.shift?.tick ?? 0) - (b.ask.tick ?? 0) < 20) return;
+    if (!b.ask || (b.shift?.tick ?? 0) - (b.ask.tick ?? 0) < 10) return;
     const v = b.shift?.visits.find((x) => x.patron === b.ask!.patron);
     if (v) v.retry = null;
     b.ask = undefined;

@@ -48,12 +48,14 @@ hotel: # two rooms upstairs
   nights: [1, 3]
   comesDownAtTick: 4
   towels: { interest: 45, chance: 0.4, maxTier: 6, hoursAffinity: 35, hoursChance: 0.6, hoursEnergy: 8, hoursSuspicion: 4, hoursPower: 3 } # after closing he rings down for towels; she takes them up
+  morningChance: 0.25   # she looks in on a lodger in the morning, alone
   nightVisitTier: 5     # how far it must have gone for her to go up to him at night
 shift:
   opensAt: 18
   hours: 6
   minutesPerTick: 1    # the evening is counted in minutes; slow things still run every 10 (event shift:tick)
   seats: 8
+  lastArrivalBefore: 60 # nobody new comes in during the last minutes before closing
   arrivalsPerHour: 1.3 # expected new guests per hour at reputation 50
   stayMinutes: [50, 130]
   billFactor: 1.55     # fewer, bigger orders: every bill is this much above what the guest type spends
