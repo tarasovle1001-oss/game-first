@@ -18,6 +18,7 @@ night: # what she does when she lies awake wanting more
   slipOutFidelityBelow: 45
   husbandWakesChance: 0.3 # he wakes up and finds the bed empty
   wakesSuspicion: 14
+  work: 12 # consent she loses for being pulled away from a room full of guests
   wants: { arousal: 50, desire: 45, energy: 25, consent: 20, declineDesire: 1.5, declineResent: 3 } # she reaches for him herself
 
 bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100

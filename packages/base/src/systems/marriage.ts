@@ -7,12 +7,17 @@ import { fitOf, orgasm, resolveBody, useBody } from "./body";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
+import { HALL, TICKS_PER_SHIFT } from "./places";
+import { runUnattended } from "./shift";
 
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
 export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "prostate", "pegging"];
 export const BED = "base/bed";
 export const NIGHT_DECLINE = "base/night-decline";
+export const UPSTAIRS = "base/upstairs";
+/** What he can pull her away from work for. */
+export const UPSTAIRS_ACTS = ["mutual_touching", "blowjob", "cunnilingus", "sex"];
 /** What a bedroom scene can turn into once it is going. */
 export const BED_ACTS = ["grinding", "mutual_touching", "handjob", "blowjob", "cunnilingus", "rimming_her", "sex", "riding", "anal", "prostate", "pegging"];
 /** The toy she would use on him: the biggest one he can take, or the smallest one there is. */
@@ -59,13 +64,13 @@ export function registerMarriage(api: ModApi) {
     m.desire = clamp(m.desire + (desire > 0 ? (desire * (100 - m.desire)) / 50 : desire));
     m.resent = clamp(m.resent + resent);
   };
-  const ask = (ctx: Ctx, actId: string, bonus = 0) => {
+  const ask = (ctx: Ctx, actId: string, bonus = 0, why = "going") => {
     const b = bs(ctx.state);
     const input: ConsentInput = { act: actId, partner: HUSBAND, loc: BEDROOM, offer: 0, pressure: 0 };
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
     const total = res.total + bonus;
     const verdict = verdictOf(total);
-    b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: actId, loc: BEDROOM, verdict, seen: true, total, rows: bonus ? [...res.rows, { id: "consent.going", labelKey: "factor.consent.going", value: bonus }] : res.rows });
+    b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: actId, loc: BEDROOM, verdict, seen: true, total, rows: bonus ? [...res.rows, { id: `consent.${why}`, labelKey: `factor.consent.${why}`, value: bonus }] : res.rows });
     if (b.proposals.length > 12) b.proposals.shift();
     return verdict;
   };
@@ -106,7 +111,7 @@ export function registerMarriage(api: ModApi) {
       b.night!.asked = true;
       const wanted = b.night!.wants === true;
       b.night!.wants = false;
-      const verdict = ask(ctx, act.id, wanted ? content.body.night.wants.consent : 0);
+      const verdict = ask(ctx, act.id, wanted ? content.body.night.wants.consent : 0, "wants");
       if (verdict === "refuse") {
         b.night!.scene = "cold_back";
         feel(ctx, 0, 1);
@@ -137,6 +142,48 @@ export function registerMarriage(api: ModApi) {
       ctx.log("log.bed.start", { act: `act.${act.id}` });
       ctx.emit("bed:started", { act: act.id });
     },
+  });
+
+  // In the middle of the evening: "come upstairs for a minute" (or right here, if the place is empty).
+  api.actions.register({
+    id: UPSTAIRS,
+    labelKey: "action.upstairs",
+    describe: (a) => ({ key: `action.upstairs.${a.payload!.here ? "here" : "up"}`, params: { act: `act.${a.payload!.act}` } }),
+    enumerate(state) {
+      const b = bs(state);
+      const sh = b.shift;
+      if (state.time.phase !== "shift" || !sh || sh.upstairs || sh.tick >= TICKS_PER_SHIFT || b.encounter || b.caught || b.reaction || b.night) return [];
+      if (state.where[HUSBAND] !== state.where[WIFE]) return [];
+      const here = sh.visits.length === 0 ? 1 : 0;
+      return UPSTAIRS_ACTS.map((act) => ({ type: UPSTAIRS, payload: { act, here } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const act = actById(action.payload!.act as string);
+      const guests = b.shift!.visits.length;
+      b.shift!.upstairs = true;
+      // leaving a full room to itself is not nothing for her
+      const verdict = ask(ctx, act.id, guests > 0 ? -content.body.night.work : 0, "work");
+      if (verdict === "refuse") {
+        feel(ctx, 0, 0.5);
+        ctx.log("log.upstairs.no");
+        return;
+      }
+      if (guests > 0) {
+        ctx.state.where[HUSBAND] = BEDROOM;
+        ctx.state.where[WIFE] = BEDROOM;
+      }
+      changeHeroine(ctx, "arousal", h.marriage.desire * H.foreplay, "husband");
+      b.night = { scene: act.id, asked: true, sex: { act: act.id, his: clamp(B.startHis + Math.max(0, b.denied) * B.deniedStart), hers: clamp(h.arousal * 0.4), came: 0, turns: 0, top: false, skirt: false, pleasure: 0 } };
+      setAct(ctx, act.id);
+      ctx.log(guests > 0 ? "log.upstairs.up" : "log.upstairs.here", { act: `act.${act.id}` });
+      ctx.emit("bed:started", { act: act.id, shift: true });
+    },
+  });
+  // Walking away in the middle of it ends it.
+  api.events.on("entity:moved", (ctx, e) => {
+    if (e.payload!.id === HUSBAND && bs(ctx.state).night?.sex) finish(ctx, "stop");
   });
 
   // "Not tonight": turning her down has a price, and she still has the night ahead of her.
@@ -215,6 +262,18 @@ export function registerMarriage(api: ModApi) {
 
   /** He comes (or stops). What it leaves her with depends on how far she got and on who she is. */
   const finish = (ctx: Ctx, how: "auto" | "choice" | "stop") => {
+    const turns = bs(ctx.state).night!.sex!.turns;
+    finishScene(ctx, how);
+    if (ctx.state.time.phase !== "shift") return;
+    // back to work: the scene object belongs to the night, and the floor has been waiting
+    const b = bs(ctx.state);
+    b.night = null;
+    if (ctx.state.where[HUSBAND] === BEDROOM) ctx.state.where[HUSBAND] = HALL;
+    ctx.state.where[WIFE] = HALL;
+    ctx.log("log.upstairs.back");
+    runUnattended(ctx, Math.max(1, turns) * B.minutesPerTurn);
+  };
+  const finishScene = (ctx: Ctx, how: "auto" | "choice" | "stop") => {
     const b = bs(ctx.state);
     const h = b.heroine;
     const sex = b.night!.sex!;
@@ -295,7 +354,7 @@ export function registerMarriage(api: ModApi) {
     describe: (a) => (a.payload!.to ? { key: "action.bed.switch", params: { act: `act.${a.payload!.to}` } } : { key: `action.bed.${a.payload!.do}` }),
     enumerate(state) {
       const sex = bs(state).night?.sex;
-      if (state.time.phase !== "night" || !sex) return [];
+      if (!sex) return [];
       const dos = ["keep", "faster", "slower", "talk", "kiss"];
       if (!sex.top) dos.push("top");
       if (!sex.skirt) dos.push("skirt");
@@ -426,10 +485,10 @@ export function registerMarriage(api: ModApi) {
     priority: 20,
     match(state) {
       const b = bs(state);
-      if (state.time.phase !== "night" || !b.night || state.where[HUSBAND] !== BEDROOM) return null;
+      if (!b.night || (state.time.phase !== "night" && !b.night.sex) || state.where[HUSBAND] !== state.where[WIFE]) return null;
       return {
         type: b.night.scene,
-        location: BEDROOM,
+        location: state.where[HUSBAND]!,
         participants: [
           { id: WIFE, role: "wife" },
           { id: HUSBAND, role: "husband" },
@@ -438,5 +497,12 @@ export function registerMarriage(api: ModApi) {
     },
   });
 
-  api.invariants.add("night-consistent", (s) => ((s.time.phase === "night") === (bs(s).night !== null) ? null : "night state does not match the phase"));
+  api.invariants.add("night-consistent", (s) => {
+    const night = bs(s).night;
+    if (s.time.phase === "night") return night ? null : "no night state at night";
+    // outside the night it exists only while he has her to himself in the middle of a shift
+    if (!night) return null;
+    if (s.time.phase !== "shift" || !night.sex) return "night state does not match the phase";
+    return s.where[HUSBAND] === s.where[WIFE] ? null : "a scene is running but they are in different rooms";
+  });
 }

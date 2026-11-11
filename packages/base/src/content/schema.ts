@@ -166,6 +166,7 @@ export const nightSchema = z
     husbandWakesChance: z.number().min(0).max(1),
     wakesSuspicion: z.number(),
     wants: z.object({ arousal: z.number(), desire: z.number(), energy: z.number(), consent: z.number(), declineDesire: z.number(), declineResent: z.number() }).strict(),
+    work: z.number(),
   })
   .strict();
 

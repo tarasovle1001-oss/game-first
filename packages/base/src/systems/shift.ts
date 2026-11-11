@@ -165,6 +165,15 @@ function depart(ctx: Ctx) {
 }
 
 /** Ten minutes of the evening. */
+/** Time passes while nobody is minding the floor: the guests wait, then the evening catches up. */
+export function runUnattended(ctx: Ctx, minutes: number) {
+  const sh = bs(ctx.state).shift;
+  if (!sh) return;
+  const n = ticks(minutes);
+  for (const v of sh.visits) v.waited += n;
+  for (let i = 0; i < n && !ticksDone(sh); i++) tick(ctx);
+}
+
 function tick(ctx: Ctx) {
   const sh = bs(ctx.state).shift!;
   sh.tick += 1;
@@ -226,7 +235,7 @@ export function registerShift(api: ModApi) {
     enumerate(state) {
       const sh = bs(state).shift;
       if (state.time.phase !== "shift" || !sh || ticksDone(sh)) return [];
-      if (bs(state).caught) return []; // he has to decide first
+      if (bs(state).caught || bs(state).night?.sex) return []; // he has to decide first; or he is busy with her
       return [...WAIT_MINUTES.map((minutes) => ({ type: WAIT, payload: { minutes } })), { type: WAIT, payload: { until: "event" } }];
     },
     apply(ctx, action) {

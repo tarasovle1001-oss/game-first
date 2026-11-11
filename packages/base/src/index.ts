@@ -138,3 +138,4 @@ export { GUEST, TALK, TELL, guestInView, together } from "./systems/couple";
 export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
 export { OUTFIT_BACK } from "./systems/manners";
+export { NIGHT_DECLINE, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";

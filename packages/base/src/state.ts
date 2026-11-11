@@ -126,6 +126,7 @@ export interface Shift {
   turnedAway: number;
   moment: { patron: string; act: string } | null; // last light act of this tick
   interrupt: boolean; // something worth stopping "wait until" for has happened
+  upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight
 }

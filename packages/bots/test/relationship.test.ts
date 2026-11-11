@@ -362,6 +362,31 @@ describe("her own initiative", () => {
   it("saying yes to her starts the scene", () => {
     const s = engine.dispatch(wanting(), { type: NIGHT_ACT, payload: { act: "sex" } });
     expect(bs(s).night!.sex).not.toBeNull();
-    expect(bs(s).proposals.at(-1)!.rows.some((r) => r.id === "consent.going")).toBe(true);
+    expect(bs(s).proposals.at(-1)!.rows.some((r) => r.id === "consent.wants")).toBe(true);
+  });
+});
+
+describe("in the middle of the evening", () => {
+  it("he can take her upstairs: the scene runs, the floor waits, the shift goes on", () => {
+    let s = engine.dispatch(engine.init(8), { type: CORE_ADVANCE });
+    for (let i = 0; i < 9; i++) s = engine.dispatch(s, wait10);
+    const eager = structuredClone(s);
+    eager.where.wife = eager.where.husband!;
+    eager.mods.base.encounter = null;
+    eager.mods.base.reaction = null;
+    eager.mods.base.heroine.marriage.desire = 100;
+    eager.mods.base.heroine.arousal = 80;
+    const up = engine.listActions(eager).find((a) => a.type === "base/upstairs" && a.payload?.act === "sex")!;
+    expect(up).toBeDefined();
+    s = engine.dispatch(eager, up);
+    expect(bs(s).night?.sex).toBeTruthy();
+    expect(has(s, WAIT)).toBe(false);
+    const tick = bs(s).shift!.tick;
+    s = playOut(s);
+    expect(bs(s).night).toBeNull();
+    expect(bs(s).shift!.tick).toBeGreaterThan(tick);
+    expect(has(s, WAIT) || has(s, CORE_ADVANCE)).toBe(true);
+    expect(engine.listActions(s).some((a) => a.type === "base/upstairs")).toBe(false); // once an evening
+    expect(engine.checkInvariants(s)).toEqual([]);
   });
 });
