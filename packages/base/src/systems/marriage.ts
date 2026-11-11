@@ -19,7 +19,9 @@ export const UPSTAIRS = "base/upstairs";
 /** What he can pull her away from work for. */
 export const UPSTAIRS_ACTS = ["mutual_touching", "blowjob", "cunnilingus", "sex"];
 /** What a bedroom scene can turn into once it is going. */
-export const BED_ACTS = ["grinding", "mutual_touching", "handjob", "blowjob", "cunnilingus", "rimming_her", "sex", "riding", "anal", "prostate", "pegging"];
+export const BED_ACTS = ["grinding", "mutual_touching", "breast_play", "fingering", "handjob", "blowjob", "cunnilingus", "sixty_nine", "rimming_her", "sex", "riding", "anal", "prostate", "pegging"];
+/** Where he can finish, by what they are doing. "inside" is the plain ending. */
+const FINISH: Record<string, string[]> = { blowjob: ["mouth", "face"], sixty_nine: ["mouth"], handjob: ["on_her"], sex: ["inside", "on_her", "face"], riding: ["inside"], anal: ["inside", "on_her"] };
 /** The toy she would use on him: the biggest one he can take, or the smallest one there is. */
 const toyForHim = (state: GameState) => {
   const b = bs(state);
@@ -351,15 +353,15 @@ export function registerMarriage(api: ModApi) {
   api.actions.register({
     id: BED,
     labelKey: "action.bed",
-    describe: (a) => (a.payload!.to ? { key: "action.bed.switch", params: { act: `act.${a.payload!.to}` } } : { key: `action.bed.${a.payload!.do}` }),
+    describe: (a) => (a.payload!.to ? { key: "action.bed.switch", params: { act: `act.${a.payload!.to}` } } : a.payload!.where ? { key: `action.bed.finish.${a.payload!.where}` } : { key: `action.bed.${a.payload!.do}` }),
     enumerate(state) {
       const sex = bs(state).night?.sex;
       if (!sex) return [];
       const dos = ["keep", "faster", "slower", "talk", "kiss"];
       if (!sex.top) dos.push("top");
       if (!sex.skirt) dos.push("skirt");
-      if (sex.his >= B.cumAt) dos.push("finish");
       const out = dos.map((d) => ({ type: BED, payload: { do: d } as Record<string, string> }));
+      if (sex.his >= B.cumAt) for (const where of FINISH[sex.act] ?? ["inside"]) out.push({ type: BED, payload: { do: "finish", where } });
       for (const to of BED_ACTS) if (to !== sex.act && (to !== "pegging" || bs(state).toys.length > 0)) out.push({ type: BED, payload: { do: "switch", to } });
       out.push({ type: BED, payload: { do: "stop" } });
       return out;
@@ -391,9 +393,18 @@ export function registerMarriage(api: ModApi) {
           sex[what] = true;
           turn(ctx, 2, B.undress);
           break;
-        case "finish":
+        case "finish": {
+          // where he finishes is a small thing she either likes or puts up with
+          const where = (action.payload!.where as string) ?? "inside";
+          if (where === "face" || where === "mouth") {
+            const likes = b.heroine.traits.openness >= (where === "face" ? 60 : 45) || b.heroine.latents.oral_fixation !== undefined;
+            if (likes) changeHeroine(ctx, "arousal", 4, "finish");
+            else feel(ctx, 0, where === "face" ? 1.5 : 0.5);
+            ctx.log(`log.bed.finish.${where}${likes ? "" : ".no"}`);
+          } else if (where === "on_her") ctx.log("log.bed.finish.on_her");
           finish(ctx, "choice");
           break;
+        }
         case "stop":
           finish(ctx, "stop");
           break;

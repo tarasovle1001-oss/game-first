@@ -36,6 +36,9 @@ export function useBody(ctx: Ctx, act: Act, size: number): number {
   if (act.id === "cunnilingus") pleasure = 75;
   else if (act.id === "grinding") pleasure = 45;
   else if (act.id === "mutual_touching") pleasure = 60;
+  else if (act.id === "breast_play") pleasure = 40;
+  else if (act.id === "fingering") pleasure = 70;
+  else if (act.id === "sixty_nine") pleasure = 70;
   else if (zone === "vagina" || zone === "anus") {
     const fit = fitOf(ctx.state, zone);
     pleasure = pleasureFromSize(size / fit) * (zone === "anus" ? 0.75 : 1);
@@ -82,6 +85,7 @@ export function resolveBody(ctx: Ctx, act: Act, partner: { size: number; minutes
   const zone = stretchZone(act);
   let pleasure = 20; // she is the one giving
   if (act.id === "cunnilingus") pleasure = 75;
+  else if (act.id === "fingering" || act.id === "sixty_nine") pleasure = 70;
   else if (zone === "vagina" || zone === "anus") {
     const fit = fitOf(ctx.state, zone);
     pleasure = pleasureFromSize(partner.size / fit) * (zone === "anus" ? 0.75 : 1);

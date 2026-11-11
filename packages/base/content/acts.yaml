@@ -186,6 +186,33 @@
   minutes: 20
   tip: 24
   zones: [hands]
+- id: breast_play
+  tier: 4
+  base: -34
+  scene: patron_breast_play
+  place: private
+  effects: { arousal: 14, mood: 1, energy: -2, interest: 8, affinity: 2 }
+  minutes: 10
+  tip: 18
+  zones: []
+- id: fingering
+  tier: 5
+  base: -44
+  scene: patron_fingering
+  place: private
+  effects: { arousal: 18, mood: 1, energy: -3, interest: 8, affinity: 3 }
+  minutes: 20
+  tip: 26
+  zones: []
+- id: sixty_nine
+  tier: 6
+  base: -56
+  scene: patron_sixty_nine
+  place: private
+  effects: { arousal: 18, mood: 2, energy: -5, interest: 10, affinity: 4 }
+  minutes: 20
+  tip: 40
+  zones: [mouth]
 # only in the marriage bed
 - id: rimming_her
   tier: 6

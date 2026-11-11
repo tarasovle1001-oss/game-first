@@ -184,3 +184,27 @@
   figures:
     - { role: husband, pose: lie_back, x: 10, y: 0, flip: false }
     - { role: wife, pose: kneel, x: -44, y: 0, flip: false }
+- id: patron_breast_play
+  figures:
+    - { role: wife, pose: sit, x: -14, y: 0, flip: false }
+    - { role: patron, pose: kneel, x: 30, y: 0, flip: true }
+- id: patron_fingering
+  figures:
+    - { role: wife, pose: lie_back, x: -6, y: 0, flip: false }
+    - { role: patron, pose: kneel, x: 50, y: 0, flip: true }
+- id: patron_sixty_nine
+  figures:
+    - { role: patron, pose: lie_back, x: 0, y: 0, flip: false }
+    - { role: wife, pose: lie_front, x: 0, y: 16, flip: true }
+- id: breast_play
+  figures:
+    - { role: wife, pose: sit, x: -14, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 30, y: 0, flip: true }
+- id: fingering
+  figures:
+    - { role: wife, pose: lie_back, x: -6, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 50, y: 0, flip: true }
+- id: sixty_nine
+  figures:
+    - { role: husband, pose: lie_back, x: 0, y: 0, flip: false }
+    - { role: wife, pose: lie_front, x: 0, y: 16, flip: true }
