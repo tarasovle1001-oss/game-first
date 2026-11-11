@@ -5,7 +5,8 @@
 //   pnpm exec tsx tools/pose-test.ts page <posesDir> <outDir>     (the page again, e.g. after a change; pictures and marks stay)
 //   pnpm exec tsx tools/pose-test.ts stats <outDir>/marks.json
 // posesDir = Blender output (tools/blender/pose3d.py): LAYOUT.depth.png, LAYOUT.mask-N-ROLE.png, LAYOUT.pose.json.
-// Variants: plain = one prompt for the whole frame; masks = every figure's prompt on its own mask (any number of figures).
+// Variants: plain = one prompt for the whole frame; masks = every figure's prompt on its own mask (any number of figures);
+//           none = the prompt alone, no depth (baseline); soft = depth held weakly and let go early.
 // Flow: WAI + Lightning 8 step + Sora 0.7, 9 steps, cfg 1.5, euler_ancestral / simple, clip skip 2 - as in the old packs.
 // Watch: <outDir>/compare.html (fills in as pictures arrive), <outDir>/progress.json, <outDir>/timings.csv.
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -77,7 +78,7 @@ kbd{background:#333;border-radius:3px;padding:0 4px}
 </style>
 <header><b id="count"></b><progress id="bar" max="1" value="0"></progress><span id="rate"></span>
 <span><kbd>1</kbd> ok <kbd>2</kbd> поза <kbd>3</kbd> тело/руки <kbd>4</kbd> фигуры смешались <kbd>5</kbd> другое · <kbd>←→↑↓</kbd> · <kbd>Space</kbd> крупно · <kbd>Z</kbd> отмена · <kbd>E</kbd> выгрузить marks.json · <kbd>+</kbd><kbd>-</kbd> размер</span></header>
-<table id="t"><tr><th>что должно быть</th>${variants.map((v) => `<th>${v === "plain" ? "plain - один промпт на кадр" : v === "masks" ? "masks - промпт фигуры на её маске" : v}</th>`).join("")}</tr></table><div id="big"><img></div>
+<table id="t"><tr><th>что должно быть</th>${variants.map((v) => `<th>${v === "plain" ? "plain - один промпт на кадр" : v === "masks" ? "masks - промпт фигуры на её маске" : v === "none" ? "none - только промпт, без манекена" : v === "soft" ? "soft - манекен слабо (0.35 до 35%)" : v}</th>`).join("")}</tr></table><div id="big"><img></div>
 <script>
 const ctx=${JSON.stringify(ctx)},rows=${JSON.stringify(rows)},variants=${JSON.stringify(variants)},store="pose-test:"+location.pathname;
 let marks={};try{marks=JSON.parse(localStorage.getItem(store)||"{}")}catch{}
@@ -166,9 +167,12 @@ async function run(poses: string, out: string) {
     g.neg = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: p.negative } };
     g.depth = { class_type: "LoadImage", inputs: { image: f.depth } };
     g.cn = { class_type: "ControlNetLoader", inputs: { control_net_name: opt("cn", "noob_depth_fp16.safetensors") } };
-    g.apply = { class_type: "ControlNetApplyAdvanced", inputs: { positive, negative: ["neg", 0], control_net: ["cn", 0], image: ["depth", 0], strength: Number(opt("cn-strength", "0.6")), start_percent: 0, end_percent: Number(opt("cn-end", "0.6")) } };
+    const soft = job.variant === "soft";
+    g.apply = { class_type: "ControlNetApplyAdvanced", inputs: { positive, negative: ["neg", 0], control_net: ["cn", 0], image: ["depth", 0], strength: soft ? 0.35 : Number(opt("cn-strength", "0.6")), start_percent: 0, end_percent: soft ? 0.35 : Number(opt("cn-end", "0.6")) } };
+    // "none": the prompt alone, no mannequin - the baseline everything else has to beat
+    const cond = job.variant === "none" ? { positive, negative: ["neg", 0] as [string, number] } : { positive: ["apply", 0] as [string, number], negative: ["apply", 1] as [string, number] };
     g.latent = { class_type: "EmptyLatentImage", inputs: { width: f.w, height: f.h, batch_size: 1 } };
-    g.sample = { class_type: "KSampler", inputs: { model: ["l1", 0], positive: ["apply", 0], negative: ["apply", 1], latent_image: ["latent", 0], seed: job.seed, steps: 9, cfg: 1.5, sampler_name: "euler_ancestral", scheduler: "simple", denoise: 1 } };
+    g.sample = { class_type: "KSampler", inputs: { model: ["l1", 0], positive: cond.positive, negative: cond.negative, latent_image: ["latent", 0], seed: job.seed, steps: 9, cfg: 1.5, sampler_name: "euler_ancestral", scheduler: "simple", denoise: 1 } };
     g.decode = { class_type: "VAEDecode", inputs: { samples: ["sample", 0], vae: ["ckpt", 2] } };
     g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `test-city/${job.file.replace(/\.png$/, "")}` } };
     return g;
