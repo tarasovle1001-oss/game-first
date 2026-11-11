@@ -12,6 +12,10 @@ taste: # her taste for an act (and for a type of man) moves with experience
   max: 40
   typeEager: 0.4
 
+orders: # single things he can ask of her for tonight, on top of the outfit
+  - { id: open_top, openness: 48, allure: 5, tip: 0.12, arousal: 0, consent: 0 }
+  - { id: no_bra, openness: 55, allure: 4, tip: 0.08, arousal: 0.15, consent: 2 }
+  - { id: no_panties, openness: 62, allure: 0, tip: 0, arousal: 0.4, consent: 5 }
 change: # she changes into something bolder in the middle of the evening
   chancePerTick: 0.05
   arousalFrom: 50      # on her own: turned on enough...

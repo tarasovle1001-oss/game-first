@@ -183,6 +183,8 @@ export interface BaseState {
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
   complaint: string | null; // what she has brought up tonight and he has not answered yet
   complainedDay: number;
+  orders: string[]; // single things about her dress he asked for tonight and she agreed to
+  ordersAsked: string[];
   talked: string[]; // what he already said or did with her today (each thing once a day)
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now

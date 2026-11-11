@@ -13,6 +13,7 @@ import type { TipInput } from "./shift";
 export const SET_DIRECTIVE = "base/directive";
 export const ASK_OUTFIT = "base/ask-outfit";
 export const OUTFIT_BACK = "base/outfit-back";
+export const ORDER = "base/order";
 const M = content.manners;
 const outfits = content.outfits.slice().sort((a, b) => a.order - b.order);
 const outfitOf = (state: GameState): Outfit => outfits.find((o) => o.id === bs(state).heroine.outfit) ?? outfits[0]!;
@@ -30,6 +31,51 @@ export function registerManners(api: ModApi) {
     b.directive = "natural";
     b.outfitAsked = false;
     b.changed = null;
+    b.orders = [];
+    b.ordersAsked = [];
+  });
+
+  // Single things about her dress, asked before opening. Each can be asked once a day.
+  const active = (state: GameState) => M.orders.filter((o) => bs(state).orders.includes(o.id));
+  api.actions.register({
+    id: ORDER,
+    labelKey: "action.order",
+    describe: (a) => ({ key: `action.order.${a.payload!.id}` }),
+    enumerate: (state) => (state.time.phase === "prep" ? M.orders.filter((o) => !bs(state).ordersAsked.includes(o.id)).map((o) => ({ type: ORDER, payload: { id: o.id } })) : []),
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const o = M.orders.find((x) => x.id === action.payload!.id)!;
+      b.ordersAsked.push(o.id);
+      const ok = b.heroine.traits.openness + M.askOutfitBonus + b.heroine.arousal / 10 >= o.openness;
+      if (ok) {
+        b.orders.push(o.id);
+        b.told.push({ day: ctx.state.time.day, key: `told.order.${o.id}` });
+        if (b.told.length > 10) b.told.shift();
+        // it tells her how he wants her seen
+        for (const a of content.acts) if (a.tier <= 2) b.expect[a.id] = Math.max(b.expect[a.id] ?? 0, 40);
+      } else b.heroine.marriage.resent = clamp(b.heroine.marriage.resent + 0.5);
+      ctx.log(`log.order.${o.id}.${ok ? "yes" : "no"}`);
+    },
+  });
+  api.events.on("patron:arrived", (ctx, e) => {
+    const p = bs(ctx.state).patrons[e.payload!.id as string];
+    if (p) p.memory.interest = clamp(p.memory.interest + active(ctx.state).reduce((s, o) => s + o.allure, 0));
+  });
+  api.events.on("shift:tick", (ctx) => {
+    const add = active(ctx.state).reduce((s, o) => s + o.arousal, 0);
+    if (add > 0) bs(ctx.state).heroine.arousal = clamp(bs(ctx.state).heroine.arousal + add);
+  });
+  api.formulas.addFactor<TipInput>(TIP_FORMULA, {
+    id: "tip.orders",
+    labelKey: "factor.tip.orders",
+    order: 30.5,
+    eval: (state, { bill }) => (bill * active(state).reduce((s, o) => s + o.tip, 0)) / 4 || null,
+  });
+  api.formulas.addFactor<ConsentInput>(CONSENT_FORMULA, {
+    id: "consent.orders",
+    labelKey: "factor.consent.orders",
+    order: 43.5,
+    eval: (state, input) => (input.partner !== "husband" && actById(input.act).tier >= 3 ? active(state).reduce((s, o) => s + o.consent, 0) || null : null),
   });
 
   // In the middle of the evening she may slip away and come back in something bolder:
