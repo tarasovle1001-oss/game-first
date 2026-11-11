@@ -12,6 +12,23 @@ export interface Heroine {
   drunk: number;
   // character, 0..100, changes slowly
   traits: { openness: number; confidence: number; fidelity: number; honesty: number; libido: number };
+  // body: how much each zone has been stretched (0..100) and the highest it has ever been
+  body: Record<Zone, { stretch: number; peak: number }>;
+  skills: Record<string, number>; // act id -> 0..100
+  satisfied: number; // 0..100, "just had her fill", cools down
+  sizeTaste: number; // 0..100, how much size matters to her
+  orgasms: number;
+  marriage: { desire: number; resent: number }; // what she feels for her husband, 0..100
+}
+
+export type Zone = "vagina" | "anus" | "mouth";
+export type Mode = "hidden" | "open"; // NTR: she hides it; NTS: he knows
+
+export interface Husband {
+  size: number; // cm
+  stamina: number;
+  minutes: number; // how long he lasts
+  style: "naive" | "jealous" | "encouraging";
 }
 
 export interface PatronMemory {
@@ -24,6 +41,9 @@ export interface PatronMemory {
   tier: number; // how far she has gone with him on the ladder, -1 = nothing yet
   acts: Record<string, number>; // act id -> times
   refusals: number;
+  hasNumber: boolean; // they exchanged numbers
+  sizeKnown: boolean; // she has seen what he has
+  orgasms: number; // times he made her come
 }
 
 export interface Patron {
@@ -50,6 +70,7 @@ export interface Visit {
   blocked: boolean; // he stopped trying for tonight
   pressure: number; // times he insisted after a "no"
   retry: string | null; // act he is going to ask for again
+  rounds: number; // intimate acts he has had tonight
 }
 
 export type Verdict = "eager" | "hesitant" | "refuse";
@@ -111,6 +132,15 @@ export interface BaseState {
   shift: Shift | null;
   encounter: Encounter | null;
   proposals: ProposalRecord[]; // newest last, short history
+  husband: Husband;
+  mode: Mode;
+  suspicion: number; // 0..100, only matters while hidden
+  power: number; // her power over him, 0..100, grows once it is open
+  secretKnows: boolean; // he found out and she does not know that he knows
+  caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
+  secretActsToday: number;
+  night: { scene: string; asked: boolean } | null; // what is going on in the bedroom tonight
+  phone: import("./systems/phone").PhoneState;
   today: Ledger;
   history: Ledger[]; // last days, newest last
 }

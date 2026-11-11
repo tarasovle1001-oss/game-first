@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { actSchema, balanceSchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -76,6 +76,9 @@ const balance = load(join(base, "content/balance.yaml"), balanceSchema);
 const acts = load(join(base, "content/acts.yaml"), actSchema.array().min(1)) ?? [];
 const scenes = load(join(base, "content/scenes.yaml"), sceneSchema.array().min(1)) ?? [];
 const consent = load(join(base, "content/consent.yaml"), consentSchema);
+const body = load(join(base, "content/body.yaml"), bodySchema);
+const secrecy = load(join(base, "content/secrecy.yaml"), secrecySchema);
+const phone = load(join(base, "content/phone.yaml"), phoneSchema);
 unique(acts, "act");
 unique(scenes, "scene");
 const sceneIds = new Set(scenes.map((s) => s.id));
@@ -124,13 +127,13 @@ acts.forEach((a) => {
 });
 scenes.forEach((s) => need(`scene.${s.id}`));
 
-if (errors.length > 0 || !balance || !consent) {
+if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, locales };
+const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

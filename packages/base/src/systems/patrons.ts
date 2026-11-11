@@ -38,7 +38,7 @@ export function generatePatron(ctx: Ctx): Patron {
     },
     approach,
     regular: false,
-    memory: { visits: 0, lastDay: 0, served: 0, tipsTotal: 0, affinity: 0, interest: ctx.rng.int(5, 35), tier: -1, acts: {}, refusals: 0 },
+    memory: { visits: 0, lastDay: 0, served: 0, tipsTotal: 0, affinity: 0, interest: ctx.rng.int(5, 35), tier: -1, acts: {}, refusals: 0, hasNumber: false, sizeKnown: false, orgasms: 0 },
   };
   b.patrons[patron.id] = patron;
   return patron;

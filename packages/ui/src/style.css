@@ -444,3 +444,82 @@ kbd {
   color: var(--gold);
   margin-left: 6px;
 }
+
+.indent {
+  margin: -2px 0 4px 0;
+}
+.tabs button {
+  font-size: 0.92rem;
+}
+
+.tabs {
+  flex-wrap: wrap;
+}
+.thread {
+  margin: 8px 0 12px;
+}
+.thread-title {
+  font-weight: 650;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.sms {
+  margin: 4px 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--panel-2);
+  max-width: 92%;
+  font-size: 0.92rem;
+}
+.sms.out {
+  margin-left: auto;
+  background: #3a2440;
+}
+.sms.unseen {
+  opacity: 0.6;
+  font-style: italic;
+}
+.sms .time {
+  display: block;
+  font-size: 0.7rem;
+}
+
+.cheats {
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+}
+.cheat-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0 12px;
+}
+.cheat-row button {
+  padding: 6px 10px;
+  font-size: 0.86rem;
+}
+.cheat-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+.cheat-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: 0.88rem;
+}
+.cheat-field input {
+  width: 5.5em;
+  font: inherit;
+  color: inherit;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 6px;
+}

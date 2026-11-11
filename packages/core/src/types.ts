@@ -49,6 +49,8 @@ export interface Ctx {
   state: GameState;
   rng: Rng;
   emit(type: string, payload?: Record<string, Json>): void;
+  /** Runs the handlers of everything emitted so far, now. For actions that simulate several steps in one go. */
+  flush(): void;
   log(key: string, params?: Params, tags?: string[]): void;
   /** Read-only access to registries and derived data. */
   engine: EngineView;
@@ -61,7 +63,11 @@ export interface ActionDef {
   describe?(action: Action): { key: string; params?: Params };
   /** Concrete actions available right now. Used by UI and bots. Must be pure. */
   enumerate(state: GameState, engine: EngineView): Action[];
-  /** Extra guard, checked on dispatch. Defaults to "is in enumerate()". */
+  /**
+   * For actions with free-form payloads (numbers typed by the player, cheats): validates a concrete action
+   * instead of looking it up in enumerate(). Such actions are usually not enumerated at all.
+   */
+  accepts?(state: GameState, action: Action, engine: EngineView): boolean;
   apply(ctx: Ctx, action: Action): void;
 }
 

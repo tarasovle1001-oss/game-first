@@ -21,6 +21,11 @@ husbandWatching: 38 # her husband is in the room
 money: 0.3       # per unit of money offered, scaled by how badly they need it
 pressure: 0.25   # he insists: his persistence against her confidence
 tired: 15        # she has no energy left
+satisfied: 0.25  # per point of "just had her fill", intimate acts only
+size: 2.2        # per cm of his size above what she takes comfortably, scaled by her taste for size
+sizeCap: 16
+desire: 0.6      # husband only: per point of her desire for him above 50
+resent: 0.6      # husband only: per point of her resentment
 
 # how fast her character moves when she says yes (per tier of the act)
 drift:

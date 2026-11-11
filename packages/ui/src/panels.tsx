@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { bs, clockText, content, HUSBAND, patronName, renderLog, renderParams, WIFE } from "@tc/base";
+import { bs, clockText, content, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -44,7 +44,6 @@ export function TopBar({ state, t }: Common) {
         <span className="bad">
           {t("ui.debt")} {b.debt}
         </span>
-        <span className="muted">{t("ui.rent", { rent: content.balance.rentPerDay })}</span>
       </div>
       <div className="cell">
         <span className="cap">{t("ui.stock")}</span>
@@ -53,9 +52,17 @@ export function TopBar({ state, t }: Common) {
       <div className="cell">
         <span className="cap">{t("ui.reputation")}</span>
         <span className="big">{Math.round(b.reputation)}</span>
-        {b.shift && (
+      </div>
+      <div className="cell">
+        <span className="cap">{b.mode === "open" ? "NTS" : "NTR"}</span>
+        <span className={b.mode === "open" ? "accent" : "muted"}>{t(`mode.${b.mode}`)}</span>
+        {b.mode === "hidden" ? (
+          <span className={b.suspicion >= content.secrecy.confrontAt ? "bad" : "muted"}>
+            {t("ui.suspicion")} {Math.round(b.suspicion)}
+          </span>
+        ) : (
           <span className="muted">
-            {t("ui.served", { n: b.shift.served })} · {t("ui.tips", { n: b.shift.tips })}
+            {t("ui.power")} {Math.round(b.power)}
           </span>
         )}
       </div>
@@ -109,9 +116,9 @@ export function ScenePanel({ state, t, lang, scene }: Common & { scene: SceneDes
         )
       : "";
   // the answer that led to what is on screen, if any
-  const subject = b.encounter?.patron ?? b.shift?.moment?.patron;
-  const visible = scene && scene.type !== "idle" && scene.type !== "serving";
-  const record = visible && subject ? [...b.proposals].reverse().find((p) => p.patron === subject && p.verdict !== "refuse") : undefined;
+  const subject = b.encounter?.patron ?? b.shift?.moment?.patron ?? (b.night?.asked ? HUSBAND : undefined);
+  const visible = scene && scene.type !== "idle" && scene.type !== "serving" && (scene.type !== "sleeping" || b.night?.asked);
+  const record = visible && subject ? [...b.proposals].reverse().find((p) => p.patron === subject && (subject === HUSBAND || p.verdict !== "refuse")) : undefined;
   return (
     <div className="scene">
       <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
@@ -132,8 +139,10 @@ export function WhyLine({ record, state, t, lang }: Common & { record: ProposalR
   return (
     <div className={`why verdict-${record.verdict}`}>
       <div className="why-head">
-        <span className="time">{clockText(content.balance.shift.opensAt * 60 + record.tick * content.balance.shift.minutesPerTick)}</span>
-        <b>{p ? patronName(p.name, lang) : "?"}</b>
+        <span className="time">
+          {clockText(record.tick < 0 ? content.balance.clock.night : content.balance.shift.opensAt * 60 + record.tick * content.balance.shift.minutesPerTick)}
+        </span>
+        <b>{record.patron === HUSBAND ? t("ui.you") : p ? patronName(p.name, lang) : "?"}</b>
         <span>{t(`act.${record.act}`)}</span>
         <span className="pill">
           {t(`verdict.${record.verdict}`)} {fmt(record.total)}
@@ -221,10 +230,46 @@ export function HeroineTab({ state, t }: Common) {
       {(["energy", "mood", "arousal", "drunk"] as const).map((k) => (
         <Bar key={k} label={t(`stat.${k}`)} value={h[k]} tone={tones[k]} />
       ))}
+      <Bar label={t("stat.satisfied")} value={h.satisfied} />
       <div className="cap gap">{t("ui.character")}</div>
       {(Object.keys(h.traits) as (keyof typeof h.traits)[]).map((k) => (
         <Bar key={k} label={t(`trait.${k}`)} value={h.traits[k]} />
       ))}
+      <Bar label={t("stat.sizeTaste")} value={h.sizeTaste} />
+    </div>
+  );
+}
+
+/** Her body and the two of you: the slow numbers. */
+export function CoupleTab({ state, t }: Common) {
+  const b = bs(state);
+  const h = b.heroine;
+  const skills = Object.entries(h.skills).sort((a, c) => c[1] - a[1]);
+  return (
+    <div>
+      <div className="cap">{t("ui.marriage")}</div>
+      <Bar label={t("stat.desire")} value={h.marriage.desire} tone="pink" />
+      <Bar label={t("stat.resent")} value={h.marriage.resent} tone="amber" />
+      {b.mode === "open" && <Bar label={t("ui.power")} value={b.power} />}
+      <div className="muted small">
+        {t("ui.husband.line", { size: b.husband.size, minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
+      </div>
+      {b.secretKnows && <div className="small bad">{t("ui.secret_knows")}</div>}
+      <div className="cap gap">{t("ui.body")}</div>
+      {(["vagina", "anus", "mouth"] as const).map((z) => (
+        <div key={z}>
+          <Bar label={t(`zone.${z}`)} value={h.body[z].stretch} />
+          <div className="muted small indent">{t("ui.fit", { cm: Math.round(fitOf(state, z) * 10) / 10 })}</div>
+        </div>
+      ))}
+      {skills.length > 0 && (
+        <>
+          <div className="cap gap">{t("ui.skills")}</div>
+          {skills.map(([id, v]) => (
+            <Bar key={id} label={t(`act.${id}`)} value={v} />
+          ))}
+        </>
+      )}
     </div>
   );
 }
@@ -244,6 +289,8 @@ function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
         {t("ui.patron.memory", { visits: p.memory.visits, interest: Math.round(p.memory.interest), affinity: Math.round(p.memory.affinity) })}
         {" · "}
         {far ? t("ui.patron.ladder", { act: t(`act.${far.id}`) }) : t("ui.patron.nothing")}
+        {p.memory.sizeKnown && ` · ${t("ui.patron.size", { size: p.size })}`}
+        {p.memory.orgasms > 0 && ` · ${t("ui.patron.came", { n: p.memory.orgasms })}`}
       </div>
     </li>
   );
@@ -287,6 +334,39 @@ export function WhyTab({ state, t, lang, debug }: Common & { debug: boolean }) {
     <div className="why-list">
       {list.map((p, i) => (
         <WhyLine key={`${p.day}-${p.tick}-${p.patron}-${i}`} record={p} state={state} t={t} lang={lang} />
+      ))}
+    </div>
+  );
+}
+
+/** Phone: what has reached the husband. Her threads show only what he has read (everything once it is open). */
+export function PhoneTab({ state, t, lang, debug }: Common & { debug: boolean }) {
+  const b = bs(state);
+  const threads = Object.entries(b.phone.threads)
+    .map(([other, list]) => ({ other, list: list.filter((m) => debug || m.seen) }))
+    .filter((x) => x.list.length > 0);
+  const unread = Object.values(b.phone.threads).flat().filter((m) => !m.seen).length;
+  const name = (id: string) => (id === WIFE ? t("ui.phone.she") : id === HUSBAND ? t("ui.you") : b.patrons[id] ? patronName(b.patrons[id]!.name, lang) : "?");
+  return (
+    <div>
+      <div className="cap">{t("ui.phone.hers")}</div>
+      {unread > 0 && b.mode === "hidden" && <div className="muted small">{t("ui.phone.unread", { n: unread })}</div>}
+      {threads.length === 0 && <p className="muted">{t("ui.phone.empty")}</p>}
+      {threads.map(({ other, list }) => (
+        <div key={other} className="thread">
+          <div className="thread-title">
+            {name(other)}
+            {b.phone.expected.includes(other) && <span className="pill">{t("ui.phone.expected")}</span>}
+          </div>
+          {list.slice(-6).map((m, i) => (
+            <div key={i} className={`sms ${m.from === WIFE ? "out" : "in"}${m.seen ? "" : " unseen"}`}>
+              <span className="time">
+                {t("ui.day", { day: m.day })} {clockText(m.minute)}
+              </span>
+              {t(m.key, renderParams(m.params, t, lang))}
+            </div>
+          ))}
+        </div>
       ))}
     </div>
   );

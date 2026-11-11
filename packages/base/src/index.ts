@@ -8,6 +8,10 @@ import { registerPatrons } from "./systems/patrons";
 import { PHASES, registerPlaces, ticksDone } from "./systems/places";
 import { registerShift } from "./systems/shift";
 import { registerEncounters } from "./systems/encounters";
+import { registerBody } from "./systems/body";
+import { registerMarriage } from "./systems/marriage";
+import { registerSecrecy } from "./systems/secrecy";
+import { newPhone, registerPhone } from "./systems/phone";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -27,6 +31,15 @@ export const baseMod: Mod = {
       shift: null,
       encounter: null,
       proposals: [],
+      husband: { size: content.body.husband.size, stamina: content.body.husband.stamina, minutes: content.body.husband.minutes, style: content.body.husband.style },
+      mode: "hidden",
+      suspicion: 0,
+      power: 0,
+      secretKnows: false,
+      caught: null,
+      secretActsToday: 0,
+      night: null,
+      phone: newPhone(),
       today: emptyLedger(1),
       history: [],
     };
@@ -48,6 +61,10 @@ export const baseMod: Mod = {
     registerPatrons(api);
     registerShift(api);
     registerEncounters(api);
+    registerBody(api);
+    registerMarriage(api);
+    registerSecrecy(api);
+    registerPhone(api);
   },
 };
 
@@ -64,3 +81,8 @@ export type { TipInput } from "./systems/shift";
 export { BUY_SUPPLIES, REPAY_DEBT, addMoney, addReputation } from "./systems/economy";
 export { changeHeroine } from "./systems/heroine";
 export { renderLog, renderParams, patronName } from "./text";
+export { fitOf, pleasureFromSize } from "./systems/body";
+export { NIGHT_ACT, NIGHT_ACTS } from "./systems/marriage";
+export { CAUGHT_STOP, CAUGHT_WATCH, CONFRONT } from "./systems/secrecy";
+export { CALL_WIFE, PHONE_PEEK, sendMessage } from "./systems/phone";
+export type { Message, PhoneState } from "./systems/phone";

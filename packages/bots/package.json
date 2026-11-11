@@ -10,6 +10,7 @@
     "@tc/base": "workspace:*",
     "@tc/core": "workspace:*",
     "@tc/mod-example": "workspace:*",
-    "@tc/schematics": "workspace:*"
+    "@tc/schematics": "workspace:*",
+    "@tc/mod-cheats": "workspace:*"
   }
 }

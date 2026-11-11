@@ -3,7 +3,7 @@ import { baseMod } from "@tc/base";
 import { createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 import { exampleMod } from "@tc/mod-example";
-import { awayStrategy, ownerStrategy, randomStrategy, runBot, rushStrategy } from "./index";
+import { awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy, randomStrategy, runBot, rushStrategy } from "./index";
 
 const arg = (name: string, def: number) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -14,7 +14,7 @@ const seeds = arg("seeds", 20);
 
 const mods = [baseMod, exampleMod];
 const engine = createEngine(mods);
-const strategies = { random: randomStrategy, rush: rushStrategy, owner: ownerStrategy, away: awayStrategy };
+const strategies = { random: randomStrategy, rush: rushStrategy, owner: ownerStrategy, away: awayStrategy, loving: lovingStrategy, snoop: snoopStrategy };
 
 let failed = 0;
 let turns = 0;
@@ -45,6 +45,11 @@ for (const [name, strategy] of Object.entries(strategies)) {
   console.log(
     `        her: fidelity ${avg(b.map((x) => x.heroine.traits.fidelity))}  openness ${avg(b.map((x) => x.heroine.traits.openness))}  ` +
       `top tier reached: avg ${(b.reduce((a, x) => a + top(x), 0) / b.length).toFixed(1)}, max ${Math.max(...b.map(top))}`,
+  );
+  console.log(
+    `        open ${b.filter((x) => x.mode === "open").length}/${b.length}  suspicion ${avg(b.map((x) => x.suspicion))}  power ${avg(b.map((x) => x.power))}  ` +
+      `orgasms ${avg(b.map((x) => x.heroine.orgasms))}  stretch ${avg(b.map((x) => x.heroine.body.vagina.stretch))}  ` +
+      `desire ${avg(b.map((x) => x.heroine.marriage.desire))}  resent ${avg(b.map((x) => x.heroine.marriage.resent))}`,
   );
 }
 const runs = seeds * Object.keys(strategies).length;

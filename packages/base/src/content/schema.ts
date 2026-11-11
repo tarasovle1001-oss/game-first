@@ -110,10 +110,78 @@ export const consentSchema = z
     money: z.number(),
     pressure: z.number(),
     tired: z.number(),
+    satisfied: z.number(), // she has just had her fill
+    size: z.number(), // per cm of his size above what she takes comfortably, intimate acts only
+    sizeCap: z.number(),
+    desire: z.number(), // husband only: her desire for him
+    resent: z.number(), // husband only: her resentment
     // how fast her character moves when she says yes
     drift: z.object({ openness: z.number(), fidelity: z.number(), confidence: z.number() }).strict(),
   })
   .strict();
+
+const zoneFit = z.object({ base: z.number().positive(), perStretch: z.number().min(0) }).strict();
+export const bodySchema = z
+  .object({
+    // the size (cm) a zone takes comfortably = base + stretch * perStretch
+    fit: z.object({ vagina: zoneFit, anus: zoneFit, mouth: zoneFit }).strict(),
+    stretchPerCm: z.number().min(0), // stretch gained per cm above the comfortable size
+    recoverPerDay: z.number().min(0),
+    permanentShare: z.number().min(0).max(1), // part of the peak stretch that never goes back
+    skillGain: z.number().min(0), // per practice, shrinking as the skill grows
+    orgasmAt: z.number(), // climax meter needed for her to come
+    satisfiedCoolPerTick: z.number().min(0),
+    sizeTasteGain: z.number().min(0), // taste for size gained per orgasm with someone bigger than her husband
+    husband: z
+      .object({
+        size: z.number().positive(),
+        stamina: z.number().int().positive(),
+        minutes: z.number().positive(), // how long he lasts
+        style: z.enum(["naive", "jealous", "encouraging"]),
+        foreplay: z.number().min(0), // arousal she gets from him per point of her desire for him
+        desire: z.number().min(0).max(100), // her desire for him at the start
+        resent: z.number().min(0).max(100),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const secrecySchema = z
+  .object({
+    styleFactor: z.object({ naive: z.number(), jealous: z.number(), encouraging: z.number() }).strict(), // how fast each husband gets suspicious
+    sawPublicPerTier: z.number(), // he watched something on the floor
+    sawThemLeave: z.number(), // he saw her walk off with a guest
+    tracePerSecretAct: z.number(), // traces of what he did not see, counted at the end of the day
+    fadePerDay: z.number(),
+    confrontAt: z.number(), // suspicion at which he may confront her at night
+    confessHonesty: z.number(), // her honesty needed to admit it
+    // open mode
+    watchingByStyle: z.object({ naive: z.number(), jealous: z.number(), encouraging: z.number() }).strict(), // consent row when he watches and knows
+    powerPerSeen: z.number(),
+    powerPerTold: z.number(),
+    powerRow: z.number(), // consent weight of her power over him
+    powerDenies: z.number(), // how much her power makes her refuse her husband
+  })
+  .strict();
+
+export const phoneSchema = z
+  .object({
+    numberAtTier: z.number().int(), // how far things must have gone before he asks for her number
+    numberAffinity: z.number(),
+    textChance: z.number().min(0).max(1), // per day, per man who has her number
+    replyAffinity: z.number(), // she answers from this affinity up; warmly from twice that
+    comingTonightChance: z.number().min(0).max(1),
+    expectedArrivesAtTick: z.number().int().positive(),
+    peekMild: z.number(),
+    peekWarm: z.number(),
+    peekNoticedChance: z.number().min(0).max(1),
+    callIgnored: z.number(),
+    callBreathless: z.number(),
+    buttDialChance: z.number().min(0).max(1),
+    buttDial: z.number(),
+  })
+  .strict();
+export type PhoneTuning = z.infer<typeof phoneSchema>;
 
 export type Room = z.infer<typeof roomSchema> & { zone: string };
 export type PatronType = z.infer<typeof patronTypeSchema>;
@@ -122,6 +190,8 @@ export type NameEntry = z.infer<typeof nameSchema>;
 export type Act = z.infer<typeof actSchema>;
 export type SceneLayout = z.infer<typeof sceneSchema>;
 export type ConsentTuning = z.infer<typeof consentSchema>;
+export type BodyTuning = z.infer<typeof bodySchema>;
+export type SecrecyTuning = z.infer<typeof secrecySchema>;
 
 export interface Content {
   rooms: Room[];
@@ -131,5 +201,8 @@ export interface Content {
   acts: Act[];
   scenes: SceneLayout[];
   consent: ConsentTuning;
+  body: BodyTuning;
+  secrecy: SecrecyTuning;
+  phone: PhoneTuning;
   locales: Record<string, Record<string, string>>;
 }

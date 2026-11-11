@@ -1,0 +1,15 @@
+# NTR (hidden) and NTS (open): suspicion, discovery, and what changes once he knows.
+styleFactor: { naive: 0.4, jealous: 1.5, encouraging: 0.8 } # how fast each kind of husband gets suspicious
+sawPublicPerTier: 2   # he watched something happen on the floor, per tier of the act
+sawThemLeave: 10      # he saw her walk off with a guest
+tracePerSecretAct: 4  # traces of what he did not see, counted at the end of the day
+fadePerDay: 0.5
+confrontAt: 60        # suspicion at which he may confront her at night
+confessHonesty: 50    # her honesty needed to admit it when confronted
+
+# once it is open
+watchingByStyle: { naive: 0, jealous: -18, encouraging: 12 } # consent row when he watches and knows
+powerPerSeen: 2       # her power over him grows when he watches
+powerPerTold: 1       # ...and when she does it without him
+powerRow: 0.2         # consent weight of her power over him
+powerDenies: 0.35     # how much her power makes her refuse her husband at night

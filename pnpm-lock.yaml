@@ -44,6 +44,9 @@ importers:
       '@tc/core':
         specifier: workspace:*
         version: link:../core
+      '@tc/mod-cheats':
+        specifier: workspace:*
+        version: link:../mods/cheats
       '@tc/mod-example':
         specifier: workspace:*
         version: link:../mods/example
@@ -56,6 +59,15 @@ importers:
       immer:
         specifier: ^10.1.1
         version: 10.2.0
+
+  packages/mods/cheats:
+    dependencies:
+      '@tc/base':
+        specifier: workspace:*
+        version: link:../../base
+      '@tc/core':
+        specifier: workspace:*
+        version: link:../../core
 
   packages/mods/example:
     dependencies:
@@ -73,6 +85,9 @@ importers:
       '@tc/core':
         specifier: workspace:*
         version: link:../core
+      '@tc/mod-cheats':
+        specifier: workspace:*
+        version: link:../mods/cheats
       '@tc/mod-example':
         specifier: workspace:*
         version: link:../mods/example

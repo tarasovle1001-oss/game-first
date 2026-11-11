@@ -2,14 +2,15 @@
 import { baseLocales, baseMod } from "@tc/base";
 import { createEngine, createTranslator } from "@tc/core";
 import type { Params } from "@tc/core";
+import { cheatsLocales, cheatsMod } from "@tc/mod-cheats";
 import { exampleLocales, exampleMod } from "@tc/mod-example";
 
-export const mods = [baseMod, exampleMod];
+export const mods = [baseMod, exampleMod, cheatsMod];
 export const engine = createEngine(mods);
 export type Lang = "en" | "ru";
 export type T = (key: string, params?: Params) => string;
 
-const dicts = { en: [baseLocales.en!, exampleLocales.en!], ru: [baseLocales.ru!, exampleLocales.ru!] };
+const dicts = { en: [baseLocales.en!, exampleLocales.en!, cheatsLocales.en!], ru: [baseLocales.ru!, exampleLocales.ru!, cheatsLocales.ru!] };
 export const translator = (lang: Lang): T => createTranslator(dicts, lang);
 
 export const SAVE_KEY = "test-city.save";

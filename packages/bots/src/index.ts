@@ -36,6 +36,30 @@ export const awayStrategy: Strategy = (actions, state) => {
   return ownerStrategy(actions, state, () => 0);
 };
 
+/** Kitchen owner who also sleeps with his wife every night. */
+export const lovingStrategy: Strategy = (actions, state, roll) =>
+  actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") ?? awayStrategy(actions, state, roll);
+
+/** Kitchen owner who checks the back room when she disappears, and stays to watch. */
+export const snoopStrategy: Strategy = (actions, state, roll) => {
+  const watch = actions.find((a) => a.type === "base/caught-watch");
+  if (watch) return watch;
+  const enc = state.mods.base.encounter;
+  const tenMinutes = actions.find((a) => a.type === "base/wait" && a.payload?.minutes === 10);
+  const advance = actions.find((a) => a.type === CORE_ADVANCE);
+  if (state.time.phase === "shift" && !tenMinutes && advance) return advance; // closing time
+  if (enc && enc.loc !== "cafe.hall") {
+    if (state.where.husband === enc.loc && tenMinutes) return tenMinutes; // already there: stay and watch
+    const step = actions.find((a) => a.type === CORE_MOVE && a.payload?.to === enc.loc);
+    if (step) return step;
+  }
+  const confront = actions.find((a) => a.type === "base/confront");
+  if (confront) return confront;
+  const tenMin = actions.find((a) => a.type === "base/wait" && a.payload?.minutes === 10);
+  if (state.time.phase === "shift" && state.where.husband === "cafe.kitchen" && tenMin) return tenMin;
+  return awayStrategy(actions, state, roll);
+};
+
 export interface BotReport {
   seed: number;
   strategy: string;

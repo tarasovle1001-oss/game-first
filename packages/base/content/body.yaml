@@ -1,0 +1,21 @@
+# Body progression, pleasure and the husband. All numbers are tunable.
+fit: # the size (cm) a zone takes comfortably = base + stretch * perStretch
+  vagina: { base: 12.5, perStretch: 0.09 }
+  anus: { base: 8, perStretch: 0.12 }
+  mouth: { base: 11, perStretch: 0.08 }
+stretchPerCm: 1.6   # stretch gained per cm above the comfortable size, per act
+recoverPerDay: 0.5
+permanentShare: 0.6 # part of the peak stretch that never goes back
+skillGain: 7        # per practice, shrinking as the skill grows
+orgasmAt: 66        # climax meter (her arousal, how well he fits, how long it lasts) needed for her to come
+satisfiedCoolPerTick: 1.2
+sizeTasteGain: 4    # taste for size gained per orgasm with someone bigger than her husband
+
+husband:
+  size: 13
+  stamina: 1
+  minutes: 12       # how long he lasts
+  foreplay: 0.25    # arousal she gets from him per point of her desire for him
+  style: naive      # naive | jealous | encouraging
+  desire: 60        # her desire for him at the start
+  resent: 5

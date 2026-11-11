@@ -64,3 +64,28 @@
   figures:
     - { role: wife, pose: all_fours, x: -8, y: 0, flip: false }
     - { role: patron, pose: kneel, x: -44, y: 0, flip: false }
+- id: sex
+  figures:
+    - { role: wife, pose: lie_back, x: -10, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 32, y: 0, flip: true }
+- id: left_wanting
+  figures:
+    - { role: husband, pose: lie_back, x: -34, y: 0, flip: false }
+    - { role: wife, pose: sit, x: 52, y: 0, flip: false }
+- id: cunnilingus
+  figures:
+    - { role: wife, pose: lie_back, x: -4, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 44, y: 0, flip: true }
+- id: cold_back
+  figures:
+    - { role: wife, pose: lie_front, x: -30, y: 0, flip: false }
+    - { role: husband, pose: sit, x: 56, y: 0, flip: true }
+- id: sleeping
+  figures:
+    - { role: wife, pose: lie_back, x: -34, y: 0, flip: false }
+    - { role: husband, pose: lie_back, x: 34, y: 0, flip: true }
+- id: caught
+  figures:
+    - { role: wife, pose: kneel, x: -30, y: 0, flip: false }
+    - { role: patron, pose: stand, x: 0, y: 0, flip: true }
+    - { role: husband, pose: stand, x: 70, y: 0, flip: true }

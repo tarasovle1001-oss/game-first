@@ -33,6 +33,7 @@ pnpm exec tsx tools/make-save.ts save.json 12 2  # сейв с идущей сц
 | `packages/base` | Сама игра как мод поверх core | core |
 | `packages/schematics` | SVG-схемы сцен из манекенов | ничего |
 | `packages/mods/example` | Пример стороннего мода на публичном API | core |
+| `packages/mods/cheats` | Читы для отладки, тоже мод | core, base |
 | `packages/bots` | Боты, инварианты, интеграционные тесты | core, base, моды |
 | `packages/ui` | React: читает состояние, шлёт действия | core, base, моды |
 
@@ -51,10 +52,10 @@ pnpm exec tsx tools/make-save.ts save.json 12 2  # сейв с идущей сц
 
 События ядра: `game:init`, `day:start`, `phase:enter`, `phase:exit`, `day:end`, `entity:moved`.
 
-События игры (`base`): `shift:start`, `shift:tick`, `shift:end`, `patron:arrived`, `patron:served`, `patron:left`, `patron:forgotten`, `encounter:proposed`, `encounter:started`, `encounter:refused`, `encounter:ended`, `money:changed`, `heroine:changed`.
+События игры (`base`): `shift:start`, `shift:tick`, `shift:end`, `patron:arrived`, `patron:served`, `patron:left`, `patron:forgotten`, `encounter:proposed`, `encounter:started`, `encounter:refused`, `encounter:ended`, `money:changed`, `heroine:changed`, `husband:act`, `husband:refused`, `caught`, `caught:resolved`, `mode:changed`, `phone:number`, `phone:message`, `phone:peeked`, `phone:call`, `phone:buttdial`.
 
 Формулы: `base/consent` (согласие), `base/tip` (чаевые). Мод добавляет свою строку через `api.formulas.addFactor`.
 
 ## Контент
 
-Всё в `packages/base/content`: `locations/`, `patron-types/`, `acts.yaml`, `scenes.yaml`, `consent.yaml`, `balance.yaml`, `names.yaml`. Тексты в `packages/base/locales/en.yaml` и `ru.yaml`.
+Всё в `packages/base/content`: `locations/`, `patron-types/`, `acts.yaml`, `scenes.yaml`, `consent.yaml`, `body.yaml`, `secrecy.yaml`, `phone.yaml`, `balance.yaml`, `names.yaml`. Тексты в `packages/base/locales/en.yaml` и `ru.yaml`.

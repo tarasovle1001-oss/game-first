@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { bs, WAIT } from "@tc/base";
+import { bs, content, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { engine, mods, newSeed, SAVE_KEY, translator } from "./game";
 import type { Lang } from "./game";
-import { actionLabel, GuestsTab, HeroineTab, Log, Rooms, ScenePanel, TopBar, WhyTab } from "./panels";
+import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, TopBar, WhyTab } from "./panels";
+import { CheatPanel } from "./cheats";
 import "./style.css";
 
-type Tab = "her" | "guests" | "why";
+type Tab = "her" | "you" | "guests" | "why" | "phone";
 
 // The UI only reads state and dispatches actions. No game rules live here.
 function App() {
@@ -84,6 +85,7 @@ function App() {
           <ScenePanel {...common} scene={scene} />
           <div className="cap gap">{t("ui.where")}</div>
           <Rooms {...common} onAct={act} />
+          {debug && <CheatPanel {...common} onAct={act} />}
           {debug && (
             <p className="muted small mono">
               scene {scene ? sceneKey(scene) : "-"} · seed {state.seed} · turn {state.turn}
@@ -96,7 +98,9 @@ function App() {
           {waits.length > 0 && (
             <div className="card">
               <div className="card-title">{t("ui.wait")}</div>
-              <div className="muted small">{t("ui.wait.hint")}</div>
+              <div className="muted small">
+                {t("ui.served", { n: b.shift?.served ?? 0 })} · {t("ui.tips", { n: b.shift?.tips ?? 0 })} · {t("ui.rent", { rent: content.balance.rentPerDay })}
+              </div>
               <div className="waits">
                 {waits.map((a, i) => (
                   <button key={i} className={a.payload?.until ? "wide" : ""} onClick={() => act(a)}>
@@ -106,7 +110,7 @@ function App() {
               </div>
             </div>
           )}
-          {state.time.phase === "shift" && waits.length === 0 && <div className="muted">{t("ui.closing")}</div>}
+          {state.time.phase === "shift" && waits.length === 0 && advance && <div className="muted">{t("ui.closing")}</div>}
           {other.length > 0 && (
             <div className="card">
               <div className="card-title">{t("ui.business")}</div>
@@ -126,7 +130,7 @@ function App() {
           )}
 
           <div className="tabs">
-            {(["her", "guests", "why"] as Tab[]).map((k) => (
+            {(["her", "you", "guests", "why", "phone"] as Tab[]).map((k) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>
                 {t(`ui.tab.${k}`)}
                 {k === "guests" && b.shift ? ` ${b.shift.visits.length}` : ""}
@@ -135,8 +139,10 @@ function App() {
           </div>
           <div className="tab-body">
             {tab === "her" && <HeroineTab {...common} />}
+            {tab === "you" && <CoupleTab {...common} />}
             {tab === "guests" && <GuestsTab {...common} />}
             {tab === "why" && <WhyTab {...common} debug={debug} />}
+            {tab === "phone" && <PhoneTab {...common} debug={debug} />}
           </div>
         </aside>
       </div>

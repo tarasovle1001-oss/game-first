@@ -1,0 +1,182 @@
+// NTR and NTS. While it is hidden, what he notices turns into suspicion. Walking in on them,
+// or a confession, opens it for good. Once open, his presence stops being a wall and her power over him grows.
+import type { Ctx, ModApi } from "@tc/core";
+import { content } from "../content";
+import { bs, clamp, HUSBAND, WIFE } from "../state";
+import { actById, endEncounter, isIntimate } from "./encounters";
+import { changeHeroine } from "./heroine";
+import { HALL } from "./places";
+
+export const CAUGHT_STOP = "base/caught-stop";
+export const CAUGHT_WATCH = "base/caught-watch";
+export const CONFRONT = "base/confront";
+const S = content.secrecy;
+
+function suspect(ctx: Ctx, amount: number) {
+  const b = bs(ctx.state);
+  if (b.mode !== "hidden") return;
+  b.suspicion = clamp(b.suspicion + amount * S.styleFactor[b.husband.style]);
+}
+
+/** One-way: from here on she does not hide it. */
+export function goOpen(ctx: Ctx, reason: string) {
+  const b = bs(ctx.state);
+  if (b.mode === "open") return;
+  b.mode = "open";
+  b.suspicion = 100;
+  b.secretKnows = false;
+  b.caught = null;
+  ctx.log("log.mode.open");
+  ctx.emit("mode:changed", { mode: "open", reason });
+}
+
+export function registerSecrecy(api: ModApi) {
+  api.events.on("encounter:started", (ctx, e) => {
+    const b = bs(ctx.state);
+    const { witnessed, tier, intimate } = e.payload as { witnessed: boolean; tier: number; intimate: boolean };
+    if (b.mode === "hidden") {
+      if (witnessed && tier >= 2) suspect(ctx, tier * S.sawPublicPerTier);
+      if (!witnessed && intimate) {
+        b.secretActsToday += 1;
+        if (ctx.state.where[HUSBAND] === HALL) suspect(ctx, S.sawThemLeave);
+      }
+    } else if (tier >= 2) {
+      b.power = clamp(b.power + (witnessed ? S.powerPerSeen : intimate ? S.powerPerTold : 0));
+    }
+  });
+
+  api.events.on("day:end", (ctx) => {
+    const b = bs(ctx.state);
+    if (b.mode === "hidden" && !b.secretKnows) {
+      suspect(ctx, b.secretActsToday * S.tracePerSecretAct);
+      b.suspicion = clamp(b.suspicion - S.fadePerDay);
+    }
+    b.secretActsToday = 0;
+  });
+
+  // He opens the door at the wrong moment.
+  api.events.on("entity:moved", (ctx, e) => {
+    const b = bs(ctx.state);
+    const { id, from, to } = e.payload as { id: string; from: string; to: string };
+    if (id !== HUSBAND || b.mode !== "hidden") return;
+    const enc = b.encounter;
+    if (b.caught && enc && from === enc.loc) {
+      // he backed out before they noticed: now he knows, and she does not know that he does
+      b.caught = null;
+      b.secretKnows = true;
+      b.suspicion = 100;
+      ctx.log("log.caught.leave");
+      ctx.emit("caught:resolved", { choice: "leave" });
+      return;
+    }
+    if (enc && to === enc.loc && isIntimate(actById(enc.act))) {
+      b.caught = { patron: enc.patron, act: enc.act };
+      if (b.shift) b.shift.interrupt = true;
+      ctx.log("log.caught", { name: `@name:${b.patrons[enc.patron]!.name}`, act: `act.${enc.act}` });
+      ctx.emit("caught", { patron: enc.patron, act: enc.act });
+    }
+  });
+  // If it is over before he decided, he was seen standing there.
+  api.events.on("encounter:ended", (ctx) => {
+    if (bs(ctx.state).caught) goOpen(ctx, "caught");
+  });
+
+  const caughtNow = (state: Parameters<typeof bs>[0]) => state.time.phase === "shift" && bs(state).caught !== null;
+  api.actions.register({
+    id: CAUGHT_STOP,
+    labelKey: "action.caught.stop",
+    enumerate: (state) => (caughtNow(state) ? [{ type: CAUGHT_STOP }] : []),
+    apply(ctx) {
+      const b = bs(ctx.state);
+      const p = b.patrons[b.caught!.patron]!;
+      const visit = b.shift!.visits.find((v) => v.patron === p.id);
+      ctx.log("log.caught.stop", { name: `@name:${p.name}` });
+      b.caught = null;
+      goOpen(ctx, "caught");
+      endEncounter(ctx, true);
+      if (visit) {
+        visit.blocked = true;
+        visit.stay = 0; // he is out of the door
+      }
+      p.memory.affinity = clamp(p.memory.affinity - 15, -100, 100);
+      p.memory.interest = clamp(p.memory.interest - 10);
+      changeHeroine(ctx, "mood", -12, "caught");
+      const h = b.heroine;
+      h.traits.fidelity = clamp(h.traits.fidelity + 4);
+      h.marriage.resent = clamp(h.marriage.resent + 6);
+      b.power = clamp(b.power - 5);
+      ctx.emit("caught:resolved", { choice: "stop" });
+    },
+  });
+  api.actions.register({
+    id: CAUGHT_WATCH,
+    labelKey: "action.caught.watch",
+    enumerate: (state) => (caughtNow(state) ? [{ type: CAUGHT_WATCH }] : []),
+    apply(ctx) {
+      const b = bs(ctx.state);
+      ctx.log("log.caught.watch", { name: `@name:${b.patrons[b.caught!.patron]!.name}` });
+      b.caught = null;
+      goOpen(ctx, "caught");
+      b.power = clamp(b.power + 10);
+      changeHeroine(ctx, "arousal", 8, "watched");
+      ctx.emit("caught:resolved", { choice: "watch" });
+    },
+  });
+
+  // At night he can put it to her, once he has enough to go on.
+  api.actions.register({
+    id: CONFRONT,
+    labelKey: "action.confront",
+    enumerate(state) {
+      const b = bs(state);
+      const ready = b.secretKnows || b.suspicion >= S.confrontAt;
+      return state.time.phase === "night" && b.mode === "hidden" && ready && b.night && !b.night.asked ? [{ type: CONFRONT }] : [];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      b.night!.asked = true;
+      const nothingToHide = Object.values(b.patrons).every((p) => p.memory.tier < 2);
+      if (nothingToHide) {
+        ctx.log("log.confront.nothing");
+        b.suspicion = clamp(b.suspicion - 30);
+        h.marriage.resent = clamp(h.marriage.resent + 4);
+      } else if (b.secretKnows || h.traits.honesty >= S.confessHonesty || b.suspicion >= 95) {
+        ctx.log("log.confront.admit");
+        goOpen(ctx, "confession");
+      } else {
+        ctx.log("log.confront.deny");
+        b.suspicion = clamp(b.suspicion - 20);
+        h.traits.honesty = clamp(h.traits.honesty - 4);
+        h.marriage.resent = clamp(h.marriage.resent + 3);
+      }
+    },
+  });
+
+  api.scenes.register({
+    id: "base.caught",
+    priority: 200,
+    match(state) {
+      const b = bs(state);
+      if (!b.caught || !b.encounter) return null;
+      return {
+        type: "caught",
+        location: b.encounter.loc,
+        participants: [
+          { id: WIFE, role: "wife" },
+          { id: b.caught.patron, role: "patron" },
+          { id: HUSBAND, role: "husband" },
+        ],
+      };
+    },
+  });
+
+  api.invariants.add("secrecy-consistent", (s) => {
+    const b = bs(s);
+    if (b.suspicion < 0 || b.suspicion > 100 || b.power < 0 || b.power > 100) return "suspicion or power out of range";
+    if (b.caught && (!b.encounter || b.encounter.patron !== b.caught.patron)) return "caught without a matching encounter";
+    if (b.caught && b.mode !== "hidden") return "caught while it is already open";
+    if (b.caught && s.where[HUSBAND] !== b.encounter?.loc) return "caught but the husband is not in the room";
+    return null;
+  });
+}

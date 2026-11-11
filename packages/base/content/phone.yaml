@@ -1,0 +1,16 @@
+# Phones: numbers, texts, calls, the accidental call.
+numberAtTier: 3          # how far things must have gone before he asks for her number
+numberAffinity: 15       # ...and how much she must like him to give it
+textChance: 0.45         # per day, per man who has her number (his interest adds to it)
+replyAffinity: 20        # she answers from this affinity up; warmly from twice that
+comingTonightChance: 0.3 # he writes that he will drop by tonight, and does
+expectedArrivesAtTick: 3 # 18:30
+
+# what the husband gets out of it (before his style factor)
+peekMild: 4              # he read her phone and found small talk
+peekWarm: 14             # ...found flirting
+peekNoticedChance: 0.25  # she catches him with her phone
+callIgnored: 6           # he called while she was busy and she did not pick up
+callBreathless: 10       # ...she picked up, out of breath
+buttDialChance: 0.08     # per secret intimate act
+buttDial: 12

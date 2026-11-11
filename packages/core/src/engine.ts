@@ -22,7 +22,7 @@ import type {
 
 export const CORE_ADVANCE = "core/advance";
 export const CORE_MOVE = "core/move";
-const MAX_EVENTS_PER_DISPATCH = 1000;
+const MAX_EVENTS_PER_DISPATCH = 5000;
 const LOG_LIMIT = 500;
 
 export class EngineError extends Error {}
@@ -230,7 +230,8 @@ export function createEngine(modList: Mod[]): Engine {
     dispatch(state, action) {
       const def = actions.get(action.type);
       if (!def) throw new EngineError(`unknown action "${action.type}"`);
-      if (!def.enumerate(state, view).some((a) => sameAction(a, action)))
+      const allowed = def.accepts ? def.accepts(state, action, view) : def.enumerate(state, view).some((a) => sameAction(a, action));
+      if (!allowed)
         throw new EngineError(`action not available: ${JSON.stringify(action)}`);
       return run(state, (ctx) => {
         ctx.state.turn += 1;
@@ -242,23 +243,27 @@ export function createEngine(modList: Mod[]): Engine {
   function run(state: GameState, body: (ctx: Ctx) => void): GameState {
     return produce(state, (draft) => {
       const queue: GameEvent[] = [];
+      let processed = 0;
+      const drain = () => {
+        while (queue.length > 0) {
+          if (++processed > MAX_EVENTS_PER_DISPATCH) throw new EngineError("event loop: too many events in one dispatch");
+          const event = queue.shift()!;
+          for (const h of handlers.get(event.type) ?? []) h.handler(ctx, event);
+        }
+      };
       const ctx: Ctx = {
         state: draft as GameState,
         rng: makeRng(draft),
         engine: view,
         emit: (type, payload) => void queue.push({ type, payload }),
+        flush: () => drain(),
         log(key, params, tags) {
           draft.log.push({ turn: draft.turn, day: draft.time.day, phase: draft.time.phase, minute: draft.time.minute, key, params, ...(tags ? { tags } : {}) });
           if (draft.log.length > LOG_LIMIT) draft.log.splice(0, draft.log.length - LOG_LIMIT);
         },
       };
       body(ctx);
-      let processed = 0;
-      while (queue.length > 0) {
-        if (++processed > MAX_EVENTS_PER_DISPATCH) throw new EngineError("event loop: too many events in one dispatch");
-        const event = queue.shift()!;
-        for (const h of handlers.get(event.type) ?? []) h.handler(ctx, event);
-      }
+      drain();
     });
   }
 }

@@ -1,7 +1,7 @@
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import type { Visit } from "../state";
+import type { Patron, Visit } from "../state";
 import { addMoney, addReputation } from "./economy";
 import { endEncounter, runProposals } from "./encounters";
 import { changeHeroine } from "./heroine";
@@ -33,6 +33,35 @@ export const interrupt = (ctx: Ctx) => {
 
 const wantsOrder = (v: Visit) => v.served === 0 || v.sinceOrder >= ORDER_EVERY;
 
+/** Sits a guest down at a table and starts his visit. */
+function seat(ctx: Ctx, patron: Patron, known: boolean) {
+  const b = bs(ctx.state);
+  const sh = b.shift!;
+  patron.memory.visits += 1;
+  patron.memory.lastDay = ctx.state.time.day;
+  if (!patron.regular && patron.memory.visits >= bal.regularAfterVisits) {
+    patron.regular = true;
+    ctx.log("log.patron.regular", { name: `@name:${patron.name}` });
+  }
+  sh.visits.push({
+    patron: patron.id,
+    stay: ctx.rng.int(ticks(bal.stayMinutes[0]), ticks(bal.stayMinutes[1])),
+    served: 0,
+    waited: 0,
+    sinceOrder: 0,
+    // a man who has been somewhere with her does not start from small talk again
+    tier: Math.max(-1, patron.memory.tier - 1),
+    blocked: false,
+    pressure: 0,
+    retry: null,
+    rounds: 0,
+  });
+  ctx.state.where[patron.id] = HALL;
+  ctx.log(known ? "log.patron.returns" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
+  ctx.emit("patron:arrived", { id: patron.id, returning: known });
+  interrupt(ctx);
+}
+
 function arrive(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
@@ -48,28 +77,7 @@ function arrive(ctx: Ctx) {
     const present = sh.visits.map((v) => v.patron);
     const known = ctx.rng.chance(bal.returnChance) ? pickReturning(ctx, present) : null;
     const patron = known ?? generatePatron(ctx);
-    patron.memory.visits += 1;
-    patron.memory.lastDay = ctx.state.time.day;
-    if (!patron.regular && patron.memory.visits >= bal.regularAfterVisits) {
-      patron.regular = true;
-      ctx.log("log.patron.regular", { name: `@name:${patron.name}` });
-    }
-    sh.visits.push({
-      patron: patron.id,
-      stay: ctx.rng.int(ticks(bal.stayMinutes[0]), ticks(bal.stayMinutes[1])),
-      served: 0,
-      waited: 0,
-      sinceOrder: 0,
-      // a man who has been somewhere with her does not start from small talk again
-      tier: Math.max(-1, patron.memory.tier - 1),
-      blocked: false,
-      pressure: 0,
-      retry: null,
-    });
-    ctx.state.where[patron.id] = HALL;
-    ctx.log(known ? "log.patron.returns" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
-    ctx.emit("patron:arrived", { id: patron.id, returning: known !== null });
-    interrupt(ctx);
+    seat(ctx, patron, known !== null);
   }
 }
 
@@ -161,6 +169,7 @@ function tick(ctx: Ctx) {
   if (!bs(ctx.state).encounter) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
   depart(ctx);
   ctx.emit("shift:tick", { tick: sh.tick });
+  ctx.flush(); // every tick is fully resolved before the next one, however long the wait
 }
 
 export function registerShift(api: ModApi) {
@@ -192,6 +201,14 @@ export function registerShift(api: ModApi) {
     b.shift = null;
   });
 
+  // Someone she is expecting walks in (the phone system asks for it).
+  api.events.on("base:invite-arrives", (ctx, e) => {
+    const b = bs(ctx.state);
+    const p = b.patrons[e.payload!.id as string];
+    if (!b.shift || !p || b.shift.visits.some((v) => v.patron === p.id) || b.shift.visits.length >= bal.seats) return;
+    seat(ctx, p, true);
+  });
+
   // Waiting is how the evening moves: a fixed stretch, or until something worth a look happens.
   api.actions.register({
     id: WAIT,
@@ -201,6 +218,7 @@ export function registerShift(api: ModApi) {
     enumerate(state) {
       const sh = bs(state).shift;
       if (state.time.phase !== "shift" || !sh || ticksDone(sh)) return [];
+      if (bs(state).caught) return []; // he has to decide first
       return [...WAIT_MINUTES.map((minutes) => ({ type: WAIT, payload: { minutes } })), { type: WAIT, payload: { until: "event" } }];
     },
     apply(ctx, action) {

@@ -9,6 +9,12 @@ export const newHeroine = (): Heroine => ({
   arousal: 10,
   drunk: 0,
   traits: { openness: 30, confidence: 45, fidelity: 80, honesty: 70, libido: 45 },
+  body: { vagina: { stretch: 0, peak: 0 }, anus: { stretch: 0, peak: 0 }, mouth: { stretch: 0, peak: 0 } },
+  skills: {},
+  satisfied: 0,
+  sizeTaste: 20,
+  orgasms: 0,
+  marriage: { desire: content.body.husband.desire, resent: content.body.husband.resent },
 });
 
 type StateKey = "energy" | "mood" | "arousal" | "drunk";
@@ -28,7 +34,7 @@ export function registerHeroine(api: ModApi) {
     for (const k of Object.keys(t) as (keyof typeof t)[]) t[k] = clamp(t[k] + ctx.rng.int(-8, 8));
   });
 
-  api.events.on("phase:enter", (ctx, e) => {
+  api.events.on("phase:exit", (ctx, e) => {
     const h = bs(ctx.state).heroine;
     if (e.payload!.phase === "night") {
       // sleep: energy back, alcohol out, mood and arousal drift to their resting levels
