@@ -27,6 +27,11 @@ scene: # a thing with a guest runs minute by minute; every so often he tries to 
   endBelow: 15              # ...or at once, if what he asks is this far below "maybe"
   continueChance: 0.5       # he has finished and still has it in him: chance he wants more
   likeChance: 0.6           # he steers toward what he likes rather than simply the next step
+  pushed: 2                 # her opinion of him drops when he asks for more and she says no...
+  pushedTooFar: 6           # ...and more when she has to end it herself
+  fedUpAfter: 4             # refusals after which she is simply tired of him
+  fedUpPer: 2
+  fedUpMax: 12
   leaveSuspicion: 2         # an excuse to leave the floor, when her husband is looking
 proposalsPerTick: 3 # how many guests can speak up within one tick (only one of them can take her off the floor)
 askChancePerHour: 0.5 # base chance that a guest makes a move within an hour

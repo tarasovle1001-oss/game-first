@@ -213,8 +213,12 @@ export function advanceEncounter(ctx: Ctx) {
   if (enc.refusals >= S.stayLimit || total < content.consent.hesitantAt - S.endBelow) {
     ctx.log("log.enc.she_ends", { name, act: `act.${next.id}` }, tags);
     p.memory.interest = clamp(p.memory.interest - 2);
+    p.memory.affinity = clamp(p.memory.affinity - S.pushedTooFar, -100, 100); // he overdid it, and she remembers
     return endEncounter(ctx);
   }
+  p.memory.affinity = clamp(p.memory.affinity - S.pushed, -100, 100);
+  // asking for what she plainly dislikes costs him more
+  if ((h.tastes.acts[next.id] ?? 0) < 0) p.memory.affinity = clamp(p.memory.affinity - S.pushed, -100, 100);
   ctx.log("log.enc.stays", { name, act: `act.${next.id}`, now: `act.${enc.act}` }, tags);
 }
 
@@ -398,7 +402,10 @@ export function runProposals(ctx: Ctx) {
       if (isLight(act) && verdict === "eager" && res.total >= content.consent.eagerAt + S.skipMargin) {
         const over = content.acts.filter((a) => a.tier === act.tier + 1 && !a.only && a.id !== "drink");
         const glad = over.length > 0 && over.every((a) => verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { ...input, act: a.id }).total) === "eager");
-        if (glad) v.tier = Math.min(v.tier + 1, tierCap(p), topTier);
+        if (glad) {
+          v.tier = Math.min(v.tier + 1, tierCap(p), topTier);
+          p.memory.tier = Math.max(p.memory.tier, v.tier); // it counts as a step taken, not as one he jumped over
+        }
       }
     }
     if (verdict === "refuse" || !isLight(act)) b.shift!.interrupt = true; // worth stopping "wait until" for
@@ -444,6 +451,8 @@ export function registerEncounters(api: ModApi) {
     const skipped = act.tier - (p.memory.tier + 1);
     return skipped > 0 ? -c.jumpPerTier * skipped : null;
   });
+  // a man who has heard "no" from her many times and keeps at it wears her patience thin
+  row("fed_up", 33.5, (_s, _i, act, p) => (p && act.tier >= 2 && p.memory.refusals >= S.fedUpAfter ? -Math.min(S.fedUpMax, (p.memory.refusals - S.fedUpAfter + 1) * S.fedUpPer) : null));
   row("money", 34, (s, i) => {
     if (i.offer <= 0) return null;
     const b = bs(s);

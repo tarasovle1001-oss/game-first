@@ -144,6 +144,11 @@ export const consentSchema = z
         endBelow: z.number(),
         continueChance: z.number().min(0).max(1),
         likeChance: z.number().min(0).max(1),
+        pushed: z.number(),
+        pushedTooFar: z.number(),
+        fedUpAfter: z.number().int(),
+        fedUpPer: z.number(),
+        fedUpMax: z.number(),
         leaveSuspicion: z.number(),
       })
       .strict(),

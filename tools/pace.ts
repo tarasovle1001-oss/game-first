@@ -1,5 +1,5 @@
 // Pace check: on which day the first kiss/lap and the first sex with a guest happen, per preset.
-// pnpm exec tsx tools/pace.ts [days] [seeds]
+// pnpm exec tsx tools/pace.ts [days] [seeds] [grid]   (grid: openness x fidelity instead of the presets)
 import { baseMod, bs, content } from "../packages/base/src";
 import { createEngine } from "../packages/core/src";
 import { awayStrategy } from "../packages/bots/src";
@@ -8,7 +8,9 @@ const [days = "30", seeds = "6"] = process.argv.slice(2);
 const engine = createEngine([baseMod]);
 const full = { preset: "hungry", traits: { openness: 100, confidence: 100, fidelity: 0, honesty: 0, libido: 100 }, sizeTaste: 100 };
 type Setup = Record<string, string | number | Record<string, number>>;
-const rows: [string, Setup][] = [...content.presets.map((p) => [p.id, { preset: p.id }] as [string, Setup]), ["full", full]];
+const grid: [string, Setup][] = [];
+for (const openness of [20, 50, 80]) for (const fidelity of [90, 60, 30]) grid.push([`o${openness} f${fidelity}`, { preset: "ordinary", traits: { openness, fidelity } }]);
+const rows: [string, Setup][] = process.argv[4] === "grid" ? grid : [...content.presets.map((p) => [p.id, { preset: p.id }] as [string, Setup]), ["full", full]];
 for (const [name, setup] of rows) {
   const kiss: (number | string)[] = [];
   const sex: (number | string)[] = [];

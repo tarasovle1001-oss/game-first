@@ -813,3 +813,4 @@ action.serve.one: "Принять заказ: {name} (ждёт {minutes} мин)
 ui.enc.for: "{n} мин"
 ui.waits: "ждёт {n} мин"
 ui.likes: "любит"
+factor.consent.fed_up: "Он её уже достал"
