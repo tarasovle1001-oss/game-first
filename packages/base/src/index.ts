@@ -14,6 +14,7 @@ import { registerSecrecy } from "./systems/secrecy";
 import { newPhone, registerPhone } from "./systems/phone";
 import { registerManners } from "./systems/manners";
 import { registerDress } from "./systems/dress";
+import { registerAnnoy } from "./systems/annoy";
 import { registerHerSide } from "./systems/herside";
 import { registerLatents } from "./systems/latents";
 import { registerSetup } from "./systems/setup";
@@ -28,7 +29,7 @@ import { registerMemories } from "./systems/memories";
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 14,
+  version: 15,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -120,6 +121,7 @@ export const baseMod: Mod = {
     registerPhone(api);
     registerManners(api);
     registerDress(api);
+    registerAnnoy(api);
     registerLatents(api);
     registerExpectations(api);
     registerCouple(api);
@@ -160,6 +162,9 @@ export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
 export { OUTFIT_BACK } from "./systems/manners";
 export { ANSWER } from "./systems/herside";
+export { annoyanceOf, annoyedLevel } from "./systems/annoy";
+export { PREP_WAIT, DAY_STOP, passPrep } from "./systems/day";
+export { TASTES, TASTE_LATENT } from "./systems/setup";
 export { STRIP, bareOf, bareMargin, dressOf, eyesOn } from "./systems/dress";
 export { HIS_ACTS, hisActOpen } from "./systems/marriage";
 export { NIGHT_DECLINE, NIGHT_SELF, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";

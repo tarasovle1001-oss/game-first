@@ -1,0 +1,23 @@
+# The town, a ten-minute walk from the cafe. Open to him in the afternoon only. y 2 = the row under the building on the plan.
+zone: town
+rooms:
+  - id: town.square
+    links: [cafe.hall, town.market, town.shops, town.gym]
+    tags: [town, public]
+    map: { x: 1, y: 2, w: 2, h: 1 }
+  - id: town.market
+    links: [town.square]
+    tags: [town, public]
+    map: { x: 0, y: 2, w: 1, h: 1 }
+  - id: town.shops
+    links: [town.square]
+    tags: [town, public]
+    map: { x: 3, y: 2, w: 1, h: 1 }
+  - id: town.gym
+    links: [town.square]
+    tags: [town, public]
+    map: { x: 4, y: 2, w: 1, h: 1 }
+  - id: town.far            # "somewhere in town": where she is when she is out on her own. Nobody walks there
+    links: []
+    tags: [town]
+    map: { x: 5, y: 2, w: 1, h: 1 }

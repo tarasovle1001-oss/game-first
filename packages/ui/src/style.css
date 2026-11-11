@@ -695,3 +695,23 @@ details { border-top: 1px solid var(--line); }
 .photo-cap { padding: 6px 4px 0; font-size: 0.92em; }
 
 .card.approach { border-color: var(--accent, #c2410c); }
+
+.switch2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.switch2 button { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 8px 10px; }
+.switch2 button span { font-size: 12px; opacity: 0.75; font-weight: 400; }
+.check { align-items: flex-start; }
+.log .entry.k-system { color: #f2f3f5; }
+.log .entry.k-money { color: #e8b84a; }
+.log .entry.k-lewd { color: #f08ab1; }
+.log .entry .gold { color: #e8b84a; font-weight: 600; }
+.log .entry .pink { color: #f472b6; font-weight: 600; }
+.log .entry .who { font-weight: 600; }
+.picture.veiled > * { filter: blur(14px) saturate(0.6); }
+.picture.veiled { position: relative; overflow: hidden; }
+.sizeline { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 13px; }
+.sizeline .track { position: relative; flex: 1; height: 12px; border-radius: 6px; background: rgba(255,255,255,0.08); }
+.sizeline .fit { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #f472b6; }
+.sizeline .len { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: linear-gradient(90deg, #b45309, #f59e0b); }
+.sizeline .hearts { color: #f472b6; letter-spacing: 1px; white-space: nowrap; }
+.busy { padding: 6px 10px; border-radius: 8px; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.4); margin-bottom: 8px; }
+.crumbs { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }

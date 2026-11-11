@@ -102,7 +102,7 @@ function serveOne(ctx: Ctx, v: Visit, taker: "wife" | "husband"): boolean {
   }
   const p = b.patrons[v.patron]!;
   const type = content.patronTypes.find((t) => t.id === p.type)!;
-  const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (ctx.state.where[HUSBAND] === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus));
+  const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (ctx.state.where[HUSBAND] === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus) * bal.billFactor);
   const tip = taker === "husband" ? 0 : Math.max(0, Math.round(ctx.engine.evaluate<TipInput>(TIP_FORMULA, ctx.state, { patron: p.id, bill }).total));
   b.stock -= 1;
   b.clean = Math.max(0, b.clean - content.day.dirtPerServed);
@@ -269,6 +269,12 @@ export function registerShift(api: ModApi) {
         if (untilEvent && sh.interrupt) break;
       }
     },
+  });
+
+  // Walking from room to room takes a minute of the evening.
+  api.events.on("entity:moved", (ctx, e) => {
+    const sh = bs(ctx.state).shift;
+    if (e.payload!.id === HUSBAND && ctx.state.time.phase === "shift" && sh && !ticksDone(sh) && !bs(ctx.state).night?.sex) tick(ctx);
   });
 
   // He takes a table himself: the order goes out, it costs him a few minutes, and nobody tips him.

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { content } from "@tc/base";
+import { content, TASTES, TASTE_LATENT } from "@tc/base";
 import type { BaseSetup } from "@tc/base";
 import type { T } from "./game";
 
@@ -16,6 +16,10 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
   const [desire, setDesire] = useState(content.body.husband.desire);
   const [open, setOpen] = useState(false);
   const [seedText, setSeedText] = useState(String(seed));
+  const [name, setName] = useState(t("ui.newgame.name.default"));
+  const tastesOf = (ls: string[]) => Object.fromEntries(TASTES.map((id) => [id, ls.includes(TASTE_LATENT[id]) ? 85 : 50])) as Record<(typeof TASTES)[number], number>;
+  const [tastes, setTastes] = useState(tastesOf(first.latents));
+  const tasteLatents = new Set<string>(Object.values(TASTE_LATENT));
 
   const pick = (id: string) => {
     const p = content.presets.find((x) => x.id === id)!;
@@ -23,6 +27,7 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
     setTraits({ ...p.traits });
     setSizeTaste(p.sizeTaste);
     setLatents(null);
+    setTastes(tastesOf(p.latents));
   };
   const slider = (label: string, value: number, set: (v: number) => void, min = 0, max = 100) => (
     <label className="slider" key={label}>
@@ -49,23 +54,37 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
         <div className="dialog-cols">
           <div>
             <div className="cap">{t("ui.newgame.her")}</div>
+            <label className="slider">
+              <span>{t("ui.newgame.name")}</span>
+              <input type="text" value={name} maxLength={24} onChange={(e) => setName(e.target.value)} />
+            </label>
             {TRAITS.map((k) => slider(t(`trait.${k}`), traits[k], (v) => setTraits({ ...traits, [k]: v })))}
             {slider(t("stat.sizeTaste"), sizeTaste, setSizeTaste)}
             {slider(t("ui.newgame.desire"), desire, setDesire)}
+            <div className="cap gap">{t("ui.newgame.tastes")}</div>
+            {TASTES.map((id) => (
+              <div key={id} title={t(`taste.${id}.about`)}>
+                {slider(t(`taste.${id}`), tastes[id], (v) => setTastes({ ...tastes, [id]: v }))}
+              </div>
+            ))}
+            <p className="muted small">{t("ui.newgame.tastes.hint")}</p>
             <div className="cap gap">{t("ui.newgame.latents")}</div>
             <label className="check">
               <input type="checkbox" checked={latents === null} onChange={(e) => setLatents(e.target.checked ? null : (about?.latents ?? []))} />
               {t("ui.newgame.latents.random")}
             </label>
             {latents !== null &&
-              content.latents.map((l) => (
-                <label className="check" key={l.id}>
+              content.latents.filter((l) => !tasteLatents.has(l.id)).map((l) => (
+                <label className="check" key={l.id} title={t(`latent.${l.id}.about`)}>
                   <input
                     type="checkbox"
                     checked={latents.includes(l.id)}
                     onChange={(e) => setLatents(e.target.checked ? [...latents, l.id] : latents.filter((x) => x !== l.id))}
                   />
-                  {t(`latent.${l.id}`)}
+                  <span>
+                    {t(`latent.${l.id}`)}
+                    <span className="muted small"> - {t(`latent.${l.id}.about`)}</span>
+                  </span>
                 </label>
               ))}
           </div>
@@ -81,10 +100,17 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
                 </button>
               ))}
             </div>
-            <label className="check gap">
-              <input type="checkbox" checked={open} onChange={(e) => setOpen(e.target.checked)} />
-              {t("ui.newgame.mode")}
-            </label>
+            <div className="cap gap">{t("ui.newgame.mode.title")}</div>
+            <div className="switch2">
+              <button className={open ? "" : "on"} onClick={() => setOpen(false)}>
+                <b>NTR</b>
+                <span>{t("ui.newgame.mode.ntr")}</span>
+              </button>
+              <button className={open ? "on" : ""} onClick={() => setOpen(true)}>
+                <b>NTS</b>
+                <span>{t("ui.newgame.mode.nts")}</span>
+              </button>
+            </div>
             <label className="slider gap">
               <span>{t("ui.newgame.seed")}</span>
               <input type="number" value={seedText} onChange={(e) => setSeedText(e.target.value)} />
@@ -103,6 +129,8 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
                 sizeTaste,
                 desire,
                 husband,
+                name,
+                tastes,
                 ...(latents === null ? {} : { latents }),
                 ...(open ? { mode: "open" as const } : {}),
               })

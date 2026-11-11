@@ -69,6 +69,7 @@ export const balanceSchema = z
         seats: z.number().int().positive(),
         arrivalsPerHour: z.number().min(0), // expected new guests per hour at reputation 50
         stayMinutes: range,
+        billFactor: z.number().positive(),
         orderEveryMinutes: z.number().positive(), // a guest wants a new order this often
         maxWaitMinutes: z.number().positive(), // he walks out after waiting this long
         energyPerServe: z.number().min(0),
@@ -232,7 +233,7 @@ export const bodySchema = z
     skillGain: z.number().min(0), // per practice, shrinking as the skill grows
     orgasmAt: z.number(), // climax meter needed for her to come
     satisfiedCoolPerTick: z.number().min(0),
-    his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number(), fingerSize: z.number(), fistSize: z.number(), rimmingRate: z.number(), power: z.record(z.string(), z.number()), herShare: z.record(z.string(), z.number()), hisShare: z.record(z.string(), z.number()) }).strict(),
+    his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number(), practice: z.number(), fingerSize: z.number(), fistSize: z.number(), rimmingRate: z.number(), power: z.record(z.string(), z.number()), herShare: z.record(z.string(), z.number()), hisShare: z.record(z.string(), z.number()) }).strict(),
     sizeClasses: z.tuple([z.number(), z.number(), z.number(), z.number()]),
     night: nightSchema,
     // the bedroom scene, turn by turn: both of them have a pleasure meter 0..100
@@ -351,7 +352,7 @@ export const daySchema = z
           money: z.number().optional(),
           clean: z.number().optional(),
           arrivals: z.number().optional(), // share added to tonight's flow of guests
-          needs: id.optional(), // another activity that has to be done first today
+          at: z.string().optional(), // "cafe" (anywhere at home) or the one room in town where it is done
           withHer: z.boolean().optional(), // needs her to be around this afternoon
           stock: z.number().optional(),
           gossip: z.boolean().optional(), // he hears what the town says about her
@@ -360,6 +361,12 @@ export const daySchema = z
         })
         .strict(),
     ),
+    herDay: z
+      .object({
+        walkToTown: z.number().int().positive(), walkInTown: z.number().int().positive(), awayMinutes: z.number().int().positive(), trips: z.array(id).min(1), tripChance: z.number().min(0).max(1), tripMinutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), notThereSuspicion: z.number(),
+        tasks: z.array(z.object({ id, loc: id, minutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), clean: z.number().optional(), her: z.record(z.enum(["mood", "energy", "arousal"]), z.number()).optional() }).strict()).min(2),
+      })
+      .strict(),
     gym: z.object({ fitness: z.number(), minutesPerSession: z.number(), minutesMax: z.number(), herDesireSteps: z.array(z.number()), herDesire: z.number(), lockerChance: z.number(), meetChance: z.number(), meetAffinity: z.number(), maxTier: z.number().int(), lateSuspicion: z.number() }).strict(),
     shop: z
       .object({
@@ -408,7 +415,7 @@ export const mannersSchema = z
         bare: z
           .object({
             need: z.record(z.enum(["bedroom", "private", "hall"]), z.object({ top: z.number(), bottom: z.number(), all: z.number() }).strict()),
-            exhibitionist: z.number(), perArousal: z.number(), perDrunk: z.number(), perDesire: z.number(), perTime: z.number(), habitMax: z.number(),
+            perShowTaste: z.number(), night: z.number(), exhibitionist: z.number(), perArousal: z.number(), perDrunk: z.number(), perDesire: z.number(), perTime: z.number(), habitMax: z.number(),
             shy: z.number(), offended: z.number(), refuseResent: z.number(), backResent: z.number(),
             openness: z.object({ private: z.number(), hall: z.number() }).strict(),
             allure: z.object({ top: z.number(), bottom: z.number(), all: z.number() }).strict(),
@@ -431,6 +438,7 @@ export const mannersSchema = z
             stretchSteps: z.array(z.number()), hisSteps: z.array(z.number()),
           })
           .strict(),
+        annoy: z.object({ tired: z.number(), done: z.number(), guestRefused: z.number(), guestHesitant: z.number(), guestEager: z.number(), guestPushed: z.number(), guestPushedFar: z.number(), husbandTouch: z.number(), husbandAsk: z.number(), husbandRefused: z.number(), cameRelief: z.number(), coolShift: z.number(), coolPrep: z.number(), keptOvernight: z.number(), consent: z.number(), strip: z.number() }).strict(),
         touchCum: z.object({ from: z.array(id), fromDenied: z.number().int(), base: z.number(), perDenied: z.number(), max: z.number().min(0).max(1) }).strict(),
         complainAt: z.number(),
         complainEveryDays: z.number().int(),

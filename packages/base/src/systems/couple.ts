@@ -8,6 +8,7 @@ import { addReputation } from "./economy";
 import { actById, CONSENT_FORMULA, endEncounter } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
+import { annoyedLevel } from "./annoy";
 import { HALL, husbandSees } from "./places";
 
 export const TALK = "base/talk";
@@ -38,7 +39,8 @@ export const together = (state: GameState) => {
   const b = bs(state);
   if (state.time.phase === "summary" || b.caught || b.encounter || b.night?.sex) return false;
   if (state.time.phase === "night" && b.night?.scene.startsWith("fd_")) return false;
-  return state.time.phase === "prep" || state.where[HUSBAND] === state.where[WIFE];
+  if (b.day?.busy && state.time.phase === "prep") return false; // his hands are full
+  return state.where[HUSBAND] === state.where[WIFE];
 };
 
 /** The guest the husband can do something about right now: the one who is with her where he can see. */
@@ -165,6 +167,14 @@ export function registerCouple(api: ModApi) {
         return;
       }
       const o = T.options.find((x) => x.id === what)!;
+      // she has had enough hands on her today: his are no exception
+      const level = annoyedLevel(ctx.state);
+      if (o.group === "touch" && level !== "calm") {
+        applyFx(ctx, level === "done" ? { mood: -6, resent: 1 } : { mood: -3 }, "had enough");
+        ctx.log(`log.annoyed.${level}.${ctx.rng.int(1, 2)}`);
+        ctx.emit("couple:talk", { do: o.id, ok: false });
+        return;
+      }
       if (o.stock) b.stock -= o.stock;
       const publicNow = ctx.state.time.phase === "shift" && ctx.state.where[WIFE] === HALL && (b.shift?.visits.length ?? 0) > 0;
       const need = o.needs ? o.needs.min + (publicNow ? (o.needs.publicExtra ?? 0) : 0) : 0;

@@ -4,14 +4,15 @@ import { createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 
 const engine = createEngine([baseMod]);
-const day = (s: GameState, id: string) => engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/day" && a.payload?.do === id)!);
+const day = (s: GameState, id: string) => engine.dispatch(engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/day" && a.payload?.do === id)!), { type: "base/prep-wait", payload: { until: "done" } });
+const walk = (s: GameState, ...to: string[]) => to.reduce((st, room) => engine.dispatch(st, { type: "core/move", actor: "husband", payload: { to: room } }), s);
 const has = (s: GameState, id: string) => engine.listActions(s).some((a) => a.type === "base/day" && a.payload?.do === id);
 
 describe("the gym in town", () => {
-  it("is there once they are in town; training makes him fitter and last a little longer", () => {
+  it("is a place in town he walks to; training makes him fitter and last a little longer", () => {
     const s = engine.init(5);
     expect(has(s, "gym")).toBe(false);
-    const town = day(s, "town");
+    const town = walk(s, "town.square", "town.gym");
     expect(has(town, "gym")).toBe(true);
     expect(has(town, "gym_together")).toBe(true);
     const after = day(town, "gym");
@@ -38,8 +39,10 @@ describe("the gym in town", () => {
       p.memory.affinity = 70;
       p.memory.interest = 80;
       p.memory.tier = 6;
-      if (!has(s, "town")) continue;
-      const after = day(day(s, "town"), "gym_together");
+      if (b.day) b.day.her = { task: "bar", left: 30 };
+      const there = walk(s, "town.square", "town.gym");
+      if (!has(there, "gym_together")) continue;
+      const after = day(there, "gym_together");
       expect(engine.checkInvariants(after)).toEqual([]);
       if (after.log.some((e) => e.key.startsWith("log.gym.met."))) met++;
     }

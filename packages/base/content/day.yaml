@@ -6,17 +6,31 @@ clean:                # how the state of the room shows in the evening
   tipShare: 0.2       # share of the bill added to tips at 100, taken away at 0
   dirtyBelow: 30      # below this the place loses reputation every evening
   dirtyReputation: 1
-activities:           # each once a day
-  - { id: clean, minutes: 60, clean: 45 }
-  - { id: flyers, minutes: 60, cost: 40, arrivals: 0.2 }
-  - { id: side_job, minutes: 240, money: 70 }
-  - { id: her_chores, minutes: 60, withHer: true, her: { energy: 14, mood: 2, resent: -1 } }
-  - { id: town, minutes: 60, withHer: true }             # go to town together: opens the shops and the walk for today
-  - { id: market, minutes: 30, cost: 45, needs: town, stock: 14 }   # cheaper than the supplier, if you are in town anyway
-  - { id: ask_around, minutes: 60, cost: 15, needs: town, gossip: true } # a beer with the men who drink at your place: what do they say
-  - { id: gym, minutes: 90, cost: 20, needs: town, gym: alone }                 # he trains; she is in the shops meanwhile
-  - { id: gym_together, minutes: 90, cost: 35, needs: town, withHer: true, gym: together, her: { mood: 3, energy: -8 } } # both train; the changing rooms are separate
-  - { id: date, minutes: 90, cost: 40, needs: town, her: { mood: 6, desire: 3, resent: -2 } }
+activities:           # each once a day; at: cafe = at home, or the one place in town where it is done
+  - { id: clean, minutes: 60, clean: 45, at: cafe }
+  - { id: her_chores, minutes: 60, withHer: true, at: cafe, her: { energy: 14, mood: 2, resent: -1 } }
+  - { id: flyers, minutes: 60, cost: 40, arrivals: 0.2, at: town.square }
+  - { id: side_job, minutes: 240, money: 70, at: town.square }
+  - { id: ask_around, minutes: 60, cost: 15, gossip: true, at: town.square } # a beer with the men who drink at your place: what do they say
+  - { id: date, minutes: 90, cost: 40, withHer: true, at: town.square, her: { mood: 6, desire: 3, resent: -2 } }
+  - { id: market, minutes: 30, cost: 45, stock: 14, at: town.market }   # cheaper than the supplier
+  - { id: gym, minutes: 90, cost: 20, gym: alone, at: town.gym }
+  - { id: gym_together, minutes: 90, cost: 35, withHer: true, gym: together, at: town.gym, her: { mood: 3, energy: -8 } } # the changing rooms are separate
+herDay:               # her own afternoon: one task after another, each in its room
+  walkToTown: 10      # minutes between the cafe and the square
+  walkInTown: 3
+  awayMinutes: 150    # when she is out on her own
+  trips: [town.shops, town.market, town.gym] # where she goes on an errand, or says she goes
+  tripChance: 0.12    # per change of task, once a day
+  tripMinutes: [60, 100]
+  notThereSuspicion: 8 # he walks into the place she named and she is not there
+  tasks:
+    - { id: cook, loc: cafe.kitchen, minutes: [30, 60] }
+    - { id: tidy, loc: cafe.hall, minutes: [20, 40], clean: 6 }
+    - { id: bar, loc: cafe.bar, minutes: [15, 30] }
+    - { id: wash, loc: home.bathroom, minutes: [20, 35], her: { mood: 2 } }
+    - { id: rest, loc: home.bedroom, minutes: [20, 45], her: { energy: 5 } }
+    - { id: dress, loc: home.bedroom, minutes: [10, 20] }
 gym:
   fitness: 3            # what one session gives him, 0..100
   minutesPerSession: 0.1  # he lasts a little longer for it
@@ -30,6 +44,8 @@ gym:
   lateSuspicion: 3
 shop:                 # in town; she also buys for herself from her purse
   toys:               # size in cm; she uses the biggest one she can take when a night leaves her wanting
+    - { id: toy_plug, size: 9, price: 40 }      # small ones: of no use to her, a start for him
+    - { id: toy_slim, size: 11, price: 60 }
     - { id: toy_small, size: 14, price: 90 }
     - { id: toy_big, size: 18, price: 160 }
     - { id: toy_huge, size: 23, price: 260 }

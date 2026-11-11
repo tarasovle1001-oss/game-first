@@ -130,7 +130,7 @@ export interface ModApi {
   modId: string;
   actions: { register(def: ActionDef): void };
   phases: { register(def: PhaseDef): void };
-  locations: { register(def: LocationDef): void };
+  locations: { register(def: LocationDef): void; guard(check: (state: GameState, actor: string, from: string, to: string) => boolean): void };
   formulas: { addFactor<I = any>(formula: string, def: FactorDef<I>): void };
   scenes: { register(def: SceneDef): void };
   events: { on(type: string, handler: EventHandler, priority?: number): void };

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE , installment , husbandSees , sizeClass } from "@tc/base";
+import { annoyanceOf, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
 import { renderSchematic } from "@tc/schematics";
 import { engine } from "./game";
+import { pictureFor } from "./pack";
 import type { Lang, T } from "./game";
 
 export interface Common {
@@ -77,6 +78,43 @@ export function TopBar({ state, t }: Common) {
 
 // ---------------------------------------------------------------- log
 
+const LEWD = new Set(content.acts.filter((a) => a.tier >= 2).map((a) => a.id));
+/** What a log line is about, for its colour: money, something lewd, or plain business. */
+function kindOf(key: string, params: Record<string, unknown> | undefined): "money" | "lewd" | "system" {
+  const act = /^log\.act\.([a-z_]+)\./.exec(key)?.[1];
+  if (act) return LEWD.has(act) ? "lewd" : "system";
+  if (/^log\.(enc|bed|came|husband|night|bare|towels|caught|leave|annoyed|approach\.tease|answer\.tease|her\.(starts|compare|stretch|his)|gym\.(met|late|locker))/.test(key)) return "lewd";
+  if (/tip|income|rent|loan|buy|supplies|sold|paid|money|salary|market|side_job/.test(key) || ["tip", "money", "income"].some((k) => typeof params?.[k] === "number" && (params[k] as number) > 0)) return "money";
+  return "system";
+}
+const MONEY_KEYS = new Set(["tip", "money", "cost", "offer", "price", "income", "rent", "amount"]);
+/** A log line with its names, acts and sums picked out: every guest has his own colour, acts are pink, money is gold. */
+function richLine(e: { key: string; params?: Record<string, unknown> }, t: T, lang: Lang) {
+  const spans: { text: string; cls: string; hue?: number }[] = [];
+  const params: Record<string, string | number> = {};
+  for (const [k, v] of Object.entries(e.params ?? {})) {
+    let span: { text: string; cls: string; hue?: number } | null = null;
+    if (typeof v === "string" && v.startsWith("@name:")) span = { text: patronName(Number(v.slice(6)), lang), cls: "who", hue: (Number(v.slice(6)) * 47) % 360 };
+    else if (typeof v === "string" && v.startsWith("act.")) span = { text: t(v), cls: "pink" };
+    else if (typeof v === "number" && MONEY_KEYS.has(k)) span = { text: String(v), cls: "gold" };
+    if (span) {
+      params[k] = `\u0001${spans.length}\u0002`;
+      spans.push(span);
+    } else params[k] = typeof v === "string" ? t(v) : (v as number);
+  }
+  const text = t(e.key, params);
+  return text.split(/(\u0001\d+\u0002)/).map((part, i) => {
+    const m = /\u0001(\d+)\u0002/.exec(part);
+    if (!m) return <span key={i}>{part}</span>;
+    const sp = spans[Number(m[1])]!;
+    return (
+      <span key={i} className={sp.cls} style={sp.hue === undefined ? undefined : { color: `hsl(${sp.hue} 70% 74%)` }}>
+        {sp.text}
+      </span>
+    );
+  });
+}
+
 export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
   const entries = state.log.filter((e) => debug || !e.tags?.includes("unseen")).slice(-80).reverse();
   let lastDay = -1;
@@ -89,9 +127,9 @@ export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
         return (
           <div key={`${e.turn}-${i}`}>
             {dayMark && <div className="daymark">{t("ui.day", { day: e.day })}</div>}
-            <div className={`entry${unseen ? " unseen" : ""}`} title={unseen ? t("ui.unseen") : undefined}>
+            <div className={`entry k-${kindOf(e.key, e.params)}${unseen ? " unseen" : ""}`} title={unseen ? t("ui.unseen") : undefined}>
               <span className="time">{clockText(e.minute)}</span>
-              <span>{renderLog(e, t, lang)}</span>
+              <span>{richLine(e, t, lang)}</span>
             </div>
           </div>
         );
@@ -106,6 +144,25 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
   const b = bs(state);
   const layout = scene ? (content.scenes.find((s) => s.id === scene.type) ?? content.scenes.find((s) => s.id === "idle")!) : null;
   const wifeHere = state.where[WIFE] === state.where[HUSBAND];
+  // She is somewhere he cannot see: the panel still shows her. Clear in transparent mode, behind a blur otherwise.
+  const wifeShown = !!scene?.participants.some((p) => p.id === WIFE);
+  const enc = b.encounter;
+  const away: SceneDesc | null =
+    scene && !wifeShown && state.time.phase !== "summary"
+      ? enc
+        ? { type: content.acts.find((a) => a.id === enc.act)!.scene, location: enc.loc, participants: [{ id: WIFE, role: "wife" }, { id: enc.patron, role: "patron" }], tags: {} }
+        : { type: "idle", location: state.where[WIFE] ?? "", participants: [{ id: WIFE, role: "wife" }], tags: {} }
+      : null;
+  const awayLayout = away ? content.scenes.find((x) => x.id === away.type) : null;
+  const awayPicture = away ? pictureFor(away, state.time.day * 7 + state.turn) : null;
+  const awaySvg = away
+    ? renderSchematic(away.type === "idle" || !awayLayout ? [{ role: "wife", pose: "stand" as const, x: 0 }] : awayLayout.figures, {
+        title: open ? t(`scene.${awayLayout?.id ?? "idle"}`) : t("ui.scene.unseen"),
+        subtitle: t(`loc.${away.location}`),
+        legend: { wife: t("role.wife"), patron: t("role.patron"), husband: t("role.husband") },
+      })
+    : "";
+  const task = state.time.phase === "prep" ? b.day?.her?.task : undefined;
   const svg =
     scene && layout
       ? renderSchematic(
@@ -126,7 +183,15 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
   const record = visible && subject ? [...b.proposals].reverse().find((p) => p.patron === subject && (subject === HUSBAND || p.verdict !== "refuse")) : undefined;
   return (
     <div className="scene">
-      {picture && scene && layout ? (
+      {away ? (
+        awayPicture ? (
+          <div className={`picture photo${open ? "" : " veiled"}`}>
+            <img src={awayPicture.url} alt="" />
+          </div>
+        ) : (
+          <div className={`picture${open ? "" : " veiled"}`} dangerouslySetInnerHTML={{ __html: awaySvg }} />
+        )
+      ) : picture && scene && layout ? (
         <div className="picture photo">
           <img src={picture.url} alt={t(`scene.${layout.id}`)} />
           <div className="photo-cap">
@@ -137,7 +202,12 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
       ) : (
         <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
       )}
-      {!wifeHere && <div className="hint">{t("ui.not_here")}</div>}
+      {!wifeHere && (
+        <div className="hint">
+          {t("ui.not_here")} {t("ui.her.doing", { name: b.heroine.name ?? t("role.wife"), what: task ? t(`her.task.${task}`) : t(`loc.${state.where[WIFE]}`) })}
+        </div>
+      )}
+      <SizeLine state={state} t={t} lang={lang} open={open} />
       {b.encounter && b.shift && husbandSees(state, b.encounter.loc) && (
         <div className="meters">
           {(() => {
@@ -169,6 +239,34 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
         </div>
       )}
       {record && <WhyLine record={record} state={state} t={t} lang={lang} open={open} />}
+    </div>
+  );
+}
+
+/** How much of him there is next to what she is used to, and what it does for her: shown while something is going on. */
+function SizeLine({ state, t, open }: Common) {
+  const b = bs(state);
+  const sex = b.night?.sex;
+  const enc = b.encounter;
+  const seen = enc ? husbandSees(state, enc.loc) || !!open : false;
+  const p = enc ? b.patrons[enc.patron] : undefined;
+  const actId = sex?.act ?? (enc && enc.hisRate > 0 && seen && p ? enc.act : undefined);
+  const act = actId ? content.acts.find((a) => a.id === actId) : undefined;
+  if (!act) return null;
+  const size = sex ? b.husband.size : p!.size;
+  const zone = act.zones.includes("anus") ? "anus" : act.zones.includes("vagina") ? "vagina" : act.zones.includes("mouth") ? "mouth" : null;
+  const fit = zone ? fitOf(state, zone) : null;
+  const hearts = Math.max(0, Math.min(5, Math.round(pleasureFor(state, act, size) / 20)));
+  const MAX = 40;
+  return (
+    <div className="sizeline" title={t(`size.${sizeClass(size)}`)}>
+      <span>{t("ui.size.his", { cm: size })}</span>
+      <div className="track">
+        <div className="len" style={{ width: `${Math.min(100, (size / MAX) * 100)}%` }} />
+        {fit !== null && <div className="fit" style={{ left: `${Math.min(100, (fit / MAX) * 100)}%` }} title={t("ui.size.fit", { cm: Math.round(fit) })} />}
+      </div>
+      {fit !== null && <span className="muted small">{t("ui.size.fit", { cm: Math.round(fit) })}</span>}
+      <span className="hearts">{"♥".repeat(hearts) + "♡".repeat(5 - hearts)}</span>
     </div>
   );
 }
@@ -310,15 +408,24 @@ export function HeroineTab({ state, t, open }: Common) {
   return (
     <div>
       <div className="cap">{t("ui.state")}</div>
-      {(["energy", "mood", "arousal", "drunk"] as const).map((k) => (
-        <Bar key={k} label={t(`stat.${k}`)} value={h[k]} tone={tones[k]} />
-      ))}
-      <Bar label={t("stat.satisfied")} value={h.satisfied} />
-      <div className="cap gap">{t("ui.character")}</div>
-      {(Object.keys(h.traits) as (keyof typeof h.traits)[]).map((k) => (
-        <Bar key={k} label={t(`trait.${k}`)} value={h.traits[k]} />
-      ))}
-      <Bar label={t("stat.sizeTaste")} value={h.sizeTaste} />
+      {(["energy", "mood", "arousal", "drunk"] as const)
+        .filter((k) => open || k !== "arousal")
+        .map((k) => (
+          <Bar key={k} label={t(`stat.${k}`)} value={h[k]} tone={tones[k]} />
+        ))}
+      {open && <Bar label={t("stat.satisfied")} value={h.satisfied} />}
+      {open && <Bar label={t("ui.annoyance")} value={annoyanceOf(state)} tone="amber" />}
+      {!open && annoyanceOf(state) >= content.manners.talk.annoy.tired && <div className="small bad">{t("ui.annoyed.seems")}</div>}
+      {!open && <div className="muted small">{t("ui.hidden.hint")}</div>}
+      {open && (
+        <>
+          <div className="cap gap">{t("ui.character")}</div>
+          {(Object.keys(h.traits) as (keyof typeof h.traits)[]).map((k) => (
+            <Bar key={k} label={t(`trait.${k}`)} value={h.traits[k]} />
+          ))}
+          <Bar label={t("stat.sizeTaste")} value={h.sizeTaste} />
+        </>
+      )}
       {open && h.frustration > 0 && <Bar label={t("stat.frustration")} value={h.frustration} />}
       {open && bs(state).gossip > 0 && <Bar label={t("ui.gossip")} value={bs(state).gossip} />}
       <div className="cap gap">{t("ui.directive")}</div>

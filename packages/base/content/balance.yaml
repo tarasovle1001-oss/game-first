@@ -54,9 +54,10 @@ shift:
   hours: 6
   minutesPerTick: 1    # the evening is counted in minutes; slow things still run every 10 (event shift:tick)
   seats: 8
-  arrivalsPerHour: 1.9 # expected new guests per hour at reputation 50
+  arrivalsPerHour: 1.3 # expected new guests per hour at reputation 50
   stayMinutes: [50, 130]
-  orderEveryMinutes: 35 # a guest wants a new order this often
+  billFactor: 1.55     # fewer, bigger orders: every bill is this much above what the guest type spends
+  orderEveryMinutes: 55 # a guest wants a new order this often
   maxWaitMinutes: 45 # he walks out after waiting this long
   energyPerServe: 2
   regularAfterVisits: 3

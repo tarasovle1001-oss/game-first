@@ -4,7 +4,7 @@
 zone: cafe
 rooms:
   - id: cafe.hall
-    links: [cafe.bar, cafe.toilet, home.bedroom, hotel.landing]
+    links: [cafe.bar, cafe.toilet, home.bedroom, hotel.landing, town.square]
     tags: [public, work]
     sees: [cafe.bar]
     map: { x: 1, y: 1, w: 2, h: 1 }

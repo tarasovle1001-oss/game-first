@@ -20,11 +20,14 @@ export const rushStrategy: Strategy = (actions) =>
 
 /** Plays like a careful owner: buys supplies and pays the debt in prep, never moves. */
 export const ownerStrategy: Strategy = (actions, state) =>
+  actions.find((a) => a.type === "base/prep-wait" && a.payload?.until === "done") ?? // sees through what he has started
   actions.find((a) => a.type === "base/loan-pay") ??
   (state.mods.base.stock < 45 ? actions.find((a) => a.type === "base/buy-supplies") : undefined) ??
   (state.mods.base.clean < 60 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "clean") : undefined) ??
+  // the side job and the flyers are in town: he walks to the square while the afternoon is young
   actions.find((a) => a.type === "base/day" && a.payload?.do === "side_job") ??
   (state.mods.base.money > 150 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "flyers") : undefined) ??
+  (state.time.phase === "prep" && state.mods.base.day.left > 300 && state.where.husband === "cafe.hall" && !state.mods.base.day.done.includes("side_job") ? actions.find((a) => a.type === CORE_MOVE && a.payload?.to === "town.square") : undefined) ??
   (state.mods.base.money > 400 ? actions.find((a) => a.type === "base/repay-debt") : undefined) ??
   (state.mods.base.encounter ? actions.find((a) => a.type === "base/serve") : undefined) ??
   actions.find((a) => a.type === CORE_ADVANCE) ??

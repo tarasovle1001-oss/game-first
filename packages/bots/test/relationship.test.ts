@@ -18,14 +18,15 @@ function untilPrivateEncounter(seed: number): GameState {
   let s = engine.init(seed);
   for (let i = 0; i < 100000; i++) {
     const enc = bs(s).encounter;
-    if (enc && enc.loc !== "cafe.hall") return s;
+    // walking there takes a minute a room now: only a moment he actually arrives in time for counts
+    if (enc && enc.loc !== "cafe.hall" && bs(walkIn(s)).caught) return s;
     const actions = engine.listActions(s);
     const step = s.time.phase === "shift" && s.where.husband === "cafe.kitchen" ? (actions.some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: 10 } } : undefined) : undefined;
     s = engine.dispatch(s, step ?? awayStrategy(actions, s, () => 0));
   }
   throw new Error("no private encounter happened");
 }
-const walkIn = (s: GameState): GameState => {
+function walkIn(s: GameState): GameState {
   const loc = bs(s).encounter!.loc;
   // shortest way through the building
   const links = new Map(engine.locations().map((l) => [l.id, l.links ?? []]));
@@ -39,7 +40,7 @@ const walkIn = (s: GameState): GameState => {
   for (let at = loc; from.get(at); at = from.get(at)!) path.unshift(at);
   for (const to of path) s = engine.dispatch(s, { type: CORE_MOVE, actor: "husband", payload: { to } });
   return s;
-};
+}
 const toNight = (s: GameState): GameState => {
   while (s.time.phase !== "night") {
     const actions = engine.listActions(s);
@@ -209,7 +210,7 @@ describe("the bedroom scene", () => {
   });
   it("with a toy in the house she can take him, and his body learns", () => {
     let s = start((b) => {
-      b.toys = ["toy_big"];
+      b.toys = ["toy_slim"];
       b.heroine.traits.openness = 95;
     });
     expect(engine.listActions(s).some((a) => a.type === BED && a.payload?.to === "pegging")).toBe(true);
@@ -315,6 +316,7 @@ describe("what she thinks he allows", () => {
 describe("the two of them", () => {
   it("each small thing works once a day", () => {
     let s = engine.init(5);
+    s = engine.dispatch(s, { type: CORE_MOVE, actor: "husband", payload: { to: "cafe.bar" } }); // she is behind the bar
     const before = bs(s).heroine.mood;
     expect(engine.listActions(s).some((a) => a.type === TALK && a.payload?.do === "compliment")).toBe(true);
     s = engine.dispatch(s, { type: TALK, payload: { do: "compliment", group: "chat" } });
@@ -324,6 +326,7 @@ describe("the two of them", () => {
   });
   it("saying it in words sets what she thinks he allows, for the whole kind of thing", () => {
     let s = engine.init(5);
+    s = engine.dispatch(s, { type: CORE_MOVE, actor: "husband", payload: { to: "cafe.bar" } }); // she is behind the bar
     s = engine.dispatch(s, { type: TELL, payload: { group: "touching", say: "allow" } });
     expect(expectOf(s, "kiss")).toBeGreaterThanOrEqual(70);
     expect(expectOf(s, "sex")).toBeLessThan(70); // a yes to kisses is not a yes to everything
@@ -561,6 +564,9 @@ describe("what she does to him", () => {
     expect(offered(s)).not.toContain("dildo_him");
     expect(offered(s)).not.toContain("fisting_him");
     const ready = structuredClone(s);
+    const tooBig = structuredClone(s);
+    tooBig.mods.base.toys = ["toy_big"]; // 18 cm is not where he starts
+    expect(offered(tooBig)).not.toContain("dildo_him");
     ready.mods.base.toys = ["toy_small"];
     ready.mods.base.husband.stretch = 100;
     expect(offered(ready)).toContain("dildo_him");

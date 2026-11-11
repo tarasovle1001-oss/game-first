@@ -35,7 +35,10 @@ export const bareMargin = (state: GameState, off: Exclude<Bare, "none">, where =
   const likesEyes = h.latents.exhibitionist !== undefined && where !== "bedroom" ? D.exhibitionist : 0;
   const habit = Math.min(D.habitMax, (b.bareTimes ?? 0) * D.perTime);
   const marriage = where === "hall" ? 0 : (h.marriage.desire - 50) * D.perDesire;
-  return h.traits.openness + h.arousal * D.perArousal + h.drunk * D.perDrunk + likesEyes + habit + marriage - D.need[where]![off];
+  // at night in their own bed it is a different question than in the middle of the day
+  const taste = where === "bedroom" ? 0 : ((h.prefs?.show ?? 50) - 50) * D.perShowTaste;
+  const bedtime = where === "bedroom" && state.time.phase === "night" ? D.night : 0;
+  return taste + bedtime - (h.annoyance ?? 0) * content.manners.talk.annoy.strip + h.traits.openness + h.arousal * D.perArousal + h.drunk * D.perDrunk + likesEyes + habit + marriage - D.need[where]![off];
 };
 
 const guestsSee = (ctx: Ctx, first: boolean) => {
@@ -66,7 +69,7 @@ export function registerDress(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       if (state.time.phase === "summary" || b.encounter || b.caught || b.reaction || b.night?.sex) return [];
-      if (state.where[HUSBAND] !== state.where[WIFE] || !state.where[WIFE]) return [];
+      if (state.where[HUSBAND] !== state.where[WIFE] || !state.where[WIFE] || b.day?.busy) return [];
       const now = bareOf(state);
       const stamp = `${state.time.day}:${state.time.phase}`;
       const asks = b.bareRefused === stamp ? [] : LEVELS.filter((l) => l !== now);
@@ -90,6 +93,7 @@ export function registerDress(api: ModApi) {
         b.bareRefused = `${ctx.state.time.day}:${ctx.state.time.phase}`;
         if (margin < -D.offended) h.marriage.resent = clamp(h.marriage.resent + D.refuseResent);
         ctx.log(`log.bare.no.${where}${margin < -D.offended ? ".offended" : ""}`, { what: `bare.${off}` });
+        ctx.emit("bare:asked", { off, ok: false });
         return;
       }
       h.bare = off;
@@ -100,6 +104,7 @@ export function registerDress(api: ModApi) {
       // what he feels about it depends on whether this was ever his secret to keep
       if (where === "hall") ctx.log(b.mode === "open" ? "log.bare.husband.open" : "log.bare.husband.hidden");
       guestsSee(ctx, true);
+      ctx.emit("bare:asked", { off, ok: true });
       ctx.emit("bare:changed", { to: off, where });
     },
   });

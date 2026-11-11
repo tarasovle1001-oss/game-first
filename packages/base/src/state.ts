@@ -22,6 +22,9 @@ export interface Heroine {
   marriage: { desire: number; resent: number }; // what she feels for her husband, 0..100
   outfit: string;
   bare?: Bare; // what she has taken off, on top of the outfit
+  name?: string; // what she is called
+  prefs?: Record<string, number>; // tastes set at the start, 0..100 each
+  annoyance?: number; // 0..100: how much she has had of being asked and pawed at today
   tastes: { acts: Record<string, number>; types: Record<string, number> }; // what she has come to like
   latents: Record<string, true>; // hidden sides she has; absent = she does not have it
 }
@@ -201,7 +204,7 @@ export interface BaseState {
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
   told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
-  day: { left: number; done: string[]; arrivals: number; herOut?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
+  day: { left: number; done: string[]; arrivals: number; herOut?: boolean; busy?: { id: string; left: number }; her?: { task: string; left: number }; tripped?: boolean; cover?: string; coverSeen?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
   clean: number; // 0..100, how the room looks
   owned: string[]; // outfits she has
   toys: string[];

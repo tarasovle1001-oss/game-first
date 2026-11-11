@@ -2,7 +2,7 @@
 // one-off upgrades for the cafe, and what she does with her own money while he is not looking.
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
-import { bs, clamp } from "../state";
+import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { fitOf, resolveBody } from "./body";
 import { addMoney, addReputation } from "./economy";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
@@ -13,6 +13,8 @@ import type { TipInput } from "./shift";
 
 export const DAY_DO = "base/day";
 export const BUY = "base/buy";
+export const PREP_WAIT = "base/prep-wait";
+export const DAY_STOP = "base/day-stop";
 const D = content.day;
 const bal = content.balance;
 const opening = bal.shift.opensAt * 60;
@@ -20,11 +22,101 @@ const canPay = (state: GameState, cost: number) => bs(state).money >= cost || bs
 const has = (state: GameState, id: string) => bs(state).upgrades.includes(id);
 export const hasUpgrade = has;
 
-const spend = (ctx: Ctx, minutes: number) => {
-  const day = bs(ctx.state).day!;
-  day.left = Math.max(0, day.left - minutes);
-  ctx.state.time.minute = opening - day.left;
+const inTown = (loc: string | undefined) => !!loc?.startsWith("town.");
+/** Where an activity can be done: "cafe" = anywhere at home, otherwise one place in town. */
+const isAt = (state: GameState, at: string | undefined) => {
+  const here = state.where[HUSBAND];
+  return !at || (at === "cafe" ? !inTown(here) : here === at);
 };
+type Activity = (typeof D.activities)[number];
+
+/** What an afternoon activity does once the time for it has been put in. */
+function finish(ctx: Ctx, a: Activity) {
+  const b = bs(ctx.state);
+  b.day!.done.push(a.id);
+  b.day!.busy = undefined;
+  if (a.money) addMoney(ctx, a.money, a.id);
+  if (a.clean) b.clean = clamp(b.clean + a.clean);
+  if (a.arrivals) b.day!.arrivals += a.arrivals;
+  if (a.stock) b.stock += a.stock;
+  for (const [k, v] of Object.entries(a.her ?? {})) {
+    if (k === "desire" || k === "resent") b.heroine.marriage[k] = clamp(b.heroine.marriage[k] + v);
+    else changeHeroine(ctx, k as "mood", v, a.id);
+  }
+  if (a.gym) gym(ctx, a.gym === "together");
+  else if (a.gossip) {
+    // what he hears depends on how much there is to hear; hearing it is not the same as knowing
+    const G = content.secrecy.gossip;
+    const level = b.gossip < G.noticeFrom ? "none" : b.gossip < 40 ? "some" : b.gossip < 70 ? "much" : "all";
+    ctx.log(`log.day.ask_around.${level}`);
+    if (level !== "none" && b.mode === "hidden") b.suspicion = clamp(b.suspicion + (level === "some" ? 4 : level === "much" ? 9 : 15) * content.secrecy.styleFactor[b.husband.style]);
+  } else ctx.log(`log.day.${a.id}`, { money: a.money ?? 0, cost: a.cost ?? 0, stock: b.stock });
+  ctx.emit("day:did", { do: a.id });
+}
+
+/** What she does with her own afternoon, one thing after another. */
+function herNext(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const day = b.day!;
+  if (day.herOut) {
+    // out on her own until late in the afternoon. She says where she is going; it is not where she is
+    day.her = { task: "away", left: Math.min(day.left, D.herDay.awayMinutes) };
+    day.cover = ctx.rng.pick(D.herDay.trips);
+    ctx.state.where[WIFE] = "town.far";
+    ctx.log("log.her.trip", { where: `loc.${day.cover}` });
+    return;
+  }
+  // once a day she may have an errand of her own in town: the shops, the market, the gym. This one is what it looks like
+  if (day.her && !day.tripped && day.left > D.herDay.tripMinutes[1] + 60 && ctx.rng.chance(D.herDay.tripChance)) {
+    day.tripped = true;
+    const to = ctx.rng.pick(D.herDay.trips);
+    day.her = { task: "away", left: ctx.rng.int(D.herDay.tripMinutes[0], D.herDay.tripMinutes[1]) };
+    ctx.state.where[WIFE] = to;
+    ctx.log("log.her.trip", { where: `loc.${to}` });
+    return;
+  }
+  const options = D.herDay.tasks.filter((t) => t.id !== day.her?.task);
+  // the day starts behind the bar, then one thing after another
+  const t = day.her ? ctx.rng.pick(options) : D.herDay.tasks.find((x) => x.id === "bar")!;
+  day.her = { task: t.id, left: ctx.rng.int(t.minutes[0], t.minutes[1]) };
+  ctx.state.where[WIFE] = t.loc;
+}
+function herDone(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const day = b.day!;
+  const t = D.herDay.tasks.find((x) => x.id === day.her?.task);
+  if (day.her?.task === "away") {
+    day.herOut = false; // she is back
+    ctx.log("log.her.back");
+  }
+  if (t?.clean) b.clean = clamp(b.clean + t.clean);
+  for (const [k, v] of Object.entries(t?.her ?? {})) changeHeroine(ctx, k as "mood", v, t!.id);
+  herNext(ctx);
+}
+
+/** The afternoon moves a minute at a time: his work gets done, she goes about hers. */
+export function passPrep(ctx: Ctx, minutes: number) {
+  const b = bs(ctx.state);
+  const day = b.day;
+  if (!day || ctx.state.time.phase !== "prep") return;
+  for (let i = 0; i < minutes && day.left > 0; i++) {
+    day.left -= 1;
+    ctx.state.time.minute = opening - day.left;
+    if (day.busy) {
+      day.busy.left -= 1;
+      if (day.busy.left <= 0) finish(ctx, D.activities.find((x) => x.id === day.busy!.id)!);
+    }
+    if (day.her && day.her.task !== "with_you") {
+      day.her.left -= 1;
+      if (day.her.left <= 0) herDone(ctx);
+    } else if (day.her?.task === "with_you" && !day.busy) herNext(ctx);
+    if (day.left % 10 === 0) {
+      const h = b.heroine;
+      h.annoyance = Math.max(0, (h.annoyance ?? 0) - content.manners.talk.annoy.coolPrep);
+      ctx.emit("prep:tick", { left: day.left });
+    }
+  }
+}
 
 /** What she buys or does with her own purse, at most one thing a day. */
 function herMorning(ctx: Ctx) {
@@ -166,6 +258,7 @@ export function registerDay(api: ModApi) {
       b.day = { left: D.minutes, done: [], arrivals: 0 };
       ctx.state.time.minute = opening - D.minutes;
       if (ctx.state.time.day > 1) herMorning(ctx);
+      herNext(ctx);
     },
     -10, // after the clock is set for the phase
   );
@@ -186,44 +279,87 @@ export function registerDay(api: ModApi) {
     },
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase !== "prep" || !b.day) return [];
+      if (state.time.phase !== "prep" || !b.day || b.day.busy) return [];
       const day = b.day;
+      // doing something together needs her within reach: at home with him, or not out on her own
+      const herFree = (a: Activity) => !a.withHer || (!day.herOut && day.her?.task !== "away");
       return D.activities
-        .filter((a) => !day.done.includes(a.id) && a.minutes <= day.left && (!a.needs || day.done.includes(a.needs)) && !(day.herOut && a.withHer) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
+        .filter((a) => !day.done.includes(a.id) && a.minutes <= day.left && isAt(state, a.at) && herFree(a) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
         .map((a) => ({ type: DAY_DO, payload: { do: a.id } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const a = D.activities.find((x) => x.id === action.payload!.do)!;
-      b.day!.done.push(a.id);
-      spend(ctx, a.minutes);
       if (a.cost) addMoney(ctx, -a.cost, a.id);
-      if (a.money) addMoney(ctx, a.money, a.id);
-      if (a.clean) b.clean = clamp(b.clean + a.clean);
-      if (a.arrivals) b.day!.arrivals += a.arrivals;
-      if (a.stock) b.stock += a.stock;
-      for (const [k, v] of Object.entries(a.her ?? {})) {
-        if (k === "desire" || k === "resent") b.heroine.marriage[k] = clamp(b.heroine.marriage[k] + v);
-        else changeHeroine(ctx, k as "mood", v, a.id);
+      b.day!.busy = { id: a.id, left: a.minutes };
+      if (a.withHer) {
+        // she comes along and stays with him for as long as it takes
+        ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
+        b.day!.her = { task: "with_you", left: a.minutes };
       }
-      if (a.gym) {
-        gym(ctx, a.gym === "together");
-        ctx.emit("day:did", { do: a.id });
-        return;
-      }
-      if (a.gossip) {
-        // what he hears depends on how much there is to hear; hearing it is not the same as knowing
-        const G = content.secrecy.gossip;
-        const level = b.gossip < G.noticeFrom ? "none" : b.gossip < 40 ? "some" : b.gossip < 70 ? "much" : "all";
-        ctx.log(`log.day.ask_around.${level}`);
-        if (level !== "none" && b.mode === "hidden") b.suspicion = clamp(b.suspicion + (level === "some" ? 4 : level === "much" ? 9 : 15) * content.secrecy.styleFactor[b.husband.style]);
-        ctx.emit("day:did", { do: a.id });
-        return;
-      }
-      ctx.log(`log.day.${a.id}`, { money: a.money ?? 0, cost: a.cost ?? 0, stock: b.stock });
-      ctx.emit("day:did", { do: a.id });
+      ctx.log("log.day.start", { what: `day.${a.id}`, minutes: a.minutes });
+      ctx.emit("day:started", { do: a.id });
     },
   });
+  // Dropping it half way: the time is gone, and so is the money.
+  api.actions.register({
+    id: DAY_STOP,
+    labelKey: "action.day.stop",
+    enumerate: (state) => (state.time.phase === "prep" && bs(state).day?.busy ? [{ type: DAY_STOP }] : []),
+    apply(ctx) {
+      const day = bs(ctx.state).day!;
+      ctx.log("log.day.stop", { what: `day.${day.busy!.id}` });
+      day.busy = undefined;
+    },
+  });
+  // The afternoon is waited through like the evening: a stretch at a time, or until what he is doing is done.
+  api.actions.register({
+    id: PREP_WAIT,
+    labelKey: "action.wait",
+    describe: (a) => (a.payload?.until ? { key: "action.wait.done" } : { key: "action.wait.minutes", params: { minutes: a.payload!.minutes as number } }),
+    enumerate(state) {
+      const day = bs(state).day;
+      if (state.time.phase !== "prep" || !day || day.left <= 0) return [];
+      const out: { type: string; payload: Record<string, string | number> }[] = [5, 15, 60].filter((m) => m <= Math.max(5, day.left)).map((m) => ({ type: PREP_WAIT, payload: { minutes: m } }));
+      if (day.busy) out.push({ type: PREP_WAIT, payload: { until: "done" } });
+      return out;
+    },
+    accepts: (state, a) => state.time.phase === "prep" && !!bs(state).day && (a.payload?.until === "done" ? !!bs(state).day!.busy : Number.isInteger(a.payload?.minutes) && (a.payload!.minutes as number) > 0),
+    apply(ctx, action) {
+      const day = bs(ctx.state).day!;
+      passPrep(ctx, action.payload?.until ? (day.busy?.left ?? 0) : (action.payload!.minutes as number));
+    },
+  });
+  // Walking takes time too; walking off in the middle of something drops it.
+  api.events.on("entity:moved", (ctx, e) => {
+    if (e.payload!.id !== HUSBAND || ctx.state.time.phase !== "prep") return;
+    const day = bs(ctx.state).day;
+    if (!day) return;
+    if (day.busy) {
+      ctx.log("log.day.stop", { what: `day.${day.busy.id}` });
+      day.busy = undefined;
+    }
+    // she said she would be here, and she is not
+    if (day.herOut && day.cover === e.payload!.to && !day.coverSeen && bs(ctx.state).mode === "hidden") {
+      day.coverSeen = true;
+      bs(ctx.state).suspicion = clamp(bs(ctx.state).suspicion + D.herDay.notThereSuspicion * content.secrecy.styleFactor[bs(ctx.state).husband.style]);
+      ctx.log("log.her.not_there", { where: `loc.${day.cover}` });
+    }
+    const far = inTown(e.payload!.from as string) !== inTown(e.payload!.to as string);
+    passPrep(ctx, far ? D.herDay.walkToTown : inTown(e.payload!.to as string) ? D.herDay.walkInTown : 1);
+  });
+  // The town is a place for the afternoon; he is back behind the door by opening time.
+  api.locations.guard((state, actor, _from, to) => actor !== HUSBAND || !inTown(to) || (state.time.phase === "prep" && (bs(state).day?.left ?? 0) > D.herDay.walkToTown * 2));
+  api.events.on(
+    "phase:enter",
+    (ctx, e) => {
+      if (e.payload!.phase !== "shift") return;
+      if (inTown(ctx.state.where[HUSBAND])) ctx.state.where[HUSBAND] = "cafe.hall";
+      if (inTown(ctx.state.where[WIFE])) ctx.state.where[WIFE] = "cafe.bar";
+      if (bs(ctx.state).day) bs(ctx.state).day!.busy = undefined;
+    },
+    50,
+  );
 
   // Shops (in town) and upgrades (any afternoon).
   api.actions.register({
@@ -234,7 +370,8 @@ export function registerDay(api: ModApi) {
       const b = bs(state);
       if (state.time.phase !== "prep" || !b.day) return [];
       const out: { type: string; payload: Record<string, string | number> }[] = [];
-      if (b.day.done.includes("town")) {
+      if (b.day.busy) return [];
+      if (state.where[HUSBAND] === "town.shops") {
         for (const o of content.outfits) if (!b.owned.includes(o.id) && b.money >= o.price) out.push({ type: BUY, payload: { kind: "outfit", id: o.id, cost: o.price } });
         for (const t of D.shop.toys) if (!b.toys.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
       }
@@ -298,6 +435,7 @@ export function registerDay(api: ModApi) {
     if (b.clean < 0 || b.clean > 100) return `cleanliness out of range: ${b.clean}`;
     if (b.purse < 0) return `her purse is negative: ${b.purse}`;
     if (b.day && (b.day.left < 0 || b.day.left > D.minutes)) return `afternoon minutes out of range: ${b.day.left}`;
+    if (b.day?.busy && !D.activities.some((a) => a.id === b.day!.busy!.id)) return `unknown activity in progress: ${b.day.busy.id}`;
     for (const id of b.owned) if (!content.outfits.some((o) => o.id === id)) return `unknown outfit owned: ${id}`;
     if (!b.owned.includes(b.heroine.outfit)) return `she wears an outfit she does not own: ${b.heroine.outfit}`;
     return null;

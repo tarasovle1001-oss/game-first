@@ -18,7 +18,7 @@ const ask = (s: GameState, off: string) => engine.dispatch(s, { type: STRIP, pay
 
 describe("how much she has on", () => {
   it("in the bedroom an ordinary wife undresses for him; in the cafe she does not", () => {
-    const home = together(3, () => {}, "home.bedroom");
+    const home = together(3, (b) => (b.heroine.traits.openness = 45), "home.bedroom");
     expect(eyesOn(home)).toBe("bedroom");
     expect(bareOf(ask(home, "all"))).toBe("all");
     const cafe = together(3, () => {}, "cafe.kitchen");
@@ -29,9 +29,9 @@ describe("how much she has on", () => {
     expect(engine.listActions(no).some((a) => a.type === STRIP)).toBe(false);
   });
   it("the same ask is easier for an open wife, and easier still for one who likes being looked at", () => {
-    const plain = together(3, (b) => (b.heroine.traits.openness = 70), "cafe.kitchen");
+    const plain = together(3, (b) => (b.heroine.traits.openness = 85), "cafe.kitchen");
     const shows = together(3, (b) => {
-      b.heroine.traits.openness = 70;
+      b.heroine.traits.openness = 85;
       b.heroine.latents.exhibitionist = true;
     }, "cafe.kitchen");
     expect(bareMargin(plain, "top")).toBeGreaterThan(0);
@@ -39,7 +39,7 @@ describe("how much she has on", () => {
     expect(bareMargin(plain, "all", "hall")).toBeLessThan(0);
   });
   it("she dresses when told, and the picture key follows what she has on", () => {
-    const s = together(3, () => {}, "home.bedroom");
+    const s = together(3, (b) => (b.heroine.traits.openness = 60), "home.bedroom");
     const top = ask(s, "top");
     expect(dressOf(top)).toBe("topless");
     expect(dressOf(ask(top, "all"))).toBe("naked");

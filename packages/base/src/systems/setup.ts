@@ -14,7 +14,15 @@ export interface BaseSetup {
   husband?: Partial<Husband>;
   mode?: Mode;
   desire?: number;
+  /** Her name, as the menus address her. */
+  name?: string;
+  /** What she has a taste for, 0..100 each (50 = neither way): oral, anal, show, romance, rough, drink. From 80 it is a side of her. */
+  tastes?: Partial<Record<TasteId, number>>;
 }
+export const TASTES = ["oral", "anal", "show", "romance", "rough", "drink"] as const;
+export type TasteId = (typeof TASTES)[number];
+/** The hidden side a taste turns into at the top of its slider. */
+export const TASTE_LATENT: Record<TasteId, string> = { oral: "oral_fixation", anal: "anal_lover", show: "exhibitionist", romance: "romantic", rough: "likes_rough", drink: "tipsy_loose" };
 
 export function registerSetup(api: ModApi) {
   api.events.on(
@@ -38,6 +46,18 @@ export function registerSetup(api: ModApi) {
         for (const id of setup.latents) if (content.latents.some((l) => l.id === id)) h.latents[id] = true;
       }
       if (typeof setup.desire === "number") h.marriage.desire = clamp(setup.desire);
+      if (typeof setup.name === "string" && setup.name.trim()) h.name = setup.name.trim().slice(0, 24);
+      for (const id of TASTES) {
+        const v = setup.tastes?.[id];
+        if (typeof v !== "number") continue;
+        h.prefs = { ...(h.prefs ?? {}), [id]: clamp(v) };
+        // the slider is the last word on that side of her: on from 80, off below
+        if (v >= 80) h.latents[TASTE_LATENT[id]] = true;
+        else delete h.latents[TASTE_LATENT[id]];
+        // what she does with her mouth, or takes behind, starts liked or disliked accordingly
+        const zone = id === "oral" ? "mouth" : id === "anal" ? "anus" : null;
+        if (zone) for (const a of content.acts) if (a.zones.includes(zone)) h.tastes.acts[a.id] = Math.round((v - 50) * 0.6);
+      }
       if (setup.husband) {
         const u = setup.husband;
         if (typeof u.size === "number") b.husband.size = clamp(u.size, 5, 30);

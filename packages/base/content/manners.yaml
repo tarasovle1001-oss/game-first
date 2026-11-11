@@ -3,7 +3,7 @@ directives:
   reserved: { consent: -14, maxTier: 99, tip: -0.1 } # "keep your distance": holds her back at every step
   natural: { consent: 0, maxTier: 99, tip: 0 }
   friendly: { consent: 9, maxTier: 4, tip: 0.12 }    # "be nice to the guests": helps up to this tier only
-askOutfitBonus: 14 # his asking lowers the openness an outfit needs by this much
+askOutfitBonus: 6  # his asking lowers the openness an outfit needs by this much
 taste: # her taste for an act (and for a type of man) moves with experience
   came: 4
   eager: 0.8
@@ -47,9 +47,11 @@ talk: # small things between the two of them; each once a day
     - { id: sex, tiers: [7, 9] }
   bare: # asked to undress: openness she needs, by who can see her
     need:
-      bedroom: { top: 8, bottom: 18, all: 24 }
-      private: { top: 42, bottom: 55, all: 62 }   # an empty room of the cafe
+      bedroom: { top: 18, bottom: 32, all: 40 }
+      private: { top: 60, bottom: 72, all: 80 }   # an empty room of the cafe
       hall: { top: 80, bottom: 92, all: 98 }      # guests are looking
+    perShowTaste: 0.3     # per point of her taste for being looked at above 50 (new-game slider)
+    night: 18             # at night in their own bedroom it is this much easier
     exhibitionist: 28     # she likes being looked at: counts outside the bedroom
     perArousal: 0.15
     perDrunk: 0.2
@@ -88,6 +90,23 @@ talk: # small things between the two of them; each once a day
     comfort: { mood: 7, resent: 1 }
     stretchSteps: [20, 45, 70, 90]  # her remarks about what her body takes now
     hisSteps: [20, 50, 80]          # and about what his has learned
+  annoy: # how much she has had of hands and asking today, 0..100
+    tired: 40            # from here touching is turned down: "not now"
+    done: 70             # from here she snaps
+    guestRefused: 4      # a guest asked for something (tier 2+) and she said no
+    guestHesitant: 3     # ...she let him, reluctantly
+    guestEager: 1        # ...she was glad to; even that adds up
+    guestPushed: 4       # he would not take the no
+    guestPushedFar: 8
+    husbandTouch: 2      # each hug, kiss, squeeze from him
+    husbandAsk: 3        # asking her to undress
+    husbandRefused: 5    # asking for what she turns down
+    cameRelief: 10       # coming takes some of it away
+    coolShift: 1.5       # per ten minutes of the evening nobody is on her
+    coolPrep: 2          # per ten minutes of the afternoon
+    keptOvernight: 0.25  # share of it still there the next day
+    consent: 0.15        # per point, against every ask (guests: from tier 2)
+    strip: 0.5           # per point, against undressing
   touchCum: { from: [hug, kiss_her, grab_ass], fromDenied: 2, base: 0.02, perDenied: 0.04, max: 0.5 } # he has gone without for days: a kiss can finish him
   complainAt: 30          # her resentment from which she brings it up herself
   complainEveryDays: 4

@@ -52,6 +52,7 @@ export function createEngine(modList: Mod[]): Engine {
   const actions = new Map<string, ActionDef>();
   const phases = new Map<string, PhaseDef>();
   const locations = new Map<string, LocationDef>();
+  const moveGuards: ((state: GameState, actor: string, from: string, to: string) => boolean)[] = [];
   const factors = new Map<string, FactorDef[]>();
   const scenes: SceneDef[] = [];
   const handlers = new Map<string, { handler: EventHandler; priority: number; seq: number }[]>();
@@ -67,7 +68,7 @@ export function createEngine(modList: Mod[]): Engine {
     modId,
     actions: { register: (def) => unique(actions, "action", def.id, def) },
     phases: { register: (def) => unique(phases, "phase", def.id, def) },
-    locations: { register: (def) => unique(locations, "location", def.id, def) },
+    locations: { register: (def) => unique(locations, "location", def.id, def), guard: (check) => void moveGuards.push(check) },
     formulas: {
       addFactor(formula, def) {
         const list = factors.get(formula) ?? [];
@@ -178,7 +179,7 @@ export function createEngine(modList: Mod[]): Engine {
       const out: Action[] = [];
       for (const [actor, at] of Object.entries(state.where)) {
         if (!state.mods.core.controllable.includes(actor)) continue;
-        for (const to of locations.get(at)?.links ?? []) out.push({ type: CORE_MOVE, actor, payload: { to } });
+        for (const to of locations.get(at)?.links ?? []) if (moveGuards.every((ok) => ok(state, actor, at, to))) out.push({ type: CORE_MOVE, actor, payload: { to } });
       }
       return out;
     },

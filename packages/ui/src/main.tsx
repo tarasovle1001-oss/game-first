@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT } from "@tc/base";
+import { ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, STRIP, WIFE, HUSBAND } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -85,13 +85,22 @@ function App() {
 
   const [herOpen, setHerOpen] = useState<string | null>(null);
   const all = engine.listActions(state);
-  const waits = all.filter((a) => a.type === WAIT);
+  const waits = all.filter((a) => a.type === WAIT || a.type === PREP_WAIT);
   const advance = all.find((a) => a.type === CORE_ADVANCE);
   const bed = all.filter((a) => a.type === BED);
-  const withHer = all.filter((a) => a.type === TALK || a.type === TELL);
-  const herGroups = (["chat", "touch", "tell"] as const).filter((g) => withHer.some((a) => (a.type === TELL ? "tell" : a.payload?.group) === g));
-  const herTab = herGroups.includes(herOpen as never) ? herOpen : null;
-  const other = all.filter((a) => a.type !== WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== TALK && a.type !== TELL && a.type !== ANSWER);
+  // Everything he does with her lives in one place, by kind: talk, touch, sex, requests, what he wants from her.
+  const SECTION: Record<string, string> = {
+    "base/night-act": "sex", "base/upstairs": "sex", "base/night-self": "sex", "base/night-decline": "sex",
+    [STRIP]: "ask", "base/ask-outfit": "ask", "base/outfit-back": "ask",
+    [TELL]: "want", "base/directive": "want", "base/order": "want",
+  };
+  const sectionOf = (a: Action) => (a.type === TALK ? (a.payload?.group as string) : SECTION[a.type]);
+  const withHer = all.filter((a) => sectionOf(a) !== undefined);
+  const herGroups = (["chat", "touch", "sex", "ask", "want"] as const).filter((g) => withHer.some((a) => sectionOf(a) === g));
+  const herTab = herOpen === "root" || herGroups.includes(herOpen as never) ? herOpen : null;
+  const herName = bs(state).heroine.name ?? t("role.wife");
+  const herNear = state.where[WIFE] === state.where[HUSBAND];
+  const other = all.filter((a) => a.type !== WAIT && a.type !== PREP_WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== ANSWER && sectionOf(a) === undefined);
   const answers = all.filter((a) => a.type === ANSWER);
   const otherGroups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
 
@@ -192,6 +201,7 @@ function App() {
         </section>
 
         <aside className="col-side">
+          {state.time.phase === "prep" && b.day?.busy && <div className="busy">{t("ui.busy", { what: t(`day.${b.day.busy.id}`), minutes: b.day.busy.left })}</div>}
           {waits.length > 0 && (
             <div className="card">
               <div className="card-title">{t("ui.wait")}</div>
@@ -240,39 +250,63 @@ function App() {
               </div>
             </div>
           )}
-          {withHer.length > 0 && (
+          {state.time.phase !== "summary" && (withHer.length > 0 || !herNear) && (
             <div className="card">
-              <div className="card-title">{t("ui.her.title")}</div>
-              <div className="chips">
-                {herGroups.map((g) => (
-                  <button key={g} className={herTab === g ? "on" : ""} onClick={() => setHerOpen(herTab === g ? null : g)}>
-                    {t(`ui.her.${g}`)}
-                  </button>
-                ))}
-              </div>
-              {herTab === "tell" && (
-                <div className="stack sub">
-                  {[...new Set(withHer.filter((a) => a.type === TELL).map((a) => a.payload!.group as string))].map((g) => (
-                    <div key={g} className="tell-row">
-                      <span>{t(`tell.${g}`)}</span>
-                      <button onClick={() => act({ type: TELL, payload: { group: g, say: "allow" } })}>{t("ui.tell.allow")}</button>
-                      <button className="deny" onClick={() => act({ type: TELL, payload: { group: g, say: "forbid" } })}>
-                        {t("ui.tell.forbid")}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {herTab && herTab !== "tell" && (
-                <div className="stack sub">
-                  {withHer
-                    .filter((a) => (a.type === TELL ? "tell" : a.payload?.group) === herTab)
-                    .map((a, i) => (
-                      <button key={i} className={a.payload?.say === "forbid" ? "deny" : ""} onClick={() => act(a)}>
-                        {actionLabel(a, t, lang)}
+              {!herNear && withHer.length === 0 ? (
+                <div className="muted small">{t("ui.her.far", { name: herName, where: t(`loc.${state.where[WIFE]}`) })}</div>
+              ) : herTab === null ? (
+                <button className="wide" onClick={() => setHerOpen("root")}>
+                  {t("ui.her.go", { name: herName })}
+                </button>
+              ) : herTab === "root" ? (
+                <>
+                  <div className="crumbs">
+                    <button className="link" onClick={() => setHerOpen(null)}>
+                      {t("ui.her.back")}
+                    </button>
+                    <b>{herName}</b>
+                  </div>
+                  <div className="stack">
+                    {herGroups.map((g) => (
+                      <button key={g} onClick={() => setHerOpen(g)}>
+                        {t(`ui.her.sec.${g}`)} <span className="muted">({g === "want" ? new Set(withHer.filter((a) => sectionOf(a) === g).map((a) => a.type + (a.payload?.group ?? a.payload?.value ?? a.payload?.id ?? ""))).size : withHer.filter((a) => sectionOf(a) === g).length})</span>
                       </button>
                     ))}
-                </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="crumbs">
+                    <button className="link" onClick={() => setHerOpen("root")}>
+                      {t("ui.her.back")}
+                    </button>
+                    <b>
+                      {herName} · {t(`ui.her.sec.${herTab}`)}
+                    </b>
+                  </div>
+                  {herTab === "want" && (
+                    <div className="stack sub">
+                      {[...new Set(withHer.filter((a) => a.type === TELL).map((a) => a.payload!.group as string))].map((g) => (
+                        <div key={g} className="tell-row">
+                          <span>{t(`tell.${g}`)}</span>
+                          <button onClick={() => act({ type: TELL, payload: { group: g, say: "allow" } })}>{t("ui.tell.allow")}</button>
+                          <button className="deny" onClick={() => act({ type: TELL, payload: { group: g, say: "forbid" } })}>
+                            {t("ui.tell.forbid")}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="stack sub">
+                    {withHer
+                      .filter((a) => sectionOf(a) === herTab && a.type !== TELL)
+                      .map((a, i) => (
+                        <button key={i} onClick={() => act(a)}>
+                          {actionLabel(a, t, lang)}
+                        </button>
+                      ))}
+                  </div>
+                </>
               )}
             </div>
           )}

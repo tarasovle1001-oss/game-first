@@ -66,6 +66,7 @@ his: # the husband's own body, for what she does to him
   powerPerPegging: 2
   peggingHerBase: 40  # what it gives her, plus her power over him
   peggingHerPerPower: 0.4
+  practice: 1.5       # stretch his body gains from any of these, on top of what a bigger size adds
   fingerSize: 6       # cm, for what her finger teaches his body
   fistSize: 20        # her hand: possible once he takes this much (with the tooBig margin)
   rimmingRate: 0.7    # his pace when she uses her tongue on him, against a plain handjob

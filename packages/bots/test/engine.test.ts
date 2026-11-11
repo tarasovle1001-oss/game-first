@@ -213,29 +213,71 @@ describe("i18n", () => {
 });
 
 describe("the afternoon", () => {
-  it("is a budget of minutes: activities spend it and the clock moves", () => {
+  const go = (s: any, ...to: string[]) => {
+    for (const room of to) s = engine.dispatch(s, { type: CORE_MOVE, actor: "husband", payload: { to: room } });
+    return s;
+  };
+  const doIt = (s: any, id: string) => engine.dispatch(engine.dispatch(s, { type: "base/day", payload: { do: id } }), { type: "base/prep-wait", payload: { until: "done" } });
+  it("is a budget of minutes: an activity takes its time, walking takes time, and the clock moves", () => {
     let s = engine.init(6);
     expect(s.mods.base.day.left).toBe(360);
     const acts = () => engine.listActions(s).filter((a) => a.type === "base/day").map((a) => a.payload!.do);
+    expect(acts()).toContain("clean");
+    expect(acts()).not.toContain("side_job"); // that one is in town
+    s = go(s, "town.square");
+    expect(s.mods.base.day.left).toBe(350);
     expect(acts()).toContain("side_job");
     const money = s.mods.base.money;
     s = engine.dispatch(s, { type: "base/day", payload: { do: "side_job" } });
+    expect(s.mods.base.money).toBe(money); // nothing yet: the work has to be done first
+    expect(acts()).toEqual([]);
+    s = engine.dispatch(s, { type: "base/prep-wait", payload: { minutes: 60 } });
+    expect(s.mods.base.day.busy.left).toBe(180);
+    s = engine.dispatch(s, { type: "base/prep-wait", payload: { until: "done" } });
     expect(s.mods.base.money).toBeGreaterThan(money);
-    expect(s.time.minute).toBe(720 + 240);
-    s = engine.dispatch(s, { type: "base/day", payload: { do: "town" } });
-    expect(s.mods.base.day.left).toBe(60);
-    expect(acts()).not.toContain("date"); // 90 minutes do not fit any more
+    expect(s.mods.base.day.busy).toBeUndefined();
+    expect(s.time.minute).toBe(720 + 250);
+    expect(acts()).toContain("date"); // she comes along if he calls her
+    s = go(s, "town.shops");
     expect(engine.listActions(s).some((a) => a.type === "base/buy" && a.payload!.kind === "outfit")).toBe(true);
     expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("walking off in the middle of something drops it; the town is closed to him in the evening", () => {
+    let s = engine.init(6);
+    s = engine.dispatch(s, { type: "base/day", payload: { do: "clean" } });
+    const clean = s.mods.base.clean;
+    s = go(s, "cafe.bar");
+    expect(s.mods.base.day.busy).toBeUndefined();
+    expect(s.mods.base.clean).toBe(clean);
+    s = go(s, "cafe.hall", "town.square");
+    s = nextPhase(s);
+    expect(s.where.husband).toBe("cafe.hall");
+    expect(engine.listActions(s).some((a) => a.type === CORE_MOVE && String(a.payload?.to).startsWith("town."))).toBe(false);
+  });
+  it("she has her own afternoon: she moves through the house, and he has to be in her room to talk to her", () => {
+    let s = engine.init(6);
+    expect(s.where.wife).toBe("cafe.bar");
+    expect(engine.listActions(s).some((a) => a.type === "base/talk")).toBe(false);
+    const rooms = new Set<string>();
+    for (let i = 0; i < 20; i++) {
+      s = engine.dispatch(s, { type: "base/prep-wait", payload: { minutes: 15 } });
+      rooms.add(s.where.wife!);
+    }
+    expect(rooms.size).toBeGreaterThan(1);
+    let t = go(engine.init(6), "cafe.bar");
+    expect(engine.listActions(t).some((a) => a.type === "base/talk")).toBe(true);
+    t = engine.dispatch(t, { type: "base/day", payload: { do: "clean" } });
+    expect(engine.listActions(t).some((a) => a.type === "base/talk")).toBe(false); // his hands are full
   });
   it("she only wears what she owns, and a bought outfit becomes available", () => {
     let s = engine.init(6, { base: { preset: "hungry" } });
     expect(s.mods.base.owned).toContain(s.mods.base.heroine.outfit);
-    s = engine.dispatch(s, { type: "base/day", payload: { do: "town" } });
+    s = go(s, "town.square", "town.shops");
     const buy = engine.listActions(s).find((a) => a.type === "base/buy" && a.payload!.id === "revealing")!;
     s = engine.dispatch(s, buy);
     expect(s.mods.base.owned).toContain("revealing");
     expect(engine.listActions(s).some((a) => a.type === "base/ask-outfit" && a.payload!.outfit === "revealing")).toBe(true);
+    void doIt;
   });
 });
 

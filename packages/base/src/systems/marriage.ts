@@ -32,12 +32,12 @@ const toyForHim = (state: GameState) => {
   const K = content.body.his;
   const fit = K.fitBase + b.husband.stretch * K.fitPerStretch;
   const owned = content.day.shop.toys.filter((t) => b.toys.includes(t.id)).sort((x, y) => x.size - y.size);
-  return { fit, toy: [...owned].reverse().find((t) => t.size <= fit + K.tooBig) ?? owned[0] ?? null };
+  return { fit, toy: [...owned].reverse().find((t) => t.size <= fit + K.tooBig) ?? null }; // nothing that fits = nothing she can use on him
 };
 /** Whether an act done to him is possible at all right now: a toy to do it with, a body that can take it. */
 export const hisActOpen = (state: GameState, act: string) => {
   const b = bs(state);
-  if (NEEDS_TOY.has(act) && b.toys.length === 0) return false;
+  if (NEEDS_TOY.has(act) && toyForHim(state).toy === null) return false;
   if (act === "fisting_him") return toyForHim(state).fit + content.body.his.tooBig >= content.body.his.fistSize;
   return true;
 };
@@ -108,7 +108,8 @@ export function registerMarriage(api: ModApi) {
       const { fit, toy } = toyForHim(ctx.state);
       const size = actId === "prostate" ? K.fingerSize : actId === "fisting_him" ? K.fistSize : (toy?.size ?? fit);
       const over = size - fit;
-      if (over > 0) b.husband.stretch = clamp(b.husband.stretch + over * content.body.stretchPerCm);
+      // every time teaches his body a little; something bigger than he is used to teaches it more
+      b.husband.stretch = clamp(b.husband.stretch + K.practice + Math.max(0, over) * content.body.stretchPerCm);
       b.power = clamp(b.power + (K.power[actId] ?? 0));
       sex.pleasure = herFromHis(ctx.state, actId);
     }
@@ -390,7 +391,7 @@ export function registerMarriage(api: ModApi) {
       const size = sex.act === "prostate" ? K.fingerSize : sex.act === "fisting_him" ? K.fistSize : (toy?.size ?? fit);
       const hurts = size > fit + K.tooBig;
       const mine = B.hisRate * (hurts ? 0.4 : (K.hisShare[sex.act] ?? 1) + b.husband.stretch / 200);
-      return { his: mine, hers: B.hersRate * (sex.pleasure / 60) * (0.6 + h.arousal / 120) };
+      return { his: mine, hers: 0 }; // it works on her head, not on her body: she does not come from it
     }
     if (sex.act === "rimming_him") return { his: B.hisRate * content.body.his.rimmingRate, hers: 0 };
     const taste = 1 + (h.tastes.acts[sex.act] ?? 0) / 100;
