@@ -1,7 +1,7 @@
 """Stands MPFB mannequins in the poses of test-city scenes and renders what an image generator needs:
 a depth map, one mask per figure, a plain preview, and the joints projected to the picture.
 
-  blender --background --python pose3d.py -- scenes3d.json outDir [scene ...] [--az=35] [--el=8] [--size=832x1216]
+  blender --background --python pose3d.py -- scenes3d.json outDir [scene ...] [--az=35] [--el=8] [--size=832x1216] [--orient=auto|fixed] [--margin=0.07]
 
 scenes3d.json comes from `pnpm exec tsx tools/pose3d-export.ts`. No scene names = all of them.
 The scenes are side views (x ahead, y up); here that plane is X/Z and the camera walks round it by --az degrees.
@@ -16,6 +16,8 @@ args = [a for a in argv if not a.startswith("--")]
 SRC, OUT, WANT = args[0], args[1], args[2:]
 AZ = float(opts.get("az", 35)); EL = float(opts.get("el", 8))
 W, H = (int(v) for v in opts.get("size", "832x1216").split("x"))
+ORIENT = opts.get("orient", "auto")  # auto: lying scenes are rendered landscape (H x W); fixed: always W x H
+MARGIN = float(opts.get("margin", 0.07))  # free edge round the figures, share of the frame
 os.makedirs(OUT, exist_ok=True)
 
 addon_utils.enable("bl_ext.blender_org.mpfb", default_set=True)
@@ -141,7 +143,7 @@ def render(path, mode="BW"):
 def run(scene_id):
     clear()
     sc = bpy.context.scene
-    sc.render.engine = "BLENDER_EEVEE"; sc.render.resolution_x = W; sc.render.resolution_y = H; sc.render.resolution_percentage = 100
+    sc.render.engine = "BLENDER_EEVEE"; sc.render.resolution_percentage = 100
     sc.view_settings.view_transform = "Standard"; sc.render.film_transparent = False
     try: sc.eevee.taa_render_samples = 16
     except Exception: pass
@@ -156,22 +158,31 @@ def run(scene_id):
             parts.append(tube(f'{fig["role"]}_{e["kind"]}', e["pts"], THICK.get(fig["role"], THICK["patron"] if fig["role"].startswith("patron") else 0.02) * (0.8 if e["kind"] == "toy" else 1)))
         figs.append((fig, arm, parts))
     bpy.context.view_layer.update()
-    # the camera frames her: three quarters round, a little above
-    wife = next((f for f in figs if f[0]["role"] == "wife"), figs[0])
-    pts = [arm.matrix_world @ b.head for f, arm, _ in figs for b in arm.pose.bones]
-    wpts = [wife[1].matrix_world @ b.head for b in wife[1].pose.bones] + [wife[1].matrix_world @ wife[1].pose.bones["head"].tail]
-    centre = sum(wpts, Vector()) / len(wpts)
+    # the camera frames everyone: three quarters round, a little above. The picture lies down when the scene does.
+    pts = [arm.matrix_world @ q for f, arm, _ in figs for b in arm.pose.bones for q in (b.head, b.tail)]
+    centre = Vector(((min(p.x for p in pts) + max(p.x for p in pts)) / 2, (min(p.y for p in pts) + max(p.y for p in pts)) / 2, (min(p.z for p in pts) + max(p.z for p in pts)) / 2))
     cam_data = bpy.data.cameras.new("cam"); cam_data.lens = 50; cam = bpy.data.objects.new("cam", cam_data); sc.collection.objects.link(cam); sc.camera = cam
     az, el = math.radians(AZ), math.radians(EL)
     direction = Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)))
-    dist = 2.0
-    for _ in range(40):
+    def place(dist):
         cam.location = centre + direction * dist
         cam.rotation_euler = (centre - cam.location).to_track_quat("-Z", "Y").to_euler()
         bpy.context.view_layer.update()
-        uv = [world_to_camera_view(sc, cam, p) for p in wpts]
-        if all(0.1 <= u.x <= 0.9 and 0.07 <= u.y <= 0.9 for u in uv): break
-        dist *= 1.07
+        return [cam.matrix_world.inverted() @ p for p in pts]
+    cs = place(4.0)
+    wide = (max(c.x for c in cs) - min(c.x for c in cs)) > 1.15 * (max(c.y for c in cs) - min(c.y for c in cs))
+    w, h = (max(W, H), min(W, H)) if wide and ORIENT == "auto" else (W, H)
+    sc.render.resolution_x = w; sc.render.resolution_y = h
+    dist = 1.0
+    for _ in range(80):
+        # look at the middle of what is seen, then step back until it all fits with a margin
+        cs = place(dist)
+        shift = Vector(((min(c.x for c in cs) + max(c.x for c in cs)) / 2, (min(c.y for c in cs) + max(c.y for c in cs)) / 2, 0))
+        centre = centre + cam.matrix_world.to_3x3() @ shift
+        place(dist)
+        uv = [world_to_camera_view(sc, cam, p) for p in pts]
+        if all(MARGIN <= u.x <= 1 - MARGIN and MARGIN <= u.y <= 1 - MARGIN and u.z > 0 for u in uv): break
+        dist *= 1.05
     depths = [(cam.matrix_world.inverted() @ p).z * -1 for p in pts]
     near, far = max(0.1, min(depths) - 0.12), max(depths) + 0.12
     cam_data.clip_start = 0.05; cam_data.clip_end = far + 5
@@ -196,13 +207,13 @@ def run(scene_id):
         render(f'{base}.mask-{i}-{fig["role"]}.png')
     # 4. the joints as the picture sees them, in OpenPose order
     order = ["head", "neck_01", "upperarm_r", "lowerarm_r", "hand_r", "upperarm_l", "lowerarm_l", "hand_l", "thigh_r", "calf_r", "foot_r", "thigh_l", "calf_l", "foot_l"]
-    out = {"scene": scene_id, "width": W, "height": H, "az": AZ, "el": EL, "figures": []}
+    out = {"scene": scene_id, "width": w, "height": h, "az": AZ, "el": EL, "figures": []}
     for fig, arm, parts in figs:
         kp = []
         for name in order:
             p = tail_w(arm, "head") if name == "head" else head_w(arm, name)
             u = world_to_camera_view(sc, cam, p)
-            kp.append([round(u.x * W, 1), round((1 - u.y) * H, 1)])
+            kp.append([round(u.x * w, 1), round((1 - u.y) * h, 1)])
         out["figures"].append({"role": fig["role"], "keypoints": kp})
     json.dump(out, open(base + ".pose.json", "w"))
     print("DONE", scene_id, "dist", round(dist, 2), "near", round(near, 2), "far", round(far, 2))
