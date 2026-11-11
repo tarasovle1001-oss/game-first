@@ -119,7 +119,7 @@ def depth_mat(near, far):
     nt = m.node_tree; nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputMaterial"); em = nt.nodes.new("ShaderNodeEmission")
     cam = nt.nodes.new("ShaderNodeCameraData"); mr = nt.nodes.new("ShaderNodeMapRange")
-    mr.inputs[1].default_value = near; mr.inputs[2].default_value = far; mr.inputs[3].default_value = 1.0; mr.inputs[4].default_value = 0.08
+    mr.inputs[1].default_value = near; mr.inputs[2].default_value = far; mr.inputs[3].default_value = 1.0; mr.inputs[4].default_value = 0.15
     nt.links.new(cam.outputs["View Z Depth"], mr.inputs[0]); nt.links.new(mr.outputs[0], em.inputs[0]); nt.links.new(em.outputs[0], out.inputs[0])
     return m
 
@@ -173,7 +173,7 @@ def run(scene_id):
         if all(0.1 <= u.x <= 0.9 and 0.07 <= u.y <= 0.9 for u in uv): break
         dist *= 1.07
     depths = [(cam.matrix_world.inverted() @ p).z * -1 for p in pts]
-    near, far = max(0.1, min(depths) - 0.35), max(depths) + 0.6
+    near, far = max(0.1, min(depths) - 0.12), max(depths) + 0.12
     cam_data.clip_start = 0.05; cam_data.clip_end = far + 5
     base = os.path.join(OUT, scene_id)
     # 1. preview: lit, one colour per role
@@ -185,6 +185,7 @@ def run(scene_id):
     sun.hide_render = True
     bg.inputs[0].default_value = (0, 0, 0, 1)
     # 2. depth: near is white, far is dark, nothing is black
+    sc.view_settings.view_transform = "Raw"  # the grey written is the grey meant
     dm = depth_mat(near, far)
     for fig, arm, parts in figs: paint(parts, dm)
     render(base + ".depth.png")
