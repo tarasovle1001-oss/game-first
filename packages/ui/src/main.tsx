@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { bs, content, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
-import { engine, mods, newSeed, SAVE_KEY, translator } from "./game";
-import type { Lang } from "./game";
-import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, TopBar, WhyTab } from "./panels";
 import { CheatPanel } from "./cheats";
+import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
+import type { Lang, ModPack } from "./game";
+import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, TopBar, WhyTab } from "./panels";
 import "./style.css";
 
 type Tab = "her" | "you" | "guests" | "why" | "phone";
@@ -14,19 +14,52 @@ type Tab = "her" | "you" | "guests" | "why" | "phone";
 // The UI only reads state and dispatches actions. No game rules live here.
 function App() {
   const [state, setState] = useState<GameState>(() => engine.init(newSeed()));
+  const [extra, setExtra] = useState<ModPack[]>([]);
   const [lang, setLang] = useState<Lang>("ru");
   const [debug, setDebug] = useState(false);
+  const [menu, setMenu] = useState(false);
   const [tab, setTab] = useState<Tab>("her");
   const [error, setError] = useState("");
-  const t = useMemo(() => translator(lang), [lang]);
+  const saveInput = useRef<HTMLInputElement>(null);
+  const modInput = useRef<HTMLInputElement>(null);
+  const t = useMemo(() => game.translator(lang), [lang, extra]);
 
-  const act = (a: Action) => {
+  const guard = (fn: () => void) => {
     try {
-      setState(engine.dispatch(state, a));
+      fn();
       setError("");
     } catch (e) {
       setError((e as Error).message);
     }
+  };
+  const act = (a: Action) =>
+    guard(() => {
+      const next = engine.dispatch(state, a);
+      // a new day has started: keep a copy, in case the tab gets closed
+      if (next.time.day !== state.time.day) {
+        try {
+          localStorage.setItem(AUTOSAVE_KEY, saveGame(next, engine));
+        } catch {
+          /* storage may be unavailable when opened from a file; the game goes on */
+        }
+      }
+      setState(next);
+    });
+  const load = (json: string | null) => json && guard(() => setState(loadGame(json, game.mods).state));
+  const addMod = (source: string) =>
+    guard(() => {
+      const pack = readModFile(source);
+      const packs = [...extra.filter((p) => p.mod.id !== pack.mod.id), pack];
+      const next = makeGame(packs);
+      const moved = carryOver(state, game, next);
+      setGame(next);
+      setExtra(packs);
+      setState(moved);
+    });
+  const readFile = (input: HTMLInputElement | null, use: (text: string) => void) => {
+    const file = input?.files?.[0];
+    if (file) void file.text().then(use);
+    if (input) input.value = "";
   };
 
   const all = engine.listActions(state);
@@ -56,21 +89,30 @@ function App() {
       <header>
         <TopBar {...common} />
         <div className="tools">
-          <button onClick={() => setState(engine.init(newSeed()))}>{t("ui.new")}</button>
-          <button onClick={() => localStorage.setItem(SAVE_KEY, saveGame(state, engine))}>{t("ui.save")}</button>
-          <button
-            onClick={() => {
-              const raw = localStorage.getItem(SAVE_KEY);
-              if (raw) setState(loadGame(raw, mods).state);
-            }}
-          >
-            {t("ui.load")}
-          </button>
           <button className={debug ? "on" : ""} onClick={() => setDebug(!debug)}>
             {t("ui.debug")}
           </button>
           <button onClick={() => setLang(lang === "en" ? "ru" : "en")}>{lang === "en" ? "RU" : "EN"}</button>
+          <button className={menu ? "on" : ""} onClick={() => setMenu(!menu)}>
+            {t("ui.menu")}
+          </button>
         </div>
+        {menu && (
+          <div className="menu" onClick={() => setMenu(false)}>
+            <button onClick={() => setState(engine.init(newSeed()))}>{t("ui.new")}</button>
+            <button onClick={() => guard(() => localStorage.setItem(SAVE_KEY, saveGame(state, engine)))}>{t("ui.save")}</button>
+            <button onClick={() => load(localStorage.getItem(SAVE_KEY))}>{t("ui.load")}</button>
+            <button onClick={() => load(localStorage.getItem(AUTOSAVE_KEY))}>{t("ui.load.auto")}</button>
+            <button onClick={() => downloadText(`test-city-day${state.time.day}.json`, saveGame(state, engine))}>{t("ui.save.file")}</button>
+            <button onClick={() => saveInput.current?.click()}>{t("ui.load.file")}</button>
+            <button onClick={() => modInput.current?.click()}>{t("ui.mod.add")}</button>
+            <div className="muted small">
+              {t("ui.mods")}: {game.packs.map((p) => `${p.mod.id} v${p.mod.version}`).join(", ")}
+            </div>
+          </div>
+        )}
+        <input ref={saveInput} type="file" accept=".json" hidden onChange={(e) => readFile(e.target, load)} />
+        <input ref={modInput} type="file" accept=".js" hidden onChange={(e) => readFile(e.target, addMod)} />
       </header>
 
       {(error || problems.length > 0) && <pre className="error">{[error, ...problems].filter(Boolean).join("\n")}</pre>}
@@ -113,7 +155,7 @@ function App() {
           {state.time.phase === "shift" && waits.length === 0 && advance && <div className="muted">{t("ui.closing")}</div>}
           {other.length > 0 && (
             <div className="card">
-              <div className="card-title">{t("ui.business")}</div>
+              <div className="card-title">{t(`ui.todo.${state.time.phase}`)}</div>
               <div className="stack">
                 {other.map((a, i) => (
                   <button key={i} onClick={() => act(a)}>
