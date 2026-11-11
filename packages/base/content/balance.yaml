@@ -38,9 +38,9 @@ loan: # the debt is paid in instalments; miss one and the lender starts dropping
   lateFee: 0.15       # of the missed instalment, added to the debt
   visitsAfterMiss: 3  # evenings he comes by after a missed date
   forgivePerTier: 45  # what he writes off for what she gives him, per tier of the act
-  consent: 14         # how much the debt argues for him, at the starting debt
+  consent: 10         # how much the debt argues for him, at the starting debt
   suspicion: 7        # the book shows less than it should
-  lender: { size: 18, persistence: 85, generosity: 75, interest: 60, arrivesAtTick: 8 }
+  lender: { size: 18, persistence: 85, generosity: 45, interest: 55, arrivesAtTick: 8 }
 hotel: # two rooms upstairs
   roomPrice: 55
   takeChance: 0.35      # per free room per evening, at reputation 50

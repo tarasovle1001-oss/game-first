@@ -294,6 +294,7 @@ export function registerMarriage(api: ModApi) {
       return;
     }
     // close enough when he finishes: it tips her over
+    const earlier = sex.came > 0; // she already came while it lasted: the ending is his
     if (sex.came === 0 && sex.hers >= B.herCloseAt) {
       sex.came = 1;
       orgasm(ctx);
@@ -313,7 +314,7 @@ export function registerMarriage(api: ModApi) {
       outcome = "came";
       b.night!.scene = oral ? "cunnilingus" : "sex";
       feel(ctx, oral ? 2 : 3, -3);
-      ctx.log(`log.husband.${oral ? "oral" : "sex"}.came`);
+      ctx.log(earlier ? "log.bed.end.after_her" : `log.husband.${oral ? "oral" : "sex"}.came`);
     } else if (sex.turns === 0 || (premature && sex.his >= 100 && sex.turns <= 1)) {
       outcome = "too_soon";
       b.night!.scene = "came_too_soon_foreplay";

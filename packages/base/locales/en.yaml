@@ -790,3 +790,4 @@ log.towels.quick: "The bell from upstairs: towels for {room}. She takes them up 
 log.towels.long: "The bell from upstairs: towels for {room}. She takes them up. She is gone for twenty minutes."
 log.towels.truth: "{name} did not need towels ({act})."
 log.towels.open: "The bell from upstairs: {room}. \"That will be {name}.\" She goes up, not hurrying ({act})."
+log.bed.end.after_her: "You follow her. She does not let go of you for a long time."
