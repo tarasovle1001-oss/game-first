@@ -357,6 +357,7 @@ export function registerMarriage(api: ModApi) {
     const W = content.body.night.wants;
     feel(ctx, -W.declineDesire * weight, W.declineResent * weight);
     changeHeroine(ctx, "mood", -3 * weight, "turned down");
+    ctx.emit("her:turned_down", { weight });
   };
   // Rolling over without a word is an answer too, a slightly kinder one.
   api.events.on(

@@ -468,7 +468,7 @@ export const mannersSchema = z
             stretchSteps: z.array(z.number()), hisSteps: z.array(z.number()),
           })
           .strict(),
-        annoy: z.object({ tired: z.number(), done: z.number(), guestRefused: z.number(), guestHesitant: z.number(), guestEager: z.number(), guestPushed: z.number(), guestPushedFar: z.number(), husbandTouch: z.number(), husbandAsk: z.number(), husbandRefused: z.number(), cameRelief: z.number(), coolShift: z.number(), coolPrep: z.number(), keptOvernight: z.number(), consent: z.number(), strip: z.number() }).strict(),
+        annoy: z.object({ tired: z.number(), done: z.number(), guestRefused: z.number(), guestHesitant: z.number(), guestEager: z.number(), guestPushed: z.number(), guestPushedFar: z.number(), husbandTouch: z.number(), husbandAsk: z.number(), husbandRefused: z.number(), cameRelief: z.number(), coolShift: z.number(), coolPrep: z.number(), keptOvernight: z.number(), consent: z.number(), strip: z.number(), spillToHim: z.number(), spillToGuests: z.number() }).strict(),
         touchCum: z.object({ from: z.array(id), fromDenied: z.number().int(), base: z.number(), perDenied: z.number(), max: z.number().min(0).max(1) }).strict(),
         complainAt: z.number(),
         complainEveryDays: z.number().int(),
@@ -543,8 +543,34 @@ export const lookSchema = z
   .strict();
 export type Look = z.infer<typeof lookSchema>;
 
+export const EMOTIONS = ["anger", "contempt", "guilt", "shame", "longing", "disgust", "fear", "pride", "tenderness", "delight"] as const;
+export type Emotion = (typeof EMOTIONS)[number];
+const feelings = z.record(z.enum(EMOTIONS), z.number());
+export const mindSchema = z
+  .object({
+    emotions: z.record(z.enum(EMOTIONS), z.object({ fade: z.number().min(0), night: z.number().min(0).max(1) }).strict()),
+    showFrom: z.number(),
+    consent: z.object({ guest: feelings, husband: feelings }).strict(),
+    gain: z.record(z.string(), z.union([feelings, z.number()])),
+    thoughts: z.object({ from: z.number(), gap: z.number() }).strict(),
+    trust: z.object({ start: z.number(), consent: z.number(), confess: z.number(), change: z.record(z.string(), z.number()) }).strict(),
+    attributes: z
+      .object({
+        spread: z.number().int().min(0),
+        charm: z.object({ tipShare: z.number() }).strict(),
+        wit: z.object({ guiltyLook: z.number() }).strict(),
+        stamina: z.object({ energy: z.number() }).strict(),
+        composure: z.object({ annoy: z.number(), feel: z.number() }).strict(),
+      })
+      .strict(),
+    wants: z.object({ hintFrom: z.number() }).strict(),
+  })
+  .strict();
+export type Mind = z.infer<typeof mindSchema>;
+
 export interface Content {
   look: Look;
+  mind: Mind;
   rooms: Room[];
   patronTypes: PatronType[];
   names: NameEntry[];

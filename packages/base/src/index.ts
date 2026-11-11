@@ -27,11 +27,12 @@ import { registerGossip } from "./systems/gossip";
 import { registerLoan } from "./systems/loan";
 import { registerMemories } from "./systems/memories";
 import { registerRhythm } from "./systems/rhythm";
+import { registerMind } from "./systems/mind";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 17,
+  version: 18,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -41,6 +42,8 @@ export const baseMod: Mod = {
     if (slice.husband.energy === undefined) Object.assign(slice.husband, content.day.rhythm.him.start);
     if (slice.heroine.frustration === undefined) slice.heroine.frustration = 0;
     if (slice.heroine.bare === undefined) slice.heroine.bare = "none";
+    if (slice.heroine.attrs === undefined) slice.heroine.attrs = { charm: 50, wit: 50, stamina: 50, composure: 50 };
+    if (slice.heroine.marriage.trust === undefined) slice.heroine.marriage.trust = content.mind.trust.start;
     if (!slice.owned.includes(slice.heroine.outfit)) slice.owned.push(slice.heroine.outfit);
     return slice;
   },
@@ -136,6 +139,7 @@ export const baseMod: Mod = {
     registerLoan(api);
     registerMemories(api);
     registerRhythm(api);
+    registerMind(api);
     registerSetup(api);
   },
 };
@@ -179,5 +183,7 @@ export { installment, LOAN_PAY } from "./systems/loan";
 export { ORDER } from "./systems/manners";
 export { husbandSees, husbandIn, husbandNextTo } from "./systems/places";
 export { rentOf } from "./systems/economy";
+export { ATTRS, EMOTIONS, attrOf, feelingOf, feelingsOf, latitudeOf, trustOf, wantsOf } from "./systems/mind";
+export type { Attr, Emotion } from "./systems/mind";
 export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, himOf, tired, worryOf } from "./systems/rhythm";
 export { pleasureFor, sizeClass } from "./systems/body";

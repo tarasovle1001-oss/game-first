@@ -28,6 +28,8 @@ type StateKey = "energy" | "mood" | "arousal" | "drunk";
 export function changeHeroine(ctx: Ctx, key: StateKey, amount: number, reason: string) {
   const h = bs(ctx.state).heroine;
   const before = h[key];
+  // a woman with stamina pays less for everything that tires her
+  if (key === "energy" && amount < 0) amount *= 1 - ((h.attrs?.stamina ?? 50) - 50) * content.mind.attributes.stamina.energy;
   h[key] = clamp(before + amount);
   if (h[key] !== before) ctx.emit("heroine:changed", { key, amount: h[key] - before, reason });
 }

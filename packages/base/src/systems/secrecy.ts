@@ -71,7 +71,7 @@ export function registerSecrecy(api: ModApi) {
   api.events.on("phase:enter", (ctx, e) => {
     const b = bs(ctx.state);
     if (e.payload!.phase !== "night" || b.mode !== "hidden" || b.secretKnows || b.secretActsToday === 0) return;
-    if (ctx.rng.chance((100 - b.heroine.traits.honesty) / 100 + 0.2)) return; // she carries it off
+    if (ctx.rng.chance((100 - b.heroine.traits.honesty) / 100 + 0.2 + ((b.heroine.attrs?.wit ?? 50) - 50) * content.mind.attributes.wit.guiltyLook)) return; // she carries it off
     suspect(ctx, S.guiltyLook);
     ctx.log("log.hint.guilty");
   });

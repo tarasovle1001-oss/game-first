@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { content, TASTES, TASTE_LATENT } from "@tc/base";
+import { ATTRS, content, TASTES, TASTE_LATENT } from "@tc/base";
 import type { BaseSetup } from "@tc/base";
 import type { T } from "./game";
 
@@ -10,6 +10,7 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
   const first = content.presets.find((p) => p.id === "ordinary") ?? content.presets[0]!;
   const [preset, setPreset] = useState(first.id);
   const [traits, setTraits] = useState({ ...first.traits });
+  const [attrs, setAttrs] = useState<Record<(typeof ATTRS)[number], number>>({ charm: 50, wit: 50, stamina: 50, composure: 50 });
   const [sizeTaste, setSizeTaste] = useState(first.sizeTaste);
   const [latents, setLatents] = useState<string[] | null>(null); // null = leave to the preset and chance
   const [husband, setHusband] = useState({ size: content.body.husband.size, minutes: content.body.husband.minutes, style: content.body.husband.style });
@@ -61,6 +62,12 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
             {TRAITS.map((k) => slider(t(`trait.${k}`), traits[k], (v) => setTraits({ ...traits, [k]: v })))}
             {slider(t("stat.sizeTaste"), sizeTaste, setSizeTaste)}
             {slider(t("ui.newgame.desire"), desire, setDesire)}
+            <div className="cap gap">{t("ui.new.attrs")}</div>
+            {ATTRS.map((a) => (
+              <div key={a} title={t(`attr.${a}.about`)}>
+                {slider(t(`attr.${a}`), attrs[a], (v) => setAttrs({ ...attrs, [a]: v }))}
+              </div>
+            ))}
             <div className="cap gap">{t("ui.newgame.tastes")}</div>
             {TASTES.map((id) => (
               <div key={id} title={t(`taste.${id}.about`)}>
@@ -131,6 +138,7 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
                 husband,
                 name,
                 tastes,
+                attrs,
                 ...(latents === null ? {} : { latents }),
                 ...(open ? { mode: "open" as const } : {}),
               })

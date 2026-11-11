@@ -19,7 +19,7 @@ export interface Heroine {
   satisfied: number; // 0..100, "just had her fill", cools down
   sizeTaste: number; // 0..100, how much size matters to her
   orgasms: number;
-  marriage: { desire: number; resent: number }; // what she feels for her husband, 0..100
+  marriage: { desire: number; resent: number; trust?: number }; // what she feels for her husband, 0..100
   outfit: string;
   bare?: Bare; // what she has taken off, on top of the outfit
   /** What is on her and in her, by place: minutes it still shows. */
@@ -30,6 +30,11 @@ export interface Heroine {
   skirtUp?: boolean;
   name?: string; // what she is called
   prefs?: Record<string, number>; // tastes set at the start, 0..100 each
+  feel?: Partial<Record<import("./content/schema").Emotion, number>>; // feelings, 0..100 each; absent = none
+  attrs?: Record<"charm" | "wit" | "stamina" | "composure", number>; // what she is made of, 0..100
+  why?: Record<string, { r: string; a: number }[]>; // the last reasons each fast stat moved
+  snap?: { day: number; traits: Record<string, number> }; // her character a week ago, to show where it is going
+  annoyHim?: number; // 0..100: how much she has had of him today
   annoyance?: number; // 0..100: how much she has had of being asked and pawed at today
   tastes: { acts: Record<string, number>; types: Record<string, number> }; // what she has come to like
   latents: Record<string, true>; // hidden sides she has; absent = she does not have it
@@ -230,6 +235,9 @@ export interface BaseState {
   approached: Record<string, number>; // kind -> last day she came with it
   pushedToday: Record<string, number>; // guest -> how hard he pushed her today
   sizeToday?: number; // the biggest guest she has had today, cm
+  diary?: { day: number; with: Record<string, Record<string, number>>; seen: Record<string, boolean>; came: number; cameHim?: number }[]; // what happened, by day and by man
+  tally?: { acts: Record<string, number>; partners: Record<string, number>; came: number };
+  thoughtAt?: number;
   wakeAt?: number; // hour he sleeps till tonight, when it is not the usual one
   slept?: { him: number; her: number }; // hours each of them got last night
   sentWash?: string;

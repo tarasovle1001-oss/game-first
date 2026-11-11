@@ -157,7 +157,7 @@ export function registerCouple(api: ModApi) {
         else if (top.seen || b.mode === "open") {
           ctx.log("log.talk.tonight.told", { name: `@name:${b.patrons[top.patron]?.name ?? ""}`, act: `act.${top.act}` });
           changeHeroine(ctx, "arousal", b.mode === "open" ? 4 : 0, "telling");
-        } else if (h.traits.honesty >= T.confessAtHonesty && tier <= T.confessUpToTier) {
+        } else if (h.traits.honesty + ((h.marriage.trust ?? 60) - 50) * content.mind.trust.confess >= T.confessAtHonesty && tier <= T.confessUpToTier) {
           // she owns up to the lighter things herself
           ctx.log("log.talk.tonight.confess", { name: `@name:${b.patrons[top.patron]?.name ?? ""}`, act: `act.${top.act}` });
           b.expect[top.act] = b.expect[top.act] ?? 0; // now it is on the table: his answer is next
@@ -171,7 +171,7 @@ export function registerCouple(api: ModApi) {
       }
       const o = T.options.find((x) => x.id === what)!;
       // she has had enough hands on her today: his are no exception
-      const level = annoyedLevel(ctx.state);
+      const level = annoyedLevel(ctx.state, "him");
       if (o.group === "touch" && level !== "calm") {
         applyFx(ctx, level === "done" ? { mood: -6, resent: 1 } : { mood: -3 }, "had enough");
         ctx.log(`log.annoyed.${level}.${ctx.rng.int(1, 2)}`);

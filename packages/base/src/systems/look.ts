@@ -32,12 +32,18 @@ export function faceOf(state: GameState): string {
   const enc = b.encounter;
   const sex = b.night?.sex;
   if (enc?.verdict === "hesitant" && enc.refusals > 0 && h.traits.confidence < 40) return "scared";
+  const f = h.feel ?? {};
+  if ((f.fear ?? 0) >= 40) return "scared";
+  if ((f.anger ?? 0) >= 45) return "angry";
   if (annoyedLevel(state) !== "calm") return "annoyed";
   const meter = sex ? sex.hers : enc ? enc.hers : 0;
   if (meter >= 80) return "ecstatic";
   if (h.arousal >= 65 || meter >= 40) return "aroused";
   if ((enc || sex) && h.traits.openness < 45) return "shy";
+  if ((f.shame ?? 0) >= 35) return "ashamed";
+  if ((f.guilt ?? 0) >= 45) return "guilty";
   if (h.mood < 35) return "worried";
+  if ((f.tenderness ?? 0) >= 40 && !enc) return "tender";
   if (h.mood >= 60) return "happy";
   return "plain";
 }

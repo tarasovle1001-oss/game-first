@@ -1,0 +1,61 @@
+# What goes on in her head: feelings that build and fade, how far she trusts him, what she is made of.
+emotions:           # each 0..100. fade = per 10 minutes awake, night = share kept until morning
+  anger:      { fade: 1.2, night: 0.4 }   # at him
+  contempt:   { fade: 0.2, night: 0.9 }   # for him; slow to come, slow to go
+  guilt:      { fade: 0.4, night: 0.7 }
+  shame:      { fade: 1.0, night: 0.5 }
+  longing:    { fade: 0.3, night: 0.85 }  # wanting what she is not getting
+  disgust:    { fade: 1.5, night: 0.3 }
+  fear:       { fade: 2.0, night: 0.3 }
+  pride:      { fade: 0.6, night: 0.6 }
+  tenderness: { fade: 0.6, night: 0.75 }  # for him
+  delight:    { fade: 1.8, night: 0.3 }
+showFrom: 15        # below this a feeling is not listed
+consent:            # points of consent per point of feeling
+  guest:   { guilt: -0.15, shame: -0.12, fear: -0.2, disgust: -0.25, anger: 0.1, contempt: 0.12, delight: 0.08, longing: 0.1, tenderness: -0.08 }
+  husband: { anger: -0.25, contempt: -0.2, tenderness: 0.2, guilt: 0.1, longing: 0.15, disgust: -0.1, delight: 0.05 }
+gain:               # what feeds what; scaled by who she is where the code says so
+  pushed: { fear: 5, disgust: 3 }
+  pushedFar: { fear: 10, disgust: 6 }
+  refusedGuest: { pride: 3 }
+  secretAct: { guilt: 1.4 }         # per tier of the act, times her fidelity share
+  seenAct: { shame: 0.2 }           # per point of openness below 60, when others watch
+  eager: { delight: 4 }
+  cameGuest: { delight: 12, guilt: 4 }
+  cameHusband: { tenderness: 8, delight: 8 }
+  leftWanting: { longing: 6, contempt: 2 }   # contempt grows with how much size matters to her
+  wentSoft: { longing: 4, contempt: 2 }
+  faked: { guilt: 2, contempt: 1 }
+  kindWord: { tenderness: 2 }
+  kindTouch: { tenderness: 1.5 }
+  heard: { tenderness: 5, anger: -8 }
+  pushedBack: { anger: 10 }
+  protected: { tenderness: 6, fear: -10 }
+  stoppedHerFun: { anger: 8 }
+  caughtStop: { shame: 20, fear: 10, guilt: 15 }
+  caughtWatch: { shame: 10 }
+  woken: { anger: 8 }
+  walkedIn: { anger: 4 }
+  bareShy: { shame: 6 }
+  bareBold: { delight: 5, pride: 3 }
+  turnedDown: { longing: 8, anger: 4 }
+  affair: { guilt: 10, delight: 6 }
+  date: { tenderness: 8, delight: 4 }
+  chores: { tenderness: 4 }
+  frustrationToLonging: 0.1   # per point of frustration, every morning
+thoughts:
+  from: 6           # a single surge of a feeling at least this big may surface as a thought
+  gap: 25           # minutes between thoughts
+trust:
+  start: 60
+  consent: 0.15     # per point above or below 50, in what she answers her husband
+  confess: 0.3      # per point above 50, added to her honesty when she decides whether to tell
+  change: { heard: 3, probed: 1, pushedBack: -4, protected: 4, stoppedHerFun: -2, woken: -3, date: 2, chores: 1, turnedDown: -1, walkedIn: -1, pushedToGuest: -3, caughtStop: -2 }
+attributes:         # 0..100, 50 is ordinary
+  spread: 10        # seeded spread around 50 at the start
+  charm: { tipShare: 0.1 }          # share of the bill at 100, taken away at 0
+  wit: { guiltyLook: 0.004 }        # chance she carries a secret off, per point above 50
+  stamina: { energy: 0.008 }        # share of every energy cost saved per point above 50
+  composure: { annoy: 0.006, feel: 0.006 } # share of annoyance, fear and shame she does not take in, per point above 50
+wants:              # what the bars are made of
+  hintFrom: 60      # from here he can tell without being told

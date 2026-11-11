@@ -90,7 +90,9 @@ talk: # small things between the two of them; each once a day
     comfort: { mood: 7, resent: 1 }
     stretchSteps: [20, 45, 70, 90]  # her remarks about what her body takes now
     hisSteps: [20, 50, 80]          # and about what his has learned
-  annoy: # how much she has had of hands and asking today, 0..100
+  annoy: # how much she has had of hands and asking today, 0..100; counted apart for guests and for him
+    spillToHim: 0.4      # share of what guests did that counts against him too
+    spillToGuests: 0.2
     tired: 40            # from here touching is turned down: "not now"
     done: 70             # from here she snaps
     guestRefused: 4      # a guest asked for something (tier 2+) and she said no

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
+import { ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -127,7 +127,7 @@ export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
         return (
           <div key={`${e.turn}-${i}`}>
             {dayMark && <div className="daymark">{t("ui.day", { day: e.day })}</div>}
-            <div className={`entry k-${kindOf(e.key, e.params)}${unseen ? " unseen" : ""}`} title={unseen ? t("ui.unseen") : undefined}>
+            <div className={`entry k-${kindOf(e.key, e.params)}${unseen ? " unseen" : ""}${e.tags?.includes("thought") ? " thought" : ""}`} title={unseen ? t("ui.unseen") : undefined}>
               <span className="time">{clockText(e.minute)}</span>
               <span>{richLine(e, t, lang)}</span>
             </div>
@@ -408,26 +408,76 @@ function Bar({ label, value, tone }: { label: string; value: number; tone?: stri
   );
 }
 
-export function HeroineTab({ state, t, open }: Common) {
+const reasonLabel = (r: string, t: Common["t"]) => {
+  for (const k of [`reason.${r}`, `act.${r}`, `day.${r}`]) {
+    const s = t(k);
+    if (s !== k) return s;
+  }
+  return r;
+};
+
+export function HeroineTab({ state, t, open, lang }: Common) {
   const h = bs(state).heroine;
   const tones = { energy: "green", mood: "green", arousal: "pink", drunk: "amber" };
+  const wants = wantsOf(state);
+  const top = (Object.entries(wants) as [string, number][]).sort((a, c) => c[1] - a[1])[0]!;
+  const topWant = top[1] >= content.mind.wants.hintFrom && (open || top[0] === "rest" || top[0] === "attention") ? top[0] : null;
+  const b = bs(state);
+  const days = (b.diary ?? []).filter((d) => state.time.day - d.day <= 2).sort((x, y) => y.day - x.day);
+  const who = (id: string) => (id === HUSBAND ? t("ui.memory.you") : b.patrons[id] ? patronName(b.patrons[id]!.name, lang) : t("ui.memory.someone"));
   return (
     <div>
       <div className="cap">{t("ui.state")}</div>
       {(["energy", "mood", "arousal", "drunk"] as const)
         .filter((k) => open || k !== "arousal")
         .map((k) => (
-          <Bar key={k} label={t(`stat.${k}`)} value={h[k]} tone={tones[k]} />
+          <div key={k}>
+            <Bar label={t(`stat.${k}`)} value={h[k]} tone={tones[k]} />
+            {open && (h.why?.[k]?.length ?? 0) > 0 && (
+              <div className="why-line">
+                {h.why![k]!.slice().reverse().map((w, i) => (
+                  <span key={i} className={w.a < 0 ? "neg" : "pos"}>
+                    {fmt(w.a)} {reasonLabel(w.r, t)}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
       {open && <Bar label={t("stat.satisfied")} value={h.satisfied} />}
-      {open && <Bar label={t("ui.annoyance")} value={annoyanceOf(state)} tone="amber" />}
+      {open && <Bar label={t("ui.annoy.guests")} value={annoyanceOf(state, "guests")} tone="amber" />}
+      {open && <Bar label={t("ui.annoy.him")} value={annoyanceOf(state, "him")} tone="amber" />}
+      <div className="small">
+        {t("ui.outside")}: <b>{t(`face.${faceOf(state)}`)}</b>
+        {topWant && <span className="muted"> · {t("ui.wants.hint", { what: t(`want.${topWant}`) })}</span>}
+      </div>
       {!open && annoyanceOf(state) >= content.manners.talk.annoy.tired && <div className="small bad">{t("ui.annoyed.seems")}</div>}
       {!open && <div className="muted small">{t("ui.hidden.hint")}</div>}
       {open && (
         <>
+          <div className="cap gap">{t("ui.feelings")}</div>
+          {feelingsOf(state).length === 0 && <div className="muted small">{t("ui.feelings.none")}</div>}
+          {feelingsOf(state).map(([e, v]) => (
+            <Bar key={e} label={t(`emotion.${e}`)} value={v} tone={e === "tenderness" || e === "delight" || e === "pride" ? "green" : "amber"} />
+          ))}
+          <Bar label={t("ui.trust")} value={trustOf(state)} />
+          <div className="cap gap">{t("ui.wants")}</div>
+          {(Object.entries(wants) as [string, number][]).map(([k, v]) => (
+            <Bar key={k} label={t(`want.${k}`)} value={v} tone="pink" />
+          ))}
+          <Bar label={t("ui.latitude")} value={latitudeOf(state)} />
+        </>
+      )}
+      {open && (
+        <>
           <div className="cap gap">{t("ui.character")}</div>
-          {(Object.keys(h.traits) as (keyof typeof h.traits)[]).map((k) => (
-            <Bar key={k} label={t(`trait.${k}`)} value={h.traits[k]} />
+          {(Object.keys(h.traits) as (keyof typeof h.traits)[]).map((k) => {
+            const d = h.snap ? h.traits[k] - (h.snap.traits[k] ?? h.traits[k]) : 0;
+            return <Bar key={k} label={t(`trait.${k}`) + (Math.abs(d) >= 1 ? ` (${fmt(d)} ${t("ui.drift")})` : "")} value={h.traits[k]} />;
+          })}
+          <div className="cap gap">{t("ui.attrs")}</div>
+          {ATTRS.map((a) => (
+            <Bar key={a} label={t(`attr.${a}`)} value={attrOf(state, a)} />
           ))}
           <Bar label={t("stat.sizeTaste")} value={h.sizeTaste} />
         </>
@@ -451,6 +501,21 @@ export function HeroineTab({ state, t, open }: Common) {
           </div>
         </>
       )}
+      <div className="cap gap">{t("ui.memory")}</div>
+      {days.map((d) => {
+        const lines = Object.entries(d.with).filter(([id]) => open || id === HUSBAND || d.seen[id]);
+        const label = d.day === state.time.day ? t("ui.memory.today") : d.day === state.time.day - 1 ? t("ui.memory.yesterday") : t("ui.memory.ago", { n: state.time.day - d.day });
+        return (
+          <div key={d.day} className="small">
+            <span className="muted">{label}: </span>
+            {lines.length === 0
+              ? t("ui.memory.none")
+              : lines.map(([id, acts]) => `${who(id)} - ${Object.entries(acts).map(([a, n]) => t(`act.${a}`) + (n > 1 ? ` x${n}` : "")).join(", ")}`).join("; ")}
+          </div>
+        );
+      })}
+      {days.length === 0 && <div className="muted small">{t("ui.memory.none")}</div>}
+      {open && b.tally && <div className="muted small">{t("ui.tally", { n: Object.values(b.tally.partners).reduce((s, n) => s + n, 0), men: Object.keys(b.tally.partners).length, came: b.tally.came })}</div>}
       {Object.keys(h.tastes.acts).length > 0 && (
         <>
           <div className="cap gap">{t("ui.tastes")}</div>

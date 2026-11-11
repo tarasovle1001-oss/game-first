@@ -80,9 +80,10 @@ export function registerRhythm(api: ModApi) {
     if (n?.herAsleep && ctx.state.time.phase === "night") {
       n.herAsleep = undefined;
       n.woken = true;
-      annoy(ctx, R.wakeHer.annoy);
+      annoy(ctx, R.wakeHer.annoy, "him");
       changeHeroine(ctx, "mood", R.wakeHer.mood, "woken");
       ctx.log("log.night.woke_her");
+      ctx.emit("her:woken");
     }
   });
   api.events.on("bed:turn", (ctx) => passNight(ctx, R.nightCosts.turn));
@@ -258,7 +259,7 @@ export function registerRhythm(api: ModApi) {
       const marks = Object.keys(h.cum ?? {}).length + Object.keys(h.after ?? {}).length;
       wash(ctx);
       if (marks === 0) {
-        annoy(ctx, R.bath.sendAnnoy);
+        annoy(ctx, R.bath.sendAnnoy, "him");
         ctx.log("log.bath.send.clean");
       } else ctx.log("log.bath.send");
       if (ctx.state.time.phase === "prep" && b.day) {
@@ -281,7 +282,7 @@ export function registerRhythm(api: ModApi) {
       ctx.log("log.bath.walkin.ok");
       ctx.emit("bath:walkin", { ok: true });
     } else {
-      annoy(ctx, W.annoy);
+      annoy(ctx, W.annoy, "him");
       ctx.state.where[HUSBAND] = e.payload!.from as string;
       ctx.log("log.bath.walkin.out");
       ctx.emit("bath:walkin", { ok: false });

@@ -38,7 +38,11 @@ words:
   skirtUp: skirt lift
   mood:             # first match from the top
     - { when: scared, tags: [scared, tears] }
+    - { when: angry, tags: [angry, glaring] }
     - { when: annoyed, tags: [annoyed, frown] }
+    - { when: ashamed, tags: [embarrassed, blush, averting eyes] }
+    - { when: guilty, tags: [guilty, looking down] }
+    - { when: tender, tags: [gentle smile, soft eyes] }
     - { when: ecstatic, tags: [ahegao, rolling eyes, tongue out] }
     - { when: aroused, tags: [blush, half-closed eyes, open mouth] }
     - { when: shy, tags: [shy, blush, looking away] }

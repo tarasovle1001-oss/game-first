@@ -14,6 +14,8 @@ export interface BaseSetup {
   husband?: Partial<Husband>;
   mode?: Mode;
   desire?: number;
+  /** What she is made of, 0..100 each: charm, wit, stamina, composure. */
+  attrs?: Partial<Record<"charm" | "wit" | "stamina" | "composure", number>>;
   /** Her name, as the menus address her. */
   name?: string;
   /** What she has a taste for, 0..100 each (50 = neither way): oral, anal, show, romance, rough, drink. From 80 it is a side of her. */
