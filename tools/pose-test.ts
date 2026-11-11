@@ -2,14 +2,15 @@
 // (same seed in a row), with a page to look at them, rate them and count the rejects. Nothing but ComfyUI is needed.
 //   pnpm exec tsx tools/pose-test.ts run <posesDir> <outDir> [--seeds 4] [--layouts a,b] [--variants plain,masks]
 //        [--comfy http://127.0.0.1:8188] [--cast default] [--cn-strength 0.6] [--cn-end 0.6]
+//   pnpm exec tsx tools/pose-test.ts page <posesDir> <outDir>     (the page again, e.g. after a change; pictures and marks stay)
 //   pnpm exec tsx tools/pose-test.ts stats <outDir>/marks.json
 // posesDir = Blender output (tools/blender/pose3d.py): LAYOUT.depth.png, LAYOUT.mask-N-ROLE.png, LAYOUT.pose.json.
 // Variants: plain = one prompt for the whole frame; masks = every figure's prompt on its own mask (any number of figures).
 // Flow: WAI + Lightning 8 step + Sora 0.7, 9 steps, cfg 1.5, euler_ancestral / simple, clip skip 2 - as in the old packs.
 // Watch: <outDir>/compare.html (fills in as pictures arrive), <outDir>/progress.json, <outDir>/timings.csv.
-import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { promptFor } from "../packages/base/src";
+import { content, promptFor } from "../packages/base/src";
 import type { SceneDesc } from "../packages/core/src";
 
 const argv = process.argv.slice(2);
@@ -29,12 +30,34 @@ const TESTS: Record<string, SceneDesc> = {
   patron_riding: { type: "patron_riding", location: "hotel.room1", participants: [wife, man(1)], tags: { ...her, outfit: "lingerie", face: "ecstatic", size: "3" } },
   patron_fin_face: { type: "patron_fin_face", location: "cafe.staff", participants: [wife, man(1)], tags: { outfit: "daring", face: "aroused", fin: "face", size: "3" } },
 };
+const LABEL: Record<string, string> = { outfit: "одежда", bare: "раздета", face: "лицо", under: "трусики", skirt: "юбка", men: "мужчин", fin: "финал", marks: "следы", size: "гость", size2: "гость 2", size3: "гость 3", hsize: "муж", gape: "растянута", sore: "натёрта", after: "после", drunk: "пьяна", crowd: "зеваки" };
+const SIZE = ["крошечный", "маленький", "средний", "большой", "огромный"];
 const REASONS: Record<number, string> = { 1: "good", 2: "pose", 3: "anatomy", 4: "mixed", 5: "other" };
 
 type Job = { layout: string; seed: number; variant: string; file: string };
 type Node = { class_type: string; inputs: Record<string, unknown> };
 
-function page(dir: string, layouts: string[], seeds: number[], variants: string[]) {
+/** What the picture is meant to show: the scene by name, the room, her state, the mannequin it is drawn over, the prompts. */
+function contextOf(poses: string, dir: string, layout: string, cast: string) {
+  const d = TESTS[layout]!;
+  const ru = content.locales.ru ?? {};
+  const p = promptFor(d, cast);
+  const ref = join(poses, `${layout}.preview.png`);
+  if (existsSync(ref)) copyFileSync(ref, join(dir, `_ref_${layout}.png`));
+  return {
+    title: ru[`scene.${layout}`] ?? layout,
+    room: ru[`loc.${d.location}`] ?? d.location,
+    who: d.participants.map((x) => x.role).join(", "),
+    tags: Object.entries(d.tags ?? {}).map(([k, v]) => `${LABEL[k] ?? k}: ${k.includes("size") ? `${SIZE[Number(v)]}` : v}`).join(" · "),
+    ref: existsSync(ref) ? `_ref_${layout}.png` : "",
+    shared: p.shared,
+    regions: p.regions,
+    negative: p.negative,
+  };
+}
+
+function page(poses: string, dir: string, layouts: string[], seeds: number[], variants: string[], cast: string) {
+  const ctx = Object.fromEntries(layouts.map((l) => [l, contextOf(poses, dir, l, cast)]));
   const rows = layouts.flatMap((l) => seeds.map((s) => ({ layout: l, seed: s, files: variants.map((v) => `${l}__s${s}__${v}.png`) })));
   writeFileSync(
     join(dir, "compare.html"),
@@ -43,7 +66,8 @@ function page(dir: string, layouts: string[], seeds: number[], variants: string[
 :root{color-scheme:dark}body{margin:0;background:#16161a;color:#ddd;font:14px system-ui}
 header{position:sticky;top:0;background:#16161aee;padding:8px 16px;z-index:2;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 progress{width:220px}table{border-collapse:collapse;margin:8px 16px}th{position:sticky;top:44px;background:#16161a;padding:4px 8px;text-align:left}
-td{padding:4px;vertical-align:top}td.n{color:#999;font-size:12px;max-width:150px}
+td{padding:4px;vertical-align:top}td.n{color:#bbb;font-size:12px;width:230px;max-width:230px}td.n h3{margin:0 0 4px;font-size:15px;color:#fff}td.n img{width:220px;display:block;border-radius:4px;margin:4px 0;cursor:zoom-in}td.n small{color:#888}details{margin-top:4px}details p{margin:4px 0;color:#9a9;word-break:break-word}details p b{color:#ccc}
+tr.first td{border-top:2px solid #333;padding-top:10px}
 .c{border:3px solid transparent;border-radius:6px;overflow:hidden;position:relative;min-width:120px;min-height:80px;background:#222;cursor:pointer}
 .c img{display:block;max-width:var(--w,380px);max-height:70vh}.c.wait img{visibility:hidden}.c.wait::after{content:"ждём";position:absolute;inset:0;display:grid;place-items:center;color:#666}
 .cur{border-color:#fff}.m1{border-color:#3a3}.m2{border-color:#c80}.m3{border-color:#c33}.m4{border-color:#a3c}.m5{border-color:#777}.cur.m1,.cur.m2,.cur.m3,.cur.m4,.cur.m5{outline:2px solid #fff}
@@ -53,12 +77,16 @@ kbd{background:#333;border-radius:3px;padding:0 4px}
 </style>
 <header><b id="count"></b><progress id="bar" max="1" value="0"></progress><span id="rate"></span>
 <span><kbd>1</kbd> ok <kbd>2</kbd> поза <kbd>3</kbd> тело/руки <kbd>4</kbd> фигуры смешались <kbd>5</kbd> другое · <kbd>←→↑↓</kbd> · <kbd>Space</kbd> крупно · <kbd>Z</kbd> отмена · <kbd>E</kbd> выгрузить marks.json · <kbd>+</kbd><kbd>-</kbd> размер</span></header>
-<table id="t"><tr><th></th>${variants.map((v) => `<th>${v}</th>`).join("")}</tr></table><div id="big"><img></div>
+<table id="t"><tr><th>что должно быть</th>${variants.map((v) => `<th>${v === "plain" ? "plain - один промпт на кадр" : v === "masks" ? "masks - промпт фигуры на её маске" : v}</th>`).join("")}</tr></table><div id="big"><img></div>
 <script>
-const rows=${JSON.stringify(rows)},variants=${JSON.stringify(variants)},store="pose-test:"+location.pathname;
+const ctx=${JSON.stringify(ctx)},rows=${JSON.stringify(rows)},variants=${JSON.stringify(variants)},store="pose-test:"+location.pathname;
 let marks={};try{marks=JSON.parse(localStorage.getItem(store)||"{}")}catch{}
 const cells=[];const t=document.getElementById("t");let cur=0,w=380;const undo=[];
-rows.forEach(r=>{const tr=document.createElement("tr");tr.innerHTML='<td class="n">'+r.layout+'<br>seed '+r.seed+'</td>';
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));let last="";
+rows.forEach(r=>{const tr=document.createElement("tr"),x=ctx[r.layout],first=r.layout!==last;last=r.layout;if(first)tr.className="first";
+ tr.innerHTML='<td class="n">'+(first?'<h3>'+esc(x.title)+'</h3>'+esc(x.room)+'<br><small>'+esc(x.who)+'</small><br><small>'+esc(x.tags)+'</small>'+(x.ref?'<img class="ref" src="'+x.ref+'" title="манекен, по которому рисуется">':'')
+  +'<details><summary>промпты</summary><p><b>общий:</b> '+esc(x.shared)+'</p>'+Object.entries(x.regions).map(([k,v])=>'<p><b>'+k+':</b> '+esc(v)+'</p>').join("")+'<p><b>негатив:</b> '+esc(x.negative)+'</p></details>':'<small>'+r.layout+'</small>')+'<br><small>seed '+r.seed+'</small></td>';
+ const ri=tr.querySelector("img.ref");if(ri)ri.onclick=()=>{const b=document.getElementById("big");b.querySelector("img").src=ri.src;b.style.display="flex"};
  r.files.forEach((f,i)=>{const td=document.createElement("td");const c=document.createElement("div");c.className="c wait";c.innerHTML='<b></b><img>';const img=c.querySelector("img");
   const load=()=>{img.src=encodeURI(f)+"?"+Date.now()};img.onload=()=>{c.classList.remove("wait");c.dataset.ok=1;draw()};img.onerror=()=>setTimeout(load,5000);load();
   const n=cells.length;c.onclick=()=>{cur=n;draw()};cells.push({c,f,layout:r.layout,variant:variants[i]});td.append(c);tr.append(td)});t.append(tr)});
@@ -85,7 +113,7 @@ async function run(poses: string, out: string) {
   const seeds = Array.from({ length: Number(opt("seeds", "4")) }, (_, i) => 5000 + i);
   const variants = opt("variants", "plain,masks").split(",");
   mkdirSync(out, { recursive: true });
-  page(out, layouts, seeds, variants);
+  page(poses, out, layouts, seeds, variants, opt("cast", "default"));
   const jobs: Job[] = layouts.flatMap((layout) => seeds.flatMap((seed) => variants.map((variant) => ({ layout, seed, variant, file: `${layout}__s${seed}__${variant}.png` })))).filter((j) => !existsSync(join(out, j.file)));
   const prompts = Object.fromEntries(layouts.map((l) => [l, promptFor(TESTS[l]!, opt("cast", "default"))]));
   writeFileSync(join(out, "prompts.json"), JSON.stringify(prompts, null, 1));
@@ -215,5 +243,11 @@ function stats(marksFile: string) {
 
 const [cmd, a, b] = argv;
 if (cmd === "run" && a && b) await run(a, b);
+else if (cmd === "page" && a && b) {
+  // only the page again (context, layout), the pictures and marks stay
+  const layouts = opt("layouts", Object.keys(TESTS).join(",")).split(",").filter((l) => TESTS[l] && existsSync(join(a, `${l}.depth.png`)));
+  page(a, b, layouts, Array.from({ length: Number(opt("seeds", "4")) }, (_, i) => 5000 + i), opt("variants", "plain,masks").split(","), opt("cast", "default"));
+  console.log(`page written: ${join(b, "compare.html")}`);
+}
 else if (cmd === "stats" && a) stats(a);
-else console.log("pose-test.ts run <posesDir> <outDir> [...] | stats <marks.json>");
+else console.log("pose-test.ts run <posesDir> <outDir> [...] | page <posesDir> <outDir> | stats <marks.json>");
