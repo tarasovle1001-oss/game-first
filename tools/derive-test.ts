@@ -105,7 +105,9 @@ async function run(dir: string) {
   mkdirSync(out, { recursive: true });
   const masks: Masks = JSON.parse(readFileSync(join(dir, "masks", "masks.json"), "utf8"));
   const cast = content.casts.find((c) => c.id === opt("cast", "default")) ?? content.casts[0]!;
-  const who = opt("who", [cast.wife.appearance, cast.wife.body].filter(Boolean).join(", "));
+  // her look: --who "tags", or <dir>/who.txt when it is there, else the cast card
+  const whoFile = join(dir, "who.txt");
+  const who = opt("who", existsSync(whoFile) ? readFileSync(whoFile, "utf8").trim() : [cast.wife.appearance, cast.wife.body].filter(Boolean).join(", "));
   const jobs = Object.keys(masks).flatMap((file) => VARIANTS.filter((v) => masks[file]![v.mask]).map((v) => ({ file, v, name: `${stem(file)}__${v.id}.png` })));
   const todo = jobs.filter((j) => !existsSync(join(out, j.name)));
 
