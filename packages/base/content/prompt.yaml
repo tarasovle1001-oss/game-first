@@ -6,8 +6,8 @@
 # Who the figures are (hair, eyes, build) is not here: that is the character card, cast.yaml.
 # Counts (1girl, 2boys...) are added by the code; do not write them here.
 style:
-  prefix: "masterpiece, best quality, anime style, highly detailed"
-  negative: "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, artist name"
+  prefix: "masterpiece, best quality, sora \\(soraoraora\\)"
+  negative: "worst quality, low quality, blurry, bad anatomy, extra limbs, deformed, text, watermark, signature, ugly, duplicate, 3d, realistic, photorealistic, comic, multiple panels, 2koma, 4koma, panels, inset, (futanari:1.3), newhalf, (penis on female:1.2), child, loli, shota, aged down"
 # per scene layout: "scene" = shared words for the whole frame (composition, camera, what is going on between them),
 # one entry per role = that figure: pose, where the hands are, where the eyes look. Same ids as scenes.yaml.
 poses:

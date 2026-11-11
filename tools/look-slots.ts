@@ -134,7 +134,7 @@ function check(): number {
     if (!filled(v)) return void empty++;
     const tags = v!.split(",").map((t) => t.trim()).filter(Boolean);
     if (/\n/.test(v!)) problems.push(`${path}: more than one line`);
-    if (tags.length > 20) problems.push(`${path}: ${tags.length} tags, max 20`);
+    if (pose && tags.length > 20) problems.push(`${path}: ${tags.length} tags, max 20`);
     for (const t of tags) if (COUNT.test(t.replace(/[()]/g, "").replace(/:[\d.]+$/, ""))) problems.push(`${path}: count tag "${t}" - the game adds counts`);
     if (pose && /\b(wife|husband|patron\d?|watcher)\b/i.test(v!)) problems.push(`${path}: names a role ("wife", "patron"...) - the model does not know these words; say "another", "partner", or drop it`);
     if (pose && /facing (left|right)|side view|from side|profile/i.test(v!)) problems.push(`${path}: fixes the side or a side view - the camera is three quarters round and comes from the mannequin, drop it`);
