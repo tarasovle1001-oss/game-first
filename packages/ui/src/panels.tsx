@@ -421,7 +421,7 @@ function Expectations({ state, t, lang }: Common) {
 }
 
 /** Her body and the two of you: the slow numbers. */
-export function CoupleTab({ state, t, lang }: Common) {
+export function CoupleTab({ state, t, lang, open }: Common) {
   const b = bs(state);
   const h = b.heroine;
   const skills = Object.entries(h.skills).sort((a, c) => c[1] - a[1]);
@@ -438,6 +438,22 @@ export function CoupleTab({ state, t, lang }: Common) {
       {b.denied > 1 && <div className="muted small">{t("ui.denied", { n: b.denied })}</div>}
       {b.secretKnows && <div className="small bad">{t("ui.secret_knows")}</div>}
       <Expectations state={state} t={t} lang={lang} />
+      {b.memories.some((m) => m.seen || open) && (
+        <>
+          <div className="cap gap">{t("ui.memories")}</div>
+          <ul className="patrons">
+            {[...b.memories]
+              .reverse()
+              .filter((m) => m.seen || open)
+              .slice(0, 12)
+              .map((m) => (
+                <li key={m.id} className={`small${m.seen ? "" : " muted"}`}>
+                  <span className="muted">{t("ui.day", { day: m.day })}</span> {t(m.key, renderParams(m.params, t, lang))}
+                </li>
+              ))}
+          </ul>
+        </>
+      )}
       <div className="cap gap">{t("ui.things")}</div>
       <div className="muted small">
         {t("ui.things.outfits")}: {b.owned.map((id) => t(`outfit.${id}`)).join(", ")}

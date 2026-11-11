@@ -21,11 +21,12 @@ import { registerDay } from "./systems/day";
 import { registerHotel } from "./systems/hotel";
 import { registerGossip } from "./systems/gossip";
 import { registerLoan } from "./systems/loan";
+import { registerMemories } from "./systems/memories";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 10,
+  version: 11,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -79,6 +80,7 @@ export const baseMod: Mod = {
       complainedDay: -10,
       orders: [],
       ordersAsked: [],
+      memories: [],
       talked: [],
       dayTop: null,
       outfitAsked: false,
@@ -115,6 +117,7 @@ export const baseMod: Mod = {
     registerHotel(api);
     registerGossip(api);
     registerLoan(api);
+    registerMemories(api);
     registerSetup(api);
   },
 };

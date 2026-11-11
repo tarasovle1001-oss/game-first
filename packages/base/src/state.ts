@@ -187,6 +187,7 @@ export interface BaseState {
   complainedDay: number;
   orders: string[]; // single things about her dress he asked for tonight and she agreed to
   ordersAsked: string[];
+  memories: { id: string; day: number; key: string; params?: Record<string, string | number>; seen: boolean }[]; // firsts, dated
   talked: string[]; // what he already said or did with her today (each thing once a day)
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now
