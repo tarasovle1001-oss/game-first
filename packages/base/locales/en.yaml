@@ -686,3 +686,5 @@ log.upstairs.no: "\"Now? There are people out there.\" She pulls her hand back, 
 log.upstairs.back: "You both go back to work. She fixes her hair on the stairs."
 factor.consent.work: "There are guests waiting"
 factor.consent.wants: "She came to you herself"
+ui.pack.add: "Load image pack (folder)"
+ui.pack.loaded: "Pack: {name}, pictures: {n}"

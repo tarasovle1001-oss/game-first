@@ -33,3 +33,9 @@ export function sceneKeyFallbacks(desc: SceneDesc): string[] {
   out.push(`${desc.type}/*`);
   return [...new Set(out)];
 }
+
+/**
+ * File name (without extension) an image pack uses for a key: "/" becomes "__", "*" becomes "any".
+ * Several pictures for one key: add "~2", "~3" to the name.
+ */
+export const sceneFileName = (key: string): string => key.replace(/\//g, "__").replace(/\*/g, "any");

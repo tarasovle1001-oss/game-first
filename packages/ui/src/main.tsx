@@ -7,6 +7,7 @@ import { CheatPanel } from "./cheats";
 import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
+import { loadPack, packInfo, pictureFor } from "./pack";
 import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, Summary, TopBar, WhyTab } from "./panels";
 import "./style.css";
 
@@ -35,6 +36,8 @@ function App() {
     }
   };
   const [menu, setMenu] = useState(false);
+  const [packCount, setPackCount] = useState(0);
+  const packInput = useRef<HTMLInputElement | null>(null);
   const [setupOpen, setSetupOpen] = useState(true); // the first thing a player sees
   const [tab, setTab] = useState<Tab>("her");
   const [error, setError] = useState("");
@@ -133,6 +136,8 @@ function App() {
             <button onClick={() => downloadText(`test-city-day${state.time.day}.json`, saveGame(state, engine))}>{t("ui.save.file")}</button>
             <button onClick={() => saveInput.current?.click()}>{t("ui.load.file")}</button>
             <button onClick={() => modInput.current?.click()}>{t("ui.mod.add")}</button>
+            <button onClick={() => packInput.current?.click()}>{t("ui.pack.add")}</button>
+            {packCount > 0 && <div className="muted small">{t("ui.pack.loaded", { name: packInfo().name, n: packInfo().keys })}</div>}
             <div className="muted small">
               {t("ui.mods")}: {game.packs.map((p) => `${p.mod.id} v${p.mod.version}`).join(", ")}
             </div>
@@ -140,6 +145,16 @@ function App() {
         )}
         <input ref={saveInput} type="file" accept=".json" hidden onChange={(e) => readFile(e.target, load)} />
         <input ref={modInput} type="file" accept=".js" hidden onChange={(e) => readFile(e.target, addMod)} />
+        <input
+          ref={(el) => {
+            packInput.current = el;
+            el?.setAttribute("webkitdirectory", "");
+          }}
+          type="file"
+          multiple
+          hidden
+          onChange={(e) => e.target.files && setPackCount(loadPack(e.target.files))}
+        />
       </header>
 
       {setupOpen && (
@@ -163,7 +178,7 @@ function App() {
         </aside>
 
         <section className="col-main">
-          {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} />}
+          {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(scene, state.time.day * 7 + state.turn) : null} />}
           <div className="cap gap">{t("ui.where")}</div>
           <Rooms {...common} onAct={act} />
           {debug && <CheatPanel {...common} onAct={act} />}

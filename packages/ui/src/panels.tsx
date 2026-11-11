@@ -100,7 +100,7 @@ export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
 
 // ---------------------------------------------------------------- scene
 
-export function ScenePanel({ state, t, lang, scene, open }: Common & { scene: SceneDesc | null }) {
+export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { scene: SceneDesc | null; picture?: { url: string; key: string; exact: boolean } | null }) {
   const b = bs(state);
   const layout = scene ? (content.scenes.find((s) => s.id === scene.type) ?? content.scenes.find((s) => s.id === "idle")!) : null;
   const wifeHere = state.where[WIFE] === state.where[HUSBAND];
@@ -124,7 +124,17 @@ export function ScenePanel({ state, t, lang, scene, open }: Common & { scene: Sc
   const record = visible && subject ? [...b.proposals].reverse().find((p) => p.patron === subject && (subject === HUSBAND || p.verdict !== "refuse")) : undefined;
   return (
     <div className="scene">
-      <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
+      {picture && scene && layout ? (
+        <div className="picture photo">
+          <img src={picture.url} alt={t(`scene.${layout.id}`)} />
+          <div className="photo-cap">
+            <b>{t(`scene.${layout.id}`)}</b> · {t(`loc.${scene.location}`)}
+            {open && !picture.exact && <span className="muted"> · {picture.key}</span>}
+          </div>
+        </div>
+      ) : (
+        <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
+      )}
       {!wifeHere && <div className="hint">{t("ui.not_here")}</div>}
       {b.night?.sex && (
         <div className="meters">

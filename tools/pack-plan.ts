@@ -3,7 +3,7 @@
 // pnpm exec tsx tools/pack-plan.ts [days=30] [seeds=6] [out=pack-plan.json]
 import { writeFileSync } from "node:fs";
 import { baseMod, bs, content } from "../packages/base/src";
-import { createEngine, sceneKey } from "../packages/core/src";
+import { createEngine, sceneFileName, sceneKey } from "../packages/core/src";
 import type { GameState, SceneDesc } from "../packages/core/src";
 import { awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy } from "../packages/bots/src";
 
@@ -38,7 +38,7 @@ for (const preset of content.presets.map((p) => p.id))
 const rows = [...counts.entries()].map(([key, v]) => ({ key, n: v.n, type: v.desc.type, location: v.desc.location, tags: v.desc.tags ?? {} })).sort((a, b) => b.n - a.n);
 const total = rows.reduce((a, r) => a + r.n, 0);
 let run = 0;
-const plan = rows.map((r) => ({ ...r, share: +(r.n / total).toFixed(4), coverage: +((run += r.n) / total).toFixed(4) }));
+const plan = rows.map((r) => ({ ...r, file: `${sceneFileName(r.key)}.png`, share: +(r.n / total).toFixed(4), coverage: +((run += r.n) / total).toFixed(4) }));
 writeFileSync(out, JSON.stringify({ days: Number(days), seeds: Number(seeds), keys: plan.length, total, plan }, null, 1));
 const at = (c: number) => plan.findIndex((r) => r.coverage >= c) + 1;
 console.log(`${plan.length} distinct pictures over ${total} views. For 80% of views: ${at(0.8)} pictures, 95%: ${at(0.95)}, 99%: ${at(0.99)}.`);
