@@ -590,10 +590,40 @@ export const termsSchema = z
   .strict();
 export type Terms = z.infer<typeof termsSchema>;
 
+export const floorSchema = z
+  .object({
+    moments: z
+      .object({
+        chancePerTick: z.number(),
+        likeAffinity: z.number(),
+        list: z.array(
+          z
+            .object({
+              id,
+              when: z.object({ regular: z.boolean().optional(), newcomer: z.boolean().optional(), approach: z.string().optional(), minInterest: z.number().optional(), minDrunk: z.number().optional(), minGenerosity: z.number().optional(), maxGenerosity: z.number().optional(), minAffinity: z.number().optional(), waiting: z.boolean().optional(), noNumber: z.boolean().optional(), pushyNear: z.boolean().optional() }).strict(),
+              needOpen: z.number().optional(),
+              likeAffinity: z.number().optional(),
+              good: nums.optional(),
+              bad: nums.optional(),
+              secret: nums.optional(), // on top, while she has something to hide
+            })
+            .strict(),
+        ),
+      })
+      .strict(),
+    deal: z.object({ fromTier: z.number(), chance: z.number(), drunkGenerous: z.tuple([z.number(), z.number()]), priceFactor: z.number(), hourFactor: z.number(), raise: z.array(z.number()), acceptPerGenerosity: z.number(), acceptPerInterest: z.number(), wantBonus: z.number(), expires: z.number(), soldTrust: z.number(), soldResent: z.number(), refusedAffinity: z.number(), refuseHerLiked: nums, refuseHerRelief: nums }).strict(),
+    groups: z.object({ fromDay: z.number(), chancePerDay: z.number(), arriveTick: z.tuple([z.number(), z.number()]), stay: z.number(), size: z.tuple([z.number().int(), z.number().int()]), kinds: z.array(id), trayEvery: z.number(), trayWait: z.number(), bill: z.tuple([z.number(), z.number()]), tipHer: z.number(), tipHusband: z.number(), heatPerRound: z.number(), heatHer: z.number(), restlessReputation: z.number(), inside: z.tuple([z.number(), z.number()]), longInside: z.tuple([z.number(), z.number()]), tierByHeat: z.array(z.tuple([z.number(), z.number()])), pressurePerMan: z.number(), manyBonus: z.number(), tipPerTier: z.number(), husbandEnergy: z.number(), refusedHeat: z.number() }).strict(),
+    table: z.object({ minutes: z.number().int(), perEvening: z.number().int(), slipDrunk: z.number(), slipHonesty: z.number(), slipSuspicion: z.number(), cards: z.object({ bet: z.array(z.number().int()), winChance: z.number(), perDrunk: z.number(), stayTicks: z.number() }).strict(), rivalCools: z.number() }).strict(),
+    join: z.object({ consentBonus: z.number(), hersRate: z.number(), power: z.number(), done: nums, refused: nums }).strict(),
+  })
+  .strict();
+export type Floor = z.infer<typeof floorSchema>;
+
 export interface Content {
   look: Look;
   mind: Mind;
   terms: Terms;
+  floor: Floor;
   rooms: Room[];
   patronTypes: PatronType[];
   names: NameEntry[];

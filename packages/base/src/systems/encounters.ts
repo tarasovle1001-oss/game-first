@@ -465,7 +465,7 @@ export function warmGuests(ctx: Ctx) {
 }
 
 /** A hook for the terms between husband and wife: return true when she asks him before saying yes. */
-export const gate: { ask?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean } = {};
+export const gate: { ask?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean; deal?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean } = {};
 /** Start an act with a guest outright (a dare taken, a yes given after asking). */
 export function startWith(ctx: Ctx, patronId: string, actId: string, verdict: Verdict) {
   const b = bs(ctx.state);
@@ -482,7 +482,7 @@ export function runProposals(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
   if (sh.moment && sh.tick >= sh.moment.until) sh.moment = null;
-  if (b.encounter || b.night) return;
+  if (b.encounter || b.night || (sh.awayUntil ?? 0) > sh.tick) return;
   // a man speaks up once he has been here a moment; the keener ones go first
   const eligible = sh.visits
     .filter((v) => !v.blocked && (v.served > 0 || v.waited > 0))
@@ -500,6 +500,7 @@ export function runProposals(ctx: Ctx) {
     const act = actById(input.act);
     if (!isLight(act) && (b.encounter || sh.tick < (sh.restUntil ?? 0) || sh.tick < (v.cooldownUntil ?? 0))) continue; // she is with someone, or only just back at work
     spoke += 1;
+    if (gate.deal?.(ctx, v, p, input)) continue; // a man with money goes to her husband first
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
     let verdict = verdictOf(res.total);
     // hesitating can go either way: the closer to "gladly", the surer the yes

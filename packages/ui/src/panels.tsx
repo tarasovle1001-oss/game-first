@@ -704,7 +704,7 @@ function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
   );
 }
 
-export function GuestsTab({ state, t, lang }: Common) {
+export function GuestsTab({ state, t, lang, open }: Common) {
   const b = bs(state);
   const present = b.shift?.visits ?? [];
   const regulars = Object.values(b.patrons)
@@ -724,6 +724,12 @@ export function GuestsTab({ state, t, lang }: Common) {
           </ul>
         </>
       )}
+      {b.shift?.group && (
+        <div className="small">
+          {t("ui.group", { n: b.shift.group.size, heat: Math.round(b.shift.group.heat) })}
+          {b.shift.group.herOut !== undefined ? ` · ${t("ui.group.her")}` : b.shift.group.wants !== undefined ? ` · ${t("ui.group.wants")}` : ""}
+        </div>
+      )}
       <div className="cap">{t("ui.patrons")}</div>
       <ul className="patrons">
         {present.length === 0 && <li className="muted">{t("ui.nobody")}</li>}
@@ -735,6 +741,17 @@ export function GuestsTab({ state, t, lang }: Common) {
                 {v.waited > 0 ? t("ui.waits", { n: v.waited }) : ""}
                 {v.waited > 0 && b.patrons[v.patron]!.memory.tier >= 3 && b.patrons[v.patron]!.likes?.length ? " · " : ""}
                 {b.patrons[v.patron]!.memory.tier >= 3 && b.patrons[v.patron]!.likes?.length ? `${t("ui.likes")}: ${b.patrons[v.patron]!.likes!.map((a) => t(`act.${a}`)).join(", ")}` : ""}
+              </div>
+            )}
+            {((v.crossed ?? 0) > 0 || b.encounter?.patron === v.patron || b.deal?.patron === v.patron) && (
+              <div className="small bad" style={{ marginLeft: 8 }}>
+                {[
+                  (v.crossed ?? 0) > 0 ? t("ui.guest.crossed", { n: v.crossed! }) : "",
+                  b.encounter?.patron === v.patron && (open || husbandSees(state, b.encounter.loc)) ? t("ui.guest.with", { n: (b.shift?.tick ?? 0) - b.encounter.startTick }) : "",
+                  b.deal?.patron === v.patron ? t("ui.deal") : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </div>
             )}
             {((v.drunk ?? 0) >= 40 || (v.heat ?? 0) >= 40) && (

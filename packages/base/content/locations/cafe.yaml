@@ -4,7 +4,7 @@
 zone: cafe
 rooms:
   - id: cafe.hall
-    links: [cafe.bar, cafe.toilet, home.bedroom, hotel.landing, town.square]
+    links: [cafe.bar, cafe.toilet, cafe.lounge, home.bedroom, hotel.landing, town.square]
     tags: [public, work]
     sees: [cafe.bar]
     map: { x: 1, y: 1, w: 2, h: 1 }
@@ -25,3 +25,7 @@ rooms:
     links: [cafe.hall]
     tags: [public, private]
     map: { x: 0, y: 1, w: 1, h: 1 }
+  - id: cafe.lounge          # the back room a company can take for the evening; a closed door
+    links: [cafe.hall]
+    tags: [public, work]
+    map: { x: 6, y: 1, w: 1, h: 1 }

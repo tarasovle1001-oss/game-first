@@ -111,6 +111,8 @@ export interface Visit {
   rounds: number; // times he has finished tonight
   cooldownUntil?: number; // minute before which he does not try to take her aside again
   pushed?: boolean; // the husband nudged her toward him tonight
+  crossed?: number; // times he would not take a no tonight
+  dealt?: boolean; // he has already been to the husband about her tonight
 }
 
 /** The two of them in bed, turn by turn. */
@@ -150,6 +152,7 @@ export interface Encounter {
   refusals: number; // changes she said no to
   paid: boolean; // his offer of money is already on the table
   bored?: number; // attempts in a row that gave her too little
+  joined?: string; // her husband joined in: how
 }
 
 /** Kept for the debug panel: why she answered the way she did. */
@@ -181,6 +184,12 @@ export interface Shift {
   upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight
+  awayUntil?: number; // minute until which she is out of reach (behind the back room door)
+  momentsSeen?: string[]; // "patron:moment" that already happened tonight
+  groupAt?: number; // minute a company walks in
+  group?: { kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number }; // the company in the back room
+  tableSat?: number;
+  tableWith?: string[];
 }
 
 export interface Ledger {
@@ -239,6 +248,7 @@ export interface BaseState {
   diary?: { day: number; with: Record<string, Record<string, number>>; seen: Record<string, boolean>; came: number; cameHim?: number }[]; // what happened, by day and by man
   tally?: { acts: Record<string, number>; partners: Record<string, number>; came: number };
   thoughtAt?: number;
+  deal?: { patron: string; act: string; price: number; tick: number }; // a guest has come to him with money and waits
   wishes?: string[]; // what he said he wants from her today
   wishRun?: Record<string, { n: number; day: number }>; // days running each wish has been said
   perm?: Record<string, "allow" | "forbid">; // single things he allowed or forbade
