@@ -86,9 +86,15 @@ function serve(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
   const waiting = sh.visits.filter(wantsOrder).sort((a, c) => c.waited - a.waited || a.served - c.served);
-  let servedId: string | null = null;
-  const v = waiting[0];
-  if (v && !b.encounter && b.heroine.energy > 0) {
+  const husbandAt = ctx.state.where[HUSBAND];
+  const served = new Set<string>();
+  // she takes one order; a husband on the floor takes one too, every few ticks, whatever she is doing
+  const takers: ("wife" | "husband")[] = [];
+  if (!b.encounter && b.heroine.energy > 0) takers.push("wife");
+  if (husbandAt === HALL && sh.tick % bal.husbandInHallServesEvery === 0) takers.push("husband");
+  for (const taker of takers) {
+    const v = waiting.find((x) => !served.has(x.patron));
+    if (!v) break;
     if (b.stock <= 0) {
       if (!sh.stockWarned) {
         sh.stockWarned = true;
@@ -98,13 +104,14 @@ function serve(ctx: Ctx) {
     } else {
       const p = b.patrons[v.patron]!;
       const type = content.patronTypes.find((t) => t.id === p.type)!;
-      const bill = ctx.rng.int(type.spend[0], type.spend[1]);
-      const tip = Math.max(0, Math.round(ctx.engine.evaluate<TipInput>(TIP_FORMULA, ctx.state, { patron: p.id, bill }).total));
+      const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (husbandAt === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1));
+      // nobody tips the husband for her smile
+      const tip = taker === "husband" ? 0 : Math.max(0, Math.round(ctx.engine.evaluate<TipInput>(TIP_FORMULA, ctx.state, { patron: p.id, bill }).total));
       b.stock -= 1;
       v.served += 1;
       v.waited = 0;
       v.sinceOrder = 0;
-      servedId = p.id;
+      served.add(p.id);
       sh.income += bill;
       sh.tips += tip;
       sh.served += 1;
@@ -114,12 +121,12 @@ function serve(ctx: Ctx) {
       p.memory.served += 1;
       p.memory.tipsTotal += tip;
       addMoney(ctx, bill + tip, "service");
-      changeHeroine(ctx, "energy", -bal.energyPerServe, "work");
-      ctx.emit("patron:served", { id: p.id, bill, tip });
+      if (taker === "wife") changeHeroine(ctx, "energy", -bal.energyPerServe, "work");
+      ctx.emit("patron:served", { id: p.id, bill, tip, by: taker });
     }
   }
   for (const x of sh.visits) {
-    if (x.patron === servedId) continue;
+    if (served.has(x.patron)) continue;
     x.sinceOrder += 1;
     if (wantsOrder(x)) x.waited += 1;
   }
@@ -245,6 +252,12 @@ export function registerShift(api: ModApi) {
     labelKey: "factor.tip.mood",
     order: 10,
     eval: (state, { bill }) => (bill * (bs(state).heroine.mood - 50)) / 500,
+  });
+  api.formulas.addFactor<TipInput>(TIP_FORMULA, {
+    id: "tip.bar",
+    labelKey: "factor.tip.bar",
+    order: 15,
+    eval: (state, { bill }) => (state.where[HUSBAND] === "cafe.bar" ? (bill * bal.husbandAtBarTip) / 4 : null),
   });
   api.formulas.addFactor<TipInput>(TIP_FORMULA, {
     id: "tip.interest",

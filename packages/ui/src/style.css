@@ -542,3 +542,32 @@ header {
   border-radius: 10px;
   box-shadow: 0 12px 30px #0008;
 }
+
+.chip.latent {
+  border-color: #8a6bd1;
+  background: #2c2146;
+}
+.summary {
+  padding: 18px 20px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  max-width: 460px;
+}
+.sum-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.sum-line.total {
+  border-bottom: none;
+  font-size: 1.15rem;
+  padding-top: 10px;
+}
+
+.spot {
+  font-size: 0.74rem;
+  color: var(--accent);
+}

@@ -58,6 +58,10 @@ export const balanceSchema = z
         energyPerServe: z.number().min(0),
         regularAfterVisits: z.number().int().positive(),
         returnChance: z.number().min(0).max(1), // chance that an arriving guest has been here before
+        // where the husband spends the evening changes what the cafe earns
+        husbandInHallServesEvery: z.number().int().positive(), // he takes an order himself every N ticks
+        husbandInKitchenBill: z.number().min(0), // share added to every bill while he cooks
+        husbandAtBarTip: z.number().min(0), // share added to tips while he pours
       })
       .strict(),
   })
@@ -161,8 +165,32 @@ export const secrecySchema = z
     powerPerTold: z.number(),
     powerRow: z.number(), // consent weight of her power over him
     powerDenies: z.number(), // how much her power makes her refuse her husband
+    // nights when she takes the lead: power needed for each, and how often it happens
+    lead: z.object({ tease: z.number(), facesit: z.number(), ignore: z.number(), chancePerPower: z.number().min(0) }).strict(),
   })
   .strict();
+
+export const outfitSchema = z
+  .object({
+    id,
+    order: z.number().int(), // from modest to revealing
+    allure: z.number().min(0), // interest a guest gets just from seeing her
+    tip: z.number().min(0), // share added to tips
+    openness: z.number().min(0).max(100), // she wears it on her own from this openness up
+  })
+  .strict();
+export const latentSchema = z.object({ id, chance: z.number().min(0).max(1), noticeAfter: z.number().int().positive(), strength: z.number() }).strict();
+export const mannersSchema = z
+  .object({
+    // what the husband asked her to be like tonight: consent shift with guests and share added to tips
+    directives: z.record(z.enum(["reserved", "natural", "friendly"]), z.object({ consent: z.number(), maxTier: z.number().int(), tip: z.number() }).strict()),
+    askOutfitBonus: z.number(), // how much his asking lowers the openness an outfit needs
+    taste: z.object({ came: z.number(), eager: z.number(), hesitant: z.number(), min: z.number(), max: z.number(), typeEager: z.number() }).strict(),
+  })
+  .strict();
+export type Outfit = z.infer<typeof outfitSchema>;
+export type Latent = z.infer<typeof latentSchema>;
+export type Manners = z.infer<typeof mannersSchema>;
 
 export const phoneSchema = z
   .object({
@@ -204,5 +232,8 @@ export interface Content {
   body: BodyTuning;
   secrecy: SecrecyTuning;
   phone: PhoneTuning;
+  outfits: Outfit[];
+  latents: Latent[];
+  manners: Manners;
   locales: Record<string, Record<string, string>>;
 }

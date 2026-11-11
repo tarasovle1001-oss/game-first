@@ -15,6 +15,9 @@ export const newHeroine = (): Heroine => ({
   sizeTaste: 20,
   orgasms: 0,
   marriage: { desire: content.body.husband.desire, resent: content.body.husband.resent },
+  outfit: content.outfits.slice().sort((a, b) => a.order - b.order)[0]!.id,
+  tastes: { acts: {}, types: {} },
+  latents: {},
 });
 
 type StateKey = "energy" | "mood" | "arousal" | "drunk";

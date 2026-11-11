@@ -153,6 +153,33 @@ export function registerSecrecy(api: ModApi) {
     },
   });
 
+  // Once she has the upper hand, some nights she decides what happens in the bedroom.
+  api.events.on("phase:enter", (ctx, e) => {
+    const b = bs(ctx.state);
+    if (e.payload!.phase !== "night" || b.mode !== "open" || !b.night) return;
+    const L = S.lead;
+    if (b.power < L.tease || !ctx.rng.chance(b.power * L.chancePerPower)) return;
+    const kind = b.power >= L.ignore ? "fd_ignore" : b.power >= L.facesit ? "fd_facesit" : "fd_tease";
+    b.night.scene = kind;
+    b.night.asked = true; // tonight he does not get to ask
+    if (kind === "fd_facesit") {
+      b.heroine.orgasms += 1;
+      b.heroine.satisfied = 100;
+      changeHeroine(ctx, "arousal", -b.heroine.arousal + 8, "her lead");
+      changeHeroine(ctx, "mood", 6, "her lead");
+    }
+    b.power = clamp(b.power + 1);
+    ctx.log(`log.lead.${kind}`);
+    ctx.emit("lead", { kind });
+  });
+  // How long he has gone without: counted at the end of each night.
+  api.events.on("husband:act", (ctx) => {
+    bs(ctx.state).denied = -1; // tonight does not count
+  });
+  api.events.on("phase:exit", (ctx, e) => {
+    if (e.payload!.phase === "night") bs(ctx.state).denied += 1;
+  });
+
   api.scenes.register({
     id: "base.caught",
     priority: 200,

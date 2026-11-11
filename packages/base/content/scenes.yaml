@@ -89,3 +89,32 @@
     - { role: wife, pose: kneel, x: -30, y: 0, flip: false }
     - { role: patron, pose: stand, x: 0, y: 0, flip: true }
     - { role: husband, pose: stand, x: 70, y: 0, flip: true }
+- id: fd_tease
+  figures:
+    - { role: husband, pose: lie_back, x: -6, y: 0, flip: false }
+    - { role: wife, pose: kneel, x: 46, y: 0, flip: true }
+- id: fd_facesit
+  figures:
+    - { role: husband, pose: lie_back, x: 10, y: 0, flip: false }
+    - { role: wife, pose: straddle, x: -30, y: 14, flip: false }
+- id: fd_ignore
+  figures:
+    - { role: wife, pose: lie_front, x: -30, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 56, y: 0, flip: true }
+# more guest scenes
+- id: patron_titfuck
+  figures:
+    - { role: patron, pose: sit, x: 10, y: 0, flip: true }
+    - { role: wife, pose: kneel, x: -22, y: 0, flip: false }
+- id: patron_thigh_job
+  figures:
+    - { role: wife, pose: stand, x: 6, y: 0, flip: false }
+    - { role: patron, pose: stand, x: -10, y: 0, flip: false }
+- id: patron_deepthroat
+  figures:
+    - { role: patron, pose: stand, x: 14, y: 0, flip: true }
+    - { role: wife, pose: kneel, x: -14, y: 0, flip: false }
+- id: patron_standing_sex
+  figures:
+    - { role: wife, pose: bend, x: 10, y: 0, flip: false }
+    - { role: patron, pose: stand, x: -12, y: 0, flip: false }

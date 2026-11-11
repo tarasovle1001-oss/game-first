@@ -13,3 +13,10 @@ powerPerSeen: 2       # her power over him grows when he watches
 powerPerTold: 1       # ...and when she does it without him
 powerRow: 0.2         # consent weight of her power over him
 powerDenies: 0.35     # how much her power makes her refuse her husband at night
+
+# nights when she takes the lead instead of waiting to be asked (open mode only)
+lead:
+  tease: 30      # she winds him up and leaves him like that
+  facesit: 50    # she takes what she wants from him and gives nothing back
+  ignore: 70     # she tells him about her evening and turns away
+  chancePerPower: 0.008 # chance per night = her power x this

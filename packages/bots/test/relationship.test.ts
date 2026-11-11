@@ -121,3 +121,40 @@ describe("hidden and open", () => {
     s = hidden;
   });
 });
+
+describe("open marriage, her lead", () => {
+  it("with enough power some nights are hers to decide", () => {
+    let s = toNight(engine.init(4));
+    const open = structuredClone(s);
+    open.mods.base.mode = "open";
+    open.mods.base.power = 90;
+    s = open;
+    let led = 0;
+    for (let night = 0; night < 12; night++) {
+      s = engine.dispatch(s, { type: CORE_ADVANCE }); // leave this night
+      s = toNight(s);
+      if (bs(s).night!.scene.startsWith("fd_")) {
+        led += 1;
+        expect(has(s, NIGHT_ACT)).toBe(false);
+      }
+    }
+    expect(led).toBeGreaterThan(0);
+  });
+});
+
+describe("where the husband stands", () => {
+  it("in the hall he takes orders himself, even when she cannot", () => {
+    const evening = (room: string) => {
+      let s = engine.init(9);
+      s = engine.dispatch(s, { type: CORE_ADVANCE });
+      const moved = structuredClone(s);
+      moved.where.husband = room;
+      moved.mods.base.heroine.energy = 0; // she is out of it tonight
+      s = moved;
+      while (engine.listActions(s).some((a) => a.type === WAIT)) s = engine.dispatch(s, { type: WAIT, payload: { minutes: 60 } });
+      return bs(s).shift!.served;
+    };
+    expect(evening("cafe.staff")).toBe(0);
+    expect(evening("cafe.hall")).toBeGreaterThan(0);
+  });
+});

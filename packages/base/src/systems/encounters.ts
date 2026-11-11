@@ -233,7 +233,8 @@ export function runProposals(ctx: Ctx) {
     const verdict = verdictOf(res.total);
     b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: input.act, loc: input.loc, verdict, seen: [HALL, input.loc].includes(ctx.state.where[HUSBAND] ?? ""), total: res.total, rows: res.rows });
     if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
-    ctx.emit("encounter:proposed", { patron: p.id, act: input.act, verdict, total: res.total });
+    const seen = [HALL, input.loc].includes(ctx.state.where[HUSBAND] ?? "");
+    ctx.emit("encounter:proposed", { patron: p.id, act: input.act, verdict, total: res.total, seen, rowIds: res.rows.map((r) => r.id) });
     if (verdict === "refuse") refuse(ctx, v, p, input);
     else accept(ctx, v, p, input, verdict);
     if (verdict === "refuse" || !isLight(act)) b.shift!.interrupt = true; // worth stopping "wait until" for
@@ -329,6 +330,7 @@ export function registerEncounters(api: ModApi) {
           { id: WIFE, role: "wife" },
           { id: enc.patron, role: "patron" },
         ],
+        tags: { outfit: bs(state).heroine.outfit },
       };
     },
   });
@@ -347,6 +349,7 @@ export function registerEncounters(api: ModApi) {
           { id: WIFE, role: "wife" },
           { id: m.patron, role: "patron" },
         ],
+        tags: { outfit: bs(state).heroine.outfit },
       };
     },
   });

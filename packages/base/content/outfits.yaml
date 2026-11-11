@@ -1,0 +1,16 @@
+# What she wears to work. She picks the most revealing one her openness allows; her husband can ask for more.
+- id: modest
+  order: 0
+  allure: 0       # interest a guest gets just from seeing her
+  tip: 0          # share added to tips
+  openness: 0     # she wears it on her own from this openness up
+- id: fitted
+  order: 1
+  allure: 4
+  tip: 0.15
+  openness: 38
+- id: revealing
+  order: 2
+  allure: 10
+  tip: 0.35
+  openness: 62

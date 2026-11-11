@@ -19,7 +19,7 @@ with sync_playwright() as p:
     for label in sys.argv[2:]:
         name, _, times = label.partition("*")
         for _ in range(int(times or 1)):
-            page.get_by_role("button", name=name, exact=True).first.click()
+            page.locator("button", has_text=name).first.click()
     page.screenshot(path=out, full_page=True)
     print("errors:", errors or "none")
     browser.close()

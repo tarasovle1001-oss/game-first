@@ -23,7 +23,7 @@ pnpm exec tsx tools/scene-sheet.ts sheet.html    # все схемы сцен н
 pnpm exec tsx tools/make-save.ts save.json 12 2  # сейв с идущей сценой (день от 12, сид 2)
 ```
 
-Решения, принятые по ходу: [docs/DECISIONS.md](docs/DECISIONS.md).
+Решения, принятые по ходу: [docs/DECISIONS.md](docs/DECISIONS.md). Как писать моды: [docs/MODDING.md](docs/MODDING.md).
 
 ## Пакеты
 
@@ -58,4 +58,4 @@ pnpm exec tsx tools/make-save.ts save.json 12 2  # сейв с идущей сц
 
 ## Контент
 
-Всё в `packages/base/content`: `locations/`, `patron-types/`, `acts.yaml`, `scenes.yaml`, `consent.yaml`, `body.yaml`, `secrecy.yaml`, `phone.yaml`, `balance.yaml`, `names.yaml`. Тексты в `packages/base/locales/en.yaml` и `ru.yaml`.
+Всё в `packages/base/content`: `locations/`, `patron-types/`, `acts.yaml`, `scenes.yaml`, `consent.yaml`, `body.yaml`, `secrecy.yaml`, `phone.yaml`, `outfits.yaml`, `manners.yaml`, `latents.yaml`, `balance.yaml`, `names.yaml`. Тексты в `packages/base/locales/en.yaml` и `ru.yaml`.

@@ -19,7 +19,12 @@ export interface Heroine {
   sizeTaste: number; // 0..100, how much size matters to her
   orgasms: number;
   marriage: { desire: number; resent: number }; // what she feels for her husband, 0..100
+  outfit: string;
+  tastes: { acts: Record<string, number>; types: Record<string, number> }; // what she has come to like
+  latents: Record<string, { fired: number; noticed: boolean }>; // hidden sides she has; absent = she does not have it
 }
+
+export type Directive = "reserved" | "natural" | "friendly";
 
 export type Zone = "vagina" | "anus" | "mouth";
 export type Mode = "hidden" | "open"; // NTR: she hides it; NTS: he knows
@@ -136,11 +141,14 @@ export interface BaseState {
   mode: Mode;
   suspicion: number; // 0..100, only matters while hidden
   power: number; // her power over him, 0..100, grows once it is open
+  denied: number; // nights in a row he got nothing
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
   night: { scene: string; asked: boolean } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
+  directive: Directive; // how he asked her to behave tonight
+  outfitAsked: boolean;
   today: Ledger;
   history: Ledger[]; // last days, newest last
 }

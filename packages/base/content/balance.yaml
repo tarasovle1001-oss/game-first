@@ -29,3 +29,7 @@ shift:
   energyPerServe: 2
   regularAfterVisits: 3
   returnChance: 0.35 # chance that an arriving guest has been here before
+  # where the husband spends the evening changes what the cafe earns (and what he can see)
+  husbandInHallServesEvery: 2 # in the hall he takes an order himself every N ticks
+  husbandInKitchenBill: 0.3   # in the kitchen: share added to every bill, the food is better
+  husbandAtBarTip: 0.3        # behind the bar: share added to tips

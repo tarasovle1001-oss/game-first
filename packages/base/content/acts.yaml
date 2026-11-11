@@ -132,3 +132,39 @@
   minutes: 30
   tip: 110
   zones: [anus]
+- id: thigh_job
+  tier: 5
+  base: -44
+  scene: patron_thigh_job
+  place: private
+  effects: { arousal: 12, mood: 0, energy: -4, interest: 8, affinity: 2 }
+  minutes: 20
+  tip: 32
+  zones: []
+- id: titfuck
+  tier: 5
+  base: -48
+  scene: patron_titfuck
+  place: private
+  effects: { arousal: 9, mood: 0, energy: -4, interest: 9, affinity: 2 }
+  minutes: 20
+  tip: 36
+  zones: []
+- id: deepthroat
+  tier: 7
+  base: -80
+  scene: patron_deepthroat
+  place: private
+  effects: { arousal: 10, mood: -1, energy: -8, interest: 11, affinity: 2 }
+  minutes: 20
+  tip: 70
+  zones: [mouth]
+- id: standing_sex
+  tier: 7
+  base: -76
+  scene: patron_standing_sex
+  place: private
+  effects: { arousal: 21, mood: 2, energy: -11, interest: 10, affinity: 4 }
+  minutes: 20
+  tip: 72
+  zones: [vagina]

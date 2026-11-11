@@ -1,0 +1,22 @@
+# Hidden sides of her. Rolled once at the start, unknown to the player until they have shown often enough.
+# strength: size of the extra consent row (meaning depends on the trait, see systems/latents.ts)
+- id: exhibitionist   # being seen by other guests stops holding her back and starts to pull
+  chance: 0.3
+  noticeAfter: 4
+  strength: 1.5
+- id: submissive      # a man who insists gets further with her
+  chance: 0.35
+  noticeAfter: 3
+  strength: 12
+- id: size_queen      # size counts for more
+  chance: 0.3
+  noticeAfter: 3
+  strength: 0.6
+- id: guilt_thrill    # doing it behind her husband's back is part of the pull
+  chance: 0.35
+  noticeAfter: 4
+  strength: 9
+- id: likes_watched   # once he knows: she likes it when he is in the room
+  chance: 0.35
+  noticeAfter: 3
+  strength: 14

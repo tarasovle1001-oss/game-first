@@ -1,0 +1,13 @@
+# How her husband asks her to behave tonight, and how her tastes move.
+directives:
+  reserved: { consent: -14, maxTier: 99, tip: -0.1 } # "keep your distance": holds her back at every step
+  natural: { consent: 0, maxTier: 99, tip: 0 }
+  friendly: { consent: 9, maxTier: 4, tip: 0.12 }    # "be nice to the guests": helps up to this tier only
+askOutfitBonus: 14 # his asking lowers the openness an outfit needs by this much
+taste: # her taste for an act (and for a type of man) moves with experience
+  came: 4
+  eager: 0.8
+  hesitant: -0.5
+  min: -30
+  max: 40
+  typeEager: 0.4

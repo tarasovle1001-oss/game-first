@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { actSchema, balanceSchema, bodySchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, outfitSchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -78,6 +78,11 @@ const scenes = load(join(base, "content/scenes.yaml"), sceneSchema.array().min(1
 const consent = load(join(base, "content/consent.yaml"), consentSchema);
 const body = load(join(base, "content/body.yaml"), bodySchema);
 const secrecy = load(join(base, "content/secrecy.yaml"), secrecySchema);
+const outfits = load(join(base, "content/outfits.yaml"), outfitSchema.array().min(1)) ?? [];
+const latents = load(join(base, "content/latents.yaml"), latentSchema.array()) ?? [];
+const manners = load(join(base, "content/manners.yaml"), mannersSchema);
+unique(outfits, "outfit");
+unique(latents, "latent");
 const phone = load(join(base, "content/phone.yaml"), phoneSchema);
 unique(acts, "act");
 unique(scenes, "scene");
@@ -126,14 +131,19 @@ acts.forEach((a) => {
   for (const outcome of ["eager", "hesitant", "refuse"]) need(`log.act.${a.id}.${outcome}`);
 });
 scenes.forEach((s) => need(`scene.${s.id}`));
+outfits.forEach((o) => need(`outfit.${o.id}`));
+latents.forEach((l) => {
+  need(`latent.${l.id}`);
+  need(`log.latent.${l.id}`);
+});
 
-if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone) {
+if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, locales };
+const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

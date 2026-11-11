@@ -3,7 +3,6 @@ import * as base from "@tc/base";
 import * as core from "@tc/core";
 import type { Dict, Engine, GameState, Mod, Params } from "@tc/core";
 import { cheatsLocales, cheatsMod } from "@tc/mod-cheats";
-import { exampleLocales, exampleMod } from "@tc/mod-example";
 
 export type Lang = "en" | "ru";
 export type T = (key: string, params?: Params) => string;
@@ -17,7 +16,6 @@ export interface ModPack {
 
 const builtIn: ModPack[] = [
   { mod: base.baseMod, locales: base.baseLocales, builtIn: true },
-  { mod: exampleMod, locales: exampleLocales, builtIn: true },
   { mod: cheatsMod, locales: cheatsLocales, builtIn: true },
 ];
 

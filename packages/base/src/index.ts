@@ -12,6 +12,8 @@ import { registerBody } from "./systems/body";
 import { registerMarriage } from "./systems/marriage";
 import { registerSecrecy } from "./systems/secrecy";
 import { newPhone, registerPhone } from "./systems/phone";
+import { registerManners } from "./systems/manners";
+import { registerLatents } from "./systems/latents";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -35,11 +37,14 @@ export const baseMod: Mod = {
       mode: "hidden",
       suspicion: 0,
       power: 0,
+      denied: 0,
       secretKnows: false,
       caught: null,
       secretActsToday: 0,
       night: null,
       phone: newPhone(),
+      directive: "natural",
+      outfitAsked: false,
       today: emptyLedger(1),
       history: [],
     };
@@ -65,6 +70,8 @@ export const baseMod: Mod = {
     registerMarriage(api);
     registerSecrecy(api);
     registerPhone(api);
+    registerManners(api);
+    registerLatents(api);
   },
 };
 
@@ -86,3 +93,4 @@ export { NIGHT_ACT, NIGHT_ACTS } from "./systems/marriage";
 export { CAUGHT_STOP, CAUGHT_WATCH, CONFRONT } from "./systems/secrecy";
 export { CALL_WIFE, PHONE_PEEK, sendMessage } from "./systems/phone";
 export type { Message, PhoneState } from "./systems/phone";
+export { ASK_OUTFIT, SET_DIRECTIVE } from "./systems/manners";

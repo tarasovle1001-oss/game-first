@@ -6,7 +6,7 @@ import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
-import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, TopBar, WhyTab } from "./panels";
+import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, Summary, TopBar, WhyTab } from "./panels";
 import "./style.css";
 
 type Tab = "her" | "you" | "guests" | "why" | "phone";
@@ -124,7 +124,7 @@ function App() {
         </aside>
 
         <section className="col-main">
-          <ScenePanel {...common} scene={scene} />
+          {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} />}
           <div className="cap gap">{t("ui.where")}</div>
           <Rooms {...common} onAct={act} />
           {debug && <CheatPanel {...common} onAct={act} />}

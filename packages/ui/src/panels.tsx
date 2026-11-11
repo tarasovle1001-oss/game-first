@@ -128,7 +128,9 @@ export function ScenePanel({ state, t, lang, scene }: Common & { scene: SceneDes
   );
 }
 
-const fmt = (v: number) => (v > 0 ? "+" : "") + (Math.round(v * 10) / 10).toString();
+function fmt(v: number) {
+  return (v > 0 ? "+" : "") + (Math.round(v * 10) / 10).toString();
+}
 
 /** One line "who, what, verdict" + the three biggest reasons; the full table opens on click. */
 export function WhyLine({ record, state, t, lang }: Common & { record: ProposalRecord }) {
@@ -189,6 +191,9 @@ export function Rooms({ state, t, lang, onAct }: Common & { onAct(a: Action): vo
                     onClick={() => move && onAct(move)}
                   >
                     <span className="room-name">{t(r.nameKey)}</span>
+                    {r.id === here && bs(state).shift && ["cafe.hall", "cafe.kitchen", "cafe.bar"].includes(r.id) && (
+                      <span className="spot">{t(`ui.spot.${r.id}`)}</span>
+                    )}
                     <span className="chips">
                       {people.length === 0 && <i className="muted">{t("ui.empty")}</i>}
                       {people.map((id) => (
@@ -236,6 +241,66 @@ export function HeroineTab({ state, t }: Common) {
         <Bar key={k} label={t(`trait.${k}`)} value={h.traits[k]} />
       ))}
       <Bar label={t("stat.sizeTaste")} value={h.sizeTaste} />
+      <div className="cap gap">{t("ui.directive")}</div>
+      <div>
+        {t("ui.outfit")}: <b>{t(`outfit.${h.outfit}`)}</b> · {t(`directive.${bs(state).directive}`)}
+      </div>
+      <div className="cap gap">{t("ui.latents")}</div>
+      {Object.entries(h.latents).filter(([, l]) => l.noticed).length === 0 && <div className="muted">{t("ui.latents.none")}</div>}
+      <div className="chips">
+        {Object.entries(h.latents)
+          .filter(([, l]) => l.noticed)
+          .map(([id]) => (
+            <span key={id} className="chip latent">
+              {t(`latent.${id}`)}
+            </span>
+          ))}
+      </div>
+      {Object.keys(h.tastes.acts).length > 0 && (
+        <>
+          <div className="cap gap">{t("ui.tastes")}</div>
+          <div className="rows">
+            {Object.entries(h.tastes.acts)
+              .filter(([, v]) => Math.abs(v) >= 1)
+              .sort((a, c) => c[1] - a[1])
+              .slice(0, 6)
+              .map(([id, v]) => (
+                <span key={id} className="row">
+                  {t(`act.${id}`)} <b className={v < 0 ? "neg" : "pos"}>{fmt(v)}</b>
+                </span>
+              ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** The day in numbers, shown while the summary phase lasts. */
+export function Summary({ state, t }: Common) {
+  const d = bs(state).today;
+  const net = d.income + d.tips - d.supplies - d.rent - d.interest;
+  const line = (key: string, value: number, sign = 1) => (
+    <div className="sum-line">
+      <span>{t(key)}</span>
+      <b className={sign < 0 ? "neg" : ""}>{sign < 0 ? `-${value}` : value}</b>
+    </div>
+  );
+  return (
+    <div className="summary">
+      <div className="card-title">{t("ui.summary.title", { day: d.day })}</div>
+      {line("ui.summary.income", d.income)}
+      {line("ui.summary.tips", d.tips)}
+      {line("ui.summary.supplies", d.supplies, -1)}
+      {line("ui.summary.rent", d.rent, -1)}
+      {line("ui.summary.interest", d.interest, -1)}
+      <div className="sum-line total">
+        <span>{t("ui.summary.net")}</span>
+        <b className={net < 0 ? "neg" : "pos"}>{net}</b>
+      </div>
+      <div className="muted small">
+        {t("ui.summary.served")}: {d.served} · {t("ui.summary.turned")}: {d.turnedAway}
+      </div>
     </div>
   );
 }
@@ -254,6 +319,7 @@ export function CoupleTab({ state, t }: Common) {
       <div className="muted small">
         {t("ui.husband.line", { size: b.husband.size, minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
       </div>
+      {b.denied > 1 && <div className="muted small">{t("ui.denied", { n: b.denied })}</div>}
       {b.secretKnows && <div className="small bad">{t("ui.secret_knows")}</div>}
       <div className="cap gap">{t("ui.body")}</div>
       {(["vagina", "anus", "mouth"] as const).map((z) => (
