@@ -63,6 +63,7 @@ export interface Patron {
   traits: { persistence: number; charm: number; honesty: number; jealousy: number; generosity: number };
   approach: "court" | "drink" | "pay" | "push";
   regular: boolean;
+  lender?: boolean; // the man the cafe owes money to
   memory: PatronMemory;
 }
 
@@ -179,6 +180,7 @@ export interface BaseState {
   lodgers: Record<string, { patron: string; nights: number }>; // hotel room -> who stays there
   changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   gossip: number; // 0..100, what the town says about her
+  loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
   talked: string[]; // what he already said or did with her today (each thing once a day)
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now

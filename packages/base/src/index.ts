@@ -20,11 +20,12 @@ import { registerCouple } from "./systems/couple";
 import { registerDay } from "./systems/day";
 import { registerHotel } from "./systems/hotel";
 import { registerGossip } from "./systems/gossip";
+import { registerLoan } from "./systems/loan";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 7,
+  version: 8,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -73,6 +74,7 @@ export const baseMod: Mod = {
       lodgers: {},
       changed: null,
       gossip: 0,
+      loan: { dueDay: content.balance.loan.firstDueDay, paid: false, missed: 0, visitsLeft: 0, forgiven: 0 },
       talked: [],
       dayTop: null,
       outfitAsked: false,
@@ -108,6 +110,7 @@ export const baseMod: Mod = {
     registerDay(api);
     registerHotel(api);
     registerGossip(api);
+    registerLoan(api);
     registerSetup(api);
   },
 };
@@ -139,3 +142,4 @@ export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
 export { OUTFIT_BACK } from "./systems/manners";
 export { NIGHT_DECLINE, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
+export { installment, LOAN_PAY } from "./systems/loan";

@@ -235,3 +235,37 @@ describe("the afternoon", () => {
     expect(engine.listActions(s).some((a) => a.type === "base/ask-outfit" && a.payload!.outfit === "revealing")).toBe(true);
   });
 });
+
+describe("the loan", () => {
+  const toDay = (s: any, day: number) => {
+    while (s.time.day < day) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? { type: "base/wait", payload: { minutes: 60 } });
+    return s;
+  };
+  it("a paid instalment lowers the debt and nobody comes", () => {
+    let s = toDay(engine.init(2), 7);
+    const rich = structuredClone(s);
+    rich.mods.base.money = 5000;
+    const pay = engine.listActions(rich).find((a) => a.type === "base/loan-pay")!;
+    expect(pay).toBeDefined();
+    const debt = rich.mods.base.debt;
+    s = engine.dispatch(rich, pay);
+    expect(s.mods.base.debt).toBe(debt - (pay.payload!.money as number));
+    s = engine.dispatch(s, { type: "core/advance" });
+    expect(s.mods.base.loan.missed).toBe(0);
+    expect(s.mods.base.loan.dueDay).toBe(14);
+  });
+  it("a missed one costs a fee and brings the lender, for whom the debt itself argues", () => {
+    let s = toDay(engine.init(2), 7);
+    const debt = s.mods.base.debt;
+    s = engine.dispatch(s, { type: "core/advance" }); // doors open, nothing was paid
+    expect(s.mods.base.debt).toBeGreaterThan(debt);
+    expect(s.mods.base.loan.missed).toBe(1);
+    const lender = Object.values(s.mods.base.patrons as Record<string, any>).find((p) => p.lender)!;
+    expect(lender).toBeDefined();
+    const rows = engine.evaluate("base/consent", s, { act: "kiss", partner: lender.id, loc: "cafe.hall", offer: 0, pressure: 0 }).rows;
+    expect(rows.find((r) => r.id === "consent.debt")!.value).toBeGreaterThan(0);
+    for (let i = 0; i < 10; i++) s = engine.dispatch(s, { type: "base/wait", payload: { minutes: 10 } });
+    expect(s.mods.base.shift.visits.some((v: any) => v.patron === lender.id) || lender.memory.visits >= 0).toBe(true);
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+});

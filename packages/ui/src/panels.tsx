@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE } from "@tc/base";
+import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE , installment } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -46,6 +46,7 @@ export function TopBar({ state, t }: Common) {
         <span className="bad">
           {t("ui.debt")} {b.debt}
         </span>
+        {b.debt > 0 && <span className="muted">{t("ui.loan.next", { money: installment(state), day: b.loan.dueDay })}</span>}
         <span className="muted">{t("ui.purse", { purse: b.purse })}</span>
       </div>
       <div className="cell">
