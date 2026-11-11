@@ -209,6 +209,18 @@ export const secrecySchema = z
   })
   .strict();
 
+const pct = z.number().min(0).max(100);
+export const presetSchema = z
+  .object({
+    id,
+    traits: z.object({ openness: pct, confidence: pct, fidelity: pct, honesty: pct, libido: pct }).strict(),
+    sizeTaste: pct,
+    latents: z.array(id), // always present with this preset; the rest are rolled as usual unless "noRandomLatents"
+    noRandomLatents: z.boolean().default(false),
+  })
+  .strict();
+export type Preset = z.infer<typeof presetSchema>;
+
 export const outfitSchema = z
   .object({
     id,
@@ -274,5 +286,6 @@ export interface Content {
   outfits: Outfit[];
   latents: Latent[];
   manners: Manners;
+  presets: Preset[];
   locales: Record<string, Record<string, string>>;
 }

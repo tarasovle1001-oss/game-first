@@ -77,6 +77,8 @@ export interface BotOptions {
   maxTurns?: number;
   /** Save and reload every N turns and require an identical state. 0 = off. */
   saveEvery?: number;
+  /** New-game choices, passed to engine.init. */
+  setup?: Record<string, any>;
 }
 
 export function runBot(engine: Engine, mods: Mod[], opts: BotOptions): BotReport {
@@ -84,7 +86,7 @@ export function runBot(engine: Engine, mods: Mod[], opts: BotOptions): BotReport
   // The bot has its own generator so its choices never touch the game seed stream.
   const botRng = makeRng({ rng: (opts.seed * 7919 + 13) | 0 });
   const maxTurns = opts.maxTurns ?? opts.days * 400;
-  let state = engine.init(opts.seed);
+  let state = engine.init(opts.seed, opts.setup);
   const fail = (msg: string) => errors.push(`day ${state.time.day} ${state.time.phase} turn ${state.turn}: ${msg}`);
 
   engine.checkInvariants(state).forEach(fail);

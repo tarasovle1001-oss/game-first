@@ -10,6 +10,8 @@ const arg = (name: string, def: number) => {
   return i >= 0 ? Number(process.argv[i + 1]) : def;
 };
 const days = arg("days", 14);
+const presetAt = process.argv.indexOf("--preset");
+const setup = presetAt >= 0 ? { base: { preset: process.argv[presetAt + 1]! } } : undefined;
 const seeds = arg("seeds", 20);
 
 const mods = [baseMod, exampleMod];
@@ -22,7 +24,7 @@ const avg = (xs: number[]) => Math.round(xs.reduce((a, x) => a + x, 0) / Math.ma
 for (const [name, strategy] of Object.entries(strategies)) {
   const finals: GameState[] = [];
   for (let seed = 1; seed <= seeds; seed++) {
-    const opts = { seed, days, strategy, strategyName: name, saveEvery: 17 };
+    const opts = { seed, days, strategy, strategyName: name, saveEvery: 17, setup };
     const a = runBot(engine, mods, opts);
     const b = runBot(engine, mods, opts);
     turns += a.turns;

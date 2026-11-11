@@ -161,6 +161,7 @@ export interface EngineView {
 }
 
 export interface Engine extends EngineView {
-  init(seed: number): GameState;
+  /** `setup` is handed to mods in the game:init event (payload.setup): new-game choices such as sliders. */
+  init(seed: number, setup?: Record<string, Json>): GameState;
   dispatch(state: GameState, action: Action): GameState;
 }

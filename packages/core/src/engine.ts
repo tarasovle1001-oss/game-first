@@ -207,7 +207,7 @@ export function createEngine(modList: Mod[]): Engine {
 
   return {
     ...view,
-    init(seed) {
+    init(seed, setup) {
       const list = sortedPhases();
       if (list.length === 0) throw new EngineError("no phases registered");
       const draft: GameState = {
@@ -222,7 +222,7 @@ export function createEngine(modList: Mod[]): Engine {
       for (const m of mods) draft.mods[m.id] = m.initState ? m.initState() : {};
       // game:init lets mods place entities and roll starting values
       return run(draft, (ctx) => {
-        ctx.emit("game:init");
+        ctx.emit("game:init", setup ? { setup } : undefined);
         ctx.emit("day:start", { day: 1 });
         ctx.emit("phase:enter", { phase: list[0]!.id });
       });

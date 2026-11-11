@@ -4,6 +4,7 @@ import { bs, content, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
+import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
 import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, Summary, TopBar, WhyTab } from "./panels";
@@ -34,6 +35,7 @@ function App() {
     }
   };
   const [menu, setMenu] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(true); // the first thing a player sees
   const [tab, setTab] = useState<Tab>("her");
   const [error, setError] = useState("");
   const saveInput = useRef<HTMLInputElement>(null);
@@ -118,7 +120,7 @@ function App() {
         </div>
         {menu && (
           <div className="menu" onClick={() => setMenu(false)}>
-            <button onClick={() => setState(engine.init(newSeed()))}>{t("ui.new")}</button>
+            <button onClick={() => setSetupOpen(true)}>{t("ui.new")}</button>
             <button onClick={() => guard(() => localStorage.setItem(SAVE_KEY, saveGame(state, engine)))}>{t("ui.save")}</button>
             <button onClick={() => load(localStorage.getItem(SAVE_KEY))}>{t("ui.load")}</button>
             <button onClick={() => load(localStorage.getItem(AUTOSAVE_KEY))}>{t("ui.load.auto")}</button>
@@ -133,6 +135,18 @@ function App() {
         <input ref={saveInput} type="file" accept=".json" hidden onChange={(e) => readFile(e.target, load)} />
         <input ref={modInput} type="file" accept=".js" hidden onChange={(e) => readFile(e.target, addMod)} />
       </header>
+
+      {setupOpen && (
+        <NewGame
+          t={t}
+          seed={newSeed()}
+          onCancel={state.turn > 0 ? () => setSetupOpen(false) : undefined}
+          onStart={(seed, setup) => {
+            guard(() => setState(engine.init(seed, { base: setup as never })));
+            setSetupOpen(false);
+          }}
+        />
+      )}
 
       {(error || problems.length > 0) && <pre className="error">{[error, ...problems].filter(Boolean).join("\n")}</pre>}
 

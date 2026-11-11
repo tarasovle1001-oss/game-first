@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, outfitSchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, outfitSchema, presetSchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -84,6 +84,9 @@ const latents = load(join(base, "content/latents.yaml"), latentSchema.array()) ?
 const manners = load(join(base, "content/manners.yaml"), mannersSchema);
 unique(outfits, "outfit");
 unique(latents, "latent");
+const presets = load(join(base, "content/presets.yaml"), presetSchema.array().min(1)) ?? [];
+unique(presets, "preset");
+for (const pr of presets) for (const l of pr.latents) if (!latents.some((x) => x.id === l)) errors.push(`preset "${pr.id}" uses unknown latent "${l}"`);
 const phone = load(join(base, "content/phone.yaml"), phoneSchema);
 unique(acts, "act");
 unique(scenes, "scene");
@@ -134,6 +137,10 @@ acts.forEach((a) => {
 scenes.forEach((s) => need(`scene.${s.id}`));
 outfits.forEach((o) => need(`outfit.${o.id}`));
 latents.forEach((l) => need(`latent.${l.id}`));
+presets.forEach((pr) => {
+  need(`preset.${pr.id}`);
+  need(`preset.${pr.id}.about`);
+});
 
 if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners) {
   console.error(`content: ${errors.length} problem(s)`);
@@ -141,7 +148,7 @@ if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || 
   process.exit(1);
 }
 
-const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, locales };
+const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, presets, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

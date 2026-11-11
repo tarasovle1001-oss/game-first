@@ -1,0 +1,20 @@
+# Starting points for a new game. Everything here can be changed with the sliders on the new-game screen.
+# How fast things go depends almost entirely on these: closed and faithful may never get past flirting,
+# open and hungry can go all the way in the first week.
+- id: faithful
+  traits: { openness: 18, confidence: 40, fidelity: 92, honesty: 80, libido: 30 }
+  sizeTaste: 10
+  latents: []
+  noRandomLatents: true
+- id: ordinary
+  traits: { openness: 30, confidence: 45, fidelity: 80, honesty: 70, libido: 45 }
+  sizeTaste: 20
+  latents: []
+- id: curious
+  traits: { openness: 50, confidence: 55, fidelity: 60, honesty: 55, libido: 60 }
+  sizeTaste: 30
+  latents: [guilt_thrill]
+- id: hungry
+  traits: { openness: 72, confidence: 65, fidelity: 35, honesty: 40, libido: 85 }
+  sizeTaste: 55
+  latents: [exhibitionist, size_queen]

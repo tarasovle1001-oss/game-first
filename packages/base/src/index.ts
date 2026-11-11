@@ -14,6 +14,7 @@ import { registerSecrecy } from "./systems/secrecy";
 import { newPhone, registerPhone } from "./systems/phone";
 import { registerManners } from "./systems/manners";
 import { registerLatents } from "./systems/latents";
+import { registerSetup } from "./systems/setup";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -75,6 +76,7 @@ export const baseMod: Mod = {
     registerPhone(api);
     registerManners(api);
     registerLatents(api);
+    registerSetup(api);
   },
 };
 
@@ -98,3 +100,4 @@ export { CALL_WIFE, PHONE_PEEK, sendMessage } from "./systems/phone";
 export type { Message, PhoneState } from "./systems/phone";
 export { ASK_OUTFIT, SET_DIRECTIVE } from "./systems/manners";
 export { TIP_SHARE } from "./systems/economy";
+export type { BaseSetup } from "./systems/setup";
