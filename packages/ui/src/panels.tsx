@@ -403,6 +403,7 @@ export function CoupleTab({ state, t, lang }: Common) {
       <div className="muted small">
         {t("ui.husband.line", { size: b.husband.size, minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
       </div>
+      {b.husband.stretch > 0 && <Bar label={t("ui.his.stretch")} value={b.husband.stretch} />}
       {b.denied > 1 && <div className="muted small">{t("ui.denied", { n: b.denied })}</div>}
       {b.secretKnows && <div className="small bad">{t("ui.secret_knows")}</div>}
       <Expectations state={state} t={t} lang={lang} />

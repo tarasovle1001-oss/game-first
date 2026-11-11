@@ -168,3 +168,15 @@
   figures:
     - { role: wife, pose: all_fours, x: -8, y: 0, flip: false }
     - { role: husband, pose: kneel, x: -44, y: 0, flip: false }
+- id: rimming_her
+  figures:
+    - { role: wife, pose: all_fours, x: 6, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: -42, y: 0, flip: false }
+- id: prostate
+  figures:
+    - { role: husband, pose: lie_back, x: 6, y: 0, flip: false }
+    - { role: wife, pose: kneel, x: 46, y: 0, flip: true }
+- id: pegging
+  figures:
+    - { role: husband, pose: all_fours, x: 6, y: 0, flip: false }
+    - { role: wife, pose: kneel, x: -40, y: 0, flip: false }

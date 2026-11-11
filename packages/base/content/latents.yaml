@@ -16,3 +16,30 @@
 - id: likes_watched   # once he knows: she likes it when he is in the room
   chance: 0.35
   strength: 14
+- id: money_hungry     # an offer of money counts for much more
+  chance: 0.25
+  strength: 10
+- id: tipsy_loose      # drink takes more of her brakes off
+  chance: 0.3
+  strength: 0.25
+- id: romantic         # she needs to like the man: a stranger gets less, a familiar face more
+  chance: 0.3
+  strength: 9
+- id: new_faces        # the opposite: a man she has never seen is the pull
+  chance: 0.2
+  strength: 9
+- id: oral_fixation    # she likes using her mouth
+  chance: 0.25
+  strength: 10
+- id: anal_lover
+  chance: 0.15
+  strength: 14
+- id: needs_his_yes    # she goes further when she believes her husband allows it, and holds back hard when he does not
+  chance: 0.3
+  strength: 12
+- id: disappointed     # every grudge against her husband pushes her toward other men
+  chance: 0.3
+  strength: 0.3
+- id: cruel_streak     # once she holds the power, using it is a pleasure of its own
+  chance: 0.25
+  strength: 0.16

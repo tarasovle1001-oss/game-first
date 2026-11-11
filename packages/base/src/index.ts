@@ -23,12 +23,13 @@ import { registerHotel } from "./systems/hotel";
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 5,
+  version: 6,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
     for (const k of Object.keys(fresh)) if (slice[k] === undefined) slice[k] = fresh[k];
     if (slice.night && slice.night.sex === undefined) slice.night.sex = null;
+    if (slice.husband.stretch === undefined) slice.husband.stretch = 0;
     return slice;
   },
   initState: () => {
@@ -48,7 +49,7 @@ export const baseMod: Mod = {
       shift: null,
       encounter: null,
       proposals: [],
-      husband: { size: content.body.husband.size, stamina: content.body.husband.stamina, minutes: content.body.husband.minutes, style: content.body.husband.style },
+      husband: { size: content.body.husband.size, stamina: content.body.husband.stamina, minutes: content.body.husband.minutes, style: content.body.husband.style, stretch: 0 },
       mode: "hidden",
       suspicion: 0,
       power: 0,

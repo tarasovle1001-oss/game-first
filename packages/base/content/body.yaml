@@ -38,6 +38,14 @@ bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
   deniedStart: 6      # added to where he starts, per night he has gone without
   switchBonus: 10     # it is easier to ask for something else once it is going
 
+his: # the husband's own body, for what she does to him
+  fitBase: 9          # cm he takes comfortably at the start
+  fitPerStretch: 0.14
+  tooBig: 3           # a toy this much above his fit hurts more than it pleases
+  powerPerPegging: 2
+  peggingHerBase: 40  # what it gives her, plus her power over him
+  peggingHerPerPower: 0.4
+
 husband:
   size: 13
   stamina: 1

@@ -92,6 +92,7 @@ export const actSchema = z
     minutes: z.number().int().min(0), // how long it takes; 0 = happens in passing
     tip: z.number().min(0),
     zones: z.array(z.enum(["mouth", "vagina", "anus", "hands"])),
+    only: z.enum(["husband"]).optional(), // an act that only happens in the marriage bed
   })
   .strict();
 
@@ -178,6 +179,7 @@ export const bodySchema = z
     skillGain: z.number().min(0), // per practice, shrinking as the skill grows
     orgasmAt: z.number(), // climax meter needed for her to come
     satisfiedCoolPerTick: z.number().min(0),
+    his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number() }).strict(),
     night: nightSchema,
     // the bedroom scene, turn by turn: both of them have a pleasure meter 0..100
     bed: z

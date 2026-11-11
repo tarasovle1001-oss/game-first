@@ -133,7 +133,7 @@ new Set(rooms.map((r) => r.zone)).forEach((z) => need(`ui.zone.${z}`));
 patronTypes.forEach((t) => need(`patron.type.${t.id}`));
 acts.forEach((a) => {
   need(`act.${a.id}`);
-  for (const outcome of ["eager", "hesitant", "refuse"]) need(`log.act.${a.id}.${outcome}`);
+  if (!a.only) for (const outcome of ["eager", "hesitant", "refuse"]) need(`log.act.${a.id}.${outcome}`);
 });
 scenes.forEach((s) => need(`scene.${s.id}`));
 outfits.forEach((o) => need(`outfit.${o.id}`));

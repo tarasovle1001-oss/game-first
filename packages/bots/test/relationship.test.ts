@@ -205,6 +205,21 @@ describe("the bedroom scene", () => {
     expect(record.act).toBe("anal");
     expect(bs(s).night!.sex?.act ?? "sex").toBe(record.verdict === "refuse" ? "sex" : "anal");
   });
+  it("with a toy in the house she can take him, and his body learns", () => {
+    let s = start((b) => {
+      b.toys = ["toy_big"];
+      b.heroine.traits.openness = 95;
+    });
+    expect(engine.listActions(s).some((a) => a.type === BED && a.payload?.to === "pegging")).toBe(true);
+    const power = bs(s).power;
+    s = engine.dispatch(s, { type: BED, payload: { do: "switch", to: "pegging" } });
+    if (bs(s).night!.sex?.act === "pegging") {
+      expect(bs(s).husband.stretch).toBeGreaterThan(0);
+      expect(bs(s).power).toBeGreaterThan(power);
+    }
+    s = playOut(s);
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
   it("stopping leaves nobody finished", () => {
     let s = start(() => {});
     s = engine.dispatch(s, { type: BED, payload: { do: "stop" } });

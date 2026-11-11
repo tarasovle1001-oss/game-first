@@ -34,6 +34,7 @@ export interface Husband {
   stamina: number;
   minutes: number; // how long he lasts
   style: "naive" | "jealous" | "encouraging";
+  stretch: number; // 0..100, his own: what she has got him used to
 }
 
 export interface PatronMemory {

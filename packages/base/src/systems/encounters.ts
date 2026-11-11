@@ -75,7 +75,7 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   if (v.retry) act = actById(v.retry);
   else {
     const tier = Math.min(v.tier + 1, tierCap(p), topTier);
-    const options = content.acts.filter((a) => a.tier === tier && (a.id !== "drink" || p.approach === "drink"));
+    const options = content.acts.filter((a) => a.tier === tier && !a.only && (a.id !== "drink" || p.approach === "drink"));
     // the one who buys drinks keeps doing so while she is still fairly sober
     const drink = p.approach === "drink" && tier >= 1 && b.heroine.drunk < 45 && v.tier >= 0 && roll(10) < 4;
     act = drink ? actById("drink") : options[roll(options.length)]!;

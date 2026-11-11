@@ -7,6 +7,7 @@ import { bs } from "../state";
 import type { Patron } from "../state";
 import { actById, CONSENT_FORMULA, isIntimate } from "./encounters";
 import type { ConsentInput } from "./encounters";
+import { expectOf } from "./expectations";
 import { HALL, husbandSees } from "./places";
 
 type Rule = (state: GameState, input: ConsentInput, act: Act, p: Patron, l: Latent) => number | null;
@@ -27,6 +28,19 @@ const RULES: Record<string, Rule> = {
     return (p.size - bs(state).husband.size) * content.consent.size * l.strength;
   },
   guilt_thrill: (state, input, act, _p, l) => (bs(state).mode === "hidden" && isIntimate(act) && !husbandSees(state, input.loc) ? l.strength : null),
+  money_hungry: (_s, input, _a, _p, l) => (input.offer > 0 ? l.strength : null),
+  tipsy_loose: (state, _i, act, _p, l) => (act.tier >= 2 && bs(state).heroine.drunk > 10 ? bs(state).heroine.drunk * l.strength : null),
+  romantic: (_s, _i, act, p, l) => (act.tier < 3 ? null : p.memory.affinity >= 30 ? l.strength : p.memory.visits <= 1 ? -l.strength : null),
+  new_faces: (_s, _i, act, p, l) => (act.tier >= 3 && p.memory.visits <= 1 ? l.strength : null),
+  oral_fixation: (_s, _i, act, _p, l) => (act.zones.includes("mouth") ? l.strength : null),
+  anal_lover: (_s, _i, act, _p, l) => (act.zones.includes("anus") ? l.strength : null),
+  needs_his_yes(state, _i, act, _p, l) {
+    if (act.tier < 2) return null;
+    const x = expectOf(state, act.id);
+    return x >= 40 ? l.strength : x < 0 ? -l.strength : null;
+  },
+  disappointed: (state, _i, act, _p, l) => (act.tier >= 3 && bs(state).heroine.marriage.resent >= 15 ? bs(state).heroine.marriage.resent * l.strength : null),
+  cruel_streak: (state, _i, act, _p, l) => (bs(state).mode === "open" && act.tier >= 3 && bs(state).power >= 30 ? bs(state).power * l.strength : null),
   likes_watched: (state, input, act, _p, l) => (bs(state).mode === "open" && act.tier >= 2 && husbandSees(state, input.loc) ? l.strength : null),
 };
 

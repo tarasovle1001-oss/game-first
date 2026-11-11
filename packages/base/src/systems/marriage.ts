@@ -10,10 +10,18 @@ import { changeHeroine } from "./heroine";
 
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
-export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal"];
+export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "prostate", "pegging"];
 export const BED = "base/bed";
 /** What a bedroom scene can turn into once it is going. */
-export const BED_ACTS = ["grinding", "mutual_touching", "handjob", "blowjob", "cunnilingus", "sex", "riding", "anal"];
+export const BED_ACTS = ["grinding", "mutual_touching", "handjob", "blowjob", "cunnilingus", "rimming_her", "sex", "riding", "anal", "prostate", "pegging"];
+/** The toy she would use on him: the biggest one he can take, or the smallest one there is. */
+const toyForHim = (state: GameState) => {
+  const b = bs(state);
+  const K = content.body.his;
+  const fit = K.fitBase + b.husband.stretch * K.fitPerStretch;
+  const owned = content.day.shop.toys.filter((t) => b.toys.includes(t.id)).sort((x, y) => x.size - y.size);
+  return { fit, toy: [...owned].reverse().find((t) => t.size <= fit + K.tooBig) ?? owned[0] ?? null };
+};
 const BEDROOM = "home.bedroom";
 
 export function registerMarriage(api: ModApi) {
@@ -58,6 +66,16 @@ export function registerMarriage(api: ModApi) {
     const sex = b.night!.sex!;
     sex.act = actId;
     sex.pleasure = useBody(ctx, actById(actId), b.husband.size);
+    if (actId === "rimming_her") sex.pleasure = 65;
+    if (actId === "pegging") {
+      // his body learns the same way hers does; for her it is about who is holding whom
+      const K = content.body.his;
+      const { fit, toy } = toyForHim(ctx.state);
+      const over = (toy?.size ?? fit) - fit;
+      if (over > 0) b.husband.stretch = clamp(b.husband.stretch + over * content.body.stretchPerCm);
+      b.power = clamp(b.power + K.powerPerPegging);
+      sex.pleasure = clamp(K.peggingHerBase + b.power * K.peggingHerPerPower + (b.heroine.latents.cruel_streak ? 20 : 0));
+    }
     b.night!.scene = actId === "sex" ? "sex" : actId;
   };
 
@@ -70,7 +88,7 @@ export function registerMarriage(api: ModApi) {
       const b = bs(state);
       if (state.time.phase !== "night" || !b.night || b.night.asked || b.night.sex) return [];
       if (state.where[HUSBAND] !== BEDROOM || state.where[WIFE] !== BEDROOM) return [];
-      return NIGHT_ACTS.map((act) => ({ type: NIGHT_ACT, payload: { act } }));
+      return NIGHT_ACTS.filter((act) => act !== "pegging" || b.toys.length > 0).map((act) => ({ type: NIGHT_ACT, payload: { act } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
@@ -122,6 +140,12 @@ export function registerMarriage(api: ModApi) {
     const tight = inside ? clamp((b.husband.size / fitOf(state, zone)) * 1.05, B.looseForHim, 1) : 1;
     const skill = h.skills[sex.act] ?? 0;
     const his = (inside ? B.hisRateSex : B.hisRate) * (12 / b.husband.minutes) * tight * (1 + skill / 150) * (act.id === "cunnilingus" ? 0.25 : 1);
+    if (sex.act === "pegging" || sex.act === "prostate") {
+      const { fit, toy } = toyForHim(state);
+      const hurts = sex.act === "pegging" && toy !== null && toy.size > fit + content.body.his.tooBig;
+      const mine = B.hisRate * (sex.act === "prostate" ? 1.1 : hurts ? 0.4 : 0.9 + b.husband.stretch / 200);
+      return { his: mine, hers: B.hersRate * (sex.pleasure / 60) * (0.6 + h.arousal / 120) };
+    }
     const taste = 1 + (h.tastes.acts[sex.act] ?? 0) / 100;
     const hers = B.hersRate * (sex.pleasure / 60) * taste * (0.6 + h.arousal / 120) * (1 - h.satisfied / 160);
     return { his, hers };
@@ -173,6 +197,14 @@ export function registerMarriage(api: ModApi) {
       orgasm(ctx);
     }
     changeHeroine(ctx, "energy", act.effects.energy, "husband");
+    if (sex.act === "pegging" || sex.act === "prostate") {
+      // this one was about him; what it does to her is in who she was while doing it
+      b.night!.scene = sex.act;
+      feel(ctx, sex.came > 0 ? 1 : 0, b.power >= 30 ? -1 : 0);
+      ctx.log(`log.bed.his.${sex.act}`);
+      ctx.emit("bed:ended", { act: sex.act, came: sex.came > 0, outcome: "his", turns: sex.turns });
+      return;
+    }
     const premature = sex.turns <= 2;
     let outcome: string;
     if (sex.came > 0) {
@@ -228,7 +260,7 @@ export function registerMarriage(api: ModApi) {
       if (!sex.skirt) dos.push("skirt");
       if (sex.his >= B.cumAt) dos.push("finish");
       const out = dos.map((d) => ({ type: BED, payload: { do: d } as Record<string, string> }));
-      for (const to of BED_ACTS) if (to !== sex.act) out.push({ type: BED, payload: { do: "switch", to } });
+      for (const to of BED_ACTS) if (to !== sex.act && (to !== "pegging" || bs(state).toys.length > 0)) out.push({ type: BED, payload: { do: "switch", to } });
       out.push({ type: BED, payload: { do: "stop" } });
       return out;
     },
