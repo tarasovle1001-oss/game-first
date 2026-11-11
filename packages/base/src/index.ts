@@ -33,6 +33,7 @@ export const baseMod: Mod = {
     for (const k of Object.keys(fresh)) if (slice[k] === undefined) slice[k] = fresh[k];
     if (slice.night && slice.night.sex === undefined) slice.night.sex = null;
     if (slice.husband.stretch === undefined) slice.husband.stretch = 0;
+    if (!slice.owned.includes(slice.heroine.outfit)) slice.owned.push(slice.heroine.outfit);
     return slice;
   },
   initState: () => {
