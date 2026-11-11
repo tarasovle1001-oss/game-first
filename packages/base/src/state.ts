@@ -173,7 +173,7 @@ export interface BaseState {
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
   told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
-  day: { left: number; done: string[]; arrivals: number } | null; // this afternoon: minutes left, what is done, tonight's extra flow
+  day: { left: number; done: string[]; arrivals: number; herOut?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
   clean: number; // 0..100, how the room looks
   owned: string[]; // outfits she has
   toys: string[];

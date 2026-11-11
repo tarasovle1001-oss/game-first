@@ -56,7 +56,32 @@ function herMorning(ctx: Ctx) {
     ctx.emit("her:bought", { kind: "toy", id: toy.id });
     return;
   }
-  // 3. a man for hire, the biggest money can buy
+  // 3. an afternoon "with a friend": a lover who has her number does not have to wait for the evening
+  const A = D.shop.affair;
+  const lover = Object.values(b.patrons)
+    .filter((p) => p.memory.hasNumber && p.memory.tier >= 7 && p.memory.affinity >= A.affinity)
+    .sort((x, y) => y.memory.affinity - x.memory.affinity || x.id.localeCompare(y.id))[0];
+  if (lover && h.traits.fidelity < A.fidelityBelow && ctx.rng.chance(A.chance)) {
+    const out = resolveBody(ctx, actById("sex"), { size: lover.size, minutes: 40 });
+    lover.memory.acts.sex = (lover.memory.acts.sex ?? 0) + 1;
+    lover.memory.affinity = clamp(lover.memory.affinity + (out.came ? 6 : 2), -100, 100);
+    if (out.came) lover.memory.orgasms += 1;
+    b.day!.herOut = true;
+    b.day!.left = Math.max(0, b.day!.left - A.minutes); // she is back late: the afternoon is shorter for both
+    ctx.state.time.minute = opening - b.day!.left;
+    if (hidden) {
+      b.secretActsToday += 1;
+      b.suspicion = clamp(b.suspicion + A.suspicion * content.secrecy.styleFactor[b.husband.style]);
+      ctx.log("log.her.out");
+      ctx.log("log.her.out.truth", { name: `@name:${lover.name}` }, ["unseen"]);
+    } else {
+      b.power = clamp(b.power + content.secrecy.powerPerTold);
+      ctx.log("log.her.out.open", { name: `@name:${lover.name}` });
+    }
+    ctx.emit("her:afternoon", { patron: lover.id, came: out.came });
+    return;
+  }
+  // 4. a man for hire, the biggest money can buy
   const g = D.shop.gigolo;
   if (b.purse >= g.price && h.traits.fidelity < g.fidelityBelow && h.sizeTaste >= g.sizeTasteFrom && ctx.rng.chance(g.chance)) {
     b.purse -= g.price;
@@ -104,7 +129,7 @@ export function registerDay(api: ModApi) {
       if (state.time.phase !== "prep" || !b.day) return [];
       const day = b.day;
       return D.activities
-        .filter((a) => !day.done.includes(a.id) && a.minutes <= day.left && (!a.needs || day.done.includes(a.needs)) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
+        .filter((a) => !day.done.includes(a.id) && a.minutes <= day.left && (!a.needs || day.done.includes(a.needs)) && !(day.herOut && a.withHer) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
         .map((a) => ({ type: DAY_DO, payload: { do: a.id } }));
     },
     apply(ctx, action) {

@@ -149,3 +149,4 @@ export { NIGHT_DECLINE, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
 export { installment, LOAN_PAY } from "./systems/loan";
 export { ORDER } from "./systems/manners";
 export { husbandSees, husbandIn, husbandNextTo } from "./systems/places";
+export { rentOf } from "./systems/economy";

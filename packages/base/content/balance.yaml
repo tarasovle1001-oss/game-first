@@ -4,7 +4,8 @@ start:
   debt: 6000
   reputation: 40
   stock: 30
-rentPerDay: 440
+rentPerDay: 560
+rentGrowthPerWeek: 40 # the landlord puts it up every week
 purse: # tips the men leave her for more than coffee: part goes into her purse, the rest into the till
   shares: [0, 0.25, 0.5, 1] # what the husband can let her keep
   start: 0.5

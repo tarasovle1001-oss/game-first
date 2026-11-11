@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BED, TALK, TELL, bs, content, WAIT } from "@tc/base";
+import { BED, TALK, TELL, rentOf, bs, content, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -195,7 +195,7 @@ function App() {
             <div className="card">
               <div className="card-title">{t("ui.wait")}</div>
               <div className="muted small">
-                {t("ui.served", { n: b.shift?.served ?? 0 })} · {t("ui.tips", { n: b.shift?.tips ?? 0 })} · {t("ui.rent", { rent: content.balance.rentPerDay })}
+                {t("ui.served", { n: b.shift?.served ?? 0 })} · {t("ui.tips", { n: b.shift?.tips ?? 0 })} · {t("ui.rent", { rent: rentOf(state) })}
               </div>
               <div className="waits">
                 {waits.map((a, i) => (

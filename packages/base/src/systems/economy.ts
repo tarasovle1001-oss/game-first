@@ -1,4 +1,4 @@
-import type { Ctx, ModApi } from "@tc/core";
+import type { Ctx, ModApi, GameState } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, emptyLedger } from "../state";
 import { HALL, husbandSees } from "./places";
@@ -7,6 +7,9 @@ export const BUY_SUPPLIES = "base/buy-supplies";
 export const REPAY_DEBT = "base/repay-debt";
 export const TIP_SHARE = "base/tip-share";
 const REPAY_STEP = 100;
+
+/** Today's rent: the landlord puts it up a little every week. */
+export const rentOf = (state: GameState) => content.balance.rentPerDay + Math.floor((state.time.day - 1) / 7) * content.balance.rentGrowthPerWeek;
 
 /** All money moves go through here so that mods can react to money:changed. */
 export function addMoney(ctx: Ctx, amount: number, reason: string) {
@@ -134,8 +137,10 @@ export function registerEconomy(api: ModApi) {
     const interest = Math.round(b.debt * bal.debtInterestPerDay);
     b.debt += interest;
     b.today.interest = interest;
-    b.today.rent = bal.rentPerDay;
-    addMoney(ctx, -bal.rentPerDay, "rent");
+    const rent = rentOf(ctx.state);
+    b.today.rent = rent;
+    addMoney(ctx, -rent, "rent");
+    if (ctx.state.time.day % 7 === 0 && bal.rentGrowthPerWeek > 0) ctx.log("log.rent.up", { rent: rent + bal.rentGrowthPerWeek });
     const t = b.today;
     ctx.log("log.summary", {
       income: t.income,

@@ -10,8 +10,8 @@ activities:           # each once a day
   - { id: clean, minutes: 60, clean: 45 }
   - { id: flyers, minutes: 60, cost: 40, arrivals: 0.2 }
   - { id: side_job, minutes: 240, money: 70 }
-  - { id: her_chores, minutes: 60, her: { energy: 14, mood: 2, resent: -1 } }
-  - { id: town, minutes: 60 }             # go to town together: opens the shops and the walk for today
+  - { id: her_chores, minutes: 60, withHer: true, her: { energy: 14, mood: 2, resent: -1 } }
+  - { id: town, minutes: 60, withHer: true }             # go to town together: opens the shops and the walk for today
   - { id: date, minutes: 90, cost: 40, needs: town, her: { mood: 6, desire: 3, resent: -2 } }
 shop:                 # in town; she also buys for herself from her purse
   toys:               # size in cm; she uses the biggest one she can take when a night leaves her wanting
@@ -21,6 +21,7 @@ shop:                 # in town; she also buys for herself from her purse
   toyStretchAbove: 4  # she buys a toy at most this much above what she takes comfortably
   toySatisfied: 80
   gigolo: { price: 250, size: 24, minutes: 40, fidelityBelow: 45, sizeTasteFrom: 45, chance: 0.5, suspicion: 4 }
+  affair: { fidelityBelow: 50, affinity: 30, chance: 0.3, minutes: 120, suspicion: 3 } # an afternoon "with a friend" with a lover who has her number
   herOutfitMargin: 5  # she buys an outfit herself once her openness is this close to it
 upgrades:             # one-off, paid from the till (or on credit while the limit allows)
   - { id: coffee_machine, cost: 600, bill: 0.15 }
