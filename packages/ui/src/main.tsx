@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, STRIP, WIFE, HUSBAND } from "@tc/base";
+import { ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -85,7 +85,7 @@ function App() {
 
   const [herOpen, setHerOpen] = useState<string | null>(null);
   const all = engine.listActions(state);
-  const waits = all.filter((a) => a.type === WAIT || a.type === PREP_WAIT);
+  const waits = all.filter((a) => a.type === WAIT || a.type === PREP_WAIT || a.type === NIGHT_WAIT);
   const advance = all.find((a) => a.type === CORE_ADVANCE);
   const bed = all.filter((a) => a.type === BED);
   // Everything he does with her lives in one place, by kind: talk, touch, sex, requests, what he wants from her.
@@ -100,7 +100,7 @@ function App() {
   const herTab = herOpen === "root" || herGroups.includes(herOpen as never) ? herOpen : null;
   const herName = bs(state).heroine.name ?? t("role.wife");
   const herNear = state.where[WIFE] === state.where[HUSBAND];
-  const other = all.filter((a) => a.type !== WAIT && a.type !== PREP_WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== ANSWER && sectionOf(a) === undefined);
+  const other = all.filter((a) => a.type !== WAIT && a.type !== PREP_WAIT && a.type !== NIGHT_WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== ANSWER && sectionOf(a) === undefined);
   const answers = all.filter((a) => a.type === ANSWER);
   const otherGroups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
 
@@ -349,7 +349,7 @@ function App() {
           )}
           {advance && (
             <button className="primary" onClick={() => act(advance)}>
-              <kbd>↵</kbd> {actionLabel(advance, t, lang)}
+              <kbd>↵</kbd> {state.time.phase === "night" ? t("action.sleep.default", { hour: content.day.rhythm.wake[0]! }) : actionLabel(advance, t, lang)}
             </button>
           )}
 

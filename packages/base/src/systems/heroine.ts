@@ -43,7 +43,6 @@ export function registerHeroine(api: ModApi) {
     const h = bs(ctx.state).heroine;
     if (e.payload!.phase === "night") {
       // sleep: energy back, alcohol out, mood and arousal drift to their resting levels
-      changeHeroine(ctx, "energy", 65, "sleep");
       changeHeroine(ctx, "drunk", -h.drunk, "sleep");
       changeHeroine(ctx, "mood", Math.round((55 - h.mood) * 0.3), "sleep");
       changeHeroine(ctx, "arousal", Math.round((h.traits.libido * 0.3 - h.arousal) * 0.5), "sleep");

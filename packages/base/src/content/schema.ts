@@ -357,6 +357,7 @@ export const daySchema = z
           stock: z.number().optional(),
           gossip: z.boolean().optional(), // he hears what the town says about her
           gym: z.enum(["alone", "together"]).optional(),
+          energy: z.number().optional(), // what it takes out of him (negative: gives back)
           her: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()).optional(),
         })
         .strict(),
@@ -381,6 +382,35 @@ export const daySchema = z
       })
       .strict(),
     upgrades: z.array(z.object({ id, cost: z.number().positive(), bill: z.number().optional(), tip: z.number().optional(), reputation: z.number().optional() }).strict()),
+    rhythm: z
+      .object({
+        wake: z.array(z.number().int().min(5).max(14)).min(1), // hours he may sleep till; the first is what happens by default
+        herWake: z.number().int(),
+        energyPerHour: z.object({ him: z.number(), her: z.number() }).strict(),
+        herBedtime: z.number().int(), // minutes after midnight she falls asleep if nothing keeps her up
+        wakeHer: z.object({ consent: z.number(), annoy: z.number(), mood: z.number() }).strict(),
+        nightWaits: z.array(z.number().int().positive()).min(1),
+        nightCosts: z.object({ ask: z.number().int(), turn: z.number().int(), self: z.number().int(), talk: z.number().int() }).strict(),
+        him: z
+          .object({
+            start: z.object({ energy: z.number(), mood: z.number(), arousal: z.number() }).strict(),
+            moodRest: z.number(),
+            arousalRest: z.number(),
+            settle: z.number(), // share of the way back to rest each morning
+            shiftPerTick: z.number(),
+            serve: z.number(),
+            bed: z.number(), // energy a night in bed takes
+            tiredBelow: z.number(), // below this he cannot take tables or start work
+            tiredMood: z.number(),
+            softTired: z.number(), // added chance of going soft when tired
+            arousal: z.object({ watch: z.number(), bare: z.number(), touch: z.number(), carried: z.number(), startHis: z.number() }).strict(),
+            mood: z.object({ came: z.number(), refused: z.number(), talkLow: z.number(), talkHigh: z.number(), toHer: z.number() }).strict(),
+          })
+          .strict(),
+        worry: z.object({ cashBelow: z.number(), debtFrom: z.number(), mood: z.number(), hardDebt: z.number(), hardMood: z.number(), herShare: z.number() }).strict(),
+        bath: z.object({ washMinutes: z.number().int(), washMood: z.number(), sendMinutes: z.number().int(), sendAnnoy: z.number(), walkIn: z.object({ margin: z.number(), arousal: z.number(), annoy: z.number() }).strict() }).strict(),
+      })
+      .strict(),
   })
   .strict();
 export type DayTuning = z.infer<typeof daySchema>;

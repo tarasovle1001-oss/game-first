@@ -9,6 +9,7 @@ import { generatePatron, pickReturning } from "./patrons";
 import { HALL, husbandSees, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
 export { HALL };
 
+import { tired, wakeMinute } from "./rhythm";
 export const WAIT = "base/wait";
 export const TIP_FORMULA = "base/tip";
 /** Fixed waits offered to the player, in minutes: ordinary work, and while something is going on in front of him. */
@@ -208,9 +209,9 @@ export function registerShift(api: ModApi) {
   api.events.on("phase:enter", (ctx, e) => {
     const phase = e.payload!.phase as string;
     const b = bs(ctx.state);
-    if (phase === "prep") ctx.state.time.minute = clock.prep;
-    if (phase === "night") ctx.state.time.minute = clock.night;
-    if (phase === "summary") ctx.state.time.minute = clock.summary;
+    if (phase === "prep") ctx.state.time.minute = ctx.state.time.day > 1 ? wakeMinute(ctx.state) : clock.prep;
+    if (phase === "night") ctx.state.time.minute = 1440;
+    if (phase === "summary") ctx.state.time.minute = wakeMinute(ctx.state); // the sums are done over breakfast
     if (phase === "shift") {
       ctx.state.time.minute = bal.opensAt * 60;
       b.shift = { tick: 0, visits: [], income: 0, tips: 0, served: 0, turnedAway: 0, moment: null, interrupt: false, stockWarned: false };
@@ -285,7 +286,7 @@ export function registerShift(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       const sh = b.shift;
-      if (state.time.phase !== "shift" || !sh || ticksDone(sh) || b.caught || b.night?.sex || state.where[HUSBAND] !== HALL || b.stock <= 0) return [];
+      if (state.time.phase !== "shift" || !sh || ticksDone(sh) || b.caught || b.night?.sex || state.where[HUSBAND] !== HALL || b.stock <= 0 || tired(state)) return [];
       return sh.visits
         .filter(wantsOrder)
         .sort((a, c) => c.waited - a.waited || a.patron.localeCompare(c.patron))

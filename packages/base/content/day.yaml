@@ -7,15 +7,16 @@ clean:                # how the state of the room shows in the evening
   dirtyBelow: 30      # below this the place loses reputation every evening
   dirtyReputation: 1
 activities:           # each once a day; at: cafe = at home, or the one place in town where it is done
-  - { id: clean, minutes: 60, clean: 45, at: cafe }
-  - { id: her_chores, minutes: 60, withHer: true, at: cafe, her: { energy: 14, mood: 2, resent: -1 } }
-  - { id: flyers, minutes: 60, cost: 40, arrivals: 0.2, at: town.square }
-  - { id: side_job, minutes: 240, money: 70, at: town.square }
-  - { id: ask_around, minutes: 60, cost: 15, gossip: true, at: town.square } # a beer with the men who drink at your place: what do they say
-  - { id: date, minutes: 90, cost: 40, withHer: true, at: town.square, her: { mood: 6, desire: 3, resent: -2 } }
-  - { id: market, minutes: 30, cost: 45, stock: 14, at: town.market }   # cheaper than the supplier
-  - { id: gym, minutes: 90, cost: 20, gym: alone, at: town.gym }
-  - { id: gym_together, minutes: 90, cost: 35, withHer: true, gym: together, at: town.gym, her: { mood: 3, energy: -8 } } # the changing rooms are separate
+  - { id: clean, energy: 14, minutes: 60, clean: 45, at: cafe }
+  - { id: her_chores, energy: 8, minutes: 60, withHer: true, at: cafe, her: { energy: 14, mood: 2, resent: -1 } }
+  - { id: flyers, energy: 10, minutes: 60, cost: 40, arrivals: 0.2, at: town.square }
+  - { id: side_job, energy: 32, minutes: 240, money: 70, at: town.square }
+  - { id: ask_around, energy: 3, minutes: 60, cost: 15, gossip: true, at: town.square } # a beer with the men who drink at your place: what do they say
+  - { id: date, energy: 5, minutes: 90, cost: 40, withHer: true, at: town.square, her: { mood: 6, desire: 3, resent: -2 } }
+  - { id: market, energy: 6, minutes: 30, cost: 45, stock: 14, at: town.market }   # cheaper than the supplier
+  - { id: gym, energy: 20, minutes: 90, cost: 20, gym: alone, at: town.gym }
+  - { id: gym_together, energy: 20, minutes: 90, cost: 35, withHer: true, gym: together, at: town.gym, her: { mood: 3, energy: -8 } } # the changing rooms are separate
+  - { id: nap, energy: -14, minutes: 60, at: cafe }   # an hour on the bed
 herDay:               # her own afternoon: one task after another, each in its room
   walkToTown: 10      # minutes between the cafe and the square
   walkInTown: 3
@@ -61,3 +62,28 @@ upgrades:             # one-off, paid from the till (or on credit while the limi
   - { id: coffee_machine, cost: 600, bill: 0.15 }
   - { id: interior, cost: 900, tip: 0.1, reputation: 5 }
   - { id: soundproof, cost: 500 }         # the staff room door: nothing is heard from the kitchen any more
+
+rhythm:               # the day around the clock: sleep, his own state, the bathroom, money on the mind
+  wake: [8, 10, 12]   # he may sleep till; the first is the default
+  herWake: 8
+  energyPerHour: { him: 9, her: 9 }
+  herBedtime: 60      # minutes after midnight she is asleep, if nothing keeps her up
+  wakeHer: { consent: -15, annoy: 10, mood: -3 }
+  nightWaits: [15, 60]
+  nightCosts: { ask: 5, turn: 2, self: 10, talk: 5 }
+  him:
+    start: { energy: 85, mood: 60, arousal: 10 }
+    moodRest: 55
+    arousalRest: 15
+    settle: 0.3
+    shiftPerTick: 0.6   # 36 ticks an evening
+    serve: 0.5
+    bed: 5
+    tiredBelow: 15
+    tiredMood: -3
+    softTired: 0.08
+    arousal: { watch: 4, bare: 2, touch: 4, carried: 10, startHis: 0.25 }
+    mood: { came: 4, refused: -3, talkLow: 0.7, talkHigh: 1.15, toHer: 0.1 }
+  # debt is counted over the loan they started with
+  worry: { cashBelow: 300, debtFrom: 400, mood: -3, hardDebt: 1500, hardMood: -6, herShare: 0.6 }
+  bath: { washMinutes: 15, washMood: 2, sendMinutes: 20, sendAnnoy: 3, walkIn: { margin: 30, arousal: 8, annoy: 8 } }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
+import { himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -550,6 +550,12 @@ export function CoupleTab({ state, t, lang, open }: Common) {
       <div className="muted small">
         {t("ui.husband.line", { size: b.husband.size, minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
       </div>
+      <div className="cap">{t("ui.him")}</div>
+      <Bar label={t("stat.energy")} value={himOf(state).energy} />
+      <Bar label={t("stat.mood")} value={himOf(state).mood} tone="amber" />
+      <Bar label={t("stat.arousal")} value={himOf(state).arousal} tone="pink" />
+      {himOf(state).energy < content.day.rhythm.him.tiredBelow && <div className="small bad">{t("ui.him.tired")}</div>}
+      {worryOf(state) > 0 && <div className="muted small">{t(`ui.worry.${worryOf(state)}`)}</div>}
       {b.husband.stretch > 0 && <Bar label={t("ui.his.stretch")} value={b.husband.stretch} />}
       {b.denied > 1 && <div className="muted small">{t("ui.denied", { n: b.denied })}</div>}
       {b.secretKnows && <div className="small bad">{t("ui.secret_knows")}</div>}

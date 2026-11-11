@@ -10,6 +10,7 @@ import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
+import { canDo, wakeMinute } from "./rhythm";
 
 export const DAY_DO = "base/day";
 export const BUY = "base/buy";
@@ -255,8 +256,10 @@ export function registerDay(api: ModApi) {
     (ctx, e) => {
       if (e.payload!.phase !== "prep") return;
       const b = bs(ctx.state);
-      b.day = { left: D.minutes, done: [], arrivals: 0 };
-      ctx.state.time.minute = opening - D.minutes;
+      // the first day starts at noon; after that the day is as long as he made it by getting up
+      const left = ctx.state.time.day > 1 ? Math.max(60, opening - wakeMinute(ctx.state)) : D.minutes;
+      b.day = { left, done: [], arrivals: 0 };
+      ctx.state.time.minute = opening - left;
       if (ctx.state.time.day > 1) herMorning(ctx);
       herNext(ctx);
     },
@@ -284,7 +287,7 @@ export function registerDay(api: ModApi) {
       // doing something together needs her within reach: at home with him, or not out on her own
       const herFree = (a: Activity) => !a.withHer || (!day.herOut && day.her?.task !== "away");
       return D.activities
-        .filter((a) => !day.done.includes(a.id) && a.minutes <= day.left && isAt(state, a.at) && herFree(a) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
+        .filter((a) => !day.done.includes(a.id) && a.minutes <= day.left && isAt(state, a.at) && herFree(a) && canDo(state, a.energy) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
         .map((a) => ({ type: DAY_DO, payload: { do: a.id } }));
     },
     apply(ctx, action) {
@@ -434,7 +437,7 @@ export function registerDay(api: ModApi) {
     const b = bs(s);
     if (b.clean < 0 || b.clean > 100) return `cleanliness out of range: ${b.clean}`;
     if (b.purse < 0) return `her purse is negative: ${b.purse}`;
-    if (b.day && (b.day.left < 0 || b.day.left > D.minutes)) return `afternoon minutes out of range: ${b.day.left}`;
+    if (b.day && (b.day.left < 0 || b.day.left > opening)) return `afternoon minutes out of range: ${b.day.left}`;
     if (b.day?.busy && !D.activities.some((a) => a.id === b.day!.busy!.id)) return `unknown activity in progress: ${b.day.busy.id}`;
     for (const id of b.owned) if (!content.outfits.some((o) => o.id === id)) return `unknown outfit owned: ${id}`;
     if (!b.owned.includes(b.heroine.outfit)) return `she wears an outfit she does not own: ${b.heroine.outfit}`;

@@ -48,6 +48,10 @@ export interface Husband {
   stretch: number; // 0..100, his own: what she has got him used to
   cumOn?: number; // minutes his own still shows on him
   fitness?: number; // 0..100, what the gym has done for him
+  energy?: number; // 0..100
+  mood?: number; // 0..100
+  arousal?: number; // 0..100
+  washed?: string; // "day:phase" he last washed
   spentDay?: number; // the day he came from a touch alone: nothing more from him that day
 }
 
@@ -207,7 +211,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
@@ -226,6 +230,10 @@ export interface BaseState {
   approached: Record<string, number>; // kind -> last day she came with it
   pushedToday: Record<string, number>; // guest -> how hard he pushed her today
   sizeToday?: number; // the biggest guest she has had today, cm
+  wakeAt?: number; // hour he sleeps till tonight, when it is not the usual one
+  slept?: { him: number; her: number }; // hours each of them got last night
+  sentWash?: string;
+  walkedIn?: number;
   promised?: number; // day she teased him: she will want him that night
   remarked: string[]; // things she has already said once about her body, his, and other men
   complaint: string | null; // what she has brought up tonight and he has not answered yet

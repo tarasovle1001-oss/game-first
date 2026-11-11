@@ -10,6 +10,7 @@ import { changeHeroine } from "./heroine";
 import { HALL, TICKS_PER_SHIFT } from "./places";
 import { runUnattended } from "./shift";
 
+import { himOf, tired } from "./rhythm";
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
 export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him"];
@@ -244,7 +245,7 @@ export function registerMarriage(api: ModApi) {
       const unlucky = ctx.rng.chance(H.prematureChance + Math.max(0, b.denied) * H.prematureChancePerDeniedNight);
       b.night!.sex = {
         act: act.id,
-        his: clamp(B.startHis + Math.max(0, b.denied) * B.deniedStart + (unlucky ? B.unluckyStart : 0)),
+        his: clamp(B.startHis + Math.max(0, b.denied) * B.deniedStart + (unlucky ? B.unluckyStart : 0) + himOf(ctx.state).arousal * content.day.rhythm.him.arousal.startHis),
         hers: clamp(h.arousal * 0.4),
         came: 0,
         turns: 0,
@@ -404,7 +405,8 @@ export function registerMarriage(api: ModApi) {
     const b = bs(ctx.state);
     const sex = b.night!.sex!;
     sex.turns += 1;
-    ctx.state.time.minute += B.minutesPerTurn;
+    if (ctx.state.time.phase === "night") ctx.emit("bed:turn");
+    else ctx.state.time.minute += B.minutesPerTurn;
     sex.his = clamp(sex.his + his);
     sex.hers = clamp(sex.hers + hers);
     if (sex.hers >= 100) {
@@ -419,7 +421,7 @@ export function registerMarriage(api: ModApi) {
       return true;
     }
     // he goes soft: she is not there, or there is nothing to feel, or there is too much between them
-    const soft = (sex.out ? B.soft.whenOut : 0) + (tightness(ctx.state, sex.act) < 0.3 ? B.soft.whenLoose : 0) + b.heroine.marriage.resent * B.soft.perResent;
+    const soft = (sex.out ? B.soft.whenOut : 0) + (tightness(ctx.state, sex.act) < 0.3 ? B.soft.whenLoose : 0) + b.heroine.marriage.resent * B.soft.perResent + (tired(ctx.state) ? content.day.rhythm.him.softTired : 0);
     const hisTurn = !GIVES_HER.has(sex.act); // it does not matter while he is the one doing something for her
     if (hisTurn && sex.turns >= 2 && sex.his < B.soft.belowHis && !sex.byHand && soft > 0 && ctx.rng.chance(soft)) {
       b.night!.sex = null;

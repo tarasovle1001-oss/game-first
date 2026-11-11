@@ -2,6 +2,7 @@
 // and what he can do about a guest who is with her. Everything here is small and once a day:
 // a marriage is fed by attention, not by clicking the same button.
 import type { Ctx, GameState, ModApi } from "@tc/core";
+import { talkScale } from "./rhythm";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { addReputation } from "./economy";
@@ -20,6 +21,8 @@ const G = content.manners.guest;
 const E = content.consent.expect;
 
 type Fx = Partial<Record<"mood" | "arousal" | "energy" | "drunk" | "desire" | "resent", number>>;
+/** His mood colours what a kind word is worth; what hurts, hurts the same. */
+const scaled = (fx: Fx, k: number): Fx => (k === 1 ? fx : (Object.fromEntries(Object.entries(fx).map(([key, v]) => [key, typeof v === "number" && v > 0 && key !== "resent" ? Math.round(v * k * 10) / 10 : v])) as Fx));
 const applyFx = (ctx: Ctx, fx: Fx, reason: string) => {
   const h = bs(ctx.state).heroine;
   for (const [k, v] of Object.entries(fx) as [keyof Fx, number][]) {
@@ -179,7 +182,7 @@ export function registerCouple(api: ModApi) {
       const publicNow = ctx.state.time.phase === "shift" && ctx.state.where[WIFE] === HALL && (b.shift?.visits.length ?? 0) > 0;
       const need = o.needs ? o.needs.min + (publicNow ? (o.needs.publicExtra ?? 0) : 0) : 0;
       const ok = !o.needs || statOf(ctx.state, o.needs.stat) >= need;
-      applyFx(ctx, ok ? o.effects : (o.fail ?? {}), "husband");
+      applyFx(ctx, ok ? scaled(o.effects, talkScale(ctx.state)) : (o.fail ?? {}), "husband");
       ctx.log(`log.talk.${o.id}${ok ? "" : ".no"}`);
       // a husband who has gone without long enough can lose it from a kiss
       const TC = T.touchCum;

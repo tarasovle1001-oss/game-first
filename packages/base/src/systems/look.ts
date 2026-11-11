@@ -98,7 +98,7 @@ const mark = (ctx: Ctx, place: string) => {
   const h = bs(ctx.state).heroine;
   h.cum = { ...(h.cum ?? {}), [place]: Math.max(h.cum?.[place] ?? 0, L.marks.lasts[place] ?? 30) };
 };
-const wash = (ctx: Ctx, only?: string[]) => {
+export const wash = (ctx: Ctx, only?: string[]) => {
   const h = bs(ctx.state).heroine;
   if (!h.cum && !h.after) return;
   for (const place of Object.keys(h.cum ?? {})) if (!only || only.includes(place)) delete h.cum![place];

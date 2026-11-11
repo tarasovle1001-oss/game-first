@@ -26,17 +26,19 @@ import { registerHotel } from "./systems/hotel";
 import { registerGossip } from "./systems/gossip";
 import { registerLoan } from "./systems/loan";
 import { registerMemories } from "./systems/memories";
+import { registerRhythm } from "./systems/rhythm";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 16,
+  version: 17,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
     for (const k of Object.keys(fresh)) if (slice[k] === undefined) slice[k] = fresh[k];
     if (slice.night && slice.night.sex === undefined) slice.night.sex = null;
     if (slice.husband.stretch === undefined) slice.husband.stretch = 0;
+    if (slice.husband.energy === undefined) Object.assign(slice.husband, content.day.rhythm.him.start);
     if (slice.heroine.frustration === undefined) slice.heroine.frustration = 0;
     if (slice.heroine.bare === undefined) slice.heroine.bare = "none";
     if (!slice.owned.includes(slice.heroine.outfit)) slice.owned.push(slice.heroine.outfit);
@@ -133,6 +135,7 @@ export const baseMod: Mod = {
     registerGossip(api);
     registerLoan(api);
     registerMemories(api);
+    registerRhythm(api);
     registerSetup(api);
   },
 };
@@ -176,4 +179,5 @@ export { installment, LOAN_PAY } from "./systems/loan";
 export { ORDER } from "./systems/manners";
 export { husbandSees, husbandIn, husbandNextTo } from "./systems/places";
 export { rentOf } from "./systems/economy";
+export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, himOf, tired, worryOf } from "./systems/rhythm";
 export { pleasureFor, sizeClass } from "./systems/body";
