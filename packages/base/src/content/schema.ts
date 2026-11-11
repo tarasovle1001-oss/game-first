@@ -382,6 +382,16 @@ export const daySchema = z
       })
       .strict(),
     upgrades: z.array(z.object({ id, cost: z.number().positive(), bill: z.number().optional(), tip: z.number().optional(), reputation: z.number().optional() }).strict()),
+    world: z
+      .object({
+        weekdays: z.array(z.number()).length(7),
+        weather: z.array(z.object({ id, weight: z.number().positive(), arrivals: z.number() }).strict()).min(1),
+        famePerRegular: z.number(),
+        famePerDay: z.number(),
+        fameArrivals: z.number(),
+        fameTiers: z.array(z.tuple([z.number(), z.string()])).min(1),
+      })
+      .strict(),
     rhythm: z
       .object({
         wake: z.array(z.number().int().min(5).max(14)).min(1), // hours he may sleep till; the first is what happens by default

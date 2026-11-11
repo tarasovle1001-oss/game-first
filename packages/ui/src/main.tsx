@@ -8,10 +8,10 @@ import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
 import { loadPack, packInfo, pictureFor } from "./pack";
-import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, Summary, TopBar, WhyTab } from "./panels";
+import { actionLabel, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, Rooms, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
 import "./style.css";
 
-type Tab = "her" | "you" | "guests" | "why" | "phone";
+type Tab = "her" | "you" | "guests" | "why" | "phone" | "stats";
 
 // The UI only reads state and dispatches actions. No game rules live here.
 function App() {
@@ -105,13 +105,18 @@ function App() {
   const answers = all.filter((a) => a.type === ANSWER || a.type === PERMIT || a.type === DEAL);
   const otherGroups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
 
+  // the actions that sit on the panel as plain buttons get a letter each
+  const HOT = ["q", "w", "e", "r", "t", "y", "u", "i"];
+  const direct = otherGroups.filter(([, list]) => list.length < 3).flatMap(([, list]) => list).slice(0, HOT.length);
   // keys 1-4 for the waits, Enter for the next phase
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
       const n = Number(e.key);
+      const quick = HOT.indexOf(e.key.toLowerCase());
       if (n >= 1 && n <= waits.length) act(waits[n - 1]!);
       else if (e.key === "Enter" && advance) act(advance);
+      else if (quick >= 0 && quick < direct.length && !e.ctrlKey && !e.metaKey && !e.altKey) act(direct[quick]!);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -340,7 +345,7 @@ function App() {
                   list.length < 3 ? (
                     list.map((a, i) => (
                       <button key={type + i} onClick={() => act(a)}>
-                        {actionLabel(a, t, lang)}
+                        {direct.indexOf(a) >= 0 && <kbd>{HOT[direct.indexOf(a)]!.toUpperCase()}</kbd>} {actionLabel(a, t, lang)}
                       </button>
                     ))
                   ) : (
@@ -368,7 +373,7 @@ function App() {
           )}
 
           <div className="tabs">
-            {(["her", "you", "guests", "why", "phone"] as Tab[]).map((k) => (
+            {(["her", "you", "guests", "why", "phone", "stats"] as Tab[]).map((k) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>
                 {t(`ui.tab.${k}`)}
                 {k === "guests" && b.shift ? ` ${b.shift.visits.length}` : ""}
@@ -377,6 +382,7 @@ function App() {
           </div>
           <div className="tab-body">
             {tab === "her" && <HeroineTab {...common} />}
+            {tab === "stats" && <StatsTab {...common} />}
             {tab === "you" && <CoupleTab {...common} />}
             {tab === "guests" && <GuestsTab {...common} />}
             {tab === "why" && <WhyTab {...common} debug={transparent} />}

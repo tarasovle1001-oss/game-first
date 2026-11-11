@@ -718,3 +718,7 @@ details { border-top: 1px solid var(--line); }
 
 .entry.thought { font-style: italic; opacity: 0.85; }
 .why-line { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; margin: -2px 0 6px; opacity: 0.8; }
+
+.log-filters { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.log-filters button { padding: 2px 8px; font-size: 12px; }
+.log-filters button.on { border-color: var(--accent, #e0a030); color: var(--accent, #e0a030); }

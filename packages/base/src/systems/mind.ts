@@ -98,6 +98,8 @@ function note(ctx: Ctx, who: string, act: string, seen: boolean) {
   p.with[who] = p.with[who] ?? {};
   p.with[who]![act] = (p.with[who]![act] ?? 0) + 1;
   if (seen) p.seen[who] = true;
+  // the running count is about what went somewhere: small talk and a drink are not "times"
+  if ((content.acts.find((x) => x.id === act)?.tier ?? 0) < 2) return;
   b.tally = b.tally ?? { acts: {}, partners: {}, came: 0 };
   b.tally.acts[act] = (b.tally.acts[act] ?? 0) + 1;
   b.tally.partners[who] = (b.tally.partners[who] ?? 0) + 1;

@@ -194,5 +194,5 @@ export type { Attr, Emotion } from "./systems/mind";
 export { WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, wished } from "./systems/terms";
 export { DEAL, GROUP, TABLE, JOIN, LOUNGE } from "./systems/floor";
 export { soreOf, slick, wearOf, foreignMarks, visibleMarks, dressShift } from "./systems/bodystate";
-export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryOf } from "./systems/rhythm";
+export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryOf, weekdayOf, fameOf, fameTier } from "./systems/rhythm";
 export { pleasureFor, sizeClass } from "./systems/body";

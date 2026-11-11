@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
+import { fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -39,7 +39,10 @@ export function TopBar({ state, t }: Common) {
         <span className="cap">{t("ui.time")}</span>
         <span className="big">{clockText(state.time.minute)}</span>
         <span className="accent">{t(`base.phase.${state.time.phase}`)}</span>
-        <span className="muted">{t("ui.day", { day: state.time.day })}</span>
+        <span className="muted">
+          {t("ui.day", { day: state.time.day })}, {t(`weekday.${weekdayOf(state)}`).toLowerCase()}
+          {b.weather ? ` · ${t(`weather.${b.weather}`).split(",")[0]!.toLowerCase()}` : ""}
+        </span>
       </div>
       <div className="cell">
         <span className="cap">{t("ui.money")}</span>
@@ -58,6 +61,11 @@ export function TopBar({ state, t }: Common) {
       <div className="cell">
         <span className="cap">{t("ui.reputation")}</span>
         <span className="big">{Math.round(b.reputation)}</span>
+        <span className="muted">{t("ui.clean")} {Math.round(b.clean)}</span>
+      </div>
+      <div className="cell">
+        <span className="cap">{t("ui.him.energy")}</span>
+        <span className={`big${himOf(state).energy < content.day.rhythm.him.tiredBelow ? " bad" : ""}`}>{Math.round(himOf(state).energy)}</span>
       </div>
       <div className="cell">
         <span className="cap">{b.mode === "open" ? "NTS" : "NTR"}</span>
@@ -115,12 +123,41 @@ function richLine(e: { key: string; params?: Record<string, unknown> }, t: T, la
   });
 }
 
+type LogFilter = "all" | "people" | "money" | "lewd";
 export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
-  const entries = state.log.filter((e) => debug || !e.tags?.includes("unseen")).slice(-80).reverse();
+  const [filter, setFilter] = useState<LogFilter>("all");
+  const visible = state.log.filter((e) => debug || !e.tags?.includes("unseen"));
+  const fits = (e: (typeof visible)[number]) => {
+    if (filter === "all") return true;
+    const kind = kindOf(e.key, e.params);
+    if (filter === "people") return typeof e.params?.name === "string" || /^log\.(talk|hear|ask|stance|about|wish|tell|dare|complaint|morning\.ignored|promise)/.test(e.key) || e.tags?.includes("thought") === true;
+    return kind === filter;
+  };
+  const shown = visible.filter(fits);
+  const hidden = visible.length - shown.length;
+  // the same line over and over is one line with a count and the span of time it covers
+  type Row = { e: (typeof visible)[number]; n: number; from: number };
+  const rows: Row[] = [];
+  for (const e of shown.slice(-120)) {
+    const last = rows.at(-1);
+    if (last && last.e.key === e.key && last.e.day === e.day && JSON.stringify(last.e.params ?? {}) === JSON.stringify(e.params ?? {})) {
+      last.n += 1;
+      last.e = e;
+    } else rows.push({ e, n: 1, from: e.minute });
+  }
+  rows.reverse();
   let lastDay = -1;
   return (
     <div className="log">
-      {entries.map((e, i) => {
+      <div className="log-filters">
+        {(["all", "people", "money", "lewd"] as LogFilter[]).map((f) => (
+          <button key={f} className={filter === f ? "on" : ""} onClick={() => setFilter(f)}>
+            {t(`ui.log.${f}`)}
+          </button>
+        ))}
+        {hidden > 0 && <span className="muted small">{t("ui.log.hidden", { n: hidden })}</span>}
+      </div>
+      {rows.slice(0, 80).map(({ e, n, from }, i) => {
         const dayMark = e.day !== lastDay;
         lastDay = e.day;
         const unseen = e.tags?.includes("unseen");
@@ -129,11 +166,57 @@ export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
             {dayMark && <div className="daymark">{t("ui.day", { day: e.day })}</div>}
             <div className={`entry k-${kindOf(e.key, e.params)}${unseen ? " unseen" : ""}${e.tags?.includes("thought") ? " thought" : ""}`} title={unseen ? t("ui.unseen") : undefined}>
               <span className="time">{clockText(e.minute)}</span>
-              <span>{richLine(e, t, lang)}</span>
+              <span>
+                {richLine(e, t, lang)}
+                {n > 1 && <span className="muted small"> x{n} ({t("ui.log.more", { n: n - 1, from: clockText(from), to: clockText(e.minute) })})</span>}
+              </span>
             </div>
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/** The running count: what the place is known for, and who she has been with. */
+export function StatsTab({ state, t, lang, open }: Common) {
+  const b = bs(state);
+  const tally = b.tally;
+  const partners = Object.entries(tally?.partners ?? {}).sort((x, y) => y[1] - x[1]);
+  const acts = Object.entries(tally?.acts ?? {}).sort((x, y) => y[1] - x[1]);
+  const who = (id: string) => (id === HUSBAND ? t("ui.memory.you") : b.patrons[id] ? patronName(b.patrons[id]!.name, lang) : t("ui.memory.someone"));
+  return (
+    <div>
+      <div className="cap">{t("ui.stats.axes")}</div>
+      <Bar label={t("ui.stats.service")} value={b.reputation} tone="green" />
+      <Bar label={t("ui.stats.fame")} value={fameOf(state)} />
+      <Bar label={t("ui.stats.scandal")} value={b.gossip} tone="amber" />
+      <div className="muted small">{t(`fame.${fameTier(state)}`)}</div>
+      <div className="cap gap">{t("ui.stats.total")}</div>
+      {!tally && <div className="muted small">{t("ui.stats.none")}</div>}
+      {tally && <div className="small">{t("ui.stats.you", { n: tally.partners[HUSBAND] ?? 0 })}</div>}
+      {tally && !open && <div className="muted small">{t("ui.stats.hidden")}</div>}
+      {tally && open && (
+        <>
+          <div className="small">{t("ui.stats.sum", { n: partners.reduce((s, [, n]) => s + n, 0), men: partners.filter(([id]) => id !== HUSBAND).length, came: tally.came })}</div>
+          <div className="cap gap">{t("ui.stats.partners")}</div>
+          <div className="rows">
+            {partners.slice(0, 12).map(([id, n]) => (
+              <span key={id} className="row">
+                {who(id)} <b>{n}</b>
+              </span>
+            ))}
+          </div>
+          <div className="cap gap">{t("ui.stats.acts")}</div>
+          <div className="rows">
+            {acts.slice(0, 16).map(([id, n]) => (
+              <span key={id} className="row">
+                {t(`act.${id}`)} <b>{n}</b>
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -747,6 +830,9 @@ export function GuestsTab({ state, t, lang, open }: Common) {
         {present.map((v) => (
           <div key={v.patron}>
             <PatronRow p={b.patrons[v.patron]!} t={t} lang={lang} />
+            <div className="small muted" style={{ marginLeft: 8 }}>
+              {b.encounter?.patron === v.patron ? t("ui.guest.withher") : v.served === 0 ? t("ui.guest.waiting") : t("ui.guest.served", { n: v.served })}
+            </div>
             {(v.waited > 0 || (b.patrons[v.patron]!.memory.tier >= 3 && (b.patrons[v.patron]!.likes?.length ?? 0) > 0)) && (
               <div className={`small ${v.waited >= content.balance.shift.maxWaitMinutes * 0.6 ? "bad" : "muted"}`} style={{ marginLeft: 8 }}>
                 {v.waited > 0 ? t("ui.waits", { n: v.waited }) : ""}

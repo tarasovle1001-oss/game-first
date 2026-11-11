@@ -272,6 +272,7 @@ export interface BaseState {
   aboutSaid?: number;
   promises?: { kind: string; day: number; due: number; topic?: string }[];
   ignoredHer?: boolean;
+  weather?: string;
   wakeAt?: number; // hour he sleeps till tonight, when it is not the usual one
   slept?: { him: number; her: number }; // hours each of them got last night
   sentWash?: string;

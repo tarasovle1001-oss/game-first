@@ -89,3 +89,15 @@ rhythm:               # the day around the clock: sleep, his own state, the bath
   # debt is counted over the loan they started with
   worry: { cashBelow: 150, debtFrom: 400, mood: -3, hardDebt: 1500, hardMood: -6, herShare: 0.6 }
   bath: { washMinutes: 15, washMood: 2, sendMinutes: 20, sendAnnoy: 3, walkIn: { margin: 30, arousal: 8, annoy: 8 } }
+world:                # the week and the sky: more people on some days, fewer on others
+  weekdays: [0, -0.1, 0, 0, 0.05, 0.25, 0.2]   # Sunday first: share added to the evening's flow
+  weather:
+    - { id: clear, weight: 5, arrivals: 0 }
+    - { id: rain, weight: 2, arrivals: -0.15 }
+    - { id: heat, weight: 1, arrivals: 0.1 }
+    - { id: cold, weight: 1, arrivals: -0.08 }
+    - { id: storm, weight: 0.5, arrivals: -0.3 }
+  famePerRegular: 3
+  famePerDay: 0.5
+  fameArrivals: 0.002  # per point of fame
+  fameTiers: [[0, nobody], [20, known], [45, talked], [70, famous], [90, legend]]

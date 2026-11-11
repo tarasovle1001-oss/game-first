@@ -42,6 +42,15 @@ export const talkScale = (state: GameState) => {
 };
 /** Minutes of the day he gets up at tomorrow. */
 export const wakeMinute = (state: GameState) => (bs(state).wakeAt ?? R.wake[0]!) * 60;
+const Wd = content.day.world;
+/** 0 = Sunday. The game starts on a Monday. */
+export const weekdayOf = (state: GameState) => state.time.day % 7;
+/** How well the place is known, 0..100: regulars, time, and how it is run. */
+export const fameOf = (state: GameState) => {
+  const b = bs(state);
+  return clamp(Object.values(b.patrons).filter((p) => p.regular).length * Wd.famePerRegular + b.daysPlayed * Wd.famePerDay + b.reputation * 0.2);
+};
+export const fameTier = (state: GameState) => Wd.fameTiers.filter(([from]) => fameOf(state) >= from).at(-1)![1];
 /** How heavy the money is today: 0 nothing, 1 it nags, 2 it keeps them awake. */
 export const worryOf = (state: GameState): 0 | 1 | 2 => {
   const b = bs(state);
@@ -190,6 +199,11 @@ export function registerRhythm(api: ModApi) {
         changeHeroine(ctx, "mood", Math.round(m * R.worry.herShare), "money");
         ctx.log(`log.morning.worry.${w}`, { mood: m });
       }
+      // the day of the week and the sky decide how many come tonight; a known place draws more
+      const sky = ctx.rng.weighted(Wd.weather.map((w) => ({ item: w, weight: w.weight })));
+      b.weather = sky.id;
+      if (b.day) b.day.arrivals += Wd.weekdays[weekdayOf(ctx.state)]! + sky.arrivals + fameOf(ctx.state) * Wd.fameArrivals;
+      if (ctx.state.time.day > 1) ctx.log("log.morning.day", { weekday: `weekday.${weekdayOf(ctx.state)}`, weather: `weather.${sky.id}` });
       // his face at breakfast is part of her morning
       changeHeroine(ctx, "mood", Math.round((himOf(ctx.state).mood - R.him.moodRest) * R.him.mood.toHer), "his mood");
     },
