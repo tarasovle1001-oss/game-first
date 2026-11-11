@@ -36,7 +36,7 @@ BODY = {
     "husband": dict(gender=1.0, muscle=0.35, weight=0.5, height=0.45, proportions=0.5),
 }
 THICK = {"patron": 0.030, "husband": 0.017, "wife": 0.020}  # radius of what he has / what she holds, m
-COLOR = {"wife": (0.85, 0.3, 0.5, 1), "patron": (0.8, 0.55, 0.2, 1), "husband": (0.25, 0.45, 0.8, 1)}
+COLOR = {"wife": (0.85, 0.3, 0.5, 1), "patron": (0.8, 0.55, 0.2, 1), "patron2": (0.6, 0.7, 0.2, 1), "patron3": (0.2, 0.7, 0.6, 1), "husband": (0.25, 0.45, 0.8, 1)}
 
 def clear():
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -47,7 +47,7 @@ def to3(p, y=0.0):
 
 def make_figure(fig):
     macro = TargetService.get_default_macro_info_dict()
-    macro.update(BODY.get(fig["role"], BODY["husband"]))
+    macro.update(BODY.get(fig["role"], BODY["patron"] if fig["role"].startswith("patron") else BODY["husband"]))  # patron2/3 are guests too
     mesh = HumanService.create_human(scale=0.1, macro_detail_dict=macro, feet_on_ground=True)
     rig = Rig.from_json_file_and_basemesh(os.path.join(RIGS, "rig.game_engine.json"), mesh)
     arm = rig.create_armature_and_fit_to_basemesh()
@@ -153,7 +153,7 @@ def run(scene_id):
         pose(arm, fig)
         parts = [mesh]
         for e in fig["extras"]:
-            parts.append(tube(f'{fig["role"]}_{e["kind"]}', e["pts"], THICK.get(fig["role"], 0.02) * (0.8 if e["kind"] == "toy" else 1)))
+            parts.append(tube(f'{fig["role"]}_{e["kind"]}', e["pts"], THICK.get(fig["role"], THICK["patron"] if fig["role"].startswith("patron") else 0.02) * (0.8 if e["kind"] == "toy" else 1)))
         figs.append((fig, arm, parts))
     bpy.context.view_layer.update()
     # the camera frames her: three quarters round, a little above

@@ -553,6 +553,17 @@ export const lookSchema = z
   .strict();
 export type Look = z.infer<typeof lookSchema>;
 
+/** prompt.yaml: the words a picture needs besides the state - style, who each figure is, the pose of each figure per layout. */
+export const PROMPT_ROLES = ["wife", "husband", "patron", "patron2", "patron3", "watcher"] as const;
+export const promptSchema = z
+  .object({
+    style: z.object({ prefix: z.string().default(""), negative: z.string().default("") }).strict(),
+    roles: z.record(z.enum(PROMPT_ROLES), z.object({ who: z.string(), negative: z.string().default("") }).strict()),
+    poses: z.record(z.string(), z.record(z.string(), z.string().nullable().transform((s) => s ?? ""))),
+  })
+  .strict();
+export type PromptWords = z.infer<typeof promptSchema>;
+
 export const EMOTIONS = ["anger", "contempt", "guilt", "shame", "longing", "disgust", "fear", "pride", "tenderness", "delight"] as const;
 export type Emotion = (typeof EMOTIONS)[number];
 const feelings = z.record(z.enum(EMOTIONS), z.number());
@@ -647,6 +658,7 @@ export type Intimacy = z.infer<typeof intimacySchema>;
 
 export interface Content {
   look: Look;
+  prompt: PromptWords;
   mind: Mind;
   terms: Terms;
   floor: Floor;

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "content": "tsx tools/build-content.ts",
+    "slots": "tsx tools/look-slots.ts",
     "typecheck": "pnpm content && tsc -p tsconfig.json --noEmit",
     "test": "pnpm content && vitest run",
     "bot": "pnpm content && tsx packages/bots/src/run.ts",

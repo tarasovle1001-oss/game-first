@@ -1,9 +1,12 @@
-// Which pictures does the game actually ask for, and how often? Bots play, every scene key is counted.
-// The result is the shopping list for an image pack: generate from the top, stop where coverage is good enough.
+// Which pictures does the game actually ask for, and how often? Bots play, every picture key is counted -
+// with her look baked in (face, marks, gape, what is off), the way the game looks the picture up.
+// The result is the manifest of an image pack: key, file name, how often it is seen, cumulative coverage,
+// the layout to draw it over and the prompt (shared + one per figure). Generate from the top, stop where coverage is enough.
+// Also lists the general keys the game falls back to (scene/roles/room without tags, scene/*), so every scene has something.
 // pnpm exec tsx tools/pack-plan.ts [days=30] [seeds=6] [out=pack-plan.json]
 import { writeFileSync } from "node:fs";
-import { baseMod, bs, content } from "../packages/base/src";
-import { createEngine, sceneFileName, sceneKey } from "../packages/core/src";
+import { baseMod, bs, content, pictureScene, promptFor, withLook } from "../packages/base/src";
+import { createEngine, sceneKey } from "../packages/core/src";
 import type { GameState, SceneDesc } from "../packages/core/src";
 import { awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy } from "../packages/bots/src";
 
@@ -22,25 +25,52 @@ const truth = (s: GameState): SceneDesc | null => {
   const b = bs(s);
   const act = b.encounter ? content.acts.find((a) => a.id === b.encounter!.act) : null;
   if (!b.encounter || !act) return null;
-  return { type: act.scene, location: b.encounter.loc, participants: [{ id: "wife", role: "wife" }, { id: b.encounter.patron, role: "patron" }], tags: { outfit: b.heroine.outfit } };
+  return withLook(s, { type: act.scene, location: b.encounter.loc, participants: [{ id: "wife", role: "wife" }, { id: b.encounter.patron, role: "patron" }], tags: {} });
 };
 const strategies = [awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy];
+let step = 0;
+const t0 = Date.now();
 for (const preset of content.presets.map((p) => p.id))
   for (let seed = 1; seed <= Number(seeds); seed++) {
     const play = strategies[seed % strategies.length]!;
     let s = engine.init(seed, { base: { preset } });
     while (s.time.day <= Number(days)) {
       s = engine.dispatch(s, play(engine.listActions(s), s, () => 0));
-      count(engine.currentScene(s));
-      count(truth(s));
+      const seen = pictureScene(engine, s);
+      count(seen);
+      const real = truth(s);
+      if (real && (!seen || sceneKey(real) !== sceneKey(seen))) count(real);
     }
+    step += 1;
+    process.stderr.write(`\rplaying ${step}/${content.presets.length * Number(seeds)} games, ${counts.size} keys, ${((Date.now() - t0) / 1000).toFixed(0)}s   `);
   }
-const rows = [...counts.entries()].map(([key, v]) => ({ key, n: v.n, type: v.desc.type, location: v.desc.location, tags: v.desc.tags ?? {} })).sort((a, b) => b.n - a.n);
+process.stderr.write("\n");
+
+// general keys the game falls back to when the exact picture is missing
+const general = new Map<string, { n: number; desc: SceneDesc }>();
+for (const { n, desc } of counts.values()) {
+  const bare = { ...desc, tags: {} };
+  const k = sceneKey(bare);
+  const g = general.get(k);
+  if (g) g.n += n;
+  else general.set(k, { n, desc: bare });
+}
+
+const row = (desc: SceneDesc, n: number) => {
+  const p = promptFor(desc);
+  return { key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, shared: p.shared, regions: p.regions, positive: p.positive, negative: p.negative, empty: p.empty };
+};
+const rows = [...counts.values()].map((v) => row(v.desc, v.n)).sort((a, b) => b.n - a.n);
 const total = rows.reduce((a, r) => a + r.n, 0);
 let run = 0;
-const plan = rows.map((r) => ({ ...r, file: `${sceneFileName(r.key)}.png`, share: +(r.n / total).toFixed(4), coverage: +((run += r.n) / total).toFixed(4) }));
-writeFileSync(out, JSON.stringify({ days: Number(days), seeds: Number(seeds), keys: plan.length, total, plan }, null, 1));
+const plan = rows.map((r) => ({ ...r, share: +(r.n / total).toFixed(5), coverage: +((run += r.n) / total).toFixed(5) }));
+const base = [...general.values()].map((v) => row(v.desc, v.n)).sort((a, b) => b.n - a.n);
+const emptySlots = [...new Set(plan.flatMap((r) => r.empty))].sort();
+writeFileSync(out, JSON.stringify({ days: Number(days), seeds: Number(seeds), keys: plan.length, total, emptySlots, base, plan }, null, 1));
+
 const at = (c: number) => plan.findIndex((r) => r.coverage >= c) + 1;
-console.log(`${plan.length} distinct pictures over ${total} views. For 80% of views: ${at(0.8)} pictures, 95%: ${at(0.95)}, 99%: ${at(0.99)}.`);
-console.log(plan.slice(0, 12).map((r) => `${String(r.n).padStart(7)}  ${r.key}`).join("\n"));
-console.log(`scene types in use: ${new Set(plan.map((r) => r.type)).size} of ${content.scenes.length}; plan written to ${out}`);
+console.log(`${plan.length} exact pictures over ${total} views. For 80% of views: ${at(0.8)}, 95%: ${at(0.95)}, 99%: ${at(0.99)}, 100%: ${plan.length}.`);
+console.log(`general fallback pictures (scene/roles/room): ${base.length}`);
+console.log(`layouts in use: ${new Set(plan.map((r) => r.layout)).size} of ${content.scenes.length}; slots of prompt.yaml still empty: ${emptySlots.length}`);
+console.log(plan.slice(0, 10).map((r) => `${String(r.n).padStart(7)}  ${r.key}`).join("\n"));
+console.log(`written to ${out}`);

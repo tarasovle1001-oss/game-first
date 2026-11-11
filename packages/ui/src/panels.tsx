@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
+import { fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -243,7 +243,7 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
         : { type: "idle", location: state.where[WIFE] ?? "", participants: [{ id: WIFE, role: "wife" }], tags: {} }
       : null;
   const awayLayout = away ? content.scenes.find((x) => x.id === away.type) : null;
-  const awayPicture = away ? pictureFor(away, state.time.day * 7 + state.turn) : null;
+  const awayPicture = away ? pictureFor(withLook(state, away), state.time.day * 7 + state.turn) : null;
   const awaySvg = away
     ? renderSchematic(away.type === "idle" || !awayLayout ? [{ role: "wife", pose: "stand" as const, x: 0 }] : awayLayout.figures, {
         title: open ? t(`scene.${awayLayout?.id ?? "idle"}`) : t("ui.scene.unseen"),

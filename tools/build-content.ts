@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, PROMPT_ROLES, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -90,6 +90,7 @@ unique(presets, "preset");
 for (const pr of presets) for (const l of pr.latents) if (!latents.some((x) => x.id === l)) errors.push(`preset "${pr.id}" uses unknown latent "${l}"`);
 const phone = load(join(base, "content/phone.yaml"), phoneSchema);
 const look = load(join(base, "content/look.yaml"), lookSchema);
+const prompt = load(join(base, "content/prompt.yaml"), promptSchema);
 const mind = load(join(base, "content/mind.yaml"), mindSchema);
 const terms = load(join(base, "content/terms.yaml"), termsSchema);
 const floor = load(join(base, "content/floor.yaml"), floorSchema);
@@ -158,13 +159,28 @@ if (look) {
   for (const r of rooms) if (!look.words.room[r.id]) errors.push(`look.yaml: no words for room "${r.id}"`);
   for (const k of Object.keys(look.marks.byAct)) if (!acts.some((a) => a.id === k)) errors.push(`look.yaml: marks for unknown act "${k}"`);
 }
-if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !mind || !terms || !floor || !intimacy) {
+// every layout has its slots in prompt.yaml, one per role it draws, and nothing else (empty values are fine: not filled yet)
+if (prompt) {
+  for (const r of PROMPT_ROLES) if (!prompt.roles[r]) errors.push(`prompt.yaml: no entry for role "${r}"`);
+  for (const s of scenes) {
+    const slots = prompt.poses[s.id];
+    const roles = new Set(s.figures.map((f) => f.role));
+    if (!slots) errors.push(`prompt.yaml: no poses entry for scene "${s.id}"`);
+    else {
+      if (!("scene" in slots)) errors.push(`prompt.yaml: poses.${s.id} misses "scene"`);
+      for (const r of roles) if (!(r in slots)) errors.push(`prompt.yaml: poses.${s.id} misses role "${r}"`);
+      for (const k of Object.keys(slots)) if (k !== "scene" && !roles.has(k)) errors.push(`prompt.yaml: poses.${s.id} has "${k}", the layout has no such figure`);
+    }
+  }
+  for (const id of Object.keys(prompt.poses)) if (!sceneIds.has(id)) errors.push(`prompt.yaml: poses for unknown scene "${id}"`);
+}
+if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !prompt || !mind || !terms || !floor || !intimacy) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { look, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
+const content: Content = { look, prompt, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

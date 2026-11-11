@@ -15,13 +15,15 @@ export function sceneKey(desc: SceneDesc): string {
 
 /**
  * The key and its ever more general versions, most specific first. An image pack that lacks the exact picture
- * can still show the nearest one: first tags are dropped one at a time (last-sorted first), then the room,
+ * can still show the nearest one: first tags are dropped one at a time (least important first, see `order`), then the room,
  * then the roles. The caller falls back to the schematic when nothing matches.
  */
-export function sceneKeyFallbacks(desc: SceneDesc): string[] {
+export function sceneKeyFallbacks(desc: SceneDesc, order: string[] = []): string[] {
   const roles = rolesOf(desc);
   const out: string[] = [];
-  const entries = Object.entries(desc.tags ?? {}).sort(([a], [b]) => a.localeCompare(b));
+  // tags named in `order` are kept longest, in that order; the rest go first, last-sorted first
+  const rank = (k: string) => (order.includes(k) ? order.indexOf(k) : order.length);
+  const entries = Object.entries(desc.tags ?? {}).sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b));
   for (let n = entries.length; n >= 0; n--) {
     const tags = tagsOf(Object.fromEntries(entries.slice(0, n)));
     out.push([desc.type, roles, desc.location, tags].filter(Boolean).join("/"));

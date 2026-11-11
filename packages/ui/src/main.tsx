@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND } from "@tc/base";
+import { DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, withLook } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -194,7 +194,7 @@ function App() {
         </aside>
 
         <section className="col-main">
-          {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(scene, state.time.day * 7 + state.turn) : null} />}
+          {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
           <div className="cap gap">{t("ui.where")}</div>
           <Rooms {...common} onAct={act} />
           {debug && <CheatPanel {...common} onAct={act} />}

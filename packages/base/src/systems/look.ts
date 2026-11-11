@@ -1,7 +1,7 @@
 // What shows on her afterwards, and the scene put into words. One description is built from the state of
 // the game: who is there, what she has on and what is off, her face, what her body has become, what is on
 // her and in her. A picture pack takes the coarse part of it as a key; an image model takes all of it as tags.
-import type { Ctx, GameState, ModApi } from "@tc/core";
+import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
 import { content } from "../content";
 import { bs, HUSBAND, WIFE } from "../state";
 import { sizeClass } from "./body";
@@ -122,6 +122,66 @@ export function describeScene(state: GameState, open = false): SceneWords {
   const prompt = [...heroine, ...second, ...action, ...environment].join(", ");
   return { heroine, second, environment, action, prompt };
 }
+
+/**
+ * What of her state goes into a picture key, so the pack bakes it in: face, marks, gape, soreness, what is off.
+ * Coarse on purpose - levels, not numbers - so one picture covers a stretch of play. Order = most important
+ * first; a pack that lacks the exact picture drops tags from the end of this list (see sceneKeyFallbacks).
+ */
+export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "crowd", "face", "marks", "size", "hsize", "size2", "size3", "under", "skirt", "gape", "sore", "after", "drunk"];
+const HIDDEN = new Set(["inside", "anus", "thighs"]);
+const level = (table: [number, string][], value: number) => table.filter(([from]) => value >= from).length;
+
+export function lookTags(state: GameState, desc: SceneDesc): Record<string, string> {
+  const b = bs(state);
+  const h = b.heroine;
+  const out: Record<string, string> = {};
+  const roles = new Map(desc.participants.map((p) => [p.role, p.id]));
+  const act = content.acts.find((a) => a.scene === desc.type);
+  // the size shows when the layout draws it, or the act is one of the back-room ones
+  const intimate = act?.place === "private" || !!content.scenes.find((l) => l.id === desc.type)?.figures.some((f) => f.penis);
+  if (intimate)
+    for (const [role, tag] of [["patron", "size"], ["patron2", "size2"], ["patron3", "size3"], ["husband", "hsize"]] as const) {
+      const id = roles.get(role);
+      const cm = id === HUSBAND ? b.husband.size : id ? b.patrons[id]?.size : undefined;
+      if (cm !== undefined) out[tag] = String(sizeClass(cm));
+    }
+  if (!roles.has("wife")) return out;
+  const bare = bareOf(state);
+  out.outfit = bare === "none" ? wearOf(state) : dressOf(state);
+  if (bare !== "none") out.bare = bare;
+  if (bare !== "all" && bare !== "bottom") {
+    if (h.panties && h.panties !== "on") out.under = h.panties;
+    if (h.skirtUp) out.skirt = "up";
+  }
+  out.face = faceOf(state);
+  if (Object.values(h.after ?? {}).some((v) => v > 0)) out.after = "1";
+  const drunk = step(W.drunk, h.drunk);
+  if (drunk) out.drunk = drunk;
+  // what is under her clothes is not in the picture: it would only multiply pictures that look the same
+  const lower = bare === "all" || bare === "bottom" || ((h.panties === "off" || h.panties === "aside") && !!h.skirtUp) || intimate;
+  const marks = Object.entries(h.cum ?? {})
+    .filter(([k, v]) => v > 0 && W.cum[k] && (lower || !HIDDEN.has(k)))
+    .map(([k]) => k)
+    .sort();
+  if (marks.length) out.marks = marks.join("+");
+  const gape = lower ? (["vagina", "anus"] as const).map((z) => [z[0], level(W.stretch[z] ?? [], h.body[z].stretch)] as const).filter(([, n]) => n > 0) : [];
+  if (gape.length) out.gape = gape.map(([z, n]) => `${z}${n}`).join("");
+  const sore = (["vagina", "anus", "mouth"] as const)
+    .filter((z) => z === "mouth" || lower)
+    .map((z) => [z[0], level(W.sore[z] ?? [], h.sore?.[z] ?? 0)] as const)
+    .filter(([, n]) => n > 0);
+  if (sore.length) out.sore = sore.map(([z, n]) => `${z}${n}`).join("");
+  return out;
+}
+
+/** The scene on screen with her look baked into its tags: the key a pack picture is named after. */
+export function pictureScene(engine: EngineView, state: GameState): SceneDesc | null {
+  const desc = engine.currentScene(state);
+  return desc ? withLook(state, desc) : null;
+}
+/** Adds her look to any scene description; tags the scene already set win. */
+export const withLook = (state: GameState, desc: SceneDesc): SceneDesc => ({ ...desc, tags: { ...lookTags(state, desc), ...(desc.tags ?? {}) } });
 
 const mark = (ctx: Ctx, place: string, his = false) => {
   const h = bs(ctx.state).heroine;

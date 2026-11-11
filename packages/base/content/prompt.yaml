@@ -1,0 +1,119 @@
+# What goes into the picture prompt besides the state of the game (look.yaml has the words for clothes, face,
+# marks, room and act). Filled in by hand or by an outside helper: `pnpm slots export` writes the empty slots with
+# context, `pnpm slots merge <file>` takes the answer back, `pnpm slots check` lints. Empty = not filled yet.
+#
+# Each figure gets its own prompt (regional / masked conditioning), so what the guest is never leaks into her.
+# Counts (1girl, 2boys...) are added by the code; do not write them here.
+style:
+  prefix: ""        # quality / style tags for the checkpoint, go first in the shared prompt
+  negative: ""      # shared negative
+roles:              # who the figure is; appearance only, no pose
+  wife: { who: "adult woman", negative: "" }
+  husband: { who: "adult man", negative: "" }
+  patron: { who: "adult man", negative: "" }
+  patron2: { who: "adult man", negative: "" }
+  patron3: { who: "adult man", negative: "" }
+  watcher: { who: "adult man, background figure", negative: "" }
+# per scene layout: "scene" = shared words for the whole frame (composition, camera, what is going on between them),
+# one entry per role = that figure: pose, where the hands are, where the eyes look. Same ids as scenes.yaml.
+poses:
+  idle: { scene: "", wife: "" }
+  serving: { scene: "", wife: "", patron: "" }
+  patron_chatting: { scene: "", wife: "", patron: "" }
+  patron_drinking: { scene: "", wife: "", patron: "" }
+  patron_flirting: { scene: "", wife: "", patron: "" }
+  patron_touching: { scene: "", wife: "", patron: "" }
+  patron_moment_sit_on_lap: { scene: "", patron: "", wife: "" }
+  kissing: { scene: "", wife: "", patron: "" }
+  patron_groping: { scene: "", wife: "", patron: "" }
+  patron_lap_dance: { scene: "", patron: "", wife: "" }
+  patron_handjob: { scene: "", patron: "", wife: "" }
+  patron_blowjob: { scene: "", patron: "", wife: "" }
+  patron_cunnilingus: { scene: "", wife: "", patron: "" }
+  patron_sex: { scene: "", wife: "", patron: "" }
+  patron_riding: { scene: "", patron: "", wife: "" }
+  patron_anal: { scene: "", wife: "", patron: "" }
+  sex: { scene: "", wife: "", husband: "" }
+  left_wanting: { scene: "", husband: "", wife: "" }
+  cunnilingus: { scene: "", wife: "", husband: "" }
+  cold_back: { scene: "", wife: "", husband: "" }
+  sleeping: { scene: "", wife: "", husband: "" }
+  caught: { scene: "", wife: "", patron: "", husband: "" }
+  fd_tease: { scene: "", husband: "", wife: "" }
+  fd_facesit: { scene: "", husband: "", wife: "" }
+  fd_ignore: { scene: "", wife: "", husband: "" }
+  patron_titfuck: { scene: "", patron: "", wife: "" }
+  patron_thigh_job: { scene: "", wife: "", patron: "" }
+  patron_deepthroat: { scene: "", patron: "", wife: "" }
+  patron_standing_sex: { scene: "", wife: "", patron: "" }
+  came_too_soon_foreplay: { scene: "", wife: "", husband: "" }
+  premature_finish: { scene: "", wife: "", husband: "" }
+  finishing_herself: { scene: "", wife: "", husband: "" }
+  faking_it: { scene: "", wife: "", husband: "" }
+  patron_grinding: { scene: "", patron: "", wife: "" }
+  patron_mutual_touching: { scene: "", wife: "", patron: "" }
+  grinding: { scene: "", husband: "", wife: "" }
+  mutual_touching: { scene: "", wife: "", husband: "" }
+  handjob: { scene: "", husband: "", wife: "" }
+  blowjob: { scene: "", husband: "", wife: "" }
+  riding: { scene: "", husband: "", wife: "" }
+  anal: { scene: "", wife: "", husband: "" }
+  rimming_her: { scene: "", wife: "", husband: "" }
+  prostate: { scene: "", husband: "", wife: "" }
+  pegging: { scene: "", husband: "", wife: "" }
+  rimming_him: { scene: "", husband: "", wife: "" }
+  dildo_him: { scene: "", husband: "", wife: "" }
+  fisting_him: { scene: "", husband: "", wife: "" }
+  came_prostate: { scene: "", husband: "", wife: "" }
+  came_dildo_him: { scene: "", husband: "", wife: "" }
+  came_pegging: { scene: "", husband: "", wife: "" }
+  came_fisting_him: { scene: "", husband: "", wife: "" }
+  came_rimming_him: { scene: "", husband: "", wife: "" }
+  came_rimming_her: { scene: "", wife: "", husband: "" }
+  wants_him: { scene: "", husband: "", wife: "" }
+  patron_breast_play: { scene: "", wife: "", patron: "" }
+  patron_fingering: { scene: "", wife: "", patron: "" }
+  patron_sixty_nine: { scene: "", patron: "", wife: "" }
+  breast_play: { scene: "", wife: "", husband: "" }
+  fingering: { scene: "", wife: "", husband: "" }
+  sixty_nine: { scene: "", husband: "", wife: "" }
+  talk: { scene: "", wife: "", husband: "" }
+  by_hand: { scene: "", wife: "", husband: "" }
+  went_soft: { scene: "", wife: "", husband: "" }
+  patron_fin_face: { scene: "", wife: "", patron: "" }
+  patron_fin_mouth: { scene: "", wife: "", patron: "" }
+  patron_fin_chest: { scene: "", wife: "", patron: "" }
+  patron_fin_body: { scene: "", wife: "", patron: "" }
+  patron_fin_hands: { scene: "", patron: "", wife: "" }
+  patron_fin_inside: { scene: "", wife: "", patron: "" }
+  patron_fin_anus: { scene: "", wife: "", patron: "" }
+  patron_fin_thighs: { scene: "", wife: "", patron: "" }
+  patron_fin_held: { scene: "", wife: "", patron: "" }
+  fin_face: { scene: "", wife: "", husband: "" }
+  fin_mouth: { scene: "", husband: "", wife: "" }
+  fin_chest: { scene: "", wife: "", husband: "" }
+  fin_belly: { scene: "", wife: "", husband: "" }
+  fin_back: { scene: "", wife: "", husband: "" }
+  fin_inside: { scene: "", wife: "", husband: "" }
+  lead_ruined: { scene: "", husband: "", wife: "" }
+  lead_snowball: { scene: "", husband: "", wife: "" }
+  lead_lick_clean: { scene: "", husband: "", wife: "" }
+  group_spitroast: { scene: "", wife: "", patron: "", patron2: "" }
+  group_spitroast_hand: { scene: "", wife: "", patron: "", patron2: "", patron3: "" }
+  group_dp: { scene: "", patron: "", wife: "", patron2: "" }
+  group_airtight: { scene: "", patron: "", wife: "", patron2: "", patron3: "" }
+  group_oral_hand: { scene: "", wife: "", patron: "", patron2: "" }
+  group_sex_hand: { scene: "", wife: "", patron: "", patron2: "" }
+  join_hand: { scene: "", wife: "", patron: "", husband: "" }
+  join_mouth: { scene: "", wife: "", patron: "", husband: "" }
+  join_take: { scene: "", patron: "", wife: "", husband: "" }
+  her_cook: { scene: "", wife: "", husband: "" }
+  her_tidy: { scene: "", wife: "", husband: "" }
+  her_rest: { scene: "", wife: "", husband: "" }
+  her_dress: { scene: "", wife: "", husband: "" }
+  bath_walkin: { scene: "", wife: "", husband: "" }
+  bath_together: { scene: "", wife: "", husband: "" }
+  flash: { scene: "", wife: "", patron: "", patron2: "" }
+  walk_naked: { scene: "", patron2: "", wife: "", patron: "" }
+  deal: { scene: "", husband: "", patron: "", wife: "" }
+  table_sit: { scene: "", husband: "", patron: "" }

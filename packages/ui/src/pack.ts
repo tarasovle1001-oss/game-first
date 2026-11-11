@@ -2,6 +2,7 @@
 // the pack has for the scene on screen and falls back to the mannequin when there is none.
 import { sceneFileName, sceneKeyFallbacks } from "@tc/core";
 import type { SceneDesc } from "@tc/core";
+import { PICTURE_TAGS } from "@tc/base";
 
 const pictures = new Map<string, string[]>();
 let packName = "";
@@ -25,7 +26,7 @@ export const packInfo = () => ({ name: packName, keys: pictures.size });
 /** The picture for a scene, most specific first; `pick` chooses between variants of the same key. */
 export function pictureFor(desc: SceneDesc, pick: number): { url: string; key: string; exact: boolean } | null {
   if (pictures.size === 0) return null;
-  const keys = sceneKeyFallbacks(desc);
+  const keys = sceneKeyFallbacks(desc, PICTURE_TAGS);
   for (const [i, key] of keys.entries()) {
     const urls = pictures.get(sceneFileName(key));
     if (urls?.length) return { url: urls[Math.abs(pick) % urls.length]!, key, exact: i === 0 };
