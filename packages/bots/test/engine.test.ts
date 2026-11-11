@@ -19,7 +19,7 @@ const nextPhase = (s: GameState) => {
 describe("day cycle", () => {
   it("walks phases and rolls the day over", () => {
     let s = engine.init(1);
-    expect(s.time).toEqual({ day: 1, phase: "prep", minute: 960 });
+    expect(s.time).toEqual({ day: 1, phase: "prep", minute: 720 });
     const seen = [];
     for (let i = 0; i < 4; i++) {
       s = nextPhase(s);
@@ -175,7 +175,8 @@ describe("shift and economy", () => {
     while (!s.mods.base.shift.visits.length) s = engine.dispatch(s, wait(10));
     const patron = s.mods.base.shift.visits[0].patron;
     const res = engine.evaluate("base/tip", s, { patron, bill: 20 });
-    expect(res.rows.map((r) => r.id)).toEqual(["tip.generosity", "tip.mood", "tip.interest"]);
+    expect(res.rows.map((r) => r.id).slice(0, 3)).toEqual(["tip.generosity", "tip.mood", "tip.interest"]);
+    expect(res.rows.map((r) => r.id)).toContain("tip.clean");
   });
 });
 
@@ -205,5 +206,32 @@ describe("i18n", () => {
     expect(t("a", { day: 3 })).toBe("День 3");
     expect(t("b")).toBe("only en");
     expect(t("missing.key")).toBe("missing.key");
+  });
+});
+
+describe("the afternoon", () => {
+  it("is a budget of minutes: activities spend it and the clock moves", () => {
+    let s = engine.init(6);
+    expect(s.mods.base.day.left).toBe(360);
+    const acts = () => engine.listActions(s).filter((a) => a.type === "base/day").map((a) => a.payload!.do);
+    expect(acts()).toContain("side_job");
+    const money = s.mods.base.money;
+    s = engine.dispatch(s, { type: "base/day", payload: { do: "side_job" } });
+    expect(s.mods.base.money).toBeGreaterThan(money);
+    expect(s.time.minute).toBe(720 + 240);
+    s = engine.dispatch(s, { type: "base/day", payload: { do: "town" } });
+    expect(s.mods.base.day.left).toBe(60);
+    expect(acts()).not.toContain("date"); // 90 minutes do not fit any more
+    expect(engine.listActions(s).some((a) => a.type === "base/buy" && a.payload!.kind === "outfit")).toBe(true);
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("she only wears what she owns, and a bought outfit becomes available", () => {
+    let s = engine.init(6, { base: { preset: "hungry" } });
+    expect(s.mods.base.owned).toContain(s.mods.base.heroine.outfit);
+    s = engine.dispatch(s, { type: "base/day", payload: { do: "town" } });
+    const buy = engine.listActions(s).find((a) => a.type === "base/buy" && a.payload!.id === "revealing")!;
+    s = engine.dispatch(s, buy);
+    expect(s.mods.base.owned).toContain("revealing");
+    expect(engine.listActions(s).some((a) => a.type === "base/ask-outfit" && a.payload!.outfit === "revealing")).toBe(true);
   });
 });

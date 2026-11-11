@@ -17,11 +17,12 @@ import { registerLatents } from "./systems/latents";
 import { registerSetup } from "./systems/setup";
 import { registerExpectations } from "./systems/expectations";
 import { registerCouple } from "./systems/couple";
+import { registerDay } from "./systems/day";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 2,
+  version: 3,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -60,6 +61,12 @@ export const baseMod: Mod = {
       expect: {},
       told: [],
       reaction: null,
+      day: null,
+      clean: content.day.cleanStart,
+      owned: content.outfits.filter((o) => o.price === 0).map((o) => o.id),
+      toys: [],
+      upgrades: [],
+      billBonus: 0,
       talked: [],
       dayTop: null,
       outfitAsked: false,
@@ -92,6 +99,7 @@ export const baseMod: Mod = {
     registerLatents(api);
     registerExpectations(api);
     registerCouple(api);
+    registerDay(api);
     registerSetup(api);
   },
 };
@@ -119,3 +127,4 @@ export { TIP_SHARE } from "./systems/economy";
 export type { BaseSetup } from "./systems/setup";
 export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
 export { GUEST, TALK, TELL, guestInView, together } from "./systems/couple";
+export { BUY, DAY_DO, hasUpgrade } from "./systems/day";

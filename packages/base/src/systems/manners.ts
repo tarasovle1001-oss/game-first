@@ -15,14 +15,14 @@ const M = content.manners;
 const outfits = content.outfits.slice().sort((a, b) => a.order - b.order);
 const outfitOf = (state: GameState): Outfit => outfits.find((o) => o.id === bs(state).heroine.outfit) ?? outfits[0]!;
 /** The most revealing thing she would put on by herself today. */
-const ownChoice = (openness: number): Outfit => [...outfits].reverse().find((o) => openness >= o.openness) ?? outfits[0]!;
+const ownChoice = (openness: number, owned: string[]): Outfit => [...outfits].reverse().find((o) => owned.includes(o.id) && openness >= o.openness) ?? outfits[0]!;
 
 export function registerManners(api: ModApi) {
   // Every morning she dresses as her own openness allows; the husband's wishes last one day.
   api.events.on("phase:enter", (ctx, e) => {
     if (e.payload!.phase !== "prep") return;
     const b = bs(ctx.state);
-    const own = ownChoice(b.heroine.traits.openness);
+    const own = ownChoice(b.heroine.traits.openness, b.owned);
     if (own.id !== b.heroine.outfit && ctx.state.time.day > 1) ctx.log("log.outfit.own", { outfit: `outfit.${own.id}` });
     b.heroine.outfit = own.id;
     b.directive = "natural";
@@ -51,7 +51,7 @@ export function registerManners(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       if (state.time.phase !== "prep" || b.outfitAsked) return [];
-      return outfits.filter((o) => o.id !== b.heroine.outfit).map((o) => ({ type: ASK_OUTFIT, payload: { outfit: o.id } }));
+      return outfits.filter((o) => o.id !== b.heroine.outfit && b.owned.includes(o.id)).map((o) => ({ type: ASK_OUTFIT, payload: { outfit: o.id } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);

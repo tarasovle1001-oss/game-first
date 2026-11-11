@@ -669,3 +669,7 @@ header {
 .small { font-size: 0.88em; margin-top: 4px; }
 .stack.sub { margin-top: 8px; }
 button.deny { border-color: #7a3340; }
+details > summary { cursor: pointer; padding: 6px 2px; font-weight: 600; }
+details { border-top: 1px solid var(--line); }
+.tell-row { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; }
+.tell-row button { padding: 6px 10px; }

@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, outfitSchema, presetSchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,6 +82,7 @@ const secrecy = load(join(base, "content/secrecy.yaml"), secrecySchema);
 const outfits = load(join(base, "content/outfits.yaml"), outfitSchema.array().min(1)) ?? [];
 const latents = load(join(base, "content/latents.yaml"), latentSchema.array()) ?? [];
 const manners = load(join(base, "content/manners.yaml"), mannersSchema);
+const day = load(join(base, "content/day.yaml"), daySchema);
 unique(outfits, "outfit");
 unique(latents, "latent");
 const presets = load(join(base, "content/presets.yaml"), presetSchema.array().min(1)) ?? [];
@@ -142,13 +143,13 @@ presets.forEach((pr) => {
   need(`preset.${pr.id}.about`);
 });
 
-if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners) {
+if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, presets, locales };
+const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

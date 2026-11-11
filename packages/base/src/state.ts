@@ -168,6 +168,12 @@ export interface BaseState {
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
   told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
+  day: { left: number; done: string[]; arrivals: number } | null; // this afternoon: minutes left, what is done, tonight's extra flow
+  clean: number; // 0..100, how the room looks
+  owned: string[]; // outfits she has
+  toys: string[];
+  upgrades: string[];
+  billBonus: number; // share added to every bill by upgrades
   talked: string[]; // what he already said or did with her today (each thing once a day)
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now

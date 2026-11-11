@@ -45,7 +45,7 @@ export function registerSecrecy(api: ModApi) {
           suspect(ctx, S.sawThemLeave);
           ctx.log("log.hint.left_together", { name, room: `loc.${loc}` });
           if (b.shift) b.shift.interrupt = true;
-        } else if (husbandNextTo(ctx.state, loc)) {
+        } else if (husbandNextTo(ctx.state, loc) && !(loc === "cafe.staff" && b.upgrades.includes("soundproof"))) {
           // he is next door: he hears something
           suspect(ctx, S.heardNextDoor);
           ctx.log("log.hint.noise", { room: `loc.${loc}` });

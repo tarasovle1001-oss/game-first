@@ -19,6 +19,9 @@ export const rushStrategy: Strategy = (actions) =>
 /** Plays like a careful owner: buys supplies and pays the debt in prep, never moves. */
 export const ownerStrategy: Strategy = (actions, state) =>
   (state.mods.base.stock < 45 ? actions.find((a) => a.type === "base/buy-supplies") : undefined) ??
+  (state.mods.base.clean < 60 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "clean") : undefined) ??
+  actions.find((a) => a.type === "base/day" && a.payload?.do === "side_job") ??
+  (state.mods.base.money > 150 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "flyers") : undefined) ??
   (state.mods.base.money > 400 ? actions.find((a) => a.type === "base/repay-debt") : undefined) ??
   actions.find((a) => a.type === CORE_ADVANCE) ??
   hourWait(actions) ??

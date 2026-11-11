@@ -89,6 +89,7 @@ function App() {
   const herGroups = (["chat", "touch", "tell"] as const).filter((g) => withHer.some((a) => (a.type === TELL ? "tell" : a.payload?.group) === g));
   const herTab = herGroups.includes(herOpen as never) ? herOpen : null;
   const other = all.filter((a) => a.type !== WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== TALK && a.type !== TELL);
+  const otherGroups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
 
   // keys 1-4 for the waits, Enter for the next phase
   useEffect(() => {
@@ -221,7 +222,20 @@ function App() {
                   </button>
                 ))}
               </div>
-              {herTab && (
+              {herTab === "tell" && (
+                <div className="stack sub">
+                  {[...new Set(withHer.filter((a) => a.type === TELL).map((a) => a.payload!.group as string))].map((g) => (
+                    <div key={g} className="tell-row">
+                      <span>{t(`tell.${g}`)}</span>
+                      <button onClick={() => act({ type: TELL, payload: { group: g, say: "allow" } })}>{t("ui.tell.allow")}</button>
+                      <button className="deny" onClick={() => act({ type: TELL, payload: { group: g, say: "forbid" } })}>
+                        {t("ui.tell.forbid")}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {herTab && herTab !== "tell" && (
                 <div className="stack sub">
                   {withHer
                     .filter((a) => (a.type === TELL ? "tell" : a.payload?.group) === herTab)
@@ -236,13 +250,38 @@ function App() {
           )}
           {other.length > 0 && (
             <div className="card">
-              <div className="card-title">{t(`ui.todo.${state.time.phase}`)}</div>
+              <div className="card-title">
+                {t(`ui.todo.${state.time.phase}`)}
+                {state.time.phase === "prep" && bs(state).day && (
+                  <span className="muted small">
+                    {" "}
+                    · {Math.floor(bs(state).day!.left / 60)}:{String(bs(state).day!.left % 60).padStart(2, "0")} {t("ui.day.left")} · {t("ui.clean")} {Math.round(bs(state).clean)}
+                  </span>
+                )}
+              </div>
               <div className="stack">
-                {other.map((a, i) => (
-                  <button key={i} onClick={() => act(a)}>
-                    {actionLabel(a, t, lang)}
-                  </button>
-                ))}
+                {otherGroups.map(([type, list]) =>
+                  list.length < 3 ? (
+                    list.map((a, i) => (
+                      <button key={type + i} onClick={() => act(a)}>
+                        {actionLabel(a, t, lang)}
+                      </button>
+                    ))
+                  ) : (
+                    <details key={type} open={type === "base/day" || type === "base/guest"}>
+                      <summary>
+                        {t(engine.actionDef(type)!.labelKey)} <span className="muted">({list.length})</span>
+                      </summary>
+                      <div className="stack sub">
+                        {list.map((a, i) => (
+                          <button key={i} onClick={() => act(a)}>
+                            {actionLabel(a, t, lang)}
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  ),
+                )}
               </div>
             </div>
           )}

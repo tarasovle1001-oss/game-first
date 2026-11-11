@@ -315,6 +315,21 @@ export function registerMarriage(api: ModApi) {
         return;
       }
       if (ctx.rng.chance(N.selfChance)) {
+        // with a toy in the drawer it is more than her fingers: the biggest one she can take
+        const S = content.day.shop;
+        const toy = S.toys
+          .filter((t) => b.toys.includes(t.id) && t.size <= fitOf(ctx.state, "vagina") + S.toyStretchAbove)
+          .sort((x, y) => y.size - x.size)[0];
+        if (toy) {
+          useBody(ctx, actById("sex"), toy.size);
+          h.satisfied = S.toySatisfied;
+          h.orgasms += 1;
+          h.arousal = clamp(h.arousal * 0.2);
+          h.sizeTaste = clamp(h.sizeTaste + Math.max(0, toy.size - b.husband.size) * 0.5);
+          ctx.log(open || wakes ? "log.night.toy.heard" : "log.night.toy", { toy: `toy.${toy.id}` }, tags);
+          ctx.emit("night:self", { noticed: open || wakes, toy: toy.id });
+          return;
+        }
         h.satisfied = 60;
         h.arousal = clamp(h.arousal * 0.4);
         ctx.log(open || wakes ? "log.night.self.heard" : "log.night.self", undefined, tags);

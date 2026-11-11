@@ -266,8 +266,44 @@ export const outfitSchema = z
     allure: z.number().min(0), // interest a guest gets just from seeing her
     tip: z.number().min(0), // share added to tips
     openness: z.number().min(0).max(100), // she wears it on her own from this openness up
+    price: z.number().min(0), // 0 = hers from the start, otherwise bought in town
   })
   .strict();
+export const daySchema = z
+  .object({
+    minutes: z.number().int().positive(),
+    dirtPerServed: z.number().min(0),
+    cleanStart: z.number().min(0).max(100),
+    clean: z.object({ tipShare: z.number(), dirtyBelow: z.number(), dirtyReputation: z.number() }).strict(),
+    activities: z.array(
+      z
+        .object({
+          id,
+          minutes: z.number().int().positive(),
+          cost: z.number().optional(),
+          money: z.number().optional(),
+          clean: z.number().optional(),
+          arrivals: z.number().optional(), // share added to tonight's flow of guests
+          needs: id.optional(), // another activity that has to be done first today
+          her: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()).optional(),
+        })
+        .strict(),
+    ),
+    shop: z
+      .object({
+        toys: z.array(z.object({ id, size: z.number().positive(), price: z.number().positive() }).strict()),
+        toyStretchAbove: z.number(),
+        toySatisfied: z.number().min(0).max(100),
+        gigolo: z
+          .object({ price: z.number(), size: z.number(), minutes: z.number(), fidelityBelow: z.number(), sizeTasteFrom: z.number(), chance: z.number().min(0).max(1), suspicion: z.number() })
+          .strict(),
+        herOutfitMargin: z.number(),
+      })
+      .strict(),
+    upgrades: z.array(z.object({ id, cost: z.number().positive(), bill: z.number().optional(), tip: z.number().optional(), reputation: z.number().optional() }).strict()),
+  })
+  .strict();
+export type DayTuning = z.infer<typeof daySchema>;
 export const latentSchema = z.object({ id, chance: z.number().min(0).max(1), strength: z.number() }).strict();
 export const mannersSchema = z
   .object({
@@ -355,6 +391,7 @@ export interface Content {
   outfits: Outfit[];
   latents: Latent[];
   manners: Manners;
+  day: DayTuning;
   presets: Preset[];
   locales: Record<string, Record<string, string>>;
 }

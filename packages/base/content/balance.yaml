@@ -4,7 +4,7 @@ start:
   debt: 6000
   reputation: 40
   stock: 30
-rentPerDay: 380
+rentPerDay: 440
 purse: # tips the men leave her for more than coffee: part goes into her purse, the rest into the till
   shares: [0, 0.25, 0.5, 1] # what the husband can let her keep
   start: 0.5
@@ -26,7 +26,7 @@ heroine: # how her state settles during the evening, per 10 minutes
   moodSettlePerTick: 0.02
   soberPerTick: 0.6
 clock: # minute of the day each phase starts at
-  prep: 960     # 16:00
+  prep: 720     # 12:00 (the afternoon system counts down from here to opening)
   night: 30     # 00:30
   summary: 60   # 01:00
 shift:

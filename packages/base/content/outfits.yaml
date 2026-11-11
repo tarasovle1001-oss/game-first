@@ -4,13 +4,22 @@
   allure: 0       # interest a guest gets just from seeing her
   tip: 0          # share added to tips
   openness: 0     # she wears it on her own from this openness up
+  price: 0        # 0 = she has it from the start
 - id: fitted
   order: 1
   allure: 4
   tip: 0.15
   openness: 38
+  price: 0
 - id: revealing
   order: 2
   allure: 10
   tip: 0.35
   openness: 62
+  price: 180
+- id: daring
+  order: 3
+  allure: 16
+  tip: 0.55
+  openness: 82
+  price: 320
