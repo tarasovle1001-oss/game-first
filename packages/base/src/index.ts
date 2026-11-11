@@ -13,6 +13,8 @@ import { registerMarriage } from "./systems/marriage";
 import { registerSecrecy } from "./systems/secrecy";
 import { newPhone, registerPhone } from "./systems/phone";
 import { registerManners } from "./systems/manners";
+import { registerDress } from "./systems/dress";
+import { registerHerSide } from "./systems/herside";
 import { registerLatents } from "./systems/latents";
 import { registerSetup } from "./systems/setup";
 import { registerExpectations } from "./systems/expectations";
@@ -26,13 +28,15 @@ import { registerMemories } from "./systems/memories";
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 11,
+  version: 14,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
     for (const k of Object.keys(fresh)) if (slice[k] === undefined) slice[k] = fresh[k];
     if (slice.night && slice.night.sex === undefined) slice.night.sex = null;
     if (slice.husband.stretch === undefined) slice.husband.stretch = 0;
+    if (slice.heroine.frustration === undefined) slice.heroine.frustration = 0;
+    if (slice.heroine.bare === undefined) slice.heroine.bare = "none";
     if (!slice.owned.includes(slice.heroine.outfit)) slice.owned.push(slice.heroine.outfit);
     return slice;
   },
@@ -77,6 +81,10 @@ export const baseMod: Mod = {
       changed: null,
       gossip: 0,
       loan: { dueDay: content.balance.loan.firstDueDay, paid: false, missed: 0, visitsLeft: 0, forgiven: 0 },
+      approach: null,
+      approached: {},
+      pushedToday: {},
+      remarked: [],
       complaint: null,
       complainedDay: -10,
       orders: [],
@@ -111,9 +119,11 @@ export const baseMod: Mod = {
     registerSecrecy(api);
     registerPhone(api);
     registerManners(api);
+    registerDress(api);
     registerLatents(api);
     registerExpectations(api);
     registerCouple(api);
+    registerHerSide(api);
     registerDay(api);
     registerHotel(api);
     registerGossip(api);
@@ -149,8 +159,11 @@ export { GUEST, HEAR, TALK, TELL, guestInView, together } from "./systems/couple
 export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
 export { OUTFIT_BACK } from "./systems/manners";
-export { NIGHT_DECLINE, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
+export { ANSWER } from "./systems/herside";
+export { STRIP, bareOf, bareMargin, dressOf, eyesOn } from "./systems/dress";
+export { NIGHT_DECLINE, NIGHT_SELF, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
 export { installment, LOAN_PAY } from "./systems/loan";
 export { ORDER } from "./systems/manners";
 export { husbandSees, husbandIn, husbandNextTo } from "./systems/places";
 export { rentOf } from "./systems/economy";
+export { pleasureFor, sizeClass } from "./systems/body";

@@ -45,6 +45,50 @@ talk: # small things between the two of them; each once a day
     - { id: touching, tiers: [3, 4] }
     - { id: hands_mouth, tiers: [5, 6] }
     - { id: sex, tiers: [7, 9] }
+  bare: # asked to undress: openness she needs, by who can see her
+    need:
+      bedroom: { top: 8, bottom: 18, all: 24 }
+      private: { top: 42, bottom: 55, all: 62 }   # an empty room of the cafe
+      hall: { top: 80, bottom: 92, all: 98 }      # guests are looking
+    exhibitionist: 28     # she likes being looked at: counts outside the bedroom
+    perArousal: 0.15
+    perDrunk: 0.2
+    perDesire: 0.15       # wanting him helps where only he sees
+    perTime: 1.5          # each time she has done it
+    habitMax: 12
+    shy: 8                # margin under which she does it but covers herself
+    offended: 30          # asked for far more than she would ever do: she takes it badly
+    refuseResent: 2
+    backResent: 2         # told to dress when it was her own idea
+    openness: { private: 0.3, hall: 1 }
+    allure: { top: 8, bottom: 10, all: 18 }       # interest every guest who sees her gains
+    tip: { top: 0.4, bottom: 0.5, all: 0.9 }
+    consent: { top: 4, bottom: 5, all: 8 }        # for guests: she is half way there already
+    gossip: { top: 1.5, bottom: 2, all: 3 }
+    arousalPerTick: 1.5
+    ownMargin: 6          # an exhibitionist this far past the line may come down like that herself
+    ownChance: 0.25
+  her: # she comes to him: each kind at most once a day, checked every ten minutes of the shift and at night
+    harassedAt: 2          # how hard one guest has pushed her today before she brings it to her husband
+    harassedHonesty: 40
+    maxResent: 45          # above this she does not come to him for anything warm
+    comfortMood: 30
+    comfortEnergy: 20
+    teaseArousal: 55
+    teaseDesire: 50
+    affectionDesire: 58
+    chance: { comfort: 0.15, tease: 0.06, affection: 0.04 }
+    ignoredResent: 1
+    declinedResent: 1.5
+    publicCools: 1         # guests who watch her kiss her husband lose a little interest
+    remarkHonesty: 55      # from here she says what she notices aloud; below it stays a thought
+    protect: { interest: 12, desire: 2, resent: 2 }
+    endure: { resent: 3, expect: 8 }
+    ask: { arousal: 45, openness: 0.5, resent: 1 }
+    comfort: { mood: 7, resent: 1 }
+    stretchSteps: [20, 45, 70, 90]  # her remarks about what her body takes now
+    hisSteps: [20, 50, 80]          # and about what his has learned
+  touchCum: { from: [hug, kiss_her, grab_ass], fromDenied: 2, base: 0.02, perDenied: 0.04, max: 0.5 } # he has gone without for days: a kiss can finish him
   complainAt: 30          # her resentment from which she brings it up herself
   complainEveryDays: 4
   hear: { resent: 8 }

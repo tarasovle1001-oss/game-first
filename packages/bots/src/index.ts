@@ -48,12 +48,16 @@ export const lovingStrategy: Strategy = (actions, state, roll) => {
   const bed = actions.filter((a) => a.type === "base/bed");
   if (bed.length) {
     // an attentive husband: slows down while she is behind, lets go once she has come
-    const sex = (state.mods.base as { night: { sex: { his: number; hers: number; came: number } } }).night.sex;
+    const sex = (state.mods.base as { night: { sex: { his: number; hers: number; came: number; asks: string | null; out: boolean } } }).night.sex;
     const pick = (d: string) => bed.find((a) => a.payload?.do === d);
+    // he listens: gives her what she asks for, wraps it up when she wants it over, and helps himself once she is gone
+    if (sex.asks === "finish") return pick("finish") ?? pick("hand") ?? pick("faster")!;
+    if (sex.asks && roll() < 0.7) return pick("give") ?? pick("keep")!;
+    if (sex.out) return pick("finish") ?? pick("hand") ?? pick("faster")!;
     if (sex.came > 0) return pick("finish") ?? pick("faster")!;
     return (sex.his > sex.hers ? pick("slower") : pick("keep"))!;
   }
-  return actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") ?? awayStrategy(actions, state, roll);
+  return actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") ?? actions.find((a) => a.type === "base/night-self") ?? awayStrategy(actions, state, roll);
 };
 
 /** Kitchen owner who checks the back room when she disappears, and stays to watch. */

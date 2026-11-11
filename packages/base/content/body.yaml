@@ -1,10 +1,10 @@
 # Body progression, pleasure and the husband. All numbers are tunable.
 fit: # the size (cm) a zone takes comfortably = base + stretch * perStretch
-  vagina: { base: 12.5, perStretch: 0.09 }
-  anus: { base: 8, perStretch: 0.12 }
+  vagina: { base: 12.5, perStretch: 0.28 } # 100 stretch = about 40 cm
+  anus: { base: 8, perStretch: 0.28 }
   mouth: { base: 11, perStretch: 0.08 }
-stretchPerCm: 1.6   # stretch gained per cm above the comfortable size, per act
-recoverPerDay: 0.5
+stretchPerCm: 0.5   # stretch gained per cm above the comfortable size, per act
+recoverPerDay: 0.16
 permanentShare: 0.6 # part of the peak stretch that never goes back
 skillGain: 7        # per practice, shrinking as the skill grows
 orgasmAt: 66        # climax meter (her arousal, how well he fits, how long it lasts) needed for her to come
@@ -21,6 +21,8 @@ night: # what she does when she lies awake wanting more
   work: 12 # consent she loses for being pulled away from a room full of guests
   wants: { arousal: 50, desire: 45, energy: 25, consent: 20, declineDesire: 1.5, declineResent: 3 } # she reaches for him herself
 
+sizeClasses: [11, 14, 17, 21] # cm: below the first is tiny, then small, average, big; from the last up is huge
+
 bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
   minutesPerTurn: 2
   startHis: 15
@@ -35,7 +37,23 @@ bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
   cumAt: 70           # he can let go from here; at 100 it happens by itself
   herCloseAt: 70      # if she is this far when he finishes, it tips her over
   afterOrgasm: 35     # her meter after she comes: she can come again
-  looseForHim: 0.45   # the least he gets out of a wife stretched far beyond his size
+  looseForHim: 0.05   # what he still feels in a wife stretched far beyond his size: next to nothing
+  selfResent: 60      # above this she will not have him doing it next to her
+  looseNoneAt: 0.34   # his size / what she takes: at this ratio and below he is at that minimum
+  looseFullAt: 0.95   # ...and from this ratio up he feels everything
+  handRate: 18        # his own hand, per turn
+  reward:             # what a minute of it gives her: her body, plus why she is doing it
+    affection: 0.3    # per point of her desire for him, in acts she does for him
+    giving: 30        # if giving is its own pleasure for her
+    power: 0.5        # per point of her power over him, in acts where she is on top of it
+    cruel: 25
+    enough: 40        # below this she is getting bored
+    limit: 3          # boredom at which she does something about it
+    better: 15        # she asks for another act only if it would give her this much more
+    lovingDesire: 55  # from this desire for him she tries to make it work rather than check out
+    lovingOut: 0.15   # ...but even then, sometimes
+    dropChance: 0.5   # a confident wife who is not loving: chance she simply stops
+  soft: { whenOut: 0.04, whenLoose: 0.02, perResent: 0.0006, belowHis: 60 } # chance per turn that he goes soft
   unluckyStart: 45    # one of those nights
   deniedStart: 6      # added to where he starts, per night he has gone without
   switchBonus: 10     # it is easier to ask for something else once it is going

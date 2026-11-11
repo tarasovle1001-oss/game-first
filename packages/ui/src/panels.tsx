@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE , installment , husbandSees } from "@tc/base";
+import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE , installment , husbandSees , sizeClass } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -164,6 +164,8 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
             {t(`act.${b.night.sex.act}`)} · {b.night.sex.turns * content.body.bed.minutesPerTurn} {t("ui.min")}
             {b.night.sex.came > 0 ? ` · ${t("ui.bed.came", { n: String(b.night.sex.came) })}` : ""}
           </div>
+          {b.night.sex.asks && <div className="small bad">{b.night.sex.asks === "finish" ? t("ui.bed.asks.finish") : t("ui.bed.asks", { act: t(`act.${b.night.sex.asks}`) })}</div>}
+          {b.night.sex.out && <div className="small bad">{t("ui.bed.out")}</div>}
         </div>
       )}
       {record && <WhyLine record={record} state={state} t={t} lang={lang} open={open} />}
@@ -317,10 +319,11 @@ export function HeroineTab({ state, t, open }: Common) {
         <Bar key={k} label={t(`trait.${k}`)} value={h.traits[k]} />
       ))}
       <Bar label={t("stat.sizeTaste")} value={h.sizeTaste} />
+      {open && h.frustration > 0 && <Bar label={t("stat.frustration")} value={h.frustration} />}
       {open && bs(state).gossip > 0 && <Bar label={t("ui.gossip")} value={bs(state).gossip} />}
       <div className="cap gap">{t("ui.directive")}</div>
       <div>
-        {t("ui.outfit")}: <b>{t(`outfit.${h.outfit}`)}</b> · {t(`directive.${bs(state).directive}`)}
+        {t("ui.outfit")}: <b>{t(`outfit.${h.outfit}`)}{h.bare && h.bare !== "none" ? `, ${t(`dress.${h.bare === "all" ? "naked" : h.bare === "top" ? "topless" : "bottomless"}`)}` : ""}</b> · {t(`directive.${bs(state).directive}`)}
       </div>
       {open && (
         <>
@@ -497,7 +500,7 @@ function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
         {t("ui.patron.memory", { visits: p.memory.visits, interest: Math.round(p.memory.interest), affinity: Math.round(p.memory.affinity) })}
         {" · "}
         {far ? t("ui.patron.ladder", { act: t(`act.${far.id}`) }) : t("ui.patron.nothing")}
-        {p.memory.sizeKnown && ` · ${t("ui.patron.size", { size: p.size })}`}
+        {p.memory.sizeKnown && ` · ${t("ui.patron.size", { size: p.size })} (${t(`size.${sizeClass(p.size)}`)})`}
         {p.memory.orgasms > 0 && ` · ${t("ui.patron.came", { n: p.memory.orgasms })}`}
       </div>
     </li>

@@ -53,6 +53,7 @@ husbandWatching: 38 # her husband is in the room
 money: 0.3       # per unit of money offered, scaled by how badly they need it
 pressure: 0.25   # he insists: his persistence against her confidence
 tired: 15        # she has no energy left
+frustrated: 0.2  # per point of piled-up frustration, with guests, from tier 3
 satisfied: 0.25  # per point of "just had her fill", intimate acts only
 size: 2.2        # per cm of his size above what she takes comfortably, scaled by her taste for size
 sizeCap: 16

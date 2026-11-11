@@ -96,6 +96,7 @@ export const actSchema = z
     tip: z.number().min(0),
     zones: z.array(z.enum(["mouth", "vagina", "anus", "hands"])),
     only: z.enum(["husband"]).optional(), // an act that only happens in the marriage bed
+    motives: z.array(z.enum(["affection", "giving", "power"])).optional(), // why she does it, when her own body is not the point
   })
   .strict();
 
@@ -171,6 +172,7 @@ export const consentSchema = z
     money: z.number(),
     pressure: z.number(),
     tired: z.number(),
+    frustrated: z.number(), // per point of piled-up frustration, with guests
     satisfied: z.number(), // she has just had her fill
     size: z.number(), // per cm of his size above what she takes comfortably, intimate acts only
     sizeCap: z.number(),
@@ -207,6 +209,7 @@ export const bodySchema = z
     orgasmAt: z.number(), // climax meter needed for her to come
     satisfiedCoolPerTick: z.number().min(0),
     his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number() }).strict(),
+    sizeClasses: z.tuple([z.number(), z.number(), z.number(), z.number()]),
     night: nightSchema,
     // the bedroom scene, turn by turn: both of them have a pleasure meter 0..100
     bed: z
@@ -224,7 +227,15 @@ export const bodySchema = z
         cumAt: z.number(), // he can let go from here
         herCloseAt: z.number(), // if she is this far when he finishes, it tips her over
         afterOrgasm: z.number(), // her meter after she comes
-        looseForHim: z.number().min(0).max(1), // the least he gets out of a wife stretched far beyond his size
+        looseForHim: z.number().min(0).max(1), // what he still feels in a wife stretched far beyond his size
+        looseNoneAt: z.number(),
+        selfResent: z.number(),
+        looseFullAt: z.number(),
+        handRate: z.number(),
+        reward: z
+          .object({ affection: z.number(), giving: z.number(), power: z.number(), cruel: z.number(), enough: z.number(), limit: z.number(), better: z.number(), lovingDesire: z.number(), lovingOut: z.number().min(0).max(1), dropChance: z.number().min(0).max(1) })
+          .strict(),
+        soft: z.object({ whenOut: z.number(), whenLoose: z.number(), perResent: z.number(), belowHis: z.number() }).strict(),
         unluckyStart: z.number(),
         deniedStart: z.number(), // added to his start per night he has gone without
         switchBonus: z.number(), // consent bonus for changing what they do once it is going
@@ -367,6 +378,33 @@ export const mannersSchema = z
         ),
         // what he can say "go on" or "don't" about, by act tier (inclusive)
         groups: z.array(z.object({ id, tiers: z.tuple([z.number().int(), z.number().int()]) }).strict()),
+        bare: z
+          .object({
+            need: z.record(z.enum(["bedroom", "private", "hall"]), z.object({ top: z.number(), bottom: z.number(), all: z.number() }).strict()),
+            exhibitionist: z.number(), perArousal: z.number(), perDrunk: z.number(), perDesire: z.number(), perTime: z.number(), habitMax: z.number(),
+            shy: z.number(), offended: z.number(), refuseResent: z.number(), backResent: z.number(),
+            openness: z.object({ private: z.number(), hall: z.number() }).strict(),
+            allure: z.object({ top: z.number(), bottom: z.number(), all: z.number() }).strict(),
+            tip: z.object({ top: z.number(), bottom: z.number(), all: z.number() }).strict(),
+            consent: z.object({ top: z.number(), bottom: z.number(), all: z.number() }).strict(),
+            gossip: z.object({ top: z.number(), bottom: z.number(), all: z.number() }).strict(),
+            arousalPerTick: z.number(), ownMargin: z.number(), ownChance: z.number().min(0).max(1),
+          })
+          .strict(),
+        her: z
+          .object({
+            harassedAt: z.number(), harassedHonesty: z.number(), maxResent: z.number(),
+            comfortMood: z.number(), comfortEnergy: z.number(), teaseArousal: z.number(), teaseDesire: z.number(), affectionDesire: z.number(),
+            chance: z.object({ comfort: z.number(), tease: z.number(), affection: z.number() }).strict(),
+            ignoredResent: z.number(), declinedResent: z.number(), publicCools: z.number(), remarkHonesty: z.number(),
+            protect: z.object({ interest: z.number(), desire: z.number(), resent: z.number() }).strict(),
+            endure: z.object({ resent: z.number(), expect: z.number() }).strict(),
+            ask: z.object({ arousal: z.number(), openness: z.number(), resent: z.number() }).strict(),
+            comfort: z.object({ mood: z.number(), resent: z.number() }).strict(),
+            stretchSteps: z.array(z.number()), hisSteps: z.array(z.number()),
+          })
+          .strict(),
+        touchCum: z.object({ from: z.array(id), fromDenied: z.number().int(), base: z.number(), perDenied: z.number(), max: z.number().min(0).max(1) }).strict(),
         complainAt: z.number(),
         complainEveryDays: z.number().int(),
         hear: z.object({ resent: z.number() }).strict(),

@@ -87,6 +87,7 @@
   minutes: 20
   tip: 30
   zones: [hands]
+  motives: [affection, giving]
 - id: blowjob
   tier: 6
   base: -58
@@ -96,6 +97,7 @@
   minutes: 20
   tip: 45
   zones: [mouth]
+  motives: [affection, giving]
 - id: cunnilingus
   tier: 6
   base: -50
@@ -114,6 +116,7 @@
   minutes: 30
   tip: 70
   zones: [vagina]
+  motives: [affection]
 - id: riding
   tier: 7
   base: -78
@@ -123,6 +126,7 @@
   minutes: 30
   tip: 75
   zones: [vagina]
+  motives: [affection]
 - id: anal
   tier: 8
   base: -96
@@ -132,6 +136,7 @@
   minutes: 30
   tip: 110
   zones: [anus]
+  motives: [affection]
 - id: thigh_job
   tier: 5
   base: -44
@@ -159,6 +164,7 @@
   minutes: 20
   tip: 70
   zones: [mouth]
+  motives: [affection, giving]
 - id: standing_sex
   tier: 7
   base: -76
@@ -177,6 +183,7 @@
   minutes: 10
   tip: 14
   zones: []
+  motives: [affection]
 - id: mutual_touching
   tier: 5
   base: -42
@@ -186,6 +193,7 @@
   minutes: 20
   tip: 24
   zones: [hands]
+  motives: [affection]
 - id: breast_play
   tier: 4
   base: -34
@@ -213,6 +221,7 @@
   minutes: 20
   tip: 40
   zones: [mouth]
+  motives: [affection, giving]
 # only in the marriage bed
 - id: rimming_her
   tier: 6
@@ -234,6 +243,7 @@
   tip: 0
   zones: [hands]
   only: husband
+  motives: [power, giving]
 - id: pegging
   tier: 8
   base: -46
@@ -244,3 +254,4 @@
   tip: 0
   zones: []
   only: husband
+  motives: [power]

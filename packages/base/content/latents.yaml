@@ -43,3 +43,6 @@
 - id: cruel_streak     # once she holds the power, using it is a pleasure of its own
   chance: 0.25
   strength: 0.16
+- id: likes_rough      # she responds to being pushed and talked down to: the pushy kind gets further, courting bores her
+  chance: 0.2
+  strength: 12

@@ -171,6 +171,17 @@ export function registerCouple(api: ModApi) {
       const ok = !o.needs || statOf(ctx.state, o.needs.stat) >= need;
       applyFx(ctx, ok ? o.effects : (o.fail ?? {}), "husband");
       ctx.log(`log.talk.${o.id}${ok ? "" : ".no"}`);
+      // a husband who has gone without long enough can lose it from a kiss
+      const TC = T.touchCum;
+      if (ok && o.group === "touch" && TC.from.includes(o.id) && b.denied >= TC.fromDenied && ctx.rng.chance(Math.min(TC.max, TC.base + b.denied * TC.perDenied))) {
+        b.husband.spentDay = ctx.state.time.day;
+        b.denied = 0;
+        const amused = b.heroine.traits.confidence >= 55 || b.mode === "open";
+        if (b.mode === "open") b.power = clamp(b.power + 2);
+        applyFx(ctx, amused ? { mood: 2, desire: -1 } : { desire: -0.5 }, "accident");
+        ctx.log(amused ? "log.husband.came_touch.amused" : "log.husband.came_touch");
+        ctx.emit("husband:came_touch", { from: o.id });
+      }
       ctx.emit("couple:talk", { do: o.id, ok });
     },
   });

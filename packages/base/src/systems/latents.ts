@@ -30,7 +30,9 @@ const RULES: Record<string, Rule> = {
   guilt_thrill: (state, input, act, _p, l) => (bs(state).mode === "hidden" && isIntimate(act) && !husbandSees(state, input.loc) ? l.strength : null),
   money_hungry: (_s, input, _a, _p, l) => (input.offer > 0 ? l.strength : null),
   tipsy_loose: (state, _i, act, _p, l) => (act.tier >= 2 && bs(state).heroine.drunk > 10 ? bs(state).heroine.drunk * l.strength : null),
-  romantic: (_s, _i, act, p, l) => (act.tier < 3 ? null : p.memory.affinity >= 30 ? l.strength : p.memory.visits <= 1 ? -l.strength : null),
+  // she has to like him: courting works on her, a pushy man or a stranger does not
+  romantic: (_s, _i, act, p, l) => (act.tier < 2 ? null : p.approach === "court" || p.memory.affinity >= 30 ? l.strength : p.approach === "push" || p.memory.visits <= 1 ? -l.strength : null),
+  likes_rough: (_s, input, act, p, l) => (act.tier < 2 ? null : p.approach === "push" ? l.strength + input.pressure * 3 : p.approach === "court" ? -l.strength / 2 : null),
   new_faces: (_s, _i, act, p, l) => (act.tier >= 3 && p.memory.visits <= 1 ? l.strength : null),
   oral_fixation: (_s, _i, act, _p, l) => (act.zones.includes("mouth") ? l.strength : null),
   anal_lover: (_s, _i, act, _p, l) => (act.zones.includes("anus") ? l.strength : null),

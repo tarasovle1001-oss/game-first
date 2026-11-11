@@ -15,11 +15,13 @@ export interface Heroine {
   // body: how much each zone has been stretched (0..100) and the highest it has ever been
   body: Record<Zone, { stretch: number; peak: number }>;
   skills: Record<string, number>; // act id -> 0..100
+  frustration: number; // 0..100, nights that left her wanting pile up here
   satisfied: number; // 0..100, "just had her fill", cools down
   sizeTaste: number; // 0..100, how much size matters to her
   orgasms: number;
   marriage: { desire: number; resent: number }; // what she feels for her husband, 0..100
   outfit: string;
+  bare?: Bare; // what she has taken off, on top of the outfit
   tastes: { acts: Record<string, number>; types: Record<string, number> }; // what she has come to like
   latents: Record<string, true>; // hidden sides she has; absent = she does not have it
 }
@@ -35,6 +37,7 @@ export interface Husband {
   minutes: number; // how long he lasts
   style: "naive" | "jealous" | "encouraging";
   stretch: number; // 0..100, his own: what she has got him used to
+  spentDay?: number; // the day he came from a touch alone: nothing more from him that day
 }
 
 export interface PatronMemory {
@@ -68,7 +71,10 @@ export interface Patron {
   memory: PatronMemory;
 }
 
+export type Bare = "none" | "top" | "bottom" | "all";
+
 export interface Visit {
+  sawBare?: Bare; // how undressed he has already seen her tonight
   patron: string;
   stay: number; // ticks left
   served: number;
@@ -93,6 +99,12 @@ export interface BedScene {
   top: boolean; // her top is open
   skirt: boolean; // her skirt is pushed up
   pleasure: number; // what the current act gives her, 0..100
+  bored: number; // grows while what they do gives her too little
+  asks: string | null; // what she has asked for instead: an act id, or "finish"
+  ignored: number; // times he went on without answering her
+  out: boolean; // she has checked out: she lies there and waits for it to be over
+  byHand: boolean; // he is finishing himself
+  looseSaid: boolean;
 }
 
 export type Verdict = "eager" | "hesitant" | "refuse";
@@ -179,7 +191,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
@@ -194,6 +206,12 @@ export interface BaseState {
   changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   gossip: number; // 0..100, what the town says about her
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
+  approach: { kind: string; patron?: string; public: boolean } | null; // she has come to him with something and waits for an answer
+  approached: Record<string, number>; // kind -> last day she came with it
+  pushedToday: Record<string, number>; // guest -> how hard he pushed her today
+  sizeToday?: number; // the biggest guest she has had today, cm
+  promised?: number; // day she teased him: she will want him that night
+  remarked: string[]; // things she has already said once about her body, his, and other men
   complaint: string | null; // what she has brought up tonight and he has not answered yet
   complainedDay: number;
   orders: string[]; // single things about her dress he asked for tonight and she agreed to
@@ -203,6 +221,9 @@ export interface BaseState {
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now
   outfitAsked: boolean;
+  bareTimes?: number; // times she has undressed when asked: it gets easier
+  bareRefused?: string; // "day:phase" of her last no: he does not ask again until later
+  bareOwn?: boolean; // she came down like that on her own
   today: Ledger;
   history: Ledger[]; // last days, newest last
 }

@@ -20,6 +20,9 @@ shop:                 # in town; she also buys for herself from her purse
     - { id: toy_small, size: 14, price: 90 }
     - { id: toy_big, size: 18, price: 160 }
     - { id: toy_huge, size: 23, price: 260 }
+    - { id: toy_28, size: 28, price: 340 }
+    - { id: toy_34, size: 34, price: 420 }
+    - { id: toy_40, size: 40, price: 520 }
   toyStretchAbove: 4  # she buys a toy at most this much above what she takes comfortably
   toySatisfied: 80
   gigolo: { price: 250, size: 24, minutes: 40, fidelityBelow: 45, sizeTasteFrom: 45, chance: 0.5, suspicion: 4 }

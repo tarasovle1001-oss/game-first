@@ -9,6 +9,7 @@ import { fitOf, orgasm, useBody } from "./body";
 import { expectOf } from "./expectations";
 import { addHerTips } from "./economy";
 import { changeHeroine } from "./heroine";
+import { dressOf } from "./dress";
 import { variantKey } from "../text";
 import { HALL, husbandIn, husbandNextTo, husbandSees, ticks } from "./places";
 
@@ -152,6 +153,7 @@ export function advanceEncounter(ctx: Ctx) {
       enc.came += 1;
       enc.hers = content.body.bed.afterOrgasm;
       orgasm(ctx);
+      h.frustration = clamp(h.frustration - 25);
       p.memory.orgasms += 1;
       p.memory.affinity = clamp(p.memory.affinity + 6, -100, 100);
       // a bigger man than her husband made her come: size starts to matter to her
@@ -214,11 +216,13 @@ export function advanceEncounter(ctx: Ctx) {
     ctx.log("log.enc.she_ends", { name, act: `act.${next.id}` }, tags);
     p.memory.interest = clamp(p.memory.interest - 2);
     p.memory.affinity = clamp(p.memory.affinity - S.pushedTooFar, -100, 100); // he overdid it, and she remembers
+    ctx.emit("encounter:pushed", { patron: p.id, act: next.id, far: true });
     return endEncounter(ctx);
   }
   p.memory.affinity = clamp(p.memory.affinity - S.pushed, -100, 100);
   // asking for what she plainly dislikes costs him more
   if ((h.tastes.acts[next.id] ?? 0) < 0) p.memory.affinity = clamp(p.memory.affinity - S.pushed, -100, 100);
+  ctx.emit("encounter:pushed", { patron: p.id, act: next.id, far: false });
   ctx.log("log.enc.stays", { name, act: `act.${next.id}`, now: `act.${enc.act}` }, tags);
 }
 
@@ -271,7 +275,9 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   if (act.id === "drink") changeHeroine(ctx, "drunk", DRINK_STRENGTH, act.id);
 
   p.memory.interest = clamp(p.memory.interest + e.interest);
-  p.memory.affinity = clamp(p.memory.affinity + e.affinity * k, -100, 100);
+  // the kind of attention that suits her character wins her over faster
+  const suits = (p.approach === "court" && b.heroine.latents.romantic !== undefined) || (p.approach === "push" && b.heroine.latents.likes_rough !== undefined) ? 1.6 : 1;
+  p.memory.affinity = clamp(p.memory.affinity + e.affinity * k * suits, -100, 100);
   p.memory.tier = Math.max(p.memory.tier, act.tier);
   p.memory.acts[act.id] = (p.memory.acts[act.id] ?? 0) + 1;
   v.tier = Math.max(v.tier, act.tier);
@@ -334,7 +340,7 @@ function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
       v.blocked = true;
       break;
     case "insists":
-      if (v.pressure < 1) {
+      if (v.pressure < (b.heroine.latents.likes_rough !== undefined ? 3 : 1)) {
         v.pressure += 1;
         v.retry = act.id;
         cool(0, -3);
@@ -437,6 +443,8 @@ export function registerEncounters(api: ModApi) {
   row("drunk", 11, (s) => her(s).drunk * c.drunk);
   row("mood", 12, (s) => (her(s).mood - 50) * c.mood);
   row("tired", 13, (s, _i, act) => (her(s).energy < 20 && act.tier >= 2 ? -c.tired : null));
+  // nights that left her wanting add up, and at some point they speak for any man who is not her husband
+  row("frustrated", 13.5, (s, _i, act, p) => (p && act.tier >= 3 && her(s).frustration >= 10 ? her(s).frustration * c.frustrated : null));
   row("satisfied", 14, (s, _i, act) => (isIntimate(act) ? -her(s).satisfied * c.satisfied : null));
   // her character
   row("openness", 20, (s, _i, act) => (her(s).traits.openness - 50) * c.openness * (0.3 + depth(act)));
@@ -467,7 +475,8 @@ export function registerEncounters(api: ModApi) {
     if (p && !p.memory.sizeKnown) return null;
     const size = p ? p.size : bs(s).husband.size;
     const diff = size - fitOf(s, "vagina"); // against what she is used to by now
-    return clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap);
+    // with her husband it is habit and duty as much as wanting: his size counts for half
+    return clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap) * (p ? 1 : 0.5);
   });
   // him: her husband
   row("marital", 36, (_s, _i, _a, p) => (p ? null : c.marital));
@@ -521,7 +530,7 @@ export function registerEncounters(api: ModApi) {
           { id: WIFE, role: "wife" },
           { id: enc.patron, role: "patron" },
         ],
-        tags: { outfit: bs(state).heroine.outfit },
+        tags: { outfit: dressOf(state) },
       };
     },
   });
@@ -540,7 +549,7 @@ export function registerEncounters(api: ModApi) {
           { id: WIFE, role: "wife" },
           { id: m.patron, role: "patron" },
         ],
-        tags: { outfit: bs(state).heroine.outfit },
+        tags: { outfit: dressOf(state) },
       };
     },
   });

@@ -21,12 +21,28 @@ export const fitOf = (state: GameState, zone: Zone) => B.fit[zone].base + bs(sta
  */
 export function pleasureFromSize(ratio: number): number {
   const lerp = (a: number, b: number, t: number) => a + (b - a) * Math.min(1, Math.max(0, t));
-  if (ratio < 0.7) return 15;
+  if (ratio < 0.7) return lerp(3, 15, (ratio - 0.35) / 0.35); // far past his size there is nothing left to feel
   if (ratio < 1) return lerp(15, 85, (ratio - 0.7) / 0.3);
   if (ratio <= 1.2) return lerp(85, 100, (ratio - 1) / 0.2);
   if (ratio <= 1.5) return lerp(100, 40, (ratio - 1.2) / 0.3);
   return 25;
 }
+
+/** What an act with a partner of this size would give her right now, 0..100. Pure: nothing changes. */
+export function pleasureFor(state: GameState, act: Act, size: number): number {
+  const zone = stretchZone(act);
+  if (act.id === "cunnilingus") return 75;
+  if (act.id === "grinding") return 45;
+  if (act.id === "mutual_touching") return 60;
+  if (act.id === "breast_play") return 40;
+  if (act.id === "fingering" || act.id === "sixty_nine") return 70;
+  if (act.id === "rimming_her") return 65;
+  if (zone === "vagina" || zone === "anus") return pleasureFromSize(size / fitOf(state, zone)) * (zone === "anus" ? 0.75 : 1);
+  return 20; // she is the one giving
+}
+
+/** 0..4: tiny, small, average, big, huge. */
+export const sizeClass = (cm: number) => B.sizeClasses.filter((edge) => cm >= edge).length;
 
 /** Stretch and practice from one act with a partner of the given size. Returns how much it gives her, 0..100. */
 export function useBody(ctx: Ctx, act: Act, size: number): number {

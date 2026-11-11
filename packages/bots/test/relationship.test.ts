@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BED, GUEST, TALK, TELL, baseMod, bs, expectOf, REACT_APPROVE, REACT_STOP, CAUGHT_STOP, CAUGHT_WATCH, CONFRONT, fitOf, NIGHT_ACT, pleasureFromSize, WAIT } from "@tc/base";
+import { BED, NIGHT_SELF, GUEST, TALK, TELL, baseMod, bs, expectOf, REACT_APPROVE, REACT_STOP, CAUGHT_STOP, CAUGHT_WATCH, CONFRONT, fitOf, NIGHT_ACT, pleasureFromSize, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 import { awayStrategy } from "../src";
@@ -94,7 +94,8 @@ describe("night with the husband", () => {
     stretched.mods.base.heroine.arousal = 95;
     stretched.mods.base.heroine.energy = 80;
     s = playOut(engine.dispatch(stretched, { type: NIGHT_ACT, payload: { act: "sex" } }));
-    expect(["left_wanting", "finishing_herself", "faking_it"]).toContain(bs(s).night!.scene);
+    // he may not even get to the end: with nothing to feel he goes soft, or finishes himself, or she stops it
+    expect(["left_wanting", "finishing_herself", "faking_it", "went_soft", "by_hand", "cold_back"]).toContain(bs(s).night!.scene);
     expect(bs(s).heroine.marriage.resent).toBeGreaterThan(stretched.mods.base.heroine.marriage.resent);
   });
 });
@@ -165,8 +166,9 @@ describe("the husband's bad nights", () => {
     const liar = structuredClone(s);
     liar.mods.base.heroine.traits.honesty = 20;
     liar.mods.base.heroine.marriage.desire = 100;
-    liar.mods.base.heroine.body.vagina = { stretch: 90, peak: 90 };
-    liar.mods.base.heroine.arousal = 95;
+    liar.mods.base.heroine.arousal = 0;
+    liar.mods.base.night!.wants = true; // she asked for it herself, and still will not get there
+    liar.mods.base.husband.size = 8;
     liar.mods.base.heroine.energy = 80;
     const after = playOut(engine.dispatch(liar, { type: NIGHT_ACT, payload: { act: "sex" } }));
     expect(bs(after).night!.scene).toBe("faking_it");
@@ -468,5 +470,75 @@ describe("a thing with a guest runs by the minute", () => {
     watching.mods.base.mode = "open";
     const minutes = engine.listActions(watching).filter((a) => a.type === WAIT && a.payload?.minutes).map((a) => a.payload!.minutes);
     expect(minutes).toEqual([1, 5, 15]);
+  });
+});
+
+describe("what she gets out of it", () => {
+  const bed = (tune: (b: ReturnType<typeof bs>) => void) => {
+    const s = structuredClone(toNight(engine.init(4)));
+    s.mods.base.heroine.marriage.desire = 100;
+    s.mods.base.heroine.arousal = 60;
+    s.mods.base.heroine.energy = 80;
+    tune(bs(s));
+    return engine.dispatch(s, { type: NIGHT_ACT, payload: { act: "sex" } });
+  };
+  it("a wife stretched far past him: he feels next to nothing, and she says so", () => {
+    const fit = bed(() => {});
+    const loose = bed((b) => (b.heroine.body.vagina = { stretch: 100, peak: 100 }));
+    const step = (st: GameState) => engine.dispatch(st, { type: BED, payload: { do: "keep" } });
+    const gain = (st: GameState) => bs(step(st)).night!.sex!.his - bs(st).night!.sex!.his;
+    expect(gain(loose)).toBeLessThan(gain(fit) * 0.2);
+    expect(loose.log.some((e) => e.key === "log.bed.loose.3")).toBe(true);
+  });
+  it("with nothing in it for her she asks for something else, and he can give it", () => {
+    let s = bed((b) => (b.heroine.body.vagina = { stretch: 100, peak: 100 }));
+    for (let i = 0; i < 12 && bs(s).night?.sex && !bs(s).night!.sex!.asks; i++) s = engine.dispatch(s, { type: BED, payload: { do: "keep" } });
+    if (bs(s).night?.sex?.asks && bs(s).night!.sex!.asks !== "finish") {
+      const give = engine.listActions(s).find((a) => a.type === BED && a.payload?.do === "give")!;
+      expect(give).toBeDefined();
+      const asked = bs(s).night!.sex!.asks;
+      s = engine.dispatch(s, give);
+      expect(bs(s).night!.sex!.act).toBe(asked);
+    }
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("he can always finish himself", () => {
+    let s = bed((b) => (b.heroine.body.vagina = { stretch: 100, peak: 100 }));
+    s = engine.dispatch(s, { type: BED, payload: { do: "hand" } });
+    for (let i = 0; i < 40 && bs(s).night?.sex; i++) s = engine.dispatch(s, { type: BED, payload: { do: "keep" } });
+    expect(bs(s).night!.sex).toBeNull();
+    expect(["by_hand", "sex", "cunnilingus"]).toContain(bs(s).night!.scene);
+  });
+  it("frustration piles up after bad nights and speaks for other men", () => {
+    const s = engine.init(4);
+    const calm = structuredClone(s);
+    const fed = structuredClone(s);
+    fed.mods.base.heroine.frustration = 80;
+    const p = Object.keys(calm.mods.base.patrons)[0];
+    if (p) {
+      const row = (st: GameState) => engine.evaluate("base/consent", st, { act: "kiss", partner: p, loc: "cafe.hall", offer: 0, pressure: 0 }).rows.find((r) => r.id === "consent.frustrated")?.value ?? 0;
+      expect(row(fed)).toBeGreaterThan(row(calm));
+    }
+  });
+});
+
+describe("after she says no", () => {
+  it("he can finish himself next to her, once, unless she resents him too much", () => {
+    const base = structuredClone(toNight(engine.init(4)));
+    base.mods.base.heroine.marriage.desire = 0;
+    base.mods.base.heroine.arousal = 0;
+    base.mods.base.heroine.satisfied = 100;
+    const refused = engine.dispatch(base, { type: NIGHT_ACT, payload: { act: "sex" } });
+    expect(bs(refused).night!.scene).toBe("cold_back");
+    expect(has(refused, NIGHT_SELF)).toBe(true);
+    const done = engine.dispatch(refused, { type: NIGHT_SELF });
+    expect(bs(done).night!.scene).toBe("by_hand");
+    expect(has(done, NIGHT_SELF)).toBe(false);
+    const sour = structuredClone(refused);
+    sour.mods.base.heroine.marriage.resent = 90;
+    const no = engine.dispatch(sour, { type: NIGHT_SELF });
+    expect(bs(no).night!.scene).toBe("cold_back");
+    expect(no.log.at(-1)!.key).toBe("log.night.self.no");
+    expect(has(no, NIGHT_SELF)).toBe(false);
   });
 });

@@ -212,3 +212,11 @@
   figures:
     - { role: wife, pose: sit, x: -30, y: 0, flip: false }
     - { role: husband, pose: sit, x: 34, y: 0, flip: true }
+- id: by_hand
+  figures:
+    - { role: wife, pose: lie_back, x: -8, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 48, y: 0, flip: true }
+- id: went_soft
+  figures:
+    - { role: wife, pose: lie_back, x: -8, y: 0, flip: false }
+    - { role: husband, pose: sit, x: 50, y: 0, flip: true }

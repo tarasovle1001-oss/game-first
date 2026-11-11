@@ -11,11 +11,13 @@ export const newHeroine = (): Heroine => ({
   traits: { openness: 30, confidence: 45, fidelity: 80, honesty: 70, libido: 45 },
   body: { vagina: { stretch: 0, peak: 0 }, anus: { stretch: 0, peak: 0 }, mouth: { stretch: 0, peak: 0 } },
   skills: {},
+  frustration: 0,
   satisfied: 0,
   sizeTaste: 20,
   orgasms: 0,
   marriage: { desire: content.body.husband.desire, resent: content.body.husband.resent },
   outfit: content.outfits.slice().sort((a, b) => a.order - b.order)[0]!.id,
+  bare: "none",
   tastes: { acts: {}, types: {} },
   latents: {},
 });
@@ -49,6 +51,10 @@ export function registerHeroine(api: ModApi) {
   });
 
   // During the evening things cool down on their own when nothing feeds them.
+  api.events.on("day:end", (ctx) => {
+    const h = bs(ctx.state).heroine;
+    h.frustration = Math.max(0, (h.frustration ?? 0) - 2); // it fades slowly on its own
+  });
   api.events.on("shift:tick", (ctx) => {
     const b = bs(ctx.state);
     const h = b.heroine;
