@@ -43,10 +43,10 @@ header {
 .topbar {
   display: flex;
   flex: 1;
-  gap: 26px;
-  flex-wrap: nowrap;
+  gap: 16px;
+  flex-wrap: wrap;
+  row-gap: 4px;
   min-width: 0;
-  overflow: hidden;
 }
 .cell {
   display: grid;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE , installment } from "@tc/base";
+import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE , installment , husbandSees } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -43,11 +43,12 @@ export function TopBar({ state, t }: Common) {
       <div className="cell">
         <span className="cap">{t("ui.money")}</span>
         <span className="big gold">{b.money}</span>
-        <span className="bad">
-          {t("ui.debt")} {b.debt}
-        </span>
-        {b.debt > 0 && <span className="muted">{t("ui.loan.next", { money: installment(state), day: b.loan.dueDay })}</span>}
         <span className="muted">{t("ui.purse", { purse: b.purse })}</span>
+      </div>
+      <div className="cell">
+        <span className="cap">{t("ui.debt")}</span>
+        <span className="big bad">{b.debt}</span>
+        {b.debt > 0 && <span className={b.loan.dueDay - state.time.day <= 1 ? "bad" : "muted"}>{t("ui.loan.next", { money: installment(state), day: b.loan.dueDay })}</span>}
       </div>
       <div className="cell">
         <span className="cap">{t("ui.stock")}</span>
@@ -137,6 +138,24 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
         <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
       )}
       {!wifeHere && <div className="hint">{t("ui.not_here")}</div>}
+      {b.encounter && b.shift && husbandSees(state, b.encounter.loc) && (
+        <div className="meters">
+          {(() => {
+            const enc = b.encounter!;
+            const start = enc.startTick ?? b.shift!.tick;
+            const done = Math.min(1, (b.shift!.tick - start + 1) / Math.max(1, enc.endsTick - start));
+            return (
+              <>
+                <Bar label={t("ui.bed.him")} value={Math.min(100, done * 100)} tone="his" />
+                {(enc.meter ?? 0) > 0 && <Bar label={t("ui.bed.hers")} value={Math.min(100, (enc.meter ?? 0) * done * 100)} tone="hers" />}
+                <div className="muted small">
+                  {t(`act.${enc.act}`)} · {t(`verdict.${enc.verdict}`)} · {t("ui.enc.left", { n: Math.max(0, enc.endsTick - b.shift!.tick) * content.balance.shift.minutesPerTick })}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
       {b.night?.sex && (
         <div className="meters">
           <Bar label={t("ui.bed.his")} value={b.night.sex.his} tone="his" />

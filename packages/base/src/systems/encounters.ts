@@ -114,7 +114,7 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   if (isLight(act)) {
     b.shift!.moment = { patron: p.id, act: act.id }; // shown as the scene of this hour if nothing bigger happens
   } else {
-    b.encounter = { patron: p.id, act: act.id, loc: input.loc, verdict, endsTick: b.shift!.tick + ticks(act.minutes) };
+    b.encounter = { patron: p.id, act: act.id, loc: input.loc, verdict, endsTick: b.shift!.tick + ticks(act.minutes), startTick: b.shift!.tick, meter: 0 };
     ctx.state.where[WIFE] = input.loc;
     ctx.state.where[p.id] = input.loc;
   }
@@ -139,6 +139,7 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   if (isIntimate(act)) {
     const out = resolveBody(ctx, act, { size: p.size, minutes: act.minutes });
     came = out.came;
+    if (b.encounter) b.encounter.meter = Math.max(0, out.meter / content.body.orgasmAt) * (out.pleasure >= 50 ? 1 : 0.7);
     v.rounds += 1;
     p.memory.sizeKnown = true;
     if (came) {

@@ -102,6 +102,8 @@ export interface Encounter {
   loc: string;
   verdict: Verdict;
   endsTick: number;
+  startTick?: number;
+  meter?: number; // how far it takes her, as a share of what she needs (1 = she comes)
 }
 
 /** Kept for the debug panel: why she answered the way she did. */
