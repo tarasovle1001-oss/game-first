@@ -419,6 +419,15 @@ export function CoupleTab({ state, t, lang }: Common) {
       {b.denied > 1 && <div className="muted small">{t("ui.denied", { n: b.denied })}</div>}
       {b.secretKnows && <div className="small bad">{t("ui.secret_knows")}</div>}
       <Expectations state={state} t={t} lang={lang} />
+      <div className="cap gap">{t("ui.things")}</div>
+      <div className="muted small">
+        {t("ui.things.outfits")}: {b.owned.map((id) => t(`outfit.${id}`)).join(", ")}
+      </div>
+      {b.upgrades.length > 0 && (
+        <div className="muted small">
+          {t("ui.things.cafe")}: {b.upgrades.map((id) => t(`upgrade.${id}`)).join(", ")}
+        </div>
+      )}
       <div className="cap gap">{t("ui.body")}</div>
       {(["vagina", "anus", "mouth"] as const).map((z) => (
         <div key={z}>
@@ -443,7 +452,7 @@ function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
   return (
     <li>
       <div>
-        <b>{patronName(p.name, lang)}</b> <span className="muted">{t(`patron.type.${p.type}`)}</span>
+        <b>{patronName(p.name, lang)}</b> <span className={p.lender ? "bad" : "muted"}>{p.lender ? t("ui.lender") : t(`patron.type.${p.type}`)}</span>
         {p.regular && <span className="star">★</span>}
       </div>
       <div className="muted small">
@@ -468,6 +477,18 @@ export function GuestsTab({ state, t, lang }: Common) {
     .sort((a, c) => c.memory.interest - a.memory.interest);
   return (
     <div>
+      {Object.keys(b.lodgers).length > 0 && (
+        <>
+          <div className="cap">{t("ui.zone.hotel")}</div>
+          <ul className="patrons">
+            {Object.entries(b.lodgers).map(([room, l]) => (
+              <li key={room} className="muted small">
+                {t(`loc.${room}`)}: <b>{b.patrons[l.patron] ? patronName(b.patrons[l.patron]!.name, lang) : "?"}</b>, {t("ui.nights", { n: l.nights })}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       <div className="cap">{t("ui.patrons")}</div>
       <ul className="patrons">
         {present.length === 0 && <li className="muted">{t("ui.nobody")}</li>}

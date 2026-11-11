@@ -745,3 +745,8 @@ log.hear.probe.guest: "You ask. She starts to say something about tonight, about
 log.hear.probe.closed: "You ask. \"It is nothing. Go to sleep.\""
 log.hear.push_back.no: "\"You will do what we need.\" She looks at you for a long time, then lies down with her back to you."
 log.hear.push_back.yields: "\"You will do what we need.\" She lowers her eyes. \"Yes. All right.\""
+ui.nights: "nights left: {n}"
+ui.things: "Belongings"
+ui.things.outfits: "Her outfits"
+ui.things.cafe: "In the cafe"
+ui.lender: "the man you owe"

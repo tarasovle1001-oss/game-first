@@ -283,7 +283,7 @@ function App() {
                       </button>
                     ))
                   ) : (
-                    <details key={type} open={type === "base/day" || type === "base/guest"}>
+                    <details key={type} open={type === "base/day" || type === "base/guest" || type === "base/hear-her"}>
                       <summary>
                         {t(engine.actionDef(type)!.labelKey)} <span className="muted">({list.length})</span>
                       </summary>

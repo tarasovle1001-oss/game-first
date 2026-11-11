@@ -43,7 +43,7 @@ export function registerMarriage(api: ModApi) {
       // some nights she is the one who reaches for him
       const h = b.heroine;
       const W = content.body.night.wants;
-      if (h.arousal >= W.arousal && h.marriage.desire >= W.desire && h.energy >= W.energy && h.satisfied < 50) {
+      if (h.arousal >= W.arousal && h.marriage.desire >= W.desire && h.energy >= W.energy && h.satisfied < 50 && h.marriage.resent < content.manners.talk.complainAt) {
         b.night.wants = true;
         b.night.scene = "wants_him";
         ctx.log("log.night.wants");
