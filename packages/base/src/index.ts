@@ -23,7 +23,7 @@ import { registerHotel } from "./systems/hotel";
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 4,
+  version: 5,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -69,6 +69,7 @@ export const baseMod: Mod = {
       upgrades: [],
       billBonus: 0,
       lodgers: {},
+      changed: null,
       talked: [],
       dayTop: null,
       outfitAsked: false,
@@ -132,3 +133,4 @@ export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expe
 export { GUEST, TALK, TELL, guestInView, together } from "./systems/couple";
 export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
+export { OUTFIT_BACK } from "./systems/manners";

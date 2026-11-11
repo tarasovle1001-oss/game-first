@@ -6,11 +6,13 @@ import { bs, clamp } from "../state";
 import type { Directive } from "../state";
 import { actById, CONSENT_FORMULA } from "./encounters";
 import type { ConsentInput } from "./encounters";
+import { HALL, husbandSees } from "./places";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
 
 export const SET_DIRECTIVE = "base/directive";
 export const ASK_OUTFIT = "base/ask-outfit";
+export const OUTFIT_BACK = "base/outfit-back";
 const M = content.manners;
 const outfits = content.outfits.slice().sort((a, b) => a.order - b.order);
 const outfitOf = (state: GameState): Outfit => outfits.find((o) => o.id === bs(state).heroine.outfit) ?? outfits[0]!;
@@ -27,6 +29,70 @@ export function registerManners(api: ModApi) {
     b.heroine.outfit = own.id;
     b.directive = "natural";
     b.outfitAsked = false;
+    b.changed = null;
+  });
+
+  // In the middle of the evening she may slip away and come back in something bolder:
+  // because she feels like it, or because a guest asked. If her husband is looking, she needs a reason.
+  api.events.on("shift:tick", (ctx) => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const C = M.change;
+    if (!b.shift || b.changed || b.encounter || b.caught) return;
+    const now = outfitOf(ctx.state);
+    const next = outfits.find((o) => o.order === now.order + 1 && b.owned.includes(o.id));
+    if (!next) return;
+    const asker = b.shift.visits
+      .map((v) => b.patrons[v.patron]!)
+      .find((p) => p.memory.interest >= C.guestInterest && ctx.rng.chance(C.guestChance));
+    const own = (h.arousal >= C.arousalFrom || h.drunk >= C.drunkFrom) && h.traits.openness + C.margin >= next.openness && ctx.rng.chance(C.chancePerTick);
+    const forHim = asker && h.traits.openness + C.guestMargin + h.arousal / 5 >= next.openness;
+    if (asker && !forHim && !own) {
+      ctx.log("log.outfit.guest.no", { name: `@name:${asker.name}` }, husbandSees(ctx.state, HALL) ? undefined : ["unseen"]);
+      return;
+    }
+    if (!own && !forHim) return;
+    b.changed = { from: now.id, by: forHim ? asker!.id : null };
+    h.outfit = next.id;
+    const seen = husbandSees(ctx.state, HALL);
+    const params = { outfit: `outfit.${next.id}`, name: forHim ? `@name:${asker!.name}` : "" };
+    if (b.mode === "open") ctx.log(forHim ? "log.outfit.change.open.guest" : "log.outfit.change.open", params);
+    else if (seen) {
+      // she owes him a reason, and the reason is never the real one
+      ctx.log(`log.outfit.change.excuse.${ctx.rng.int(1, 3)}`, params);
+      if (forHim) ctx.log("log.outfit.change.why", params, ["unseen"]);
+      b.suspicion = clamp(b.suspicion + C.suspicion * content.secrecy.styleFactor[b.husband.style]);
+    } else ctx.log(forHim ? "log.outfit.change.unseen.guest" : "log.outfit.change.unseen", params, ["unseen"]);
+    if (forHim) asker!.memory.interest = clamp(asker!.memory.interest + 6);
+    for (const v of b.shift.visits) {
+      const p = b.patrons[v.patron]!;
+      p.memory.interest = clamp(p.memory.interest + Math.max(0, next.allure - now.allure));
+    }
+    b.shift.interrupt = true;
+    ctx.emit("outfit:changed", { to: next.id, by: b.changed.by });
+  });
+
+  // He can send her back to change.
+  api.actions.register({
+    id: OUTFIT_BACK,
+    labelKey: "action.outfit.back",
+    enumerate: (state) => {
+      const b = bs(state);
+      return state.time.phase === "shift" && b.changed && b.heroine.outfit !== b.changed.from && !b.encounter && !b.caught && state.where.husband === state.where.wife ? [{ type: OUTFIT_BACK }] : [];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const was = outfitOf(ctx.state);
+      h.outfit = b.changed!.from;
+      const minds = h.traits.openness >= was.openness - 10;
+      if (minds) h.marriage.resent = clamp(h.marriage.resent + M.change.backResent);
+      // it tells her something about everything else too
+      for (const a of content.acts) if (a.tier >= 2) b.expect[a.id] = Math.max(-100, (b.expect[a.id] ?? 0) - 10);
+      b.told.push({ day: ctx.state.time.day, key: "told.outfit.back" });
+      if (b.told.length > 10) b.told.shift();
+      ctx.log(minds ? "log.outfit.back.sulk" : "log.outfit.back", { outfit: `outfit.${h.outfit}` });
+    },
   });
 
   api.actions.register({

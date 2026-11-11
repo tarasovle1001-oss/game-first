@@ -12,6 +12,16 @@ taste: # her taste for an act (and for a type of man) moves with experience
   max: 40
   typeEager: 0.4
 
+change: # she changes into something bolder in the middle of the evening
+  chancePerTick: 0.05
+  arousalFrom: 50      # on her own: turned on enough...
+  drunkFrom: 35        # ...or tipsy enough
+  margin: 18           # and her openness is at most this far below what the outfit needs
+  guestInterest: 50    # a guest asks her to once he wants her this much
+  guestChance: 0.04    # per tick, per such guest
+  guestMargin: 28      # his asking (and his money) stretch the margin
+  suspicion: 2         # what an excuse costs when the husband is watching, times his style
+  backResent: 2        # asked to change back, an open wife resents it
 talk: # small things between the two of them; each once a day
   options:
     - { id: ask_day, group: chat, effects: { mood: 2, desire: 0.5 } }

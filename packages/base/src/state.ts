@@ -175,6 +175,7 @@ export interface BaseState {
   upgrades: string[];
   billBonus: number; // share added to every bill by upgrades
   lodgers: Record<string, { patron: string; nights: number }>; // hotel room -> who stays there
+  changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   talked: string[]; // what he already said or did with her today (each thing once a day)
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now

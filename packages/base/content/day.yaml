@@ -1,6 +1,6 @@
 # The afternoon before opening: a budget of minutes and things to spend it on.
 minutes: 360          # from noon to opening
-dirtPerServed: 1.3    # cleanliness lost per guest served
+dirtPerServed: 1.0    # cleanliness lost per guest served
 cleanStart: 70
 clean:                # how the state of the room shows in the evening
   tipShare: 0.2       # share of the bill added to tips at 100, taken away at 0
