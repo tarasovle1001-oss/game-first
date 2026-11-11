@@ -1,3 +1,4 @@
+import { awayStrategy } from "../src";
 import { describe, expect, it } from "vitest";
 import { baseMod } from "@tc/base";
 import { exampleMod, EXAMPLE_FORMULA } from "@tc/mod-example";
@@ -267,5 +268,50 @@ describe("the loan", () => {
     for (let i = 0; i < 10; i++) s = engine.dispatch(s, { type: "base/wait", payload: { minutes: 10 } });
     expect(s.mods.base.shift.visits.some((v: any) => v.patron === lender.id) || lender.memory.visits >= 0).toBe(true);
     expect(engine.checkInvariants(s)).toEqual([]);
+  });
+});
+
+describe("the night's additions", () => {
+  const play = (seed: number, days: number, setup?: any) => {
+    let s = engine.init(seed, setup);
+    const seen = new Set<string>();
+    while (s.time.day <= days) {
+      const a = engine.listActions(s);
+      s = engine.dispatch(s, a.find((x) => x.type === "core/advance") ?? a.find((x) => x.type === "base/wait" && x.payload?.minutes === 30) ?? a.find((x) => x.type === "base/hear-her") ?? a[0]!);
+      for (const e of s.log.slice(-6)) seen.add(e.key.replace(/\.\d+$/, "").replace(/#\d+$/, ""));
+    }
+    return { s, seen };
+  };
+  it("rooms upstairs get taken, pay, and empty again", () => {
+    const { s, seen } = play(3, 12);
+    expect(seen.has("log.hotel.checks_in")).toBe(true);
+    expect(seen.has("log.hotel.paid")).toBe(true);
+    expect(seen.has("log.hotel.checks_out")).toBe(true);
+    expect(Object.keys(s.mods.base.lodgers).length).toBeLessThanOrEqual(2);
+  });
+  it("a dress order needs her to be open enough, and each can be asked once a day", () => {
+    const shy = engine.init(3, { base: { preset: "faithful" } });
+    const bold = engine.init(3, { base: { preset: "hungry" } });
+    const ask = (st: any) => engine.dispatch(st, { type: "base/order", payload: { id: "no_panties" } });
+    expect(ask(shy).mods.base.orders).toEqual([]);
+    expect(ask(bold).mods.base.orders).toEqual(["no_panties"]);
+    expect(engine.listActions(ask(bold)).some((a) => a.type === "base/order" && a.payload?.id === "no_panties")).toBe(false);
+  });
+  it("what happens on the floor in front of others gets talked about", () => {
+    // with the husband out of sight in the kitchen
+    let s = engine.init(3, { base: { preset: "hungry" } });
+    let most = 0;
+    for (let i = 0; i < 40000 && s.time.day <= 14; i++) {
+      s = engine.dispatch(s, awayStrategy(engine.listActions(s), s, () => 0));
+      most = Math.max(most, s.mods.base.gossip);
+    }
+    expect(most).toBeGreaterThan(0);
+    expect(s.mods.base.memories.length).toBeGreaterThan(0);
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("rent goes up every week", () => {
+    const { s } = play(2, 8);
+    const rents = s.mods.base.history.map((h: any) => h.rent);
+    expect(rents.at(-1)).toBeGreaterThan(rents[0]);
   });
 });

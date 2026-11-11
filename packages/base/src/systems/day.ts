@@ -141,11 +141,21 @@ export function registerDay(api: ModApi) {
       if (a.money) addMoney(ctx, a.money, a.id);
       if (a.clean) b.clean = clamp(b.clean + a.clean);
       if (a.arrivals) b.day!.arrivals += a.arrivals;
+      if (a.stock) b.stock += a.stock;
       for (const [k, v] of Object.entries(a.her ?? {})) {
         if (k === "desire" || k === "resent") b.heroine.marriage[k] = clamp(b.heroine.marriage[k] + v);
         else changeHeroine(ctx, k as "mood", v, a.id);
       }
-      ctx.log(`log.day.${a.id}`, { money: a.money ?? 0, cost: a.cost ?? 0 });
+      if (a.gossip) {
+        // what he hears depends on how much there is to hear; hearing it is not the same as knowing
+        const G = content.secrecy.gossip;
+        const level = b.gossip < G.noticeFrom ? "none" : b.gossip < 40 ? "some" : b.gossip < 70 ? "much" : "all";
+        ctx.log(`log.day.ask_around.${level}`);
+        if (level !== "none" && b.mode === "hidden") b.suspicion = clamp(b.suspicion + (level === "some" ? 4 : level === "much" ? 9 : 15) * content.secrecy.styleFactor[b.husband.style]);
+        ctx.emit("day:did", { do: a.id });
+        return;
+      }
+      ctx.log(`log.day.${a.id}`, { money: a.money ?? 0, cost: a.cost ?? 0, stock: b.stock });
       ctx.emit("day:did", { do: a.id });
     },
   });

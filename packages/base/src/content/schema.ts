@@ -294,6 +294,8 @@ export const daySchema = z
           arrivals: z.number().optional(), // share added to tonight's flow of guests
           needs: id.optional(), // another activity that has to be done first today
           withHer: z.boolean().optional(), // needs her to be around this afternoon
+          stock: z.number().optional(),
+          gossip: z.boolean().optional(), // he hears what the town says about her
           her: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()).optional(),
         })
         .strict(),

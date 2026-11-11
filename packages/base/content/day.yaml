@@ -12,6 +12,8 @@ activities:           # each once a day
   - { id: side_job, minutes: 240, money: 70 }
   - { id: her_chores, minutes: 60, withHer: true, her: { energy: 14, mood: 2, resent: -1 } }
   - { id: town, minutes: 60, withHer: true }             # go to town together: opens the shops and the walk for today
+  - { id: market, minutes: 30, cost: 45, needs: town, stock: 14 }   # cheaper than the supplier, if you are in town anyway
+  - { id: ask_around, minutes: 60, cost: 15, needs: town, gossip: true } # a beer with the men who drink at your place: what do they say
   - { id: date, minutes: 90, cost: 40, needs: town, her: { mood: 6, desire: 3, resent: -2 } }
 shop:                 # in town; she also buys for herself from her purse
   toys:               # size in cm; she uses the biggest one she can take when a night leaves her wanting
