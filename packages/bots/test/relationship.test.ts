@@ -63,7 +63,7 @@ describe("night with the husband", () => {
     expect(record.rows.map((r) => r.id)).toContain("consent.desire");
     expect(record.rows.map((r) => r.id)).not.toContain("consent.fidelity");
     expect(has(s, NIGHT_ACT)).toBe(false);
-    expect(["sex", "left_wanting", "cold_back"]).toContain(engine.currentScene(s)!.type);
+    expect(["sex", "left_wanting", "cold_back", "finishing_herself", "faking_it", "premature_finish", "came_too_soon_foreplay"]).toContain(engine.currentScene(s)!.type);
   });
   it("a husband who is too small for her leaves her wanting", () => {
     let s = toNight(engine.init(4));
@@ -73,7 +73,7 @@ describe("night with the husband", () => {
     stretched.mods.base.heroine.arousal = 95;
     stretched.mods.base.heroine.energy = 80;
     s = engine.dispatch(stretched, { type: NIGHT_ACT, payload: { act: "sex" } });
-    expect(bs(s).night!.scene).toBe("left_wanting");
+    expect(["left_wanting", "finishing_herself", "faking_it"]).toContain(bs(s).night!.scene);
     expect(bs(s).heroine.marriage.resent).toBeGreaterThan(stretched.mods.base.heroine.marriage.resent);
   });
 });
@@ -119,6 +119,33 @@ describe("hidden and open", () => {
     expect(rowOf(hidden)).toBeLessThan(-30);
     expect(rowOf(open)).toBeGreaterThan(rowOf(hidden));
     s = hidden;
+  });
+});
+
+describe("the husband's bad nights", () => {
+  it("after many nights without, he does not last", () => {
+    const s = toNight(engine.init(4));
+    const starved = structuredClone(s);
+    starved.mods.base.denied = 8;
+    starved.mods.base.heroine.marriage.desire = 100;
+    starved.mods.base.heroine.arousal = 60;
+    const after = engine.dispatch(starved, { type: NIGHT_ACT, payload: { act: "sex" } });
+    expect(["came_too_soon_foreplay", "premature_finish", "finishing_herself", "faking_it"]).toContain(bs(after).night!.scene);
+    expect(bs(after).heroine.marriage.resent).toBeGreaterThan(starved.mods.base.heroine.marriage.resent);
+  });
+  it("a dishonest wife fakes it, and only the debug log knows", () => {
+    const s = toNight(engine.init(4));
+    const liar = structuredClone(s);
+    liar.mods.base.heroine.traits.honesty = 20;
+    liar.mods.base.heroine.marriage.desire = 100;
+    liar.mods.base.heroine.body.vagina = { stretch: 90, peak: 90 };
+    liar.mods.base.heroine.arousal = 95;
+    liar.mods.base.heroine.energy = 80;
+    const after = engine.dispatch(liar, { type: NIGHT_ACT, payload: { act: "sex" } });
+    expect(bs(after).night!.scene).toBe("faking_it");
+    const tail = after.log.slice(-2);
+    expect(tail[0]!.key).toBe("log.husband.sex.came");
+    expect(tail[1]!.tags).toContain("unseen");
   });
 });
 

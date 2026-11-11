@@ -72,22 +72,57 @@ export function registerMarriage(api: ModApi) {
       }
       // being wanted by the man she wants does part of the work
       changeHeroine(ctx, "arousal", h.marriage.desire * content.body.husband.foreplay, "husband");
-      const minutes = act.id === "cunnilingus" ? 15 : b.husband.minutes;
-      const out = resolveBody(ctx, act, { size: b.husband.size, minutes });
+      const oral = act.id === "cunnilingus";
+      // how long he lasts tonight: less after days without, less the better she has become at this
+      const H = content.body.husband;
+      const skill = h.skills[act.id] ?? 0;
+      const lasts = oral ? 15 : b.husband.minutes * Math.max(0.15, 1 - Math.max(0, b.denied) * H.shorterPerDeniedNight) * (1 - skill / H.skillHalvesAt / 2);
       changeHeroine(ctx, "energy", act.effects.energy, "husband");
-      if (out.came) {
-        b.night!.scene = act.id === "cunnilingus" ? "cunnilingus" : "sex";
-        feel(act.id === "cunnilingus" ? 2 : 3, -3);
-        ctx.log(`log.husband.${act.id === "cunnilingus" ? "oral" : "sex"}.came`);
-      } else {
-        // he is done, she is not: it stays with her until tomorrow
-        b.night!.scene = "left_wanting";
-        feel(-1, 1.5);
-        changeHeroine(ctx, "arousal", 10, "left wanting");
-        changeHeroine(ctx, "mood", -3, "left wanting");
-        ctx.log("log.husband.left_wanting");
+
+      if (!oral && lasts < H.tooSoonBelow) {
+        // over before it began: nothing for her at all
+        b.night!.scene = "came_too_soon_foreplay";
+        feel(-2, 2.5);
+        changeHeroine(ctx, "arousal", 12, "left wanting");
+        changeHeroine(ctx, "mood", -4, "left wanting");
+        ctx.log("log.husband.too_soon");
+        ctx.emit("husband:act", { act: act.id, came: false, pleasure: 0, outcome: "too_soon" });
+        return;
       }
-      ctx.emit("husband:act", { act: act.id, came: out.came, pleasure: out.pleasure });
+      const out = resolveBody(ctx, act, { size: b.husband.size, minutes: lasts });
+      let outcome: string;
+      if (out.came) {
+        outcome = "came";
+        b.night!.scene = oral ? "cunnilingus" : "sex";
+        feel(oral ? 2 : 3, -3);
+        ctx.log(`log.husband.${oral ? "oral" : "sex"}.came`);
+      } else {
+        // he is done, she is not. What she does about it depends on who she is
+        const premature = !oral && lasts < H.prematureBelow;
+        feel(premature ? -1.5 : -1, premature ? 2 : 1.5);
+        changeHeroine(ctx, "mood", -3, "left wanting");
+        if (h.traits.honesty < H.fakesBelowHonesty && h.marriage.desire >= 40) {
+          // she puts on a show for him: he believes it, the debug log knows better
+          outcome = "faked";
+          b.night!.scene = "faking_it";
+          h.traits.honesty = clamp(h.traits.honesty - 1);
+          changeHeroine(ctx, "arousal", 10, "left wanting");
+          ctx.log("log.husband.sex.came");
+          ctx.log("log.husband.faked", undefined, ["unseen"]);
+        } else if (h.traits.libido >= H.finishesHerselfAtLibido || h.arousal >= 60) {
+          outcome = "finished_herself";
+          b.night!.scene = "finishing_herself";
+          h.satisfied = 60;
+          changeHeroine(ctx, "arousal", -h.arousal * 0.6, "finished herself");
+          ctx.log(premature ? "log.husband.premature.finishes_herself" : "log.husband.finishes_herself");
+        } else {
+          outcome = premature ? "premature" : "left_wanting";
+          b.night!.scene = premature ? "premature_finish" : "left_wanting";
+          changeHeroine(ctx, "arousal", 10, "left wanting");
+          ctx.log(premature ? `log.husband.premature.${act.id === "anal" ? "anal" : "sex"}` : "log.husband.left_wanting");
+        }
+      }
+      ctx.emit("husband:act", { act: act.id, came: out.came, pleasure: out.pleasure, outcome });
     },
   });
 

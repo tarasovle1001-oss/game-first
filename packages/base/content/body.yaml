@@ -15,6 +15,12 @@ husband:
   size: 13
   stamina: 1
   minutes: 12       # how long he lasts
+  shorterPerDeniedNight: 0.12 # share of his minutes lost per night he has gone without
+  skillHalvesAt: 100   # her skill at which he lasts half as long
+  tooSoonBelow: 2.5    # minutes: below this he finishes before it even starts
+  prematureBelow: 6    # minutes: below this it is over almost at once
+  fakesBelowHonesty: 45 # she fakes it for him when her honesty is below this
+  finishesHerselfAtLibido: 60
   foreplay: 0.25    # arousal she gets from him per point of her desire for him
   style: naive      # naive | jealous | encouraging
   desire: 60        # her desire for him at the start

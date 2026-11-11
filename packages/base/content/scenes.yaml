@@ -118,3 +118,20 @@
   figures:
     - { role: wife, pose: bend, x: 10, y: 0, flip: false }
     - { role: patron, pose: stand, x: -12, y: 0, flip: false }
+# the husband's bad nights
+- id: came_too_soon_foreplay
+  figures:
+    - { role: wife, pose: sit, x: -30, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 34, y: 0, flip: true }
+- id: premature_finish
+  figures:
+    - { role: wife, pose: lie_back, x: -10, y: 0, flip: false }
+    - { role: husband, pose: sit, x: 60, y: 0, flip: false }
+- id: finishing_herself
+  figures:
+    - { role: wife, pose: lie_back, x: -20, y: 0, flip: false }
+    - { role: husband, pose: lie_front, x: 50, y: 0, flip: true }
+- id: faking_it
+  figures:
+    - { role: wife, pose: lie_back, x: -10, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: 32, y: 0, flip: true }

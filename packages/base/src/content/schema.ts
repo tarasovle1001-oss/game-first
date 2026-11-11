@@ -146,6 +146,12 @@ export const bodySchema = z
         stamina: z.number().int().positive(),
         minutes: z.number().positive(), // how long he lasts
         style: z.enum(["naive", "jealous", "encouraging"]),
+        shorterPerDeniedNight: z.number().min(0), // share of his minutes lost per night he has gone without
+        skillHalvesAt: z.number().positive(), // her skill at which he lasts half as long
+        tooSoonBelow: z.number(), // minutes: below this he finishes before it starts
+        prematureBelow: z.number(), // minutes: below this it is over almost at once
+        fakesBelowHonesty: z.number(), // she fakes it when her honesty is below this
+        finishesHerselfAtLibido: z.number(),
         foreplay: z.number().min(0), // arousal she gets from him per point of her desire for him
         desire: z.number().min(0).max(100), // her desire for him at the start
         resent: z.number().min(0).max(100),
