@@ -105,3 +105,84 @@ export function renderSchematic(figures: Figure[], opts: SchematicOptions = {}):
 }
 
 export const POSE_NAMES = Object.keys(POSES) as Pose[];
+
+// ---------------------------------------------------------------------------------------------
+// Export for image generation. The same layout that draws the mannequins can drive ControlNet:
+// an OpenPose skeleton per figure (who is where, in which pose) and a box per figure
+// (which part of the picture belongs to whom, for regional prompts). Roles never get swapped,
+// because the generator is told the geometry instead of guessing it from text.
+
+export interface PoseFigure {
+  role: string;
+  /** 18 COCO keypoints [x, y] in pixels, null where the mannequin has no such joint. */
+  keypoints: (P | null)[];
+  /** Bounding box in pixels, padded: [x, y, width, height]. */
+  box: [number, number, number, number];
+}
+
+/** Pixel positions of the mannequin joints on a canvas of the given size (same framing as the schematic). */
+function placed(f: Figure, width: number, height: number) {
+  const j = POSES[f.pose];
+  const dir = f.flip ? -1 : 1;
+  // one scale for both axes (no stretching): the widest layouts (three figures) are about 170 units across
+  const s = Math.min(width / 175, height / 125);
+  const at = ([x, y]: P, dx = 0): P => [width / 2 + (f.x + dir * (x + dx)) * s, height * 0.86 - ((f.y ?? 0) + y) * s];
+  return { j, at };
+}
+
+export function toOpenPose(figures: Figure[], width = 832, height = 1216): PoseFigure[] {
+  return figures.map((f) => {
+    const { j, at } = placed(f, width, height);
+    const mid = (a: P, b: P, t = 0.5): P => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    const neck = at(j.neck);
+    const head = at(j.head);
+    // near side = "right" limbs, far side = "left": the mannequin is a profile figure
+    const k: (P | null)[] = [
+      head, // 0 nose
+      neck, // 1 neck
+      mid(neck, at(j.elbow), 0.12), // 2 r shoulder
+      at(j.elbow), // 3 r elbow
+      at(j.hand), // 4 r wrist
+      mid(neck, at(j.elbow, -5), 0.12), // 5 l shoulder
+      at(j.elbow, -5), // 6 l elbow
+      at(j.hand, -4), // 7 l wrist
+      at(j.hip), // 8 r hip
+      at(j.knee), // 9 r knee
+      at(j.foot), // 10 r ankle
+      at(j.hip, 3), // 11 l hip
+      at(j.knee, 5), // 12 l knee
+      at(j.foot, 6), // 13 l ankle
+      null, null, null, null, // eyes and ears: left to the model
+    ];
+    const pts = k.filter((p): p is P => p !== null);
+    const pad = width * 0.07;
+    const x0 = Math.max(0, Math.min(...pts.map((p) => p[0])) - pad);
+    const y0 = Math.max(0, Math.min(...pts.map((p) => p[1])) - pad * 1.4);
+    const x1 = Math.min(width, Math.max(...pts.map((p) => p[0])) + pad);
+    const y1 = Math.min(height, Math.max(...pts.map((p) => p[1])) + pad);
+    return { role: f.role, keypoints: k.map((p) => (p ? ([Math.round(p[0]), Math.round(p[1])] as P) : null)), box: [Math.round(x0), Math.round(y0), Math.round(x1 - x0), Math.round(y1 - y0)] };
+  });
+}
+
+// limb pairs and the colours the OpenPose preprocessor draws them with
+const LIMBS: [number, number, string][] = [
+  [1, 2, "#ff0000"], [1, 5, "#ff5500"], [2, 3, "#ffaa00"], [3, 4, "#ffff00"], [5, 6, "#aaff00"], [6, 7, "#55ff00"],
+  [1, 8, "#00ff00"], [8, 9, "#00ff55"], [9, 10, "#00ffaa"], [1, 11, "#00ffff"], [11, 12, "#00aaff"], [12, 13, "#0055ff"], [1, 0, "#0000ff"],
+];
+
+/** The skeletons as an image a pose ControlNet takes as is: coloured limbs on black. */
+export function renderOpenPose(figures: Figure[], width = 832, height = 1216): string {
+  const stroke = Math.max(4, Math.round(width / 110));
+  const parts = toOpenPose(figures, width, height).map(({ keypoints: k }) => {
+    const limbs = LIMBS.map(([a, b, c]) => (k[a] && k[b] ? `<line x1="${k[a]![0]}" y1="${k[a]![1]}" x2="${k[b]![0]}" y2="${k[b]![1]}" stroke="${c}" stroke-width="${stroke}" stroke-linecap="round" opacity="0.75"/>` : "")).join("");
+    const dots = k.map((p, i) => (p ? `<circle cx="${p[0]}" cy="${p[1]}" r="${stroke * 0.7}" fill="${LIMBS[Math.min(i, LIMBS.length - 1)]![2]}"/>` : "")).join("");
+    return limbs + dots;
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#000"/>${parts.join("")}</svg>`;
+}
+
+/** One white-on-black mask per figure: the area of the picture that belongs to that role. */
+export function renderMask(figure: PoseFigure, width = 832, height = 1216): string {
+  const [x, y, w, h] = figure.box;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#000"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.round(w * 0.12)}" fill="#fff"/></svg>`;
+}
