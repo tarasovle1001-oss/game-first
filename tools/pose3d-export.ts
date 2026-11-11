@@ -10,8 +10,11 @@ const round = (p: [number, number]) => [Math.round(p[0] * 100) / 100, Math.round
 const scenes = Object.fromEntries(
   content.scenes.map((s) => [
     s.id,
-    solve(s.figures).map((f) => ({
+    solve(s.figures).map((f, i) => ({
       role: f.role,
+      pose: s.figures[i]!.pose,
+      prop: f.prop ?? null,
+      side: s.figures[i]!.side ?? 0,
       scale: Math.round(f.scale * 1000) / 1000,
       flip: f.flip,
       j: Object.fromEntries(Object.entries(f.j).map(([k, v]) => [k, round(v)])),

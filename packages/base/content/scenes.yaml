@@ -3,6 +3,7 @@
 # x: offset from the centre, y: lift above the floor, flip: true = faces left
 # torso, head: directions in degrees (0 = ahead, 90 = up); armR/armL/legR/legL: two angles, or { to: role.joint, dx, dy } to reach for
 #   joints: head mouth neck chest pelvis groin butt shoulderR elbowR handR hipR kneeR footR (and L), penisTip, toyTip; self.* = her own body
+# side: 3D mannequins only - how far the figure stands off the plane of the side view (+ toward the viewer)
 # penis: true or { len (cm), angle | to }, toy: { hand | from, len, angle | to }. The same data drives the in-game schematic and the pose export.
 - id: idle
   figures:
@@ -344,7 +345,7 @@
     - { role: wife, pose: kneel, x: 0, y: 0, flip: false, torso: 56, head: 40, armL: { to: patron3.penisTip, dx: 3 }, armR: [-70, -80] }
     - { role: patron, pose: kneel, x: -24, y: 0, flip: false, torso: 78, penis: { to: wife.butt, dy: 2 }, armR: { to: wife.pelvis, dx: 2, dy: 4 } }
     - { role: patron2, pose: stand, x: 30, y: 0, flip: true, torso: 92, head: 66, penis: { to: wife.mouth, dx: 2 }, armR: { to: wife.head, dy: 4 } }
-    - { role: patron3, pose: stand, x: 62, y: 0, flip: true, torso: 88, head: 70, penis: { angle: 12, len: 24 }, armR: [-50, 10] }
+    - { role: patron3, pose: stand, x: 34, y: 0, side: 30, flip: true, torso: 88, head: 70, penis: { angle: 12, len: 24 }, armR: [-50, 10] }
 - id: group_dp
   figures:
     - { role: patron, pose: lie_back, x: -2, y: 0, flip: false, armR: { to: wife.pelvis, dy: 5 }, legR: [20, -30], legL: [14, -24], penis: { to: wife.groin, dy: 3 } }

@@ -112,6 +112,7 @@ export const sceneSchema = z
         z
           .object({
             role: z.string(), pose: z.enum(POSES), x: z.number(), y: z.number().default(0), flip: z.boolean().default(false),
+            side: z.number().optional(), // 3D only: how far the figure stands off the plane of the side view, toward the viewer (+) or away (-)
             scale: z.number().optional(), torso: z.number().optional(), head: z.number().optional(),
             armR: limbSchema.optional(), armL: limbSchema.optional(), legR: limbSchema.optional(), legL: limbSchema.optional(),
             penis: z.union([z.boolean(), propSchema]).optional(), toy: propSchema.optional(),
