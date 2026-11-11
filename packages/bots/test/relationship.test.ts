@@ -341,3 +341,27 @@ describe("the two of them", () => {
     expect(engine.checkInvariants(s)).toEqual([]);
   });
 });
+
+describe("her own initiative", () => {
+  const wanting = () => {
+    const s = structuredClone(toNight(engine.init(4)));
+    // set up the evening so that she comes to bed wanting him
+    s.mods.base.night.wants = true;
+    s.mods.base.heroine.marriage.desire = 80;
+    return s;
+  };
+  it("turning her down costs more than just falling asleep, and both cost something", () => {
+    const base = wanting();
+    const resent = base.mods.base.heroine.marriage.resent;
+    const declined = engine.dispatch(base, { type: "base/night-decline" });
+    const ignored = engine.dispatch(wanting(), { type: CORE_ADVANCE });
+    expect(bs(declined).heroine.marriage.resent).toBeGreaterThan(resent);
+    expect(has(declined, NIGHT_ACT)).toBe(false);
+    expect(ignored.log.some((e) => e.key === "log.night.ignored_her")).toBe(true);
+  });
+  it("saying yes to her starts the scene", () => {
+    const s = engine.dispatch(wanting(), { type: NIGHT_ACT, payload: { act: "sex" } });
+    expect(bs(s).night!.sex).not.toBeNull();
+    expect(bs(s).proposals.at(-1)!.rows.some((r) => r.id === "consent.going")).toBe(true);
+  });
+});

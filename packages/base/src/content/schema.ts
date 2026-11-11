@@ -165,6 +165,7 @@ export const nightSchema = z
     slipOutFidelityBelow: z.number(),
     husbandWakesChance: z.number().min(0).max(1),
     wakesSuspicion: z.number(),
+    wants: z.object({ arousal: z.number(), desire: z.number(), energy: z.number(), consent: z.number(), declineDesire: z.number(), declineResent: z.number() }).strict(),
   })
   .strict();
 
@@ -247,6 +248,7 @@ export const secrecySchema = z
     powerDenies: z.number(), // how much her power makes her refuse her husband
     // nights when she takes the lead: power needed for each, and how often it happens
     lead: z.object({ tease: z.number(), facesit: z.number(), ignore: z.number(), chancePerPower: z.number().min(0) }).strict(),
+    gossip: z.object({ fromTier: z.number().int(), perTier: z.number(), braggart: z.number(), noticeFrom: z.number(), interest: z.number(), arrivals: z.number(), reachesHusband: z.number(), suspicion: z.number(), fadePerDay: z.number() }).strict(),
   })
   .strict();
 
@@ -345,6 +347,8 @@ export const mannersSchema = z
         round: z.object({ interest: z.number(), stay: z.number().int(), drunk: z.number() }).strict(),
         encourage: z.object({ tiersAhead: z.number().int(), expect: z.number(), consent: z.number() }).strict(),
         throwOut: z.object({ affinity: z.number(), reputation: z.number() }).strict(),
+        joinUpToTier: z.number().int(),
+        joinExpect: z.number(),
       })
       .strict(),
     taste: z.object({ came: z.number(), eager: z.number(), hesitant: z.number(), min: z.number(), max: z.number(), typeEager: z.number() }).strict(),

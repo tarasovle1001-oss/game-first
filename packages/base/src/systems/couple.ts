@@ -169,6 +169,7 @@ export function registerCouple(api: ModApi) {
       const visit = b.shift!.visits.find((v) => v.patron === id)!;
       const name = b.patrons[id]!.name;
       const dos = ["throw_out"];
+      if (!b.caught && (b.reaction || b.encounter) && actById((b.reaction?.act ?? b.encounter?.act)!).tier <= G.joinUpToTier) dos.unshift("join");
       if (b.stock >= 1) dos.unshift("round");
       if (!visit.pushed) dos.unshift("encourage");
       return dos.map((d) => ({ type: GUEST, payload: { do: d, patron: id, name } }));
@@ -181,6 +182,17 @@ export function registerCouple(api: ModApi) {
       const visit = b.shift!.visits.find((v) => v.patron === p.id)!;
       const name = `@name:${p.name}`;
       switch (action.payload!.do) {
+        case "join": {
+          // walk over and make it three: nothing is said, everything is understood
+          const actId = (b.reaction?.act ?? b.encounter?.act)!;
+          if (b.encounter?.patron === p.id) endEncounter(ctx, true);
+          b.expect[actId] = Math.max(-100, (b.expect[actId] ?? 0) - G.joinExpect);
+          p.memory.interest = clamp(p.memory.interest - 3);
+          if (b.reaction) b.reaction.reacted = true;
+          b.reaction = null;
+          ctx.log("log.guest.join", { name });
+          break;
+        }
         case "round":
           b.stock -= 1;
           p.memory.interest = clamp(p.memory.interest + G.round.interest);

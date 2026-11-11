@@ -180,3 +180,7 @@
   figures:
     - { role: husband, pose: all_fours, x: 6, y: 0, flip: false }
     - { role: wife, pose: kneel, x: -40, y: 0, flip: false }
+- id: wants_him
+  figures:
+    - { role: husband, pose: lie_back, x: 10, y: 0, flip: false }
+    - { role: wife, pose: kneel, x: -44, y: 0, flip: false }

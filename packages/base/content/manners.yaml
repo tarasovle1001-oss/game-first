@@ -49,3 +49,5 @@ guest: # what the husband can do about a guest who is with her
   round: { interest: 6, stay: 2, drunk: 7 }
   encourage: { tiersAhead: 2, expect: 60, consent: 10 }
   throwOut: { affinity: 30, reputation: 1 }
+  joinUpToTier: 4   # walking over works on flirting and hands, not on what is already further
+  joinExpect: 12

@@ -12,6 +12,7 @@ export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
 export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "prostate", "pegging"];
 export const BED = "base/bed";
+export const NIGHT_DECLINE = "base/night-decline";
 /** What a bedroom scene can turn into once it is going. */
 export const BED_ACTS = ["grinding", "mutual_touching", "handjob", "blowjob", "cunnilingus", "rimming_her", "sex", "riding", "anal", "prostate", "pegging"];
 /** The toy she would use on him: the biggest one he can take, or the smallest one there is. */
@@ -32,6 +33,14 @@ export function registerMarriage(api: ModApi) {
       ctx.state.where[HUSBAND] = BEDROOM;
       ctx.state.where[WIFE] = BEDROOM;
       b.night = { scene: "sleeping", asked: false, sex: null };
+      // some nights she is the one who reaches for him
+      const h = b.heroine;
+      const W = content.body.night.wants;
+      if (h.arousal >= W.arousal && h.marriage.desire >= W.desire && h.energy >= W.energy && h.satisfied < 50) {
+        b.night.wants = true;
+        b.night.scene = "wants_him";
+        ctx.log("log.night.wants");
+      }
     }
     if (phase === "prep" && ctx.state.time.day > 1) {
       ctx.state.where[HUSBAND] = "cafe.hall";
@@ -95,7 +104,9 @@ export function registerMarriage(api: ModApi) {
       const h = b.heroine;
       const act = actById(action.payload!.act as string);
       b.night!.asked = true;
-      const verdict = ask(ctx, act.id);
+      const wanted = b.night!.wants === true;
+      b.night!.wants = false;
+      const verdict = ask(ctx, act.id, wanted ? content.body.night.wants.consent : 0);
       if (verdict === "refuse") {
         b.night!.scene = "cold_back";
         feel(ctx, 0, 1);
@@ -127,6 +138,36 @@ export function registerMarriage(api: ModApi) {
       ctx.emit("bed:started", { act: act.id });
     },
   });
+
+  // "Not tonight": turning her down has a price, and she still has the night ahead of her.
+  api.actions.register({
+    id: NIGHT_DECLINE,
+    labelKey: "action.night.decline",
+    enumerate: (state) => (state.time.phase === "night" && bs(state).night?.wants && !bs(state).night?.sex ? [{ type: NIGHT_DECLINE }] : []),
+    apply(ctx) {
+      const b = bs(ctx.state);
+      b.night!.wants = false;
+      b.night!.asked = true;
+      b.night!.scene = "cold_back";
+      turnedDown(ctx, 1);
+      ctx.log("log.night.declined");
+    },
+  });
+  const turnedDown = (ctx: Ctx, weight: number) => {
+    const W = content.body.night.wants;
+    feel(ctx, -W.declineDesire * weight, W.declineResent * weight);
+    changeHeroine(ctx, "mood", -3 * weight, "turned down");
+  };
+  // Rolling over without a word is an answer too, a slightly kinder one.
+  api.events.on(
+    "phase:exit",
+    (ctx, e) => {
+      if (e.payload!.phase !== "night" || !bs(ctx.state).night?.wants || bs(ctx.state).night?.asked) return;
+      turnedDown(ctx, 0.6);
+      ctx.log("log.night.ignored_her");
+    },
+    20,
+  );
 
   /** How much one turn gives each of them, before the pace multiplier. */
   const rates = (state: GameState) => {

@@ -66,7 +66,7 @@ function arrive(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
   // reputation 0 -> 40% of the base flow, 50 -> 100%, 100 -> 160%
-  const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * (0.4 + (b.reputation / 50) * 0.6) * (1 + (b.day?.arrivals ?? 0));
+  const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * (0.4 + (b.reputation / 50) * 0.6) * (1 + (b.day?.arrivals ?? 0) + b.gossip * content.secrecy.gossip.arrivals);
   const count = Math.floor(perTick) + (ctx.rng.chance(perTick % 1) ? 1 : 0);
   for (let i = 0; i < count; i++) {
     if (sh.visits.length >= bal.seats) {

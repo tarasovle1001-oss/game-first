@@ -287,6 +287,7 @@ export function HeroineTab({ state, t, open }: Common) {
         <Bar key={k} label={t(`trait.${k}`)} value={h.traits[k]} />
       ))}
       <Bar label={t("stat.sizeTaste")} value={h.sizeTaste} />
+      {open && bs(state).gossip > 0 && <Bar label={t("ui.gossip")} value={bs(state).gossip} />}
       <div className="cap gap">{t("ui.directive")}</div>
       <div>
         {t("ui.outfit")}: <b>{t(`outfit.${h.outfit}`)}</b> · {t(`directive.${bs(state).directive}`)}

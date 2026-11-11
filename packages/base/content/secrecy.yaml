@@ -24,3 +24,14 @@ lead:
   facesit: 50    # she takes what she wants from him and gives nothing back
   ignore: 70     # she tells him about her evening and turns away
   chancePerPower: 0.008 # chance per night = her power x this
+
+gossip: # what the town says about her, 0..100
+  fromTier: 3        # things from this tier up, done on the floor with other guests there, get talked about
+  perTier: 1.2       # per tier above that, per witness (up to three)
+  braggart: 2        # a dishonest man who got far tells his friends
+  noticeFrom: 15     # below this nobody has heard anything
+  interest: 0.25     # a new guest walks in already wanting her, per point of gossip
+  arrivals: 0.004    # share added to the evening flow per point
+  reachesHusband: 0.006 # chance per day, per point, that someone lets him know
+  suspicion: 8
+  fadePerDay: 1.5
