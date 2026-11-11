@@ -6,6 +6,7 @@ import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Patron, Verdict, Visit } from "../state";
 import { fitOf, resolveBody } from "./body";
+import { expectOf } from "./expectations";
 import { addHerTips } from "./economy";
 import { changeHeroine } from "./heroine";
 import { variantKey } from "../text";
@@ -322,14 +323,30 @@ export function registerEncounters(api: ModApi) {
     return p && i.loc === HALL && act.tier >= 3 && others > 0 ? -(100 - her(s).traits.openness) * c.witnesses : null;
   });
   row("plain_sight", 40.5, (_s, i, act, p) => (p && isIntimate(act) && i.loc === HALL ? -c.inPlainSight : null));
+  // His eyes on her. How heavy they are depends on what she thinks he allows: if she is sure he does not mind,
+  // they weigh nothing; if she is sure he does, they stop her cold.
   row("husband", 41, (s, i, act, p) => {
     if (!p || act.tier < 2) return null;
     const b = bs(s);
     if (b.mode === "open") return husbandSees(s, i.loc) ? sec.watchingByStyle[b.husband.style] : null; // he knows; how he takes it decides
-    if (husbandIn(s, i.loc)) return -c.husbandWatching; // he would be right there
-    if (husbandSees(s, i.loc)) return -c.husbandWatching * 0.7; // he would see it from across the room
-    if (husbandSees(s, HALL) && i.loc !== HALL) return -c.husbandWatching / 2; // he would see them walk off together
+    // 1 = she is sure he minds, 0 = she is sure he does not; with no idea at all she is only half as careful
+    const minds = clamp((20 - expectOf(s, act.id)) / 100, 0, 1);
+    if (husbandIn(s, i.loc)) return -c.husbandWatching * minds;
+    if (husbandSees(s, i.loc)) return -c.husbandWatching * 0.7 * minds;
+    if (husbandSees(s, HALL) && i.loc !== HALL) return (-c.husbandWatching / 2) * minds; // he would see them walk off together
     return null;
+  });
+  // What she believes he wants, when he is not looking: a "yes" always helps a little,
+  // a "no" holds her back only as far as she is honest (in the open she simply goes by it).
+  row("expect", 41.5, (s, i, act, p) => {
+    if (!p || act.tier < 2) return null;
+    const b = bs(s);
+    const x = expectOf(s, act.id);
+    if (x > 0) return (x / 100) * c.expect.permission;
+    if (b.expect[act.id] === undefined && x >= c.expect.unknown) return null; // nothing was ever said or shown
+    if (b.mode !== "open" && husbandSees(s, i.loc)) return null; // already counted in his eyes on her
+    const binds = b.mode === "open" ? 1 : her(s).traits.honesty / 100;
+    return (x / 100) * c.expect.behindBack * binds;
   });
   row("power", 42, (s, _i, act, p) => (p && bs(s).mode === "open" && act.tier >= 2 ? bs(s).power * sec.powerRow : null));
 

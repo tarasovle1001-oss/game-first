@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseMod, bs, CAUGHT_STOP, CAUGHT_WATCH, CONFRONT, fitOf, NIGHT_ACT, pleasureFromSize, WAIT } from "@tc/base";
+import { baseMod, bs, expectOf, REACT_APPROVE, REACT_STOP, CAUGHT_STOP, CAUGHT_WATCH, CONFRONT, fitOf, NIGHT_ACT, pleasureFromSize, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 import { awayStrategy } from "../src";
@@ -116,7 +116,7 @@ describe("hidden and open", () => {
     const open = structuredClone(hidden);
     open.mods.base.mode = "open";
     const rowOf = (st: GameState) => engine.evaluate("base/consent", st, input).rows.find((r) => r.id === "consent.husband")?.value ?? 0;
-    expect(rowOf(hidden)).toBeLessThan(-30);
+    expect(rowOf(hidden)).toBeLessThan(-15);
     expect(rowOf(open)).toBeGreaterThan(rowOf(hidden));
     s = hidden;
   });
@@ -183,5 +183,47 @@ describe("where the husband stands", () => {
     };
     expect(evening("cafe.staff")).toBe(0);
     expect(evening("cafe.hall")).toBeGreaterThan(0);
+  });
+});
+
+describe("what she thinks he allows", () => {
+  /** Plays with the husband on the floor until something beyond flirting starts in front of him. */
+  const untilReaction = (seed: number): GameState => {
+    let s = engine.init(seed, { base: { preset: "hungry" } });
+    for (let i = 0; i < 20000; i++) {
+      if (bs(s).reaction) return s;
+      const actions = engine.listActions(s);
+      s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? actions.find((a) => a.type === WAIT && a.payload?.minutes === 10) ?? actions.find((a) => a.type !== CORE_MOVE)!);
+    }
+    throw new Error("nothing ever happened in front of him");
+  };
+  it("silence teaches her that he does not mind, a little at a time", () => {
+    let s = untilReaction(3);
+    const act = bs(s).reaction!.act;
+    const before = expectOf(s, act);
+    while (bs(s).reaction) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === WAIT && a.payload?.minutes === 10) ?? { type: CORE_ADVANCE });
+    expect(expectOf(s, act)).toBeGreaterThan(before);
+    expect(expectOf(s, act)).toBeLessThan(70); // silence never makes her sure
+  });
+  it("stepping in ends it and tells her about everything beyond it", () => {
+    let s = untilReaction(3);
+    const act = bs(s).reaction!.act;
+    expect(has(s, REACT_STOP)).toBe(true);
+    s = engine.dispatch(s, { type: REACT_STOP });
+    expect(bs(s).encounter).toBeNull();
+    expect(expectOf(s, act)).toBeLessThan(-70);
+    expect(expectOf(s, "sex")).toBeLessThan(0);
+    expect(bs(s).told.at(-1)!.key).toBe("told.stop");
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("a nod removes the weight of his eyes", () => {
+    let s = untilReaction(3);
+    const { act, patron } = bs(s).reaction!;
+    const input = { act, partner: patron, loc: "cafe.hall", offer: 0, pressure: 0 };
+    const weight = (st: GameState) => engine.evaluate("base/consent", st, input).rows.find((r) => r.id === "consent.husband")?.value ?? 0;
+    const before = weight(s);
+    s = engine.dispatch(s, { type: REACT_APPROVE });
+    expect(weight(s)).toBeGreaterThan(before);
+    expect(weight(s)).toBeCloseTo(0);
   });
 });

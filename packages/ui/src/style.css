@@ -649,3 +649,10 @@ header {
   width: auto;
   padding: 12px 34px;
 }
+
+.thinks {
+  padding: 3px 0 3px 10px;
+  border-left: 2px solid var(--line);
+  margin: 3px 0;
+  font-style: italic;
+}

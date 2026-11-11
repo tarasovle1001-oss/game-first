@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { bs, clockText, content, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE } from "@tc/base";
+import { bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderLog, renderParams, WIFE } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -311,8 +311,44 @@ export function Summary({ state, t }: Common) {
   );
 }
 
+/** What he has told or shown her, and what she has made of it. */
+function Expectations({ state, t, lang }: Common) {
+  const b = bs(state);
+  const known = Object.entries(b.expect)
+    .filter(([, v]) => Math.abs(v) >= 15)
+    .map(([id, v]) => ({ id, v, ...expectLevel(v), tier: content.acts.find((a) => a.id === id)?.tier ?? 0 }))
+    .sort((a, c) => a.tier - c.tier);
+  const list = (side: "allow" | "deny") => {
+    const items = known.filter((k) => k.side === side);
+    if (items.length === 0) return null;
+    return (
+      <>
+        <div className="cap gap">{t(`ui.thinks.${side}`)}</div>
+        {items.map((k) => (
+          <div key={k.id} className="thinks">
+            <span className="muted small">{t(`ui.sure.${k.sure}`)}:</span> {t(`act.${k.id}`)}
+          </div>
+        ))}
+      </>
+    );
+  };
+  return (
+    <>
+      <div className="cap gap">{t("ui.told")}</div>
+      {b.told.length === 0 && <div className="muted small">{t("ui.told.none")}</div>}
+      {[...b.told].reverse().slice(0, 5).map((x, i) => (
+        <div key={i} className="thinks">
+          {t(x.key, renderParams(x.params, t, lang))} <span className="muted small">({t("ui.day.short", { day: x.day })})</span>
+        </div>
+      ))}
+      {list("allow")}
+      {list("deny")}
+    </>
+  );
+}
+
 /** Her body and the two of you: the slow numbers. */
-export function CoupleTab({ state, t }: Common) {
+export function CoupleTab({ state, t, lang }: Common) {
   const b = bs(state);
   const h = b.heroine;
   const skills = Object.entries(h.skills).sort((a, c) => c[1] - a[1]);
@@ -327,6 +363,7 @@ export function CoupleTab({ state, t }: Common) {
       </div>
       {b.denied > 1 && <div className="muted small">{t("ui.denied", { n: b.denied })}</div>}
       {b.secretKnows && <div className="small bad">{t("ui.secret_knows")}</div>}
+      <Expectations state={state} t={t} lang={lang} />
       <div className="cap gap">{t("ui.body")}</div>
       {(["vagina", "anus", "mouth"] as const).map((z) => (
         <div key={z}>

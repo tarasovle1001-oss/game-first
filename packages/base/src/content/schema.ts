@@ -110,6 +110,21 @@ export const consentSchema = z
     hesitantAt: z.number(), // total >= this: she agrees, reluctantly; below: refusal
     hesitantYesAtZero: z.number().min(0).max(1), // chance she says yes at the very bottom of the hesitant zone; 1 at its top
     inPlainSight: z.number(), // intimate acts on the cafe floor instead of a back room
+    // what she thinks her husband allows (-100 = he made clear he does not want it, +100 = he said yes)
+    expect: z
+      .object({
+        unknown: z.number(), // where an act she has no idea about sits on that scale
+        ignoreGain: z.number(), // he watched and said nothing
+        ignoreCap: z.number(), // silence alone never makes her sure
+        approve: z.number(), // he told her he does not mind
+        forbid: z.number(), // he stepped in
+        forbidHigher: z.number(), // ...which also tells her about everything beyond it
+        friendly: z.number(), // "be nice to the guests", for the light acts
+        reserved: z.number(), // "keep your distance", for everything
+        behindBack: z.number(), // weight of a believed "no" when he is not looking (times how honest she is)
+        permission: z.number(), // bonus of a believed "yes" anywhere
+      })
+      .strict(),
     proposalsPerTick: z.number().int().positive(),
     askChancePerHour: z.number().min(0), // base chance that a guest makes a move within an hour
     askChancePerInterest: z.number().min(0), // added per point of his interest

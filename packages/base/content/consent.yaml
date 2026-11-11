@@ -3,6 +3,17 @@ eagerAt: 20      # total >= this: she is glad to
 hesitantAt: 0    # total >= this: she agrees, reluctantly; below: she refuses
 hesitantYesAtZero: 0.5 # when she hesitates it can go either way: this chance at total 0, rising to certain at eagerAt
 inPlainSight: 45       # how much harder an intimate act is on the cafe floor than in a back room
+expect: # what she thinks her husband allows: -100 he made clear he does not want it ... +100 he said yes
+  unknown: -30      # an act she has no idea about: she assumes he would rather not
+  ignoreGain: 18    # he watched and said nothing
+  ignoreCap: 55     # silence alone never makes her sure
+  approve: 80       # he told her he does not mind
+  forbid: -90       # he stepped in
+  forbidHigher: -50 # ...and that tells her about everything beyond it too
+  friendly: 12      # "be nice to the guests" (acts up to touching)
+  reserved: -20     # "keep your distance" (everything)
+  behindBack: 28    # how much a believed "no" holds her back when he is not looking, times her honesty
+  permission: 12    # how much a believed "yes" helps, anywhere
 proposalsPerTick: 3 # how many guests can speak up within one tick (only one of them can take her off the floor)
 askChancePerHour: 0.5 # base chance that a guest makes a move within an hour
 askChancePerInterest: 0.016 # added per point of his interest

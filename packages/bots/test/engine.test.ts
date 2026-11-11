@@ -45,7 +45,7 @@ describe("determinism", () => {
     return s;
   };
   it("same seed -> same state", () => expect(play(42)).toEqual(play(42)));
-  it("different seed -> different rolls", () => expect(play(42).mods.example).not.toEqual(play(43).mods.example));
+  it("different seed -> different rolls", () => expect(play(42).mods.base.patrons).not.toEqual(play(43).mods.base.patrons));
 });
 
 describe("actions", () => {

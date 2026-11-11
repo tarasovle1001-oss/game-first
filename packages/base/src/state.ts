@@ -153,6 +153,9 @@ export interface BaseState {
   night: { scene: string; asked: boolean } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
+  expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
+  told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
+  reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now
   outfitAsked: boolean;
   today: Ledger;
   history: Ledger[]; // last days, newest last

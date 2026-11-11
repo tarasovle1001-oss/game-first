@@ -15,6 +15,7 @@ import { newPhone, registerPhone } from "./systems/phone";
 import { registerManners } from "./systems/manners";
 import { registerLatents } from "./systems/latents";
 import { registerSetup } from "./systems/setup";
+import { registerExpectations } from "./systems/expectations";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -48,6 +49,9 @@ export const baseMod: Mod = {
       night: null,
       phone: newPhone(),
       directive: "natural",
+      expect: {},
+      told: [],
+      reaction: null,
       outfitAsked: false,
       today: emptyLedger(1),
       history: [],
@@ -76,6 +80,7 @@ export const baseMod: Mod = {
     registerPhone(api);
     registerManners(api);
     registerLatents(api);
+    registerExpectations(api);
     registerSetup(api);
   },
 };
@@ -101,3 +106,4 @@ export type { Message, PhoneState } from "./systems/phone";
 export { ASK_OUTFIT, SET_DIRECTIVE } from "./systems/manners";
 export { TIP_SHARE } from "./systems/economy";
 export type { BaseSetup } from "./systems/setup";
+export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
