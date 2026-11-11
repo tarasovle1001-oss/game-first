@@ -14,6 +14,20 @@ expect: # what she thinks her husband allows: -100 he made clear he does not wan
   reserved: -20     # "keep your distance" (everything)
   behindBack: 28    # how much a believed "no" holds her back when he is not looking, times her honesty
   permission: 12    # how much a believed "yes" helps, anywhere
+scene: # a thing with a guest runs minute by minute; every so often he tries to move it on
+  tryEvery: [4, 8]          # minutes between his attempts to change what they are doing
+  goingBonus: 10            # it is easier to say yes to the next thing once it is going
+  maxMinutes: 60            # nobody keeps her off the floor longer than this...
+  maxMinutesRoom: 150       # ...except in his own room upstairs
+  restMinutes: 8            # after it ends she works; nobody takes her off the floor for this long
+  patronCooldown: 15        # and the same man waits this long before trying again
+  skipMargin: 12            # she is this far past "gladly": he reads it and skips a step
+  herRate: 2.2              # her meter per minute at pleasure 60
+  stayLimit: 2              # changes she refuses before she ends it herself
+  endBelow: 15              # ...or at once, if what he asks is this far below "maybe"
+  continueChance: 0.5       # he has finished and still has it in him: chance he wants more
+  likeChance: 0.6           # he steers toward what he likes rather than simply the next step
+  leaveSuspicion: 2         # an excuse to leave the floor, when her husband is looking
 proposalsPerTick: 3 # how many guests can speak up within one tick (only one of them can take her off the floor)
 askChancePerHour: 0.5 # base chance that a guest makes a move within an hour
 askChancePerInterest: 0.016 # added per point of his interest

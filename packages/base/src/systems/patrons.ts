@@ -14,6 +14,9 @@ function freeName(ctx: Ctx): number {
 }
 
 /** A new person walks in: everything is rolled once from his type and then stays. */
+/** Acts a guest can have a taste for: anything past flirting that is not reserved for the marriage bed. */
+const LIKEABLE = content.acts.filter((a) => a.tier >= 4 && !a.only).map((a) => a.id);
+
 export function generatePatron(ctx: Ctx): Patron {
   const b = bs(ctx.state);
   const type = ctx.rng.weighted(content.patronTypes.map((t) => ({ item: t, weight: t.weight })));
@@ -38,6 +41,8 @@ export function generatePatron(ctx: Ctx): Patron {
     },
     approach,
     regular: false,
+    // one or two things he is after; he steers toward them when it gets that far
+    likes: ctx.rng.chance(0.75) ? [ctx.rng.pick(LIKEABLE), ...(ctx.rng.chance(0.3) ? [ctx.rng.pick(LIKEABLE)] : [])].filter((x, i, a) => a.indexOf(x) === i) : [],
     memory: { visits: 0, lastDay: 0, served: 0, tipsTotal: 0, affinity: 0, interest: ctx.rng.int(5, 35), tier: -1, acts: {}, refusals: 0, hasNumber: false, sizeKnown: false, orgasms: 0 },
   };
   b.patrons[patron.id] = patron;

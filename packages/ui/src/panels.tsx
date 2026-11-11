@@ -142,14 +142,14 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
         <div className="meters">
           {(() => {
             const enc = b.encounter!;
-            const start = enc.startTick ?? b.shift!.tick;
-            const done = Math.min(1, (b.shift!.tick - start + 1) / Math.max(1, enc.endsTick - start));
+            const intimate = enc.hisRate > 0;
             return (
               <>
-                <Bar label={t("ui.bed.him")} value={Math.min(100, done * 100)} tone="his" />
-                {(enc.meter ?? 0) > 0 && <Bar label={t("ui.bed.hers")} value={Math.min(100, (enc.meter ?? 0) * done * 100)} tone="hers" />}
+                {intimate && <Bar label={t("ui.bed.him")} value={enc.his} tone="his" />}
+                {intimate && <Bar label={t("ui.bed.hers")} value={enc.hers} tone="hers" />}
                 <div className="muted small">
-                  {t(`act.${enc.act}`)} · {t(`verdict.${enc.verdict}`)} · {t("ui.enc.left", { n: Math.max(0, enc.endsTick - b.shift!.tick) * content.balance.shift.minutesPerTick })}
+                  {t(`act.${enc.act}`)} · {t(`verdict.${enc.verdict}`)} · {t("ui.enc.for", { n: b.shift!.tick - enc.startTick })}
+                  {enc.came > 0 ? ` · ${t("ui.bed.came", { n: String(enc.came) })}` : ""}
                 </div>
               </>
             );
@@ -528,7 +528,16 @@ export function GuestsTab({ state, t, lang }: Common) {
       <ul className="patrons">
         {present.length === 0 && <li className="muted">{t("ui.nobody")}</li>}
         {present.map((v) => (
-          <PatronRow key={v.patron} p={b.patrons[v.patron]!} t={t} lang={lang} />
+          <div key={v.patron}>
+            <PatronRow p={b.patrons[v.patron]!} t={t} lang={lang} />
+            {(v.waited > 0 || (b.patrons[v.patron]!.memory.tier >= 3 && (b.patrons[v.patron]!.likes?.length ?? 0) > 0)) && (
+              <div className={`small ${v.waited >= content.balance.shift.maxWaitMinutes * 0.6 ? "bad" : "muted"}`} style={{ marginLeft: 8 }}>
+                {v.waited > 0 ? t("ui.waits", { n: v.waited }) : ""}
+                {v.waited > 0 && b.patrons[v.patron]!.memory.tier >= 3 && b.patrons[v.patron]!.likes?.length ? " · " : ""}
+                {b.patrons[v.patron]!.memory.tier >= 3 && b.patrons[v.patron]!.likes?.length ? `${t("ui.likes")}: ${b.patrons[v.patron]!.likes!.map((a) => t(`act.${a}`)).join(", ")}` : ""}
+              </div>
+            )}
+          </div>
         ))}
       </ul>
       {regulars.length > 0 && (

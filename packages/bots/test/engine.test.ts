@@ -146,11 +146,13 @@ describe("shift and economy", () => {
   });
   it("waits in steps and can stop at the first event", () => {
     const s = nextPhase(engine.init(3));
-    expect(engine.dispatch(s, wait(30)).mods.base.shift.tick).toBe(3);
+    expect(engine.dispatch(s, wait(30)).mods.base.shift.tick).toBe(30); // the evening is counted in minutes
+    // ordinary work is waited out in 5 / 15 / 60; a minute at a time only while something is going on in front of him
+    expect(engine.listActions(s).filter((a) => a.type === WAIT && a.payload?.minutes).map((a) => a.payload!.minutes)).toEqual([5, 15, 60]);
     const stopped = engine.dispatch(s, { type: WAIT, payload: { until: "event" } });
     expect(stopped.mods.base.shift.tick).toBeGreaterThan(0);
-    expect(stopped.mods.base.shift.interrupt || stopped.mods.base.shift.tick === 36).toBe(true);
-    expect(stopped.time.minute).toBe(18 * 60 + stopped.mods.base.shift.tick * 10);
+    expect(stopped.mods.base.shift.interrupt || stopped.mods.base.shift.tick === 360).toBe(true);
+    expect(stopped.time.minute).toBe(18 * 60 + stopped.mods.base.shift.tick);
   });
   it("answers proposals through the consent formula and remembers why", () => {
     let s = nextPhase(engine.init(5));
@@ -277,7 +279,7 @@ describe("the night's additions", () => {
     const seen = new Set<string>();
     while (s.time.day <= days) {
       const a = engine.listActions(s);
-      s = engine.dispatch(s, a.find((x) => x.type === "core/advance") ?? a.find((x) => x.type === "base/wait" && x.payload?.minutes === 30) ?? a.find((x) => x.type === "base/hear-her") ?? a[0]!);
+      s = engine.dispatch(s, a.find((x) => x.type === "core/advance") ?? (a.some((x) => x.type === "base/wait") ? { type: "base/wait", payload: { minutes: 30 } } : undefined) ?? a.find((x) => x.type === "base/hear-her") ?? a[0]!);
       for (const e of s.log.slice(-6)) seen.add(e.key.replace(/\.\d+$/, "").replace(/#\d+$/, ""));
     }
     return { s, seen };

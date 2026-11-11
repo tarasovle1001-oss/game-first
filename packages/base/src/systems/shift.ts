@@ -3,7 +3,7 @@ import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Patron, Visit } from "../state";
 import { addMoney, addReputation } from "./economy";
-import { endEncounter, runProposals } from "./encounters";
+import { advanceEncounter, endEncounter, runProposals } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { generatePatron, pickReturning } from "./patrons";
 import { HALL, husbandSees, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
@@ -11,8 +11,15 @@ export { HALL };
 
 export const WAIT = "base/wait";
 export const TIP_FORMULA = "base/tip";
-/** Fixed waits offered to the player, in minutes. */
-export const WAIT_MINUTES = [10, 30, 60];
+/** Fixed waits offered to the player, in minutes: ordinary work, and while something is going on in front of him. */
+export const WAIT_MINUTES = [5, 15, 60];
+export const WAIT_MINUTES_CLOSE = [1, 5, 15];
+export const SERVE = "base/serve";
+/** Something he is watching minute by minute: a guest with her in his sight, or a moment he has to answer. */
+export const watching = (state: GameState) => {
+  const b = bs(state);
+  return b.reaction !== null || (b.encounter !== null && husbandSees(state, b.encounter.loc));
+};
 const bal = content.balance.shift;
 const ORDER_EVERY = ticks(bal.orderEveryMinutes);
 const MAX_WAIT = ticks(bal.maxWaitMinutes);
@@ -81,53 +88,55 @@ function arrive(ctx: Ctx) {
   }
 }
 
-/** One order per tick, and only while she is on the floor and not busy with someone. */
+/** One order goes out: the bill, the tip (nobody tips the husband for her smile), the stock. */
+function serveOne(ctx: Ctx, v: Visit, taker: "wife" | "husband"): boolean {
+  const b = bs(ctx.state);
+  const sh = b.shift!;
+  if (b.stock <= 0) {
+    if (!sh.stockWarned) {
+      sh.stockWarned = true;
+      ctx.log("log.out_of_stock");
+      interrupt(ctx);
+    }
+    return false;
+  }
+  const p = b.patrons[v.patron]!;
+  const type = content.patronTypes.find((t) => t.id === p.type)!;
+  const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (ctx.state.where[HUSBAND] === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus));
+  const tip = taker === "husband" ? 0 : Math.max(0, Math.round(ctx.engine.evaluate<TipInput>(TIP_FORMULA, ctx.state, { patron: p.id, bill }).total));
+  b.stock -= 1;
+  b.clean = Math.max(0, b.clean - content.day.dirtPerServed);
+  v.served += 1;
+  v.waited = 0;
+  v.sinceOrder = 0;
+  sh.income += bill;
+  sh.tips += tip;
+  sh.served += 1;
+  b.today.income += bill;
+  b.today.tips += tip;
+  b.today.served += 1;
+  p.memory.served += 1;
+  p.memory.tipsTotal += tip;
+  addMoney(ctx, bill + tip, "service");
+  if (taker === "wife") changeHeroine(ctx, "energy", -bal.energyPerServe, "work");
+  ctx.emit("patron:served", { id: p.id, bill, tip, by: taker });
+  return true;
+}
+
+/** She takes the order of whoever has waited longest, when her hands are free and she is on the floor. */
 function serve(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
-  const waiting = sh.visits.filter(wantsOrder).sort((a, c) => c.waited - a.waited || a.served - c.served);
-  const husbandAt = ctx.state.where[HUSBAND];
-  const served = new Set<string>();
-  // she takes one order; a husband on the floor takes one too, every few ticks, whatever she is doing
-  const takers: ("wife" | "husband")[] = [];
-  if (!b.encounter && b.heroine.energy > 0) takers.push("wife");
-  if (husbandAt === HALL && sh.tick % bal.husbandInHallServesEvery === 0) takers.push("husband");
-  for (const taker of takers) {
-    const v = waiting.find((x) => !served.has(x.patron));
-    if (!v) break;
-    if (b.stock <= 0) {
-      if (!sh.stockWarned) {
-        sh.stockWarned = true;
-        ctx.log("log.out_of_stock");
-        interrupt(ctx);
-      }
-    } else {
-      const p = b.patrons[v.patron]!;
-      const type = content.patronTypes.find((t) => t.id === p.type)!;
-      const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (husbandAt === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus));
-      // nobody tips the husband for her smile
-      const tip = taker === "husband" ? 0 : Math.max(0, Math.round(ctx.engine.evaluate<TipInput>(TIP_FORMULA, ctx.state, { patron: p.id, bill }).total));
-      b.stock -= 1;
-      b.clean = Math.max(0, b.clean - content.day.dirtPerServed);
-      v.served += 1;
-      v.waited = 0;
-      v.sinceOrder = 0;
-      served.add(p.id);
-      sh.income += bill;
-      sh.tips += tip;
-      sh.served += 1;
-      b.today.income += bill;
-      b.today.tips += tip;
-      b.today.served += 1;
-      p.memory.served += 1;
-      p.memory.tipsTotal += tip;
-      addMoney(ctx, bill + tip, "service");
-      if (taker === "wife") changeHeroine(ctx, "energy", -bal.energyPerServe, "work");
-      ctx.emit("patron:served", { id: p.id, bill, tip, by: taker });
+  let served: string | null = null;
+  if (!b.encounter && !b.night && b.heroine.energy > 0 && sh.tick >= (sh.wifeFreeAt ?? 0)) {
+    const v = sh.visits.filter(wantsOrder).sort((a, c) => c.waited - a.waited || a.served - c.served)[0];
+    if (v && serveOne(ctx, v, "wife")) {
+      served = v.patron;
+      sh.wifeFreeAt = sh.tick + bal.serveMinutes;
     }
   }
   for (const x of sh.visits) {
-    if (served.has(x.patron)) continue;
+    if (x.patron === served) continue;
     x.sinceOrder += 1;
     if (wantsOrder(x)) x.waited += 1;
   }
@@ -164,7 +173,6 @@ function depart(ctx: Ctx) {
   if (sh.moment && !staying.some((v) => v.patron === sh.moment!.patron)) sh.moment = null;
 }
 
-/** Ten minutes of the evening. */
 /** Time passes while nobody is minding the floor: the guests wait, then the evening catches up. */
 export function runUnattended(ctx: Ctx, minutes: number) {
   const sh = bs(ctx.state).shift;
@@ -174,20 +182,23 @@ export function runUnattended(ctx: Ctx, minutes: number) {
   for (let i = 0; i < n && !ticksDone(sh); i++) tick(ctx);
 }
 
+/** One minute of the evening. Slow things (moods, sobering up, timed arrivals) still run every ten: event "shift:tick". */
 function tick(ctx: Ctx) {
   const sh = bs(ctx.state).shift!;
   sh.tick += 1;
   ctx.state.time.minute = bal.opensAt * 60 + sh.tick * bal.minutesPerTick;
-  endEncounter(ctx); // only ends what has run its time
+  advanceEncounter(ctx);
   arrive(ctx);
   runProposals(ctx); // guests try their luck before she gets back to work
   serve(ctx);
   // she is on the floor while there are guests, behind the bar otherwise
-  if (!bs(ctx.state).encounter) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
+  if (!bs(ctx.state).encounter && !bs(ctx.state).night) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
   depart(ctx);
-  ctx.emit("shift:tick", { tick: sh.tick });
-  ctx.flush(); // every tick is fully resolved before the next one, however long the wait
+  ctx.emit("shift:minute", { minute: sh.tick });
+  if (sh.tick % TEN === 0) ctx.emit("shift:tick", { tick: sh.tick / TEN });
+  ctx.flush(); // every minute is fully resolved before the next one, however long the wait
 }
+const TEN = ticks(10);
 
 export function registerShift(api: ModApi) {
   const clock = content.balance.clock;
@@ -236,7 +247,14 @@ export function registerShift(api: ModApi) {
       const sh = bs(state).shift;
       if (state.time.phase !== "shift" || !sh || ticksDone(sh)) return [];
       if (bs(state).caught || bs(state).night?.sex) return []; // he has to decide first; or he is busy with her
-      return [...WAIT_MINUTES.map((minutes) => ({ type: WAIT, payload: { minutes } })), { type: WAIT, payload: { until: "event" } }];
+      const minutes = watching(state) ? WAIT_MINUTES_CLOSE : WAIT_MINUTES;
+      return [...minutes.map((m) => ({ type: WAIT, payload: { minutes: m } })), { type: WAIT, payload: { until: "event" } }];
+    },
+    // any whole number of minutes is a valid wait; the buttons are only the usual ones
+    accepts: (state, a) => {
+      const sh = bs(state).shift;
+      if (state.time.phase !== "shift" || !sh || ticksDone(sh) || bs(state).caught || bs(state).night?.sex) return false;
+      return a.payload?.until === "event" || (Number.isInteger(a.payload?.minutes) && (a.payload!.minutes as number) > 0);
     },
     apply(ctx, action) {
       const sh = bs(ctx.state).shift!;
@@ -247,6 +265,33 @@ export function registerShift(api: ModApi) {
         tick(ctx);
         if (untilEvent && sh.interrupt) break;
       }
+    },
+  });
+
+  // He takes a table himself: the order goes out, it costs him a few minutes, and nobody tips him.
+  api.actions.register({
+    id: SERVE,
+    labelKey: "action.serve",
+    describe: (a) => ({ key: "action.serve.one", params: { name: `@name:${a.payload!.name}`, minutes: a.payload!.waited as number } }),
+    enumerate(state) {
+      const b = bs(state);
+      const sh = b.shift;
+      if (state.time.phase !== "shift" || !sh || ticksDone(sh) || b.caught || b.night?.sex || state.where[HUSBAND] !== HALL || b.stock <= 0) return [];
+      return sh.visits
+        .filter(wantsOrder)
+        .sort((a, c) => c.waited - a.waited || a.patron.localeCompare(c.patron))
+        .slice(0, 2)
+        .map((v) => ({ type: SERVE, payload: { patron: v.patron, name: b.patrons[v.patron]!.name, waited: v.waited } }));
+    },
+    accepts: (state, a) => {
+      const sh = bs(state).shift;
+      return state.time.phase === "shift" && !!sh && !ticksDone(sh) && state.where[HUSBAND] === HALL && !bs(state).caught && sh.visits.some((v) => v.patron === a.payload?.patron && wantsOrder(v));
+    },
+    apply(ctx, action) {
+      const sh = bs(ctx.state).shift!;
+      const v = sh.visits.find((x) => x.patron === action.payload!.patron)!;
+      serveOne(ctx, v, "husband");
+      for (let i = 0; i < bal.husbandServeMinutes && !ticksDone(sh); i++) tick(ctx);
     },
   });
 

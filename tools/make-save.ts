@@ -18,7 +18,7 @@ for (let i = 0; i < 200000; i++) {
     break;
   }
   const actions = engine.listActions(s);
-  const tenMin = actions.find((a) => a.type === "base/wait" && a.payload?.minutes === 10);
+  const tenMin = (actions.some((a) => a.type === "base/wait") ? { type: "base/wait", payload: { minutes: 10 } } : undefined);
   s = engine.dispatch(s, s.time.phase === "shift" && s.where.husband === "cafe.kitchen" && tenMin ? tenMin : awayStrategy(actions, s, () => 0));
 }
 writeFileSync(out, saveGame(s, engine));

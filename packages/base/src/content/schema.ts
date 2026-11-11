@@ -75,7 +75,8 @@ export const balanceSchema = z
         regularAfterVisits: z.number().int().positive(),
         returnChance: z.number().min(0).max(1), // chance that an arriving guest has been here before
         // where the husband spends the evening changes what the cafe earns
-        husbandInHallServesEvery: z.number().int().positive(), // he takes an order himself every N ticks
+        serveMinutes: z.number().int().positive(), // how long one order keeps her busy
+        husbandServeMinutes: z.number().int().positive(), // his own time when he takes a table himself
         husbandInKitchenBill: z.number().min(0), // share added to every bill while he cooks
         husbandAtBarTip: z.number().min(0), // share added to tips while he pours
       })
@@ -127,6 +128,23 @@ export const consentSchema = z
         reserved: z.number(), // "keep your distance", for everything
         behindBack: z.number(), // weight of a believed "no" when he is not looking (times how honest she is)
         permission: z.number(), // bonus of a believed "yes" anywhere
+      })
+      .strict(),
+    scene: z
+      .object({
+        tryEvery: z.tuple([z.number().int().positive(), z.number().int().positive()]),
+        goingBonus: z.number(),
+        maxMinutes: z.number().int().positive(),
+        maxMinutesRoom: z.number().int().positive(),
+        restMinutes: z.number().int().min(0),
+        patronCooldown: z.number().int().min(0),
+        skipMargin: z.number(),
+        herRate: z.number(),
+        stayLimit: z.number().int().positive(),
+        endBelow: z.number(),
+        continueChance: z.number().min(0).max(1),
+        likeChance: z.number().min(0).max(1),
+        leaveSuspicion: z.number(),
       })
       .strict(),
     proposalsPerTick: z.number().int().positive(),

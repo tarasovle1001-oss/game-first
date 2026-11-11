@@ -20,7 +20,7 @@ function untilPrivateEncounter(seed: number): GameState {
     const enc = bs(s).encounter;
     if (enc && enc.loc !== "cafe.hall") return s;
     const actions = engine.listActions(s);
-    const step = s.time.phase === "shift" && s.where.husband === "cafe.kitchen" ? actions.find((a) => a.type === WAIT && a.payload?.minutes === 10) : undefined;
+    const step = s.time.phase === "shift" && s.where.husband === "cafe.kitchen" ? (actions.some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: 10 } } : undefined) : undefined;
     s = engine.dispatch(s, step ?? awayStrategy(actions, s, () => 0));
   }
   throw new Error("no private encounter happened");
@@ -43,7 +43,7 @@ const walkIn = (s: GameState): GameState => {
 const toNight = (s: GameState): GameState => {
   while (s.time.phase !== "night") {
     const actions = engine.listActions(s);
-    s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? actions.find((a) => a.type === WAIT && a.payload?.minutes === 60)!);
+    s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? (actions.some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: 60 } } : undefined)!);
   }
   return s;
 };
@@ -249,7 +249,7 @@ describe("open marriage, her lead", () => {
 });
 
 describe("where the husband stands", () => {
-  it("in the hall he takes orders himself, even when she cannot", () => {
+  it("in the hall he can take a table himself, even when she cannot", () => {
     const evening = (room: string) => {
       let s = engine.init(9);
       s = engine.dispatch(s, { type: CORE_ADVANCE });
@@ -257,7 +257,10 @@ describe("where the husband stands", () => {
       moved.where.husband = room;
       moved.mods.base.heroine.energy = 0; // she is out of it tonight
       s = moved;
-      while (engine.listActions(s).some((a) => a.type === WAIT)) s = engine.dispatch(s, { type: WAIT, payload: { minutes: 60 } });
+      while (engine.listActions(s).some((a) => a.type === WAIT)) {
+        const serve = engine.listActions(s).find((a) => a.type === "base/serve");
+        s = engine.dispatch(s, serve ?? { type: WAIT, payload: { minutes: 15 } });
+      }
       return bs(s).shift!.served;
     };
     expect(evening("cafe.staff")).toBe(0);
@@ -272,7 +275,7 @@ describe("what she thinks he allows", () => {
     for (let i = 0; i < 20000; i++) {
       if (bs(s).reaction) return s;
       const actions = engine.listActions(s);
-      s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? actions.find((a) => a.type === WAIT && a.payload?.minutes === 10) ?? actions.find((a) => a.type !== CORE_MOVE)!);
+      s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? (actions.some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: 10 } } : undefined) ?? actions.find((a) => a.type !== CORE_MOVE)!);
     }
     throw new Error("nothing ever happened in front of him");
   };
@@ -280,7 +283,7 @@ describe("what she thinks he allows", () => {
     let s = untilReaction(3);
     const act = bs(s).reaction!.act;
     const before = expectOf(s, act);
-    while (bs(s).reaction) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === WAIT && a.payload?.minutes === 10) ?? { type: CORE_ADVANCE });
+    while (bs(s).reaction) s = engine.dispatch(s, (engine.listActions(s).some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: 10 } } : undefined) ?? { type: CORE_ADVANCE });
     expect(expectOf(s, act)).toBeGreaterThan(before);
     expect(expectOf(s, act)).toBeLessThan(70); // silence never makes her sure
   });
@@ -330,7 +333,7 @@ describe("the two of them", () => {
     let s = engine.init(3, { base: { preset: "hungry" } });
     for (let i = 0; i < 20000 && !engine.listActions(s).some((a) => a.type === GUEST); i++) {
       const actions = engine.listActions(s);
-      s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? actions.find((a) => a.type === WAIT && a.payload?.minutes === 10) ?? actions.find((a) => a.type !== CORE_MOVE)!);
+      s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? (actions.some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: 10 } } : undefined) ?? actions.find((a) => a.type !== CORE_MOVE)!);
     }
     const out = engine.listActions(s).find((a) => a.type === GUEST && a.payload?.do === "throw_out")!;
     const rep = bs(s).reputation;
@@ -417,5 +420,53 @@ describe("when enough has piled up", () => {
     expect(bs(pushed).heroine.marriage.resent).toBeGreaterThanOrEqual(bs(heard).heroine.marriage.resent);
     expect(has(heard, CORE_ADVANCE)).toBe(true);
     expect(engine.checkInvariants(heard)).toEqual([]);
+  });
+});
+
+describe("a thing with a guest runs by the minute", () => {
+  /** Plays with the husband in the kitchen, a minute at a time once something starts. */
+  const untilEncounter = (seed: number, want: (st: GameState) => boolean): GameState => {
+    let s = engine.init(seed, { base: { preset: "hungry" } });
+    for (let i = 0; i < 60000; i++) {
+      if (bs(s).encounter && want(s)) return s;
+      const actions = engine.listActions(s);
+      const step = s.time.phase === "shift" && s.where.husband === "cafe.kitchen" && actions.some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: bs(s).encounter ? 1 : 5 } } : undefined;
+      s = engine.dispatch(s, step ?? awayStrategy(actions, s, () => 0));
+    }
+    throw new Error("nothing started");
+  };
+  it("it lasts, he tries to move it on, and it can change without ending", () => {
+    let s = untilEncounter(3, () => true);
+    const first = bs(s).encounter!;
+    const acts = new Set([first.act]);
+    let minutes = 0;
+    for (; bs(s).encounter?.patron === first.patron && minutes < 200; minutes++) {
+      s = engine.dispatch(s, { type: WAIT, payload: { minutes: 1 } });
+      if (bs(s).encounter) acts.add(bs(s).encounter!.act);
+    }
+    expect(minutes).toBeGreaterThan(3);
+    expect(bs(s).shift ? bs(s).shift!.restUntil : 1).toBeGreaterThan(0);
+    expect(engine.checkInvariants(s)).toEqual([]);
+    // somewhere in a hungry wife's evenings a scene changes in place
+    let changed = acts.size > 1;
+    for (let seed = 4; seed < 9 && !changed; seed++) {
+      let t = untilEncounter(seed, () => true);
+      const who = bs(t).encounter!.patron;
+      const seen = new Set([bs(t).encounter!.act]);
+      for (let m = 0; bs(t).encounter?.patron === who && m < 200; m++) {
+        t = engine.dispatch(t, { type: WAIT, payload: { minutes: 1 } });
+        if (bs(t).encounter) seen.add(bs(t).encounter!.act);
+      }
+      changed = seen.size > 1;
+    }
+    expect(changed).toBe(true);
+  });
+  it("while he watches, the waits are 1 / 5 / 15", () => {
+    const s = untilEncounter(3, () => true);
+    const watching = structuredClone(s);
+    watching.where.husband = bs(s).encounter!.loc;
+    watching.mods.base.mode = "open";
+    const minutes = engine.listActions(watching).filter((a) => a.type === WAIT && a.payload?.minutes).map((a) => a.payload!.minutes);
+    expect(minutes).toEqual([1, 5, 15]);
   });
 });

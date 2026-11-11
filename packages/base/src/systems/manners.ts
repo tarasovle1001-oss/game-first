@@ -233,6 +233,12 @@ export function registerManners(api: ModApi) {
     const type = b.patrons[patron]?.type;
     if (type && verdict === "eager") t.types[type] = clamp((t.types[type] ?? 0) + M.taste.typeEager * tier, M.taste.min, M.taste.max);
   });
+  // what made her come, she comes to like
+  api.events.on("encounter:came", (ctx, e) => {
+    const t = bs(ctx.state).heroine.tastes;
+    const act = e.payload!.act as string;
+    t.acts[act] = clamp((t.acts[act] ?? 0) + M.taste.came, M.taste.min, M.taste.max);
+  });
   api.events.on("husband:act", (ctx, e) => {
     const t = bs(ctx.state).heroine.tastes;
     const { act, came } = e.payload as { act: string; came: boolean };

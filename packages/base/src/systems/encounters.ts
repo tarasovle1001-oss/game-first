@@ -4,8 +4,8 @@ import type { Ctx, EngineView, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import type { Patron, Verdict, Visit } from "../state";
-import { fitOf, resolveBody } from "./body";
+import type { Encounter, Patron, Verdict, Visit } from "../state";
+import { fitOf, orgasm, useBody } from "./body";
 import { expectOf } from "./expectations";
 import { addHerTips } from "./economy";
 import { changeHeroine } from "./heroine";
@@ -15,6 +15,7 @@ import { HALL, husbandIn, husbandNextTo, husbandSees, ticks } from "./places";
 export const CONSENT_FORMULA = "base/consent";
 const PROPOSAL_HISTORY = 12;
 const DRINK_STRENGTH = 14;
+const S = content.consent.scene;
 
 export const isIntimate = (act: Act) => act.place === "private";
 
@@ -60,6 +61,9 @@ const privateRoomFor = (state: GameState, engine: EngineView, partner?: string):
   return b.mode === "open" ? rooms[0]! : [...rooms].sort((x, y) => risk(x) - risk(y) || x.localeCompare(y))[0]!;
 };
 
+/** Money he puts on the table: the paying kind does, once per time with her. */
+const offerOf = (p: Patron, act: Act, paid: boolean) => (p.approach === "pay" && act.tier >= 3 && !paid ? Math.round((p.traits.generosity * act.tier) / 4) : 0);
+
 /** How far a man dares to go depends on how much he wants her. */
 const tierCap = (p: Patron) => (p.memory.interest >= 65 ? topTier : p.memory.interest >= 45 ? 6 : p.memory.interest >= 30 ? 4 : 3);
 
@@ -81,7 +85,7 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
     act = drink ? actById("drink") : options[roll(options.length)]!;
   }
   if (isIntimate(act) && v.rounds >= p.stamina) return null; // he is spent for tonight
-  const offer = p.approach === "pay" && act.tier >= 3 ? Math.round((p.traits.generosity * act.tier) / 4) : 0;
+  const offer = offerOf(p, act, false);
   const at = (loc: string): ConsentInput => ({ act: act.id, partner: p.id, loc, offer, pressure: v.pressure });
   if (!isIntimate(act)) return at(HALL);
   // anything can happen right on the floor, it is just much harder for her. She steers it to where she minds least
@@ -91,16 +95,127 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   return score(at(HALL)) > score(at(room)) ? at(HALL) : at(room);
 }
 
-/** Ends the running encounter once its time is up (or right away when forced, e.g. at closing). */
-export function endEncounter(ctx: Ctx, force = false) {
+/** Ends what is going on between her and a guest. `force` is kept for callers; anything that calls this means it. */
+export function endEncounter(ctx: Ctx, _force = true) {
   const b = bs(ctx.state);
   const enc = b.encounter;
   if (!enc) return;
-  if (!force && b.shift && b.shift.tick < enc.endsTick) return;
   b.encounter = null;
   ctx.state.where[WIFE] = HALL;
   if (ctx.state.where[enc.patron]) ctx.state.where[enc.patron] = HALL;
-  ctx.emit("encounter:ended", { patron: enc.patron, act: enc.act, loc: enc.loc });
+  const sh = b.shift;
+  if (sh) {
+    // she goes back to work, and he does not come at her again straight away
+    sh.restUntil = sh.tick + S.restMinutes;
+    const v = sh.visits.find((x) => x.patron === enc.patron);
+    if (v) v.cooldownUntil = sh.tick + S.patronCooldown;
+  }
+  ctx.emit("encounter:ended", { patron: enc.patron, act: enc.act, loc: enc.loc, minutes: sh ? sh.tick - enc.startTick : 0, came: enc.came });
+}
+
+/** What he would move on to from where they are: what he likes if he can get there, otherwise the next step. */
+function nextInScene(ctx: Ctx, v: Visit, p: Patron, enc: Encounter): Act | null {
+  const now = actById(enc.act);
+  const cap = Math.min(topTier, tierCap(p) + 1); // in the middle of it a man dares a little more
+  const options = content.acts.filter(
+    (a) => !a.only && a.id !== enc.act && a.id !== "drink" && a.minutes > 0 && a.tier <= cap && a.tier <= now.tier + 2 && a.tier >= now.tier && (!isIntimate(a) || v.rounds < p.stamina),
+  );
+  if (options.length === 0) return null;
+  const liked = options.filter((a) => p.likes?.includes(a.id)).sort((x, y) => y.tier - x.tier);
+  if (liked.length > 0 && ctx.rng.chance(S.likeChance)) return liked[0]!;
+  const up = options.filter((a) => a.tier === now.tier + 1);
+  if (up.length > 0) return ctx.rng.pick(up);
+  const further = options.filter((a) => a.tier > now.tier);
+  return ctx.rng.pick(further.length > 0 ? further : options);
+}
+
+/** One minute of what is going on between her and a guest. */
+export function advanceEncounter(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const enc = b.encounter;
+  const sh = b.shift;
+  if (!enc || !sh || b.caught) return; // while her husband stands in the door, nothing moves
+  const p = b.patrons[enc.patron];
+  const v = sh.visits.find((x) => x.patron === enc.patron);
+  if (!p || !v) return endEncounter(ctx);
+  const h = b.heroine;
+  const act = actById(enc.act);
+  const seen = husbandSees(ctx.state, enc.loc) || b.mode === "open";
+  const tags = seen ? undefined : ["unseen"];
+  const name = `@name:${p.name}`;
+  v.waited = 0;
+
+  if (isIntimate(act)) {
+    enc.his = clamp(enc.his + enc.hisRate);
+    enc.hers = clamp(enc.hers + S.herRate * (enc.pleasure / 60) * (0.6 + h.arousal / 120) * (1 - h.satisfied / 160));
+    if (enc.hers >= 100) {
+      enc.came += 1;
+      enc.hers = content.body.bed.afterOrgasm;
+      orgasm(ctx);
+      p.memory.orgasms += 1;
+      p.memory.affinity = clamp(p.memory.affinity + 6, -100, 100);
+      // a bigger man than her husband made her come: size starts to matter to her
+      if (p.size > b.husband.size) h.sizeTaste = clamp(h.sizeTaste + content.body.sizeTasteGain);
+      ctx.log("log.came", { name }, tags);
+      ctx.emit("encounter:came", { patron: p.id, act: enc.act, witnessed: seen });
+    }
+    if (enc.his >= 100) {
+      v.rounds += 1;
+      enc.his = 0;
+      ctx.log("log.enc.he_finishes", { name }, tags);
+      if (v.rounds >= p.stamina || !ctx.rng.chance(S.continueChance)) return endEncounter(ctx);
+      enc.nextTry = sh.tick; // he still has it in him and wants something else
+    }
+  }
+
+  const limit = enc.loc.startsWith("hotel.") ? S.maxMinutesRoom : S.maxMinutes;
+  if (sh.tick - enc.startTick >= limit) return endEncounter(ctx);
+  const ranOut = !isIntimate(act) && sh.tick - enc.actTick >= act.minutes; // a kiss or a lap does not last for ever
+  if (sh.tick < enc.nextTry && !ranOut) return;
+
+  // he tries to move it on
+  enc.nextTry = sh.tick + ctx.rng.int(S.tryEvery[0], S.tryEvery[1]);
+  const next = nextInScene(ctx, v, p, enc);
+  if (!next) return ranOut ? endEncounter(ctx) : undefined;
+  const offer = offerOf(p, next, enc.paid);
+  const at = (loc: string): ConsentInput => ({ act: next.id, partner: p.id, loc, offer, pressure: enc.refusals });
+  let input = at(enc.loc);
+  if (isIntimate(next) && enc.loc === HALL) {
+    const room = privateRoomFor(ctx.state, ctx.engine, p.id);
+    const score = (i: ConsentInput) => ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, i).total;
+    if (room && score(at(room)) >= score(at(HALL))) input = at(room);
+  }
+  const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
+  const total = res.total + S.goingBonus;
+  const rows = [...res.rows, { id: "consent.going", labelKey: "factor.consent.going", value: S.goingBonus }];
+  let verdict = verdictOf(total);
+  let rolled: number | undefined;
+  if (verdict === "hesitant") {
+    const c = content.consent;
+    rolled = c.hesitantYesAtZero + ((1 - c.hesitantYesAtZero) * (total - c.hesitantAt)) / Math.max(1, c.eagerAt - c.hesitantAt);
+    if (!ctx.rng.chance(rolled)) verdict = "refuse";
+  }
+  const witnessed = husbandSees(ctx.state, enc.loc) || husbandSees(ctx.state, input.loc);
+  b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: next.id, loc: input.loc, verdict, seen: witnessed, total, rows, ...(rolled === undefined ? {} : { rolled }) });
+  if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
+  ctx.emit("encounter:proposed", { patron: p.id, act: next.id, verdict, total, seen: witnessed, rowIds: rows.map((r) => r.id) });
+  sh.interrupt = sh.interrupt || witnessed;
+  if (verdict !== "refuse") return accept(ctx, v, p, input, verdict);
+
+  // she will not: stay where they are, or call it off
+  if (ranOut) {
+    // it simply ends where it was: no harm done, he will try again another time
+    ctx.log("log.enc.ends", { name, act: `act.${next.id}` }, tags);
+    return endEncounter(ctx);
+  }
+  enc.refusals += 1;
+  p.memory.refusals += 1;
+  if (enc.refusals >= S.stayLimit || total < content.consent.hesitantAt - S.endBelow) {
+    ctx.log("log.enc.she_ends", { name, act: `act.${next.id}` }, tags);
+    p.memory.interest = clamp(p.memory.interest - 2);
+    return endEncounter(ctx);
+  }
+  ctx.log("log.enc.stays", { name, act: `act.${next.id}`, now: `act.${enc.act}` }, tags);
 }
 
 function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Verdict) {
@@ -111,10 +226,37 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   const e = act.effects;
 
   const first = (p.memory.acts[act.id] ?? 0) === 0;
+  const sh = b.shift!;
+  const running = b.encounter?.patron === p.id ? b.encounter : null;
+  const wasIn = running?.loc ?? HALL;
+  // walking off the floor with a guest while her husband is looking needs a word of some kind
+  const leaving = !isLight(act) && wasIn === HALL && input.loc !== HALL && husbandSees(ctx.state, HALL) && !husbandSees(ctx.state, input.loc);
+  let aloud = false;
+  if (leaving) {
+    const who = { name: `@name:${p.name}`, room: `loc.${input.loc}`, money: input.offer };
+    if (b.mode === "open") ctx.log("log.leave.open", who);
+    else if (input.offer > 0 && p.traits.persistence >= 70) {
+      aloud = true; // the brazen kind names his price in front of everyone
+      ctx.log("log.leave.offer", who);
+    } else {
+      ctx.log(`log.leave.excuse.${ctx.rng.int(1, 4)}`, who);
+      b.suspicion = clamp(b.suspicion + S.leaveSuspicion * content.secrecy.styleFactor[b.husband.style]);
+    }
+    sh.interrupt = true;
+  }
   if (isLight(act)) {
-    b.shift!.moment = { patron: p.id, act: act.id }; // shown as the scene of this hour if nothing bigger happens
+    sh.moment = { patron: p.id, act: act.id, until: sh.tick + ticks(10) }; // shown as the scene for a while if nothing bigger happens
+  } else if (running) {
+    running.act = act.id;
+    running.verdict = verdict;
+    running.actTick = sh.tick;
+    running.loc = input.loc;
+    running.his = isIntimate(act) ? running.his : 0;
+    running.paid = running.paid || input.offer > 0;
+    ctx.state.where[WIFE] = input.loc;
+    ctx.state.where[p.id] = input.loc;
   } else {
-    b.encounter = { patron: p.id, act: act.id, loc: input.loc, verdict, endsTick: b.shift!.tick + ticks(act.minutes), startTick: b.shift!.tick, meter: 0 };
+    b.encounter = { patron: p.id, act: act.id, loc: input.loc, verdict, startTick: sh.tick, actTick: sh.tick, nextTry: sh.tick + ctx.rng.int(S.tryEvery[0], S.tryEvery[1]), his: 0, hers: clamp(b.heroine.arousal * 0.3), hisRate: 0, pleasure: 0, came: 0, refusals: 0, paid: input.offer > 0 };
     ctx.state.where[WIFE] = input.loc;
     ctx.state.where[p.id] = input.loc;
   }
@@ -135,19 +277,12 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
 
   // the physical side: stretch, skill, whether she comes
   const skill = b.heroine.skills[act.id] ?? 0;
-  let came = false;
-  if (isIntimate(act)) {
-    const out = resolveBody(ctx, act, { size: p.size, minutes: act.minutes });
-    came = out.came;
-    if (b.encounter) b.encounter.meter = Math.max(0, out.meter / content.body.orgasmAt) * (out.pleasure >= 50 ? 1 : 0.7);
-    v.rounds += 1;
+  const came = false; // that is decided minute by minute now
+  if (isIntimate(act) && b.encounter) {
+    // her body takes it once per act; how it goes from here is counted by the minute
+    b.encounter.pleasure = useBody(ctx, act, p.size);
+    b.encounter.hisRate = 100 / (act.minutes * (0.7 + ctx.rng.int(0, 60) / 100));
     p.memory.sizeKnown = true;
-    if (came) {
-      p.memory.orgasms += 1;
-      p.memory.affinity = clamp(p.memory.affinity + 6, -100, 100);
-      // a bigger man than her husband made her come: size starts to matter to her
-      if (p.size > b.husband.size) b.heroine.sizeTaste = clamp(b.heroine.sizeTaste + content.body.sizeTasteGain);
-    }
   }
 
   // a skilled hand or mouth is worth more to him
@@ -167,14 +302,13 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   t.fidelity = clamp(t.fidelity - d.fidelity * weight);
   if (eager) t.confidence = clamp(t.confidence + d.confidence * weight);
 
-  const seen = husbandSees(ctx.state, input.loc);
+  const seen = husbandSees(ctx.state, input.loc) || aloud;
   // while she hides it, what he was not there for does not reach his log
   const tags = seen || b.mode === "open" ? undefined : ["unseen"];
   // routine small talk with a familiar face is not worth a log line every hour
   if (!isLight(act) || first || verdict !== "eager")
     ctx.log(variantKey(`log.act.${act.id}.${verdict}`, (n) => ctx.rng.int(0, n - 1)), { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip }, tags);
-  if (came) ctx.log("log.came", { name: `@name:${p.name}` }, tags);
-  ctx.emit("encounter:started", { patron: p.id, act: act.id, loc: input.loc, verdict, witnessed: seen, came, tier: act.tier, intimate: isIntimate(act) });
+  ctx.emit("encounter:started", { patron: p.id, act: act.id, loc: input.loc, verdict, witnessed: seen, came, tier: act.tier, intimate: isIntimate(act), switched: running !== null });
 }
 
 function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
@@ -226,8 +360,8 @@ const isLight = (act: Act) => act.minutes === 0;
 export function runProposals(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
-  sh.moment = null;
-  if (b.encounter) return;
+  if (sh.moment && sh.tick >= sh.moment.until) sh.moment = null;
+  if (b.encounter || b.night) return;
   // a man speaks up once he has been here a moment; the keener ones go first
   const eligible = sh.visits
     .filter((v) => !v.blocked && (v.served > 0 || v.waited > 0))
@@ -241,7 +375,7 @@ export function runProposals(ctx: Ctx) {
     const input = nextProposal(ctx.state, ctx.engine, v, (len) => ctx.rng.int(0, len - 1));
     if (!input) continue;
     const act = actById(input.act);
-    if (!isLight(act) && b.encounter) continue; // she is already with someone
+    if (!isLight(act) && (b.encounter || sh.tick < (sh.restUntil ?? 0) || sh.tick < (v.cooldownUntil ?? 0))) continue; // she is with someone, or only just back at work
     spoke += 1;
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
     let verdict = verdictOf(res.total);
@@ -257,7 +391,16 @@ export function runProposals(ctx: Ctx) {
     const seen = husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc);
     ctx.emit("encounter:proposed", { patron: p.id, act: input.act, verdict, total: res.total, seen, rowIds: res.rows.map((r) => r.id) });
     if (verdict === "refuse") refuse(ctx, v, p, input);
-    else accept(ctx, v, p, input, verdict);
+    else {
+      accept(ctx, v, p, input, verdict);
+      // she is plainly glad of it: he reads that and does not go one small step at a time
+      // (only when she would gladly take the step he skips, too)
+      if (isLight(act) && verdict === "eager" && res.total >= content.consent.eagerAt + S.skipMargin) {
+        const over = content.acts.filter((a) => a.tier === act.tier + 1 && !a.only && a.id !== "drink");
+        const glad = over.length > 0 && over.every((a) => verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { ...input, act: a.id }).total) === "eager");
+        if (glad) v.tier = Math.min(v.tier + 1, tierCap(p), topTier);
+      }
+    }
     if (verdict === "refuse" || !isLight(act)) b.shift!.interrupt = true; // worth stopping "wait until" for
   }
 }

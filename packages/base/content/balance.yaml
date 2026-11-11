@@ -52,7 +52,7 @@ hotel: # two rooms upstairs
 shift:
   opensAt: 18
   hours: 6
-  minutesPerTick: 10
+  minutesPerTick: 1    # the evening is counted in minutes; slow things still run every 10 (event shift:tick)
   seats: 8
   arrivalsPerHour: 1.9 # expected new guests per hour at reputation 50
   stayMinutes: [50, 130]
@@ -62,6 +62,7 @@ shift:
   regularAfterVisits: 3
   returnChance: 0.6 # chance that an arriving guest has been here before
   # where the husband spends the evening changes what the cafe earns (and what he can see)
-  husbandInHallServesEvery: 2 # in the hall he takes an order himself every N ticks
+  serveMinutes: 6            # how long one order keeps her busy
+  husbandServeMinutes: 3     # his own time when he takes a table himself
   husbandInKitchenBill: 0.3   # in the kitchen: share added to every bill, the food is better
   husbandAtBarTip: 0.3        # behind the bar: share added to tips

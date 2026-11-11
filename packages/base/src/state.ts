@@ -64,6 +64,7 @@ export interface Patron {
   approach: "court" | "drink" | "pay" | "push";
   regular: boolean;
   lender?: boolean; // the man the cafe owes money to
+  likes?: string[]; // acts he steers toward when he gets the chance
   memory: PatronMemory;
 }
 
@@ -77,7 +78,8 @@ export interface Visit {
   blocked: boolean; // he stopped trying for tonight
   pressure: number; // times he insisted after a "no"
   retry: string | null; // act he is going to ask for again
-  rounds: number; // intimate acts he has had tonight
+  rounds: number; // times he has finished tonight
+  cooldownUntil?: number; // minute before which he does not try to take her aside again
   pushed?: boolean; // the husband nudged her toward him tonight
 }
 
@@ -101,9 +103,16 @@ export interface Encounter {
   act: string;
   loc: string;
   verdict: Verdict;
-  endsTick: number;
-  startTick?: number;
-  meter?: number; // how far it takes her, as a share of what she needs (1 = she comes)
+  startTick: number; // minute of the shift it began
+  actTick: number; // minute the current act began
+  nextTry: number; // minute he next tries to move it on
+  his: number; // 0..100, only moves in intimate acts
+  hers: number; // 0..100
+  hisRate: number; // per minute
+  pleasure: number; // what the current act gives her, 0..100
+  came: number; // times she came in this one
+  refusals: number; // changes she said no to
+  paid: boolean; // his offer of money is already on the table
 }
 
 /** Kept for the debug panel: why she answered the way she did. */
@@ -127,8 +136,10 @@ export interface Shift {
   tips: number;
   served: number;
   turnedAway: number;
-  moment: { patron: string; act: string } | null; // last light act of this tick
+  moment: { patron: string; act: string; until: number } | null; // last light act of this tick
   interrupt: boolean; // something worth stopping "wait until" for has happened
+  wifeFreeAt?: number; // minute she is done with the order in her hands
+  restUntil?: number; // minute before which nobody takes her off the floor
   upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight

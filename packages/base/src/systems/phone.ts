@@ -143,7 +143,7 @@ export function registerPhone(api: ModApi) {
       const b = bs(state);
       const sh = b.shift;
       if (state.time.phase !== "shift" || !sh || b.caught) return [];
-      if (state.where[HUSBAND] === state.where[WIFE] || sh.tick - b.phone.calledTick < 3) return [];
+      if (state.where[HUSBAND] === state.where[WIFE] || sh.tick - b.phone.calledTick < 30) return [];
       return [{ type: CALL_WIFE }];
     },
     apply(ctx) {

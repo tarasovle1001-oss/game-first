@@ -11,7 +11,9 @@ export const randomStrategy: Strategy = (actions, _state, roll) => {
 };
 
 /** Only advances time: the fastest smoke test of the day cycle. */
-const hourWait = (actions: Action[]) => actions.find((a) => a.type === "base/wait" && a.payload?.minutes === 60);
+/** The longest plain wait on offer: an hour of ordinary work, fifteen minutes while something is going on in front of him. */
+const hourWait = (actions: Action[]) =>
+  actions.filter((a) => a.type === "base/wait" && typeof a.payload?.minutes === "number").sort((x, y) => (y.payload!.minutes as number) - (x.payload!.minutes as number))[0];
 
 export const rushStrategy: Strategy = (actions) =>
   actions.find((a) => a.type === CORE_ADVANCE) ?? hourWait(actions) ?? actions.find((a) => a.type !== CORE_MOVE) ?? actions[0]!;
@@ -24,6 +26,7 @@ export const ownerStrategy: Strategy = (actions, state) =>
   actions.find((a) => a.type === "base/day" && a.payload?.do === "side_job") ??
   (state.mods.base.money > 150 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "flyers") : undefined) ??
   (state.mods.base.money > 400 ? actions.find((a) => a.type === "base/repay-debt") : undefined) ??
+  (state.mods.base.encounter ? actions.find((a) => a.type === "base/serve") : undefined) ??
   actions.find((a) => a.type === CORE_ADVANCE) ??
   hourWait(actions) ??
   actions.find((a) => a.type !== CORE_MOVE) ??
@@ -58,7 +61,7 @@ export const snoopStrategy: Strategy = (actions, state, roll) => {
   const watch = actions.find((a) => a.type === "base/caught-watch");
   if (watch) return watch;
   const enc = state.mods.base.encounter;
-  const tenMinutes = actions.find((a) => a.type === "base/wait" && a.payload?.minutes === 10);
+  const tenMinutes = (actions.some((a) => a.type === "base/wait") ? { type: "base/wait", payload: { minutes: 10 } } : undefined);
   const advance = actions.find((a) => a.type === CORE_ADVANCE);
   if (state.time.phase === "shift" && !tenMinutes && advance) return advance; // closing time
   if (enc && enc.loc !== "cafe.hall") {
@@ -68,7 +71,7 @@ export const snoopStrategy: Strategy = (actions, state, roll) => {
   }
   const confront = actions.find((a) => a.type === "base/confront");
   if (confront) return confront;
-  const tenMin = actions.find((a) => a.type === "base/wait" && a.payload?.minutes === 10);
+  const tenMin = (actions.some((a) => a.type === "base/wait") ? { type: "base/wait", payload: { minutes: 10 } } : undefined);
   if (state.time.phase === "shift" && state.where.husband === "cafe.kitchen" && tenMin) return tenMin;
   return awayStrategy(actions, state, roll);
 };
