@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { annoyanceOf, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
+import { annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass } from "@tc/base";
 import type { Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -208,6 +208,12 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
         </div>
       )}
       <SizeLine state={state} t={t} lang={lang} open={open} />
+      {open && (
+        <details className="words">
+          <summary className="muted small">{t("ui.scene.words")}</summary>
+          <div className="small mono">{describeScene(state, true).prompt}</div>
+        </details>
+      )}
       {b.encounter && b.shift && husbandSees(state, b.encounter.loc) && (
         <div className="meters">
           {(() => {

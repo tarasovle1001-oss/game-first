@@ -1,0 +1,61 @@
+# How things show on her afterwards, and how the state of a scene is put into words for a picture.
+# The words are tags for an image model; edit them freely, nothing in the rules depends on the wording.
+marks:
+  # where it lands when a man finishes, by what they were doing (a guest; the husband chooses for himself)
+  byAct:
+    handjob: [hands, chest]
+    titfuck: [chest, face]
+    blowjob: [mouth, face]
+    deepthroat: [mouth]
+    sixty_nine: [mouth]
+    sex: [inside, inside, body]
+    riding: [inside]
+    standing_sex: [inside, body]
+    anal: [anus, body]
+    thigh_job: [thighs]
+    grinding: [body]
+  husbandWhere: { inside: inside, on_her: body, mouth: mouth, face: face }
+  lasts:            # minutes it shows unless she washes
+    face: 20
+    hands: 10
+    chest: 40
+    body: 60
+    mouth: 6
+    inside: 240
+    anus: 240
+    thighs: 120
+  dripAfter: 15     # what is inside starts to run down her thighs after this long
+  onHim: 15         # minutes it shows on him
+after:              # minutes each shows once something intimate has ended
+  flushed: 25
+  sweat: 40
+  hair: 60
+  clothes: 30
+words:
+  outfit: { modest: plain work dress, fitted: fitted dress, revealing: low-cut dress, daring: skimpy dress, topless: topless, bottomless: bottomless, naked: completely nude }
+  bare: { top: [bare breasts, nipples], bottom: [no panties, pussy], all: [completely nude, nipples, pussy] }
+  panties: { aside: panties aside, off: no panties }
+  skirtUp: skirt lift
+  mood:             # first match from the top
+    - { when: scared, tags: [scared, tears] }
+    - { when: annoyed, tags: [annoyed, frown] }
+    - { when: ecstatic, tags: [ahegao, rolling eyes, tongue out] }
+    - { when: aroused, tags: [blush, half-closed eyes, open mouth] }
+    - { when: shy, tags: [shy, blush, looking away] }
+    - { when: worried, tags: [worried, nervous] }
+    - { when: happy, tags: [smile] }
+    - { when: plain, tags: [neutral expression] }
+  drunk: [[35, tipsy], [65, drunk]]
+  stretch:          # from this much stretch, per zone
+    vagina: [[45, loose pussy], [70, gaping pussy]]
+    anus: [[35, loose anus], [60, anal gape], [85, extreme anal gape]]
+  cum: { face: cum on face, hands: cum on hands, chest: cum on breasts, body: cum on body, mouth: cum in mouth, inside: cum in pussy, anus: cum in ass, thighs: cum dripping down thighs }
+  after: { flushed: flushed skin, sweat: sweat, hair: messy hair, clothes: disheveled clothes }
+  size: [small penis, small penis, average penis, large penis, huge penis]   # by size class 0..4
+  man:
+    patron: [1boy, tall man, faceless male]
+    husband: [1boy, slim man]
+  hisCum: cum on penis
+  hisStretch: [[35, loose anus], [70, anal gape]]
+  room: { cafe.hall: tavern interior, cafe.bar: behind the bar, cafe.kitchen: kitchen, cafe.staff: storeroom, cafe.toilet: toilet stall, home.bedroom: bedroom, home.bathroom: bathroom, hotel.room1: inn room, hotel.room2: inn room, hotel.landing: stairs, town.square: town square, town.market: market, town.shops: shop, town.gym: gym, town.far: street }
+  act: { chat: talking, drink: drinking together, flirt: flirting, touch: hand on waist, sit_on_lap: sitting on lap, kiss: kissing, grope: groping, lap_dance: lap dance, handjob: handjob, blowjob: fellatio, deepthroat: deepthroat, titfuck: paizuri, thigh_job: thigh sex, cunnilingus: cunnilingus, fingering: fingering, breast_play: breast sucking, mutual_touching: mutual masturbation, sixty_nine: "69 position", grinding: grinding, sex: vaginal sex, riding: cowgirl position, standing_sex: standing sex from behind, anal: anal sex, rimming_her: anilingus, rimming_him: anilingus on male, prostate: prostate massage, dildo_him: dildo in male anus, pegging: pegging, fisting_him: anal fisting on male }

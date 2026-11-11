@@ -496,7 +496,25 @@ export type ConsentTuning = z.infer<typeof consentSchema>;
 export type BodyTuning = z.infer<typeof bodySchema>;
 export type SecrecyTuning = z.infer<typeof secrecySchema>;
 
+const steps = z.array(z.tuple([z.number(), z.string()]));
+export const lookSchema = z
+  .object({
+    marks: z.object({ byAct: z.record(z.string(), z.array(z.string()).min(1)), husbandWhere: z.record(z.string(), z.string()), lasts: z.record(z.string(), z.number().positive()), dripAfter: z.number(), onHim: z.number() }).strict(),
+    after: z.record(z.string(), z.number().positive()),
+    words: z
+      .object({
+        outfit: z.record(z.string(), z.string()), bare: z.record(z.string(), z.array(z.string())), panties: z.record(z.string(), z.string()), skirtUp: z.string(),
+        mood: z.array(z.object({ when: z.string(), tags: z.array(z.string()) }).strict()), drunk: steps, stretch: z.record(z.string(), steps),
+        cum: z.record(z.string(), z.string()), after: z.record(z.string(), z.string()), size: z.array(z.string()).length(5), man: z.record(z.string(), z.array(z.string())),
+        hisCum: z.string(), hisStretch: steps, room: z.record(z.string(), z.string()), act: z.record(z.string(), z.string()),
+      })
+      .strict(),
+  })
+  .strict();
+export type Look = z.infer<typeof lookSchema>;
+
 export interface Content {
+  look: Look;
   rooms: Room[];
   patronTypes: PatronType[];
   names: NameEntry[];

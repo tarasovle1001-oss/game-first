@@ -630,6 +630,7 @@ export function registerMarriage(api: ModApi) {
             else feel(ctx, 0, where === "face" ? 1.5 : 0.5);
             ctx.log(`log.bed.finish.${where}${likes ? "" : ".no"}`);
           } else if (where === "on_her") ctx.log("log.bed.finish.on_her");
+          ctx.emit("cum:landed", { by: HUSBAND, act: bs(ctx.state).night!.sex!.act, where });
           finish(ctx, "choice");
           break;
         }

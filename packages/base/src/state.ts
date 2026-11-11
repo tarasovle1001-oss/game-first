@@ -22,6 +22,12 @@ export interface Heroine {
   marriage: { desire: number; resent: number }; // what she feels for her husband, 0..100
   outfit: string;
   bare?: Bare; // what she has taken off, on top of the outfit
+  /** What is on her and in her, by place: minutes it still shows. */
+  cum?: Record<string, number>;
+  /** How she looks after something: flushed, sweat, hair, clothes - minutes left. */
+  after?: Record<string, number>;
+  panties?: "on" | "aside" | "off";
+  skirtUp?: boolean;
   name?: string; // what she is called
   prefs?: Record<string, number>; // tastes set at the start, 0..100 each
   annoyance?: number; // 0..100: how much she has had of being asked and pawed at today
@@ -40,6 +46,7 @@ export interface Husband {
   minutes: number; // how long he lasts
   style: "naive" | "jealous" | "encouraging";
   stretch: number; // 0..100, his own: what she has got him used to
+  cumOn?: number; // minutes his own still shows on him
   fitness?: number; // 0..100, what the gym has done for him
   spentDay?: number; // the day he came from a touch alone: nothing more from him that day
 }
@@ -79,6 +86,7 @@ export type Bare = "none" | "top" | "bottom" | "all";
 
 export interface Visit {
   sawBare?: Bare; // how undressed he has already seen her tonight
+  cumOn?: number; // minutes it still shows on him after he has finished
   drunk?: number; // 0..100, how much he has had tonight
   heat?: number; // 0..100, how worked up he is
   patron: string;

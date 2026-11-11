@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -89,6 +89,7 @@ const presets = load(join(base, "content/presets.yaml"), presetSchema.array().mi
 unique(presets, "preset");
 for (const pr of presets) for (const l of pr.latents) if (!latents.some((x) => x.id === l)) errors.push(`preset "${pr.id}" uses unknown latent "${l}"`);
 const phone = load(join(base, "content/phone.yaml"), phoneSchema);
+const look = load(join(base, "content/look.yaml"), lookSchema);
 unique(acts, "act");
 unique(scenes, "scene");
 const sceneIds = new Set(scenes.map((s) => s.id));
@@ -143,13 +144,18 @@ presets.forEach((pr) => {
   need(`preset.${pr.id}.about`);
 });
 
-if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day) {
+if (look) {
+  for (const a of acts) if (!look.words.act[a.id]) errors.push(`look.yaml: no words for act "${a.id}"`);
+  for (const r of rooms) if (!look.words.room[r.id]) errors.push(`look.yaml: no words for room "${r.id}"`);
+  for (const k of Object.keys(look.marks.byAct)) if (!acts.some((a) => a.id === k)) errors.push(`look.yaml: marks for unknown act "${k}"`);
+}
+if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
+const content: Content = { look, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

@@ -171,6 +171,7 @@ export function advanceEncounter(ctx: Ctx) {
       enc.his = 0;
       v.heat = (v.heat ?? 0) * G.heatAfter;
       ctx.log("log.enc.he_finishes", { name }, tags);
+      ctx.emit("cum:landed", { by: p.id, act: enc.act });
       if (v.rounds >= p.stamina || !ctx.rng.chance(S.continueChance)) return endEncounter(ctx);
       enc.nextTry = sh.tick; // he still has it in him and wants something else
     }
