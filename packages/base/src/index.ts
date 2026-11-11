@@ -18,11 +18,12 @@ import { registerSetup } from "./systems/setup";
 import { registerExpectations } from "./systems/expectations";
 import { registerCouple } from "./systems/couple";
 import { registerDay } from "./systems/day";
+import { registerHotel } from "./systems/hotel";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 3,
+  version: 4,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -67,6 +68,7 @@ export const baseMod: Mod = {
       toys: [],
       upgrades: [],
       billBonus: 0,
+      lodgers: {},
       talked: [],
       dayTop: null,
       outfitAsked: false,
@@ -100,6 +102,7 @@ export const baseMod: Mod = {
     registerExpectations(api);
     registerCouple(api);
     registerDay(api);
+    registerHotel(api);
     registerSetup(api);
   },
 };
@@ -128,3 +131,4 @@ export type { BaseSetup } from "./systems/setup";
 export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
 export { GUEST, TALK, TELL, guestInView, together } from "./systems/couple";
 export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
+export { HOTEL_ROOMS, roomOf } from "./systems/hotel";

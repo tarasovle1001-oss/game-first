@@ -42,7 +42,10 @@ export function verdictOf(total: number): Verdict {
 /** Tiers grow in weight: small talk barely touches her character, the top of the ladder fully does. */
 const depth = (act: Act) => act.tier / topTier;
 
-const privateRoomFor = (state: GameState, engine: EngineView): string | null => {
+const privateRoomFor = (state: GameState, engine: EngineView, partner?: string): string | null => {
+  // a guest with a room upstairs has a door that locks
+  const own = partner ? Object.entries(bs(state).lodgers).find(([, l]) => l.patron === partner)?.[0] : undefined;
+  if (own && !husbandIn(state, own) && !husbandNextTo(state, own)) return own;
   const rooms = engine
     .locations()
     .filter((l) => l.zone === "cafe" && l.tags?.includes("private"))
@@ -82,7 +85,7 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   const at = (loc: string): ConsentInput => ({ act: act.id, partner: p.id, loc, offer, pressure: v.pressure });
   if (!isIntimate(act)) return at(HALL);
   // anything can happen right on the floor, it is just much harder for her. She steers it to where she minds least
-  const room = privateRoomFor(state, engine);
+  const room = privateRoomFor(state, engine, p.id);
   if (!room) return at(HALL);
   const score = (i: ConsentInput) => engine.evaluate<ConsentInput>(CONSENT_FORMULA, state, i).total;
   return score(at(HALL)) > score(at(room)) ? at(HALL) : at(room);

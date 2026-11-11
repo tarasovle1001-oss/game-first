@@ -58,6 +58,7 @@ export const balanceSchema = z
     heroine: z.object({ arousalCoolPerTick: z.number().min(0), moodSettlePerTick: z.number().min(0).max(1), soberPerTick: z.number().min(0) }).strict(),
     // clock: minute of the day each phase starts at (for the log and the top bar)
     clock: z.object({ prep: z.number().int(), night: z.number().int(), summary: z.number().int() }).strict(),
+    hotel: z.object({ roomPrice: z.number(), takeChance: z.number().min(0).max(1), returningChance: z.number().min(0).max(1), nights: z.tuple([z.number().int().positive(), z.number().int().positive()]), comesDownAtTick: z.number().int(), nightVisitTier: z.number().int() }).strict(),
     shift: z
       .object({
         opensAt: z.number().int().min(0).max(23), // hour

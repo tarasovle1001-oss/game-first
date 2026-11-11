@@ -182,47 +182,79 @@ export function WhyLine({ record, state, t, lang, open: transparent }: Common & 
 
 /** Rooms as cards with name chips, like a house plan. Click a linked room to walk there. */
 export function Rooms({ state, t, lang, onAct }: Common & { onAct(a: Action): void }) {
+  // The building as a plan: upstairs on top, the cafe below. Doors are gaps in the walls, stairs are marked.
   const here = state.where[HUSBAND];
   const moves = engine.listActions(state).filter((a) => a.type === CORE_MOVE && a.actor === HUSBAND);
-  const zones = [...new Set(engine.locations().map((l) => l.zone))];
+  const rooms = engine.locations().map((l) => ({ ...l, m: (l.meta as { map: { x: number; y: number; w: number; h: number } }).map }));
+  const CW = 98;
+  const CH = 92;
+  const PAD = 8;
+  const GAP = 22; // room for the floor caption between storeys
+  const cols = Math.max(...rooms.map((r) => r.m.x + r.m.w));
+  const rows = Math.max(...rooms.map((r) => r.m.y + r.m.h));
+  const top = (y: number) => PAD + GAP + y * (CH + GAP);
+  const W = cols * CW + PAD * 2;
+  const H = top(rows) - GAP + PAD;
+  const doors: { x: number; y: number }[] = [];
+  for (const r of rooms)
+    for (const id of r.links ?? []) {
+      const o = rooms.find((x) => x.id === id);
+      if (!o || o.id < r.id || o.m.y !== r.m.y) continue;
+      const edge = r.m.x + r.m.w === o.m.x ? o.m.x : o.m.x + o.m.w === r.m.x ? r.m.x : null;
+      if (edge !== null) doors.push({ x: PAD + edge * CW, y: top(r.m.y) + CH * 0.62 });
+    }
   return (
-    <div className="rooms">
-      {zones.map((zone) => (
-        <div key={zone} className="zone">
-          <div className="cap">{t(`ui.zone.${zone}`)}</div>
-          <div className="zone-rooms">
-            {engine
-              .locations()
-              .filter((l) => l.zone === zone)
-              .map((r) => {
-                const move = moves.find((a) => a.payload?.to === r.id);
-                const people = Object.keys(state.where).filter((id) => state.where[id] === r.id);
-                return (
-                  <button
-                    key={r.id}
-                    className={`room${r.id === here ? " here" : ""}${move ? " reachable" : ""}`}
-                    disabled={!move}
-                    onClick={() => move && onAct(move)}
-                  >
-                    <span className="room-name">{t(r.nameKey)}</span>
-                    {r.id === here && bs(state).shift && ["cafe.hall", "cafe.kitchen", "cafe.bar"].includes(r.id) && (
-                      <span className="spot">{t(`ui.spot.${r.id}`)}</span>
-                    )}
-                    <span className="chips">
-                      {people.length === 0 && <i className="muted">{t("ui.empty")}</i>}
-                      {people.map((id) => (
-                        <span key={id} className={`chip ${id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron"}`}>
-                          {who(id, state, t, lang)}
-                        </span>
-                      ))}
-                    </span>
-                  </button>
-                );
-              })}
-          </div>
-        </div>
+    <svg className="plan" viewBox={`0 0 ${W} ${H}`} role="img">
+      {[...new Set(rooms.map((r) => r.m.y))].map((y) => (
+        <text key={y} x={PAD} y={top(y) - 7} className="plan-floor">
+          {t(`ui.floor.${y}`)}
+        </text>
       ))}
-    </div>
+      {rooms.map((r) => {
+        const move = moves.find((a) => a.payload?.to === r.id);
+        const people = Object.keys(state.where).filter((id) => state.where[id] === r.id);
+        const x = PAD + r.m.x * CW;
+        const y = top(r.m.y);
+        const w = r.m.w * CW;
+        const perCol = 3;
+        const stairs = (r.links ?? []).some((id) => rooms.find((o) => o.id === id)?.m.y !== r.m.y);
+        const spot = r.id === here && bs(state).shift && ["cafe.hall", "cafe.kitchen", "cafe.bar"].includes(r.id);
+        return (
+          <g key={r.id} className={`plan-room${r.id === here ? " here" : ""}${move ? " reachable" : ""}`} onClick={() => move && onAct(move)}>
+            <title>{spot ? t(`ui.spot.${r.id}`) : t(r.nameKey)}</title>
+            <rect x={x} y={y} width={w} height={CH} />
+            <text x={x + 6} y={y + 15} className="plan-name">
+              {t(r.nameKey)}
+            </text>
+            {stairs && (
+              <path className="plan-stairs" d={`M${x + w - 24} ${y + 8}h16M${x + w - 24} ${y + 12}h16M${x + w - 24} ${y + 16}h16M${x + w - 24} ${y + 20}h16`} />
+            )}
+            {people.slice(0, perCol * r.m.w * 1).map((id, i) => {
+              const cx = x + 6 + Math.floor(i / perCol) * CW;
+              const cy = y + 24 + (i % perCol) * 21;
+              const kind = id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron";
+              const name = who(id, state, t, lang);
+              return (
+                <g key={id} className={`plan-chip ${kind}`}>
+                  <rect x={cx} y={cy} width={CW - 12} height={18} rx={4} />
+                  <text x={cx + 6} y={cy + 13.5}>
+                    {name.length > 12 ? name.slice(0, 11) + "…" : name}
+                  </text>
+                </g>
+              );
+            })}
+            {people.length > perCol * r.m.w && (
+              <text x={x + w - 8} y={y + CH - 6} textAnchor="end" className="plan-more">
+                +{people.length - perCol * r.m.w}
+              </text>
+            )}
+          </g>
+        );
+      })}
+      {doors.map((d, i) => (
+        <line key={i} className="plan-door" x1={d.x} y1={d.y - 13} x2={d.x} y2={d.y + 13} />
+      ))}
+    </svg>
   );
 }
 

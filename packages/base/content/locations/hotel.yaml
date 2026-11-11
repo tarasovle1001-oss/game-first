@@ -1,0 +1,15 @@
+# The rooms upstairs, same building as the cafe. Guests who stay the night are still there after closing.
+zone: hotel
+rooms:
+  - id: hotel.landing
+    links: [cafe.hall, hotel.room1, hotel.room2]
+    tags: [public]
+    map: { x: 3, y: 0, w: 1, h: 1 }
+  - id: hotel.room1
+    links: [hotel.landing]
+    tags: [guest, private]
+    map: { x: 2, y: 0, w: 1, h: 1 }
+  - id: hotel.room2
+    links: [hotel.landing]
+    tags: [guest, private]
+    map: { x: 4, y: 0, w: 1, h: 1 }

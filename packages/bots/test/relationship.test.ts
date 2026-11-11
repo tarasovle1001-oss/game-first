@@ -27,8 +27,16 @@ function untilPrivateEncounter(seed: number): GameState {
 }
 const walkIn = (s: GameState): GameState => {
   const loc = bs(s).encounter!.loc;
-  // from the kitchen the staff room is one step; the toilet is behind the bar and the hall
-  const path = loc === "cafe.staff" ? ["cafe.staff"] : ["cafe.bar", "cafe.hall", "cafe.toilet"];
+  // shortest way through the building
+  const links = new Map(engine.locations().map((l) => [l.id, l.links ?? []]));
+  const from = new Map<string, string>([[s.where.husband!, ""]]);
+  const queue = [s.where.husband!];
+  while (queue.length && !from.has(loc)) {
+    const at = queue.shift()!;
+    for (const next of links.get(at) ?? []) if (!from.has(next)) (from.set(next, at), queue.push(next));
+  }
+  const path: string[] = [];
+  for (let at = loc; from.get(at); at = from.get(at)!) path.unshift(at);
   for (const to of path) s = engine.dispatch(s, { type: CORE_MOVE, actor: "husband", payload: { to } });
   return s;
 };
@@ -137,14 +145,20 @@ describe("hidden and open", () => {
 
 describe("the husband's bad nights", () => {
   it("after many nights without, he does not last", () => {
-    const s = toNight(engine.init(4));
-    const starved = structuredClone(s);
-    starved.mods.base.denied = 8;
-    starved.mods.base.heroine.marriage.desire = 100;
-    starved.mods.base.heroine.arousal = 60;
-    const after = playOut(engine.dispatch(starved, { type: NIGHT_ACT, payload: { act: "sex" } }));
-    expect(["came_too_soon_foreplay", "premature_finish", "finishing_herself", "faking_it"]).toContain(bs(after).night!.scene);
-    expect(bs(after).heroine.marriage.resent).toBeGreaterThan(starved.mods.base.heroine.marriage.resent);
+    const turnsWith = (denied: number) => {
+      const s = structuredClone(toNight(engine.init(4)));
+      s.mods.base.denied = denied;
+      s.mods.base.heroine.marriage.desire = 100;
+      s.mods.base.heroine.arousal = 20;
+      let st = engine.dispatch(s, { type: NIGHT_ACT, payload: { act: "sex" } });
+      let turns = 0;
+      for (; bs(st).night?.sex && turns < 200; turns++) st = engine.dispatch(st, { type: BED, payload: { do: "keep" } });
+      return { turns, st, before: s };
+    };
+    const starved = turnsWith(8);
+    expect(starved.turns).toBeLessThan(turnsWith(0).turns);
+    expect(starved.turns).toBeLessThanOrEqual(3);
+    expect(bs(starved.st).heroine.marriage.resent).toBeGreaterThan(starved.before.mods.base.heroine.marriage.resent);
   });
   it("a dishonest wife fakes it, and only the debug log knows", () => {
     const s = toNight(engine.init(4));

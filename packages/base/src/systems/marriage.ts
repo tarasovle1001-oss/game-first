@@ -295,8 +295,9 @@ export function registerMarriage(api: ModApi) {
       const tags = open || wakes ? undefined : ["unseen"];
       const factor = content.secrecy.styleFactor[b.husband.style];
       // a lover: someone she has gone all the way with and can text
+      const upstairs = (id: string) => Object.values(b.lodgers).some((l) => l.patron === id);
       const lovers = Object.values(b.patrons)
-        .filter((p) => p.memory.hasNumber && p.memory.tier >= 7)
+        .filter((p) => (p.memory.hasNumber && p.memory.tier >= 7) || (upstairs(p.id) && p.memory.tier >= content.balance.hotel.nightVisitTier))
         .sort((x, y) => y.memory.affinity - x.memory.affinity || x.id.localeCompare(y.id));
       if (lovers.length > 0 && h.traits.fidelity < N.slipOutFidelityBelow && ctx.rng.chance(N.slipOutChance)) {
         const p = lovers[0]!;
@@ -310,7 +311,8 @@ export function registerMarriage(api: ModApi) {
           b.secretActsToday += 1;
           if (wakes) b.suspicion = clamp(b.suspicion + N.wakesSuspicion * factor);
         } else b.power = clamp(b.power + content.secrecy.powerPerTold * 2);
-        ctx.log(open ? "log.night.slips_out.open" : wakes ? "log.night.empty_bed" : "log.night.slips_out", { name: `@name:${p.name}` }, tags);
+        const up = upstairs(p.id) ? ".upstairs" : "";
+        ctx.log((open ? "log.night.slips_out.open" : wakes ? "log.night.empty_bed" : "log.night.slips_out") + up, { name: `@name:${p.name}` }, tags);
         ctx.emit("night:slipped_out", { patron: p.id, came: out.came, noticed: open || wakes });
         return;
       }

@@ -673,3 +673,21 @@ details > summary { cursor: pointer; padding: 6px 2px; font-weight: 600; }
 details { border-top: 1px solid var(--line); }
 .tell-row { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; }
 .tell-row button { padding: 6px 10px; }
+
+/* ---- building plan ---- */
+.plan { width: 100%; height: auto; display: block; margin-top: 6px; }
+.plan-room rect { fill: var(--panel); stroke: var(--muted, #6b6f7a); stroke-width: 2; }
+.plan-room.reachable { cursor: pointer; }
+.plan-room.reachable > rect { stroke: var(--accent, #e0932b); stroke-dasharray: 5 4; }
+.plan-room.reachable:hover > rect { fill: var(--panel-2); }
+.plan-room.here > rect { fill: rgba(224, 147, 43, 0.12); stroke: var(--accent, #e0932b); stroke-width: 2.5; }
+.plan-name { font-size: 10.5px; letter-spacing: 0.03em; text-transform: uppercase; fill: currentColor; opacity: 0.6; }
+.plan-floor { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; fill: currentColor; opacity: 0.45; }
+.plan-stairs { stroke: currentColor; stroke-width: 1.5; opacity: 0.45; fill: none; }
+.plan-door { stroke: var(--bg, #15141b); stroke-width: 5; }
+.plan-chip rect { stroke: none; }
+.plan-chip text { font-size: 12.5px; fill: #fff; }
+.plan-chip.wife rect { fill: #b63a68; }
+.plan-chip.husband rect { fill: #2f66b3; }
+.plan-chip.patron rect { fill: #5a4a2c; }
+.plan-more { font-size: 11px; fill: currentColor; opacity: 0.6; }
