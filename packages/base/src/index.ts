@@ -25,7 +25,7 @@ import { registerLoan } from "./systems/loan";
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 8,
+  version: 9,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -75,6 +75,8 @@ export const baseMod: Mod = {
       changed: null,
       gossip: 0,
       loan: { dueDay: content.balance.loan.firstDueDay, paid: false, missed: 0, visitsLeft: 0, forgiven: 0 },
+      complaint: null,
+      complainedDay: -10,
       talked: [],
       dayTop: null,
       outfitAsked: false,
@@ -90,7 +92,7 @@ export const baseMod: Mod = {
         labelKey: `base.phase.${id}`,
         order: i,
         // the shift cannot be skipped: it runs its ticks first
-        canLeave: id === "shift" ? (state) => ticksDone(bs(state).shift) : id === "night" ? (state) => !bs(state).night?.sex : undefined,
+        canLeave: id === "shift" ? (state) => ticksDone(bs(state).shift) : id === "night" ? (state) => !bs(state).night?.sex && !bs(state).complaint : undefined,
       }),
     );
     registerPlaces(api);
@@ -137,7 +139,7 @@ export { ASK_OUTFIT, SET_DIRECTIVE } from "./systems/manners";
 export { TIP_SHARE } from "./systems/economy";
 export type { BaseSetup } from "./systems/setup";
 export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
-export { GUEST, TALK, TELL, guestInView, together } from "./systems/couple";
+export { GUEST, HEAR, TALK, TELL, guestInView, together } from "./systems/couple";
 export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
 export { OUTFIT_BACK } from "./systems/manners";

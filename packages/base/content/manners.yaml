@@ -41,6 +41,11 @@ talk: # small things between the two of them; each once a day
     - { id: touching, tiers: [3, 4] }
     - { id: hands_mouth, tiers: [5, 6] }
     - { id: sex, tiers: [7, 9] }
+  complainAt: 30          # her resentment from which she brings it up herself
+  complainEveryDays: 4
+  hear: { resent: 8 }
+  probe: { resent: 4 }
+  pushBack: { resent: 5 }
   shockFromTier: 5
   shockAtFidelity: 65
   confessAtHonesty: 60

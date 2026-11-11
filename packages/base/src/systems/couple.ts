@@ -13,6 +13,7 @@ import { HALL, husbandSees } from "./places";
 export const TALK = "base/talk";
 export const TELL = "base/tell";
 export const GUEST = "base/guest";
+export const HEAR = "base/hear-her";
 const T = content.manners.talk;
 const G = content.manners.guest;
 const E = content.consent.expect;
@@ -60,6 +61,62 @@ export function registerCouple(api: ModApi) {
     const b = bs(ctx.state);
     const { act, witnessed, tier, patron } = e.payload as { act: string; witnessed: boolean; tier: number; patron: string };
     if (!b.dayTop || tier > actById(b.dayTop.act).tier) b.dayTop = { act, patron, seen: witnessed };
+  });
+
+  // When enough has piled up she says so, at night, before anything else can happen.
+  api.events.on(
+    "phase:enter",
+    (ctx, e) => {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      if (e.payload!.phase !== "night" || !b.night || b.night.scene.startsWith("fd_")) return;
+      if (h.marriage.resent < T.complainAt || ctx.state.time.day - b.complainedDay < T.complainEveryDays) return;
+      const last = b.told.at(-1)?.key ?? "";
+      // what it is about: the most concrete thing first
+      const topic = b.purseShare === 0 && b.purse === 0 ? "money" : b.denied >= 3 ? "neglect" : last === "told.stop" || last === "told.say.forbid" || last === "told.outfit.back" ? "control" : last === "told.encourage" || last === "told.say.allow" ? "pushed" : h.sizeTaste >= 40 || h.orgasms === 0 ? "bed" : "tired";
+      b.complaint = topic;
+      b.complainedDay = ctx.state.time.day;
+      b.night.wants = false;
+      b.night.asked = true; // nothing else tonight until he has answered
+      b.night.scene = "talk";
+      ctx.log(`log.complaint.${topic}`);
+    },
+    -30,
+  );
+  api.actions.register({
+    id: HEAR,
+    labelKey: "action.hear",
+    describe: (a) => ({ key: `action.hear.${a.payload!.how}` }),
+    enumerate: (state) => (state.time.phase === "night" && bs(state).complaint ? ["hear", "probe", "push_back"].map((how) => ({ type: HEAR, payload: { how } })) : []),
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const topic = b.complaint!;
+      const how = action.payload!.how as string;
+      b.complaint = null;
+      if (how === "hear") {
+        // he gives way: it costs him something real where there is something to give
+        applyFx(ctx, { resent: -T.hear.resent, mood: 4, desire: 1 }, "heard");
+        if (topic === "money") b.purseShare = Math.max(b.purseShare, 0.5);
+        if (topic === "control") for (const a of content.acts) if ((b.expect[a.id] ?? 0) < 0 && a.tier <= 2) delete b.expect[a.id];
+        b.power = clamp(b.power + (b.mode === "open" ? 2 : 0));
+        ctx.log(`log.hear.hear.${topic === "money" ? "money" : "any"}`);
+      } else if (how === "probe") {
+        applyFx(ctx, { resent: -T.probe.resent, mood: 2 }, "asked");
+        // she says a little more than she meant to, as far as she is honest
+        const honest = h.traits.honesty >= 50;
+        ctx.log(honest ? `log.hear.probe.${h.marriage.desire < 40 ? "cold" : h.sizeTaste >= 40 ? "size" : b.dayTop && actById(b.dayTop.act).tier >= 3 && !b.dayTop.seen ? "guest" : "plain"}` : "log.hear.probe.closed");
+        if (honest && b.dayTop && actById(b.dayTop.act).tier >= 3 && !b.dayTop.seen && b.mode === "hidden") b.suspicion = clamp(b.suspicion + 5);
+      } else {
+        const yields = h.latents.submissive !== undefined || h.traits.confidence < 35;
+        applyFx(ctx, yields ? { resent: -1, mood: -3 } : { resent: T.pushBack.resent, mood: -5, desire: -2 }, "pushed back");
+        if (b.mode === "open" && !yields) b.power = clamp(b.power + 3);
+        ctx.log(`log.hear.push_back.${yields ? "yields" : "no"}`);
+      }
+      b.night!.scene = "sleeping";
+      b.night!.asked = how === "push_back"; // after a quarrel nobody reaches for anybody
+      ctx.emit("couple:heard", { topic, how });
+    },
   });
 
   api.actions.register({

@@ -390,3 +390,32 @@ describe("in the middle of the evening", () => {
     expect(engine.checkInvariants(s)).toEqual([]);
   });
 });
+
+describe("when enough has piled up", () => {
+  const bitter = () => {
+    let s = engine.init(4);
+    while (s.time.phase !== "shift") s = engine.dispatch(s, { type: CORE_ADVANCE });
+    const x = structuredClone(s);
+    x.mods.base.heroine.marriage.resent = 60;
+    x.mods.base.purseShare = 0;
+    x.mods.base.purse = 0;
+    return toNight(x);
+  };
+  it("she brings it up at night and the night waits for his answer", () => {
+    const s = bitter();
+    expect(bs(s).complaint).toBe("money");
+    expect(has(s, CORE_ADVANCE)).toBe(false);
+    expect(has(s, NIGHT_ACT)).toBe(false);
+    expect(engine.currentScene(s)!.type).toBe("talk");
+  });
+  it("hearing her out costs him something and takes the edge off; pushing back makes it worse", () => {
+    const s = bitter();
+    const heard = engine.dispatch(s, { type: "base/hear-her", payload: { how: "hear" } });
+    const pushed = engine.dispatch(s, { type: "base/hear-her", payload: { how: "push_back" } });
+    expect(bs(heard).heroine.marriage.resent).toBeLessThan(bs(s).heroine.marriage.resent);
+    expect(bs(heard).purseShare).toBe(0.5);
+    expect(bs(pushed).heroine.marriage.resent).toBeGreaterThanOrEqual(bs(heard).heroine.marriage.resent);
+    expect(has(heard, CORE_ADVANCE)).toBe(true);
+    expect(engine.checkInvariants(heard)).toEqual([]);
+  });
+});

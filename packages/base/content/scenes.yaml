@@ -208,3 +208,7 @@
   figures:
     - { role: husband, pose: lie_back, x: 0, y: 0, flip: false }
     - { role: wife, pose: lie_front, x: 0, y: 16, flip: true }
+- id: talk
+  figures:
+    - { role: wife, pose: sit, x: -30, y: 0, flip: false }
+    - { role: husband, pose: sit, x: 34, y: 0, flip: true }

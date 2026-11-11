@@ -338,6 +338,11 @@ export const mannersSchema = z
         ),
         // what he can say "go on" or "don't" about, by act tier (inclusive)
         groups: z.array(z.object({ id, tiers: z.tuple([z.number().int(), z.number().int()]) }).strict()),
+        complainAt: z.number(),
+        complainEveryDays: z.number().int(),
+        hear: z.object({ resent: z.number() }).strict(),
+        probe: z.object({ resent: z.number() }).strict(),
+        pushBack: z.object({ resent: z.number() }).strict(),
         shockFromTier: z.number().int(), // "I do not mind" about things from this tier up hurts a faithful wife
         shockAtFidelity: z.number(),
         confessAtHonesty: z.number(), // asked about the evening, she owns up from this honesty...

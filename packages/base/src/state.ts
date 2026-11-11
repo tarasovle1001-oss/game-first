@@ -181,6 +181,8 @@ export interface BaseState {
   changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   gossip: number; // 0..100, what the town says about her
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
+  complaint: string | null; // what she has brought up tonight and he has not answered yet
+  complainedDay: number;
   talked: string[]; // what he already said or did with her today (each thing once a day)
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now
