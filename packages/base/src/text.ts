@@ -26,3 +26,19 @@ export const patronName = (nameIndex: number, lang: string) => {
   const entry = content.names[nameIndex];
   return entry ? ((entry as Record<string, string>)[lang] ?? entry.en) : "?";
 };
+
+const variantCount = new Map<string, number>();
+for (const key of Object.keys(content.locales.en ?? {})) {
+  const [base, n] = key.split("#");
+  if (n) variantCount.set(base!, Math.max(variantCount.get(base!) ?? 1, Number(n)));
+}
+/**
+ * A line can have several wordings: "some.key", "some.key#2", "some.key#3" in the locale files.
+ * Picks one with the given roll (0..count-1 -> index) so the log does not repeat itself.
+ */
+export function variantKey(key: string, roll: (count: number) => number): string {
+  const count = variantCount.get(key) ?? 1;
+  if (count <= 1) return key;
+  const i = roll(count);
+  return i === 0 ? key : `${key}#${i + 1}`;
+}

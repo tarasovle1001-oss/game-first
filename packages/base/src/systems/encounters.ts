@@ -8,6 +8,7 @@ import type { Patron, Verdict, Visit } from "../state";
 import { fitOf, resolveBody } from "./body";
 import { addMoney } from "./economy";
 import { changeHeroine } from "./heroine";
+import { variantKey } from "../text";
 import { HALL, ticks } from "./places";
 
 export const CONSENT_FORMULA = "base/consent";
@@ -158,7 +159,7 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   const tags = seen || b.mode === "open" ? undefined : ["unseen"];
   // routine small talk with a familiar face is not worth a log line every hour
   if (!isLight(act) || first || verdict !== "eager")
-    ctx.log(`log.act.${act.id}.${verdict}`, { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip }, tags);
+    ctx.log(variantKey(`log.act.${act.id}.${verdict}`, (n) => ctx.rng.int(0, n - 1)), { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip }, tags);
   if (came) ctx.log("log.came", { name: `@name:${p.name}` }, tags);
   ctx.emit("encounter:started", { patron: p.id, act: act.id, loc: input.loc, verdict, witnessed: seen, came, tier: act.tier, intimate: isIntimate(act) });
 }
@@ -170,7 +171,7 @@ function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
   p.memory.refusals += 1;
   b.heroine.traits.confidence = clamp(b.heroine.traits.confidence + 0.2);
   const seen = ctx.state.where[HUSBAND] === HALL || b.mode === "open"; // he asks on the floor, wherever he wanted to go
-  ctx.log(`log.act.${act.id}.refuse`, { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip: 0 }, seen ? undefined : ["unseen"]);
+  ctx.log(variantKey(`log.act.${act.id}.refuse`, (n) => ctx.rng.int(0, n - 1)), { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip: 0 }, seen ? undefined : ["unseen"]);
 
   const cool = (interest: number, affinity: number) => {
     p.memory.interest = clamp(p.memory.interest + interest);
