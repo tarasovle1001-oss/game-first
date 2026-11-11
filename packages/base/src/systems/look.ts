@@ -13,6 +13,7 @@ const L = content.look;
 const W = L.words;
 const INSIDE = new Set(["inside", "anus"]);
 
+import { cumPlaces } from "./terms";
 export interface SceneWords {
   /** The same blocks an image pipeline works with: who she is right now, who is with her, where, what is going on. */
   heroine: string[];
@@ -135,7 +136,7 @@ export function registerLook(api: ModApi) {
     const b = bs(ctx.state);
     const { by, act, where } = e.payload as { by: string; act: string; where?: string };
     const options = L.marks.byAct[act];
-    const place = by === HUSBAND && where ? L.marks.husbandWhere[where] : options ? ctx.rng.pick(options) : "body";
+    const place = by === HUSBAND && where ? L.marks.husbandWhere[where] : options ? ctx.rng.pick(cumPlaces(ctx, options)) : "body";
     if (place) mark(ctx, place);
     if (by === HUSBAND) b.husband.cumOn = L.marks.onHim;
     else {

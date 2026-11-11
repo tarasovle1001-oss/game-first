@@ -197,9 +197,9 @@ export function registerMind(api: ModApi) {
   });
   api.events.on("couple:heard", (ctx, e) => {
     const how = e.payload!.how as string;
-    if (how === "hear") feelAll(ctx, "heard");
+    if (how === "hear" || how === "promise") feelAll(ctx, "heard");
     if (how === "push_back") feelAll(ctx, "pushedBack");
-    trust(ctx, how === "hear" ? "heard" : how === "probe" ? "probed" : "pushedBack");
+    trust(ctx, how === "hear" || how === "promise" ? "heard" : how === "probe" ? "probed" : "pushedBack");
   });
   api.events.on("reaction", (ctx, e) => {
     if (e.payload!.how !== "stop") return;
@@ -252,7 +252,7 @@ export function registerMind(api: ModApi) {
     if (what === "date") {
       feelAll(ctx, "date");
       trust(ctx, "date");
-    } else if (what === "her_chores") {
+    } else if (what === "her_chores" || what === "sit_together") {
       feelAll(ctx, "chores");
       trust(ctx, "chores");
     }

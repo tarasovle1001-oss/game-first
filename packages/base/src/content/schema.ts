@@ -568,9 +568,32 @@ export const mindSchema = z
   .strict();
 export type Mind = z.infer<typeof mindSchema>;
 
+const nums = z.record(z.string(), z.number());
+export const termsSchema = z
+  .object({
+    wishes: z.record(z.string(), z.object({ consent: z.number().optional(), upTo: z.number().optional(), tip: z.number().optional(), needs: z.number(), outfit: z.number().optional(), offer: z.number().optional(), seen: z.boolean().optional(), expect: z.number().optional(), expectAll: z.number().optional() }).strict()),
+    against: z.record(z.string(), z.array(z.string())),
+    wishShock: nums,
+    wishGlad: nums,
+    staleAfter: z.number().int(),
+    staleAnnoy: z.number(),
+    items: z.array(z.object({ id, acts: z.array(id).optional(), where: z.array(z.string()).optional() }).strict()),
+    cumObeys: z.number(),
+    ask: z.object({ maxSure: z.number(), fromTier: z.number(), trust: z.number(), honesty: z.number(), upToTierHidden: z.number(), perDay: z.number(), yes: nums, later: nums, no: nums, explain: nums, because: nums, relent: nums }).strict(),
+    stance: z.object({ free: nums, polite: nums, away: nums, hidden: z.number(), likedFrom: z.number(), likedResent: z.number(), praise: nums, own: nums }).strict(),
+    dares: z.object({ list: z.array(z.object({ id, act: id.optional(), bare: z.enum(["top", "bottom", "all"]).optional(), margin: z.number().optional() }).strict()), reasons: nums, curiousPerOpenness: z.number(), herPick: z.number(), fromHim: z.number(), perEvening: z.number(), done: nums, refused: nums, flashHeat: z.number(), flashTip: z.number() }).strict(),
+    about: z.object({ liked: z.object({ expect: z.number(), arousal: z.number(), shockFidelity: z.number(), shock: nums }).strict(), disliked: nums, never: nums, tell: nums, protect: nums }).strict(),
+    promises: z.record(z.string(), z.object({ days: z.number().int(), kept: z.number(), broken: z.number(), contempt: z.number() }).strict()),
+    press: z.object({ base: z.number(), perLowConfidence: z.number(), submissive: z.number(), perTrust: z.number(), gaveIn: nums, snapped: nums }).strict(),
+    morning: z.object({ ignoredDesire: z.number(), ignored: nums }).strict(),
+  })
+  .strict();
+export type Terms = z.infer<typeof termsSchema>;
+
 export interface Content {
   look: Look;
   mind: Mind;
+  terms: Terms;
   rooms: Room[];
   patronTypes: PatronType[];
   names: NameEntry[];

@@ -91,7 +91,7 @@ export function registerManners(api: ModApi) {
     const asker = b.shift.visits
       .map((v) => b.patrons[v.patron]!)
       .find((p) => p.memory.interest >= C.guestInterest && ctx.rng.chance(C.guestChance));
-    const own = (h.arousal >= C.arousalFrom || h.drunk >= C.drunkFrom) && h.traits.openness + C.margin >= next.openness && ctx.rng.chance(C.chancePerTick);
+    const own = (h.arousal >= C.arousalFrom || h.drunk >= C.drunkFrom) && h.traits.openness + C.margin + (b.wishes?.includes("dress_bold") ? (content.terms.wishes.dress_bold?.outfit ?? 0) : 0) >= next.openness && ctx.rng.chance(C.chancePerTick);
     const forHim = asker && h.traits.openness + C.guestMargin + h.arousal / 5 >= next.openness;
     if (asker && !forHim && !own) {
       ctx.log("log.outfit.guest.no", { name: `@name:${asker.name}` }, husbandSees(ctx.state, HALL) ? undefined : ["unseen"]);
@@ -145,9 +145,10 @@ export function registerManners(api: ModApi) {
     id: SET_DIRECTIVE,
     labelKey: "action.directive",
     describe: (a) => ({ key: `action.directive.${a.payload!.value}` }),
+    accepts: (state, a) => state.time.phase === "prep" && (a.payload?.value as string) in M.directives,
     enumerate(state) {
-      if (state.time.phase !== "prep") return [];
-      return (Object.keys(M.directives) as Directive[]).filter((d) => d !== bs(state).directive).map((value) => ({ type: SET_DIRECTIVE, payload: { value } }));
+      void state;
+      return []; // said through "what I want from you today" now; kept so old saves and mods can still dispatch it
     },
     apply(ctx, action) {
       const value = action.payload!.value as Directive;

@@ -28,11 +28,12 @@ import { registerLoan } from "./systems/loan";
 import { registerMemories } from "./systems/memories";
 import { registerRhythm } from "./systems/rhythm";
 import { registerMind } from "./systems/mind";
+import { registerTerms } from "./systems/terms";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
   id: BASE_ID,
-  version: 18,
+  version: 19,
   // older saves: whatever the new version added starts from its default
   migrate: (slice: any) => {
     const fresh = (baseMod.initState as () => any)();
@@ -140,6 +141,7 @@ export const baseMod: Mod = {
     registerMemories(api);
     registerRhythm(api);
     registerMind(api);
+    registerTerms(api);
     registerSetup(api);
   },
 };
@@ -185,5 +187,6 @@ export { husbandSees, husbandIn, husbandNextTo } from "./systems/places";
 export { rentOf } from "./systems/economy";
 export { ATTRS, EMOTIONS, attrOf, feelingOf, feelingsOf, latitudeOf, trustOf, wantsOf } from "./systems/mind";
 export type { Attr, Emotion } from "./systems/mind";
+export { WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, wished } from "./systems/terms";
 export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, himOf, tired, worryOf } from "./systems/rhythm";
 export { pleasureFor, sizeClass } from "./systems/body";

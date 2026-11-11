@@ -71,6 +71,7 @@ export interface PatronMemory {
   acts: Record<string, number>; // act id -> times
   refusals: number;
   hasNumber: boolean; // they exchanged numbers
+  stance?: "free" | "polite" | "away"; // what her husband said about him
   sizeKnown: boolean; // she has seen what he has
   orgasms: number; // times he made her come
 }
@@ -216,7 +217,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
@@ -238,6 +239,18 @@ export interface BaseState {
   diary?: { day: number; with: Record<string, Record<string, number>>; seen: Record<string, boolean>; came: number; cameHim?: number }[]; // what happened, by day and by man
   tally?: { acts: Record<string, number>; partners: Record<string, number>; came: number };
   thoughtAt?: number;
+  wishes?: string[]; // what he said he wants from her today
+  wishRun?: Record<string, { n: number; day: number }>; // days running each wish has been said
+  perm?: Record<string, "allow" | "forbid">; // single things he allowed or forbade
+  ask?: { patron: string; act: string; tick?: number }; // she is asking him before she says yes
+  askWhy?: { patron: string; act: string }; // he said no and she wants to know why
+  asksToday?: number;
+  stanceSaid?: string[];
+  dared?: string[];
+  daresToday?: number;
+  aboutSaid?: number;
+  promises?: { kind: string; day: number; due: number; topic?: string }[];
+  ignoredHer?: boolean;
   wakeAt?: number; // hour he sleeps till tonight, when it is not the usual one
   slept?: { him: number; her: number }; // hours each of them got last night
   sentWash?: string;

@@ -464,6 +464,20 @@ export function warmGuests(ctx: Ctx) {
   }
 }
 
+/** A hook for the terms between husband and wife: return true when she asks him before saying yes. */
+export const gate: { ask?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean } = {};
+/** Start an act with a guest outright (a dare taken, a yes given after asking). */
+export function startWith(ctx: Ctx, patronId: string, actId: string, verdict: Verdict) {
+  const b = bs(ctx.state);
+  const v = b.shift?.visits.find((x) => x.patron === patronId);
+  const p = b.patrons[patronId];
+  if (!v || !p || b.encounter) return false;
+  const act = actById(actId);
+  const loc = isIntimate(act) ? (privateRoomFor(ctx.state, ctx.engine, p.id) ?? HALL) : HALL;
+  accept(ctx, v, p, { act: actId, partner: patronId, loc, offer: 0, pressure: 0 }, verdict);
+  return true;
+}
+
 export function runProposals(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
@@ -499,6 +513,7 @@ export function runProposals(ctx: Ctx) {
     if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
     const seen = husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc);
     ctx.emit("encounter:proposed", { patron: p.id, act: input.act, verdict, total: res.total, seen, rowIds: res.rows.map((r) => r.id) });
+    if (verdict !== "refuse" && gate.ask?.(ctx, v, p, input)) continue; // she goes to her husband first
     if (verdict === "refuse") refuse(ctx, v, p, input);
     else {
       accept(ctx, v, p, input, verdict);

@@ -42,7 +42,9 @@ function walkIn(s: GameState): GameState {
   return s;
 }
 const toNight = (s: GameState): GameState => {
+  let guard = 0;
   while (s.time.phase !== "night") {
+    if (guard++ > 3000) throw new Error("toNight does not end");
     const actions = engine.listActions(s);
     s = engine.dispatch(s, actions.find((a) => a.type === CORE_ADVANCE) ?? (actions.some((a) => a.type === WAIT) ? { type: WAIT, payload: { minutes: 60 } } : undefined)!);
   }
@@ -126,6 +128,7 @@ describe("hidden and open", () => {
     expect(bs(s).mode).toBe("hidden");
     expect(bs(s).secretKnows).toBe(true);
     s = toNight(s);
+    if (bs(s).complaint) s = engine.dispatch(s, { type: "base/hear-her", payload: { how: "hear" } }); // she had something to say first
     expect(has(s, CONFRONT)).toBe(true);
     s = engine.dispatch(s, { type: CONFRONT });
     expect(bs(s).mode).toBe("open");

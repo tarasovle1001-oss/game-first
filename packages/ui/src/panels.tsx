@@ -615,6 +615,19 @@ export function CoupleTab({ state, t, lang, open }: Common) {
       <div className="muted small">
         {t("ui.husband.line", { size: b.husband.size, minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
       </div>
+      {(b.wishes?.length ?? 0) > 0 && (
+        <div className="small">
+          <span className="muted">{t("ui.wishes")}: </span>
+          {b.wishes!.map((w) => t(`told.wish.${w}`)).join(" ")}
+        </div>
+      )}
+      {(b.promises?.length ?? 0) > 0 && (
+        <div className="small">
+          <span className="muted">{t("ui.promises")}: </span>
+          {b.promises!.map((p) => `${t(`promise.${p.kind}`)} (${t("ui.day", { day: p.due })})`).join(", ")}
+        </div>
+      )}
+      {open && <Bar label={t("ui.trust")} value={trustOf(state)} />}
       <div className="cap">{t("ui.him")}</div>
       <Bar label={t("stat.energy")} value={himOf(state).energy} />
       <Bar label={t("stat.mood")} value={himOf(state).mood} tone="amber" />

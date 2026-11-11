@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND } from "@tc/base";
+import { WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, rentOf, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -92,16 +92,17 @@ function App() {
   const SECTION: Record<string, string> = {
     "base/night-act": "sex", "base/upstairs": "sex", "base/night-self": "sex", "base/night-decline": "sex",
     [STRIP]: "ask", "base/ask-outfit": "ask", "base/outfit-back": "ask",
-    [TELL]: "want", "base/directive": "want", "base/order": "want",
+    [TELL]: "allow", [ALLOW]: "allow", "base/directive": "want", "base/order": "want", [WISH]: "want", [DARE]: "want",
+    [ABOUT]: "about", [STANCE]: "about", [PROMISE]: "about", [PRESS]: "sex",
   };
   const sectionOf = (a: Action) => (a.type === TALK ? (a.payload?.group as string) : SECTION[a.type]);
   const withHer = all.filter((a) => sectionOf(a) !== undefined);
-  const herGroups = (["chat", "touch", "sex", "ask", "want"] as const).filter((g) => withHer.some((a) => sectionOf(a) === g));
+  const herGroups = (["chat", "touch", "sex", "ask", "want", "allow", "about"] as const).filter((g) => withHer.some((a) => sectionOf(a) === g));
   const herTab = herOpen === "root" || herGroups.includes(herOpen as never) ? herOpen : null;
   const herName = bs(state).heroine.name ?? t("role.wife");
   const herNear = state.where[WIFE] === state.where[HUSBAND];
-  const other = all.filter((a) => a.type !== WAIT && a.type !== PREP_WAIT && a.type !== NIGHT_WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== ANSWER && sectionOf(a) === undefined);
-  const answers = all.filter((a) => a.type === ANSWER);
+  const other = all.filter((a) => a.type !== WAIT && a.type !== PREP_WAIT && a.type !== NIGHT_WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== ANSWER && a.type !== PERMIT && sectionOf(a) === undefined);
+  const answers = all.filter((a) => a.type === ANSWER || a.type === PERMIT);
   const otherGroups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
 
   // keys 1-4 for the waits, Enter for the next phase
@@ -269,7 +270,7 @@ function App() {
                   <div className="stack">
                     {herGroups.map((g) => (
                       <button key={g} onClick={() => setHerOpen(g)}>
-                        {t(`ui.her.sec.${g}`)} <span className="muted">({g === "want" ? new Set(withHer.filter((a) => sectionOf(a) === g).map((a) => a.type + (a.payload?.group ?? a.payload?.value ?? a.payload?.id ?? ""))).size : withHer.filter((a) => sectionOf(a) === g).length})</span>
+                        {t(`ui.her.sec.${g}`)} <span className="muted">({g === "allow" ? new Set(withHer.filter((a) => sectionOf(a) === g).map((a) => a.type + (a.payload?.group ?? a.payload?.item ?? ""))).size : withHer.filter((a) => sectionOf(a) === g).length})</span>
                       </button>
                     ))}
                   </div>
@@ -284,8 +285,21 @@ function App() {
                       {herName} · {t(`ui.her.sec.${herTab}`)}
                     </b>
                   </div>
-                  {herTab === "want" && (
+                  {herTab === "allow" && (
                     <div className="stack sub">
+                      {content.terms.items.map((it) => {
+                        const now = b.perm?.[it.id];
+                        return (
+                          <div key={it.id} className="tell-row">
+                            <span>{t(`item.${it.id}`)}</span>
+                            <button className={now === "allow" ? "on" : ""} disabled={now === "allow"} onClick={() => act({ type: ALLOW, payload: { item: it.id, say: "allow" } })}>{t("ui.tell.allow")}</button>
+                            <button className={`deny${now === "forbid" ? " on" : ""}`} disabled={now === "forbid"} onClick={() => act({ type: ALLOW, payload: { item: it.id, say: "forbid" } })}>
+                              {t("ui.tell.forbid")}
+                            </button>
+                          </div>
+                        );
+                      })}
+                      <div className="muted small">{t("ui.allow.groups")}</div>
                       {[...new Set(withHer.filter((a) => a.type === TELL).map((a) => a.payload!.group as string))].map((g) => (
                         <div key={g} className="tell-row">
                           <span>{t(`tell.${g}`)}</span>
@@ -299,7 +313,7 @@ function App() {
                   )}
                   <div className="stack sub">
                     {withHer
-                      .filter((a) => sectionOf(a) === herTab && a.type !== TELL)
+                      .filter((a) => sectionOf(a) === herTab && a.type !== TELL && a.type !== ALLOW)
                       .map((a, i) => (
                         <button key={i} onClick={() => act(a)}>
                           {actionLabel(a, t, lang)}

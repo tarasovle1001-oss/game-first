@@ -92,20 +92,20 @@ export function registerCouple(api: ModApi) {
     id: HEAR,
     labelKey: "action.hear",
     describe: (a) => ({ key: `action.hear.${a.payload!.how}` }),
-    enumerate: (state) => (state.time.phase === "night" && bs(state).complaint ? ["hear", "probe", "push_back"].map((how) => ({ type: HEAR, payload: { how } })) : []),
+    enumerate: (state) => (state.time.phase === "night" && bs(state).complaint ? ["hear", "promise", "probe", "push_back"].map((how) => ({ type: HEAR, payload: { how } })) : []),
     apply(ctx, action) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const topic = b.complaint!;
       const how = action.payload!.how as string;
       b.complaint = null;
-      if (how === "hear") {
+      if (how === "hear" || how === "promise") {
         // he gives way: it costs him something real where there is something to give
         applyFx(ctx, { resent: -T.hear.resent, mood: 4, desire: 1 }, "heard");
         if (topic === "money") b.purseShare = Math.max(b.purseShare, 0.5);
         if (topic === "control") for (const a of content.acts) if ((b.expect[a.id] ?? 0) < 0 && a.tier <= 2) delete b.expect[a.id];
         b.power = clamp(b.power + (b.mode === "open" ? 2 : 0));
-        ctx.log(`log.hear.hear.${topic === "money" ? "money" : "any"}`);
+        ctx.log(how === "promise" ? `log.promise.made.${topic}` : `log.hear.hear.${topic === "money" ? "money" : "any"}`);
       } else if (how === "probe") {
         applyFx(ctx, { resent: -T.probe.resent, mood: 2 }, "asked");
         // she says a little more than she meant to, as far as she is honest

@@ -109,7 +109,7 @@ export function registerRhythm(api: ModApi) {
     id: NIGHT_WAIT,
     labelKey: "action.wait",
     describe: (a) => ({ key: "action.wait.minutes", params: { minutes: a.payload!.minutes as number } }),
-    enumerate: (state) => (state.time.phase === "night" && bs(state).night && !bs(state).night!.sex ? R.nightWaits.map((m) => ({ type: NIGHT_WAIT, payload: { minutes: m } })) : []),
+    enumerate: (state) => (state.time.phase === "night" && bs(state).night && !bs(state).night!.sex && !bs(state).complaint ? R.nightWaits.map((m) => ({ type: NIGHT_WAIT, payload: { minutes: m } })) : []),
     apply: (ctx, a) => passNight(ctx, a.payload!.minutes as number),
   });
   api.events.on("entity:moved", (ctx, e) => {

@@ -1,0 +1,90 @@
+# What is agreed between the two of them: what he says he wants today, what he allows one thing at a time,
+# what she asks him before she does it, where he stands on a particular man, dares, promises.
+wishes:               # "what I want from you today". needs = openness she needs to take it well
+  sexier:     { consent: 5, upTo: 4, tip: 0.08, needs: 35 }
+  dress_bold: { outfit: 8, needs: 40 }
+  friendlier: { consent: 9, upTo: 4, tip: 0.12, needs: 0 }
+  more_coin:  { offer: 0.35, tip: 0.05, needs: 45 }        # what a guest's money is worth to her grows by this share
+  watch_you:  { consent: 8, upTo: 6, seen: true, expect: 25, needs: 55 }   # only counts where he can see
+  your_call:  { expectAll: 40, needs: 50 }
+  tone_down:  { consent: -14, tip: -0.1, needs: 0 }
+  cover_up:   { needs: 0 }
+against: { tone_down: [sexier, friendlier, watch_you, your_call, more_coin], cover_up: [dress_bold] }
+wishShock: { mood: -3, resent: 2, trust: -2 }   # asked for more than she is
+wishGlad: { arousal: 3 }
+staleAfter: 3         # the same wish this many days running: "how many times will you ask"
+staleAnnoy: 6
+items:                # allowed or forbidden one thing at a time
+  - { id: flirt, acts: [flirt, drink] }
+  - { id: hands_on_her, acts: [touch, grope, breast_play, fingering] }
+  - { id: kiss, acts: [kiss] }
+  - { id: lap, acts: [sit_on_lap, lap_dance, grinding] }
+  - { id: her_hand, acts: [handjob, mutual_touching, thigh_job, titfuck] }
+  - { id: her_mouth, acts: [blowjob, deepthroat, sixty_nine] }
+  - { id: his_mouth, acts: [cunnilingus] }
+  - { id: sex, acts: [sex, riding, standing_sex] }
+  - { id: anal, acts: [anal] }
+  - { id: cum_mouth, where: [mouth] }
+  - { id: cum_face, where: [face] }
+  - { id: cum_body, where: [chest, body, hands] }
+  - { id: cum_inside, where: [inside, anus] }
+cumObeys: 0.6         # hidden: chance she keeps to a "not there", times her honesty share; in the open she keeps to it
+ask:                  # she asks him before she does it
+  maxSure: 40         # only where she does not know what he thinks
+  fromTier: 2
+  trust: 50           # while she hides things she needs to trust him this much to ask at all
+  honesty: 50
+  upToTierHidden: 4
+  perDay: 3
+  yes: { trust: 2, tenderness: 2 }
+  later: { resent: 0.5 }
+  no: { resent: 1.5, longing: 4 }      # only if she wanted it
+  explain: { resent: -1.5, trust: 2 }
+  because: { resent: 2, anger: 8, trust: -3 }
+  relent: { trust: 1, delight: 3 }
+stance:               # where he stands on one man, said after something happened
+  free: { consent: 12 }
+  polite: { consent: -25, fromTier: 2 }
+  away: { consent: -40, fromTier: 1 }
+  hidden: 0.5         # share of a "no" that binds her behind his back, times her honesty share
+  likedFrom: 30       # affinity from which sending him away costs something
+  likedResent: 2
+  praise: { mood: 3, pride: 5, trust: 1 }
+  own: { trust: 2, pride: 3 }
+dares:                # "I dare you", tonight, with a man and a reason
+  list:
+    - { id: kiss_him, act: kiss }
+    - { id: sit_lap, act: sit_on_lap }
+    - { id: let_touch, act: grope }
+    - { id: lap_dance, act: lap_dance }
+    - { id: flash, bare: top, margin: 12 }       # a flash is easier than staying that way
+    - { id: walk_naked, bare: all, margin: 0 }
+  reasons: { just: 0, hostess: 4, coin: 6, curious: 0 }   # curious adds by her openness on top
+  curiousPerOpenness: 0.2
+  herPick: 5          # she chooses the man herself
+  fromHim: 6          # his asking is worth this much on its own
+  perEvening: 3
+  done: { pride: 4, arousal: 5, shame: 4 }
+  refused: { annoy: 6, resent: 1 }
+  flashHeat: 15
+  flashTip: 8
+about:                # talking over what happened
+  liked: { expect: 30, arousal: 4, shockFidelity: 65, shock: { mood: -3, resent: 2 } }
+  disliked: { expect: -30, guilt: 6, resentIfLiked: 2 }
+  never: { resentIfLiked: 3 }
+  tell: { honesty: 45, trust: 0.4, suspicion: -4, liePenalty: 0.5 }  # she tells if honesty + trust share clears it
+  protect: { trust: 2, tenderness: 3 }
+promises:
+  protect: { days: 3, kept: 4, broken: -7, contempt: 6 }
+  date: { days: 2, kept: 3, broken: -5, contempt: 3 }
+  complaint: { days: 3, kept: 5, broken: -8, contempt: 6 }
+press:                # pushing after a "no"
+  base: 0.25
+  perLowConfidence: 0.008   # per point of her confidence below 60
+  submissive: 0.3
+  perTrust: 0.003
+  gaveIn: { resent: 3, anger: 8, trust: -4, fear: 4, annoy: 8 }
+  snapped: { resent: 4, anger: 14, trust: -6, annoy: 15 }
+morning:
+  ignoredDesire: 40   # she wanted him enough to notice he never came near her all day
+  ignored: { longing: 5, resent: 1 }

@@ -16,6 +16,7 @@ activities:           # each once a day; at: cafe = at home, or the one place in
   - { id: market, energy: 6, minutes: 30, cost: 45, stock: 14, at: town.market }   # cheaper than the supplier
   - { id: gym, energy: 20, minutes: 90, cost: 20, gym: alone, at: town.gym }
   - { id: gym_together, energy: 20, minutes: 90, cost: 35, withHer: true, gym: together, at: town.gym, her: { mood: 3, energy: -8 } } # the changing rooms are separate
+  - { id: sit_together, energy: -2, minutes: 30, withHer: true, at: cafe, her: { mood: 3, desire: 1 } }
   - { id: nap, energy: -14, minutes: 60, at: cafe }   # an hour on the bed
 herDay:               # her own afternoon: one task after another, each in its room
   walkToTown: 10      # minutes between the cafe and the square
@@ -85,5 +86,5 @@ rhythm:               # the day around the clock: sleep, his own state, the bath
     arousal: { watch: 4, bare: 2, touch: 4, carried: 10, startHis: 0.25 }
     mood: { came: 4, refused: -3, talkLow: 0.7, talkHigh: 1.15, toHer: 0.1 }
   # debt is counted over the loan they started with
-  worry: { cashBelow: 300, debtFrom: 400, mood: -3, hardDebt: 1500, hardMood: -6, herShare: 0.6 }
+  worry: { cashBelow: 150, debtFrom: 400, mood: -3, hardDebt: 1500, hardMood: -6, herShare: 0.6 }
   bath: { washMinutes: 15, washMood: 2, sendMinutes: 20, sendAnnoy: 3, walkIn: { margin: 30, arousal: 8, annoy: 8 } }

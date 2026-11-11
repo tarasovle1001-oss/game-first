@@ -10,6 +10,7 @@ import type { ConsentInput } from "./encounters";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
 import { HALL } from "./places";
+import { annoyanceOf } from "./annoy";
 
 export const STRIP = "base/strip";
 const D = content.manners.talk.bare;
@@ -38,7 +39,7 @@ export const bareMargin = (state: GameState, off: Exclude<Bare, "none">, where =
   // at night in their own bed it is a different question than in the middle of the day
   const taste = where === "bedroom" ? 0 : ((h.prefs?.show ?? 50) - 50) * D.perShowTaste;
   const bedtime = where === "bedroom" && state.time.phase === "night" ? D.night : 0;
-  return taste + bedtime - (h.annoyance ?? 0) * content.manners.talk.annoy.strip + h.traits.openness + h.arousal * D.perArousal + h.drunk * D.perDrunk + likesEyes + habit + marriage - D.need[where]![off];
+  return taste + bedtime - annoyanceOf(state, "him") * content.manners.talk.annoy.strip + h.traits.openness + h.arousal * D.perArousal + h.drunk * D.perDrunk + likesEyes + habit + marriage - D.need[where]![off];
 };
 
 const guestsSee = (ctx: Ctx, first: boolean) => {
@@ -68,7 +69,7 @@ export function registerDress(api: ModApi) {
     describe: (a) => ({ key: `action.strip.${a.payload!.off}` }),
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase === "summary" || b.encounter || b.caught || b.reaction || b.night?.sex) return [];
+      if (state.time.phase === "summary" || b.encounter || b.caught || b.reaction || b.night?.sex || b.complaint || b.night?.herAsleep) return [];
       if (state.where[HUSBAND] !== state.where[WIFE] || !state.where[WIFE] || b.day?.busy) return [];
       const now = bareOf(state);
       const stamp = `${state.time.day}:${state.time.phase}`;

@@ -39,6 +39,13 @@ talk: # small things between the two of them; each once a day
     - { id: shoulders, group: touch, effects: { energy: 6, mood: 2 } }
     - { id: kiss_her, group: touch, effects: { arousal: 4, desire: 1 }, needs: { stat: desire, min: 30, publicExtra: 10 }, fail: { resent: 0.5 } }
     - { id: grab_ass, group: touch, effects: { arousal: 5 }, needs: { stat: openness, min: 35, publicExtra: 20 }, fail: { mood: -3, resent: 1 } }
+    - { id: praise, group: chat, effects: { mood: 3, desire: 0.5 } }
+    - { id: demean, group: chat, effects: {} }            # what it does depends on who she is: see terms
+    - { id: stroke_hair, group: touch, effects: { mood: 2, desire: 0.5 } }
+    - { id: fondle_breast, group: touch, effects: { arousal: 6 }, needs: { stat: desire, min: 40, publicExtra: 30 }, fail: { mood: -2, resent: 0.5 } }
+    - { id: under_skirt, group: touch, effects: { arousal: 9 }, needs: { stat: desire, min: 50, publicExtra: 35 }, fail: { mood: -3, resent: 1 } }
+    - { id: cuddle, group: touch, effects: { mood: 3, desire: 1, resent: -0.5 }, phases: [prep, night] }
+    - { id: carry_bed, group: touch, effects: { mood: 3, arousal: 4, desire: 1 }, needs: { stat: desire, min: 35 }, fail: { mood: -1 }, phases: [night] }
     - { id: pour_drink, group: touch, effects: { drunk: 10, mood: 2 }, stock: 1, phases: [shift, night] }
   groups: # what he can say "go on" or "don't" about
     - { id: flirting, tiers: [1, 2] }
@@ -109,7 +116,7 @@ talk: # small things between the two of them; each once a day
     keptOvernight: 0.25  # share of it still there the next day
     consent: 0.15        # per point, against every ask (guests: from tier 2)
     strip: 0.5           # per point, against undressing
-  touchCum: { from: [hug, kiss_her, grab_ass], fromDenied: 2, base: 0.02, perDenied: 0.04, max: 0.5 } # he has gone without for days: a kiss can finish him
+  touchCum: { from: [hug, kiss_her, grab_ass, fondle_breast, under_skirt, cuddle], fromDenied: 2, base: 0.02, perDenied: 0.04, max: 0.5 } # he has gone without for days: a kiss can finish him
   complainAt: 30          # her resentment from which she brings it up herself
   complainEveryDays: 4
   hear: { resent: 8 }
