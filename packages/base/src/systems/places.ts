@@ -33,6 +33,7 @@ export function registerPlaces(api: ModApi) {
     ctx.state.where[WIFE] = "cafe.bar";
     ctx.state.where[HUSBAND] = "cafe.hall";
     ctx.state.mods.core.controllable.push(HUSBAND);
+    for (const n of [1, 2, 3]) ctx.log(`log.intro.${n}`);
   });
 
   // Fallback scene: who shares the room with the viewer. Specific scenes outrank it.

@@ -4,6 +4,7 @@ import { bs, clamp, emptyLedger } from "../state";
 
 export const BUY_SUPPLIES = "base/buy-supplies";
 export const REPAY_DEBT = "base/repay-debt";
+export const TIP_SHARE = "base/tip-share";
 const REPAY_STEP = 100;
 
 /** All money moves go through here so that mods can react to money:changed. */
@@ -16,6 +17,16 @@ export function addMoney(ctx: Ctx, amount: number, reason: string) {
     b.money = 0;
   }
   ctx.emit("money:changed", { amount, reason });
+}
+
+/** Tips left for her, not for the coffee: her share goes to her purse, the rest to the till. Returns the till part. */
+export function addHerTips(ctx: Ctx, amount: number): number {
+  const b = bs(ctx.state);
+  const hers = Math.round(amount * b.purseShare);
+  b.purse += hers;
+  b.purseToday += hers;
+  if (amount - hers > 0) addMoney(ctx, amount - hers, "tips");
+  return amount - hers;
 }
 
 export function addReputation(ctx: Ctx, amount: number) {
@@ -60,6 +71,31 @@ export function registerEconomy(api: ModApi) {
     },
   });
 
+  api.actions.register({
+    id: TIP_SHARE,
+    labelKey: "action.tip_share",
+    describe: (a) => ({ key: "action.tip_share.set", params: { percent: Math.round((a.payload!.share as number) * 100) } }),
+    enumerate: (state) =>
+      state.time.phase === "prep" ? bal.purse.shares.filter((share) => share !== bs(state).purseShare).map((share) => ({ type: TIP_SHARE, payload: { share } })) : [],
+    apply(ctx, action) {
+      const share = action.payload!.share as number;
+      bs(ctx.state).purseShare = share;
+      ctx.log("log.tip_share", { percent: Math.round(share * 100) });
+    },
+  });
+
+  // Keeping nothing of what she earned sits badly with her; keeping all of it, well.
+  api.events.on("shift:end", (ctx) => {
+    const b = bs(ctx.state);
+    const earned = b.purseShare < 1 ? b.purseToday / Math.max(0.01, b.purseShare) : b.purseToday;
+    if (earned > 0 || (b.purseShare === 0 && b.today.tips > 0)) {
+      const mood = b.purseShare === 0 ? bal.purse.moodAtNone : b.purseShare === 1 ? bal.purse.moodAtAll : 0;
+      if (mood !== 0) b.heroine.mood = clamp(b.heroine.mood + mood);
+      if (b.purseShare === 0) b.heroine.marriage.resent = clamp(b.heroine.marriage.resent + 0.5);
+    }
+    b.purseToday = 0;
+  });
+
   // Day summary: rent and interest land when the summary phase starts.
   api.events.on("phase:enter", (ctx, e) => {
     if (e.payload!.phase !== "summary") return;
@@ -90,6 +126,7 @@ export function registerEconomy(api: ModApi) {
   api.invariants.add("economy-bounds", (s) => {
     const b = bs(s);
     if (b.money < 0) return `money is negative: ${b.money}`;
+    if (b.purse < 0 || !Number.isInteger(b.purse)) return `purse is broken: ${b.purse}`;
     if (b.debt < 0) return `debt is negative: ${b.debt}`;
     if (b.stock < 0) return `stock is negative: ${b.stock}`;
     if (b.reputation < 0 || b.reputation > 100) return `reputation out of range: ${b.reputation}`;

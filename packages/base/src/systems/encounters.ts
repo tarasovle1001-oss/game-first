@@ -6,7 +6,7 @@ import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Patron, Verdict, Visit } from "../state";
 import { fitOf, resolveBody } from "./body";
-import { addMoney } from "./economy";
+import { addHerTips } from "./economy";
 import { changeHeroine } from "./heroine";
 import { variantKey } from "../text";
 import { HALL, husbandIn, husbandNextTo, husbandSees, ticks } from "./places";
@@ -142,11 +142,11 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   }
 
   // a skilled hand or mouth is worth more to him
-  const tip = Math.round(((act.tip * p.traits.generosity) / 50) * (1 + skill / 100)) + input.offer;
+  const tip = Math.round(((act.tip * p.traits.generosity) / 50) * (1 + skill / 100) * content.balance.purse.actTipScale) + input.offer;
   if (tip > 0) {
-    addMoney(ctx, tip, "tips");
-    b.shift!.tips += tip;
-    b.today.tips += tip;
+    const till = addHerTips(ctx, tip); // the ledger counts only what reaches the till
+    b.shift!.tips += till;
+    b.today.tips += till;
     p.memory.tipsTotal += tip;
   }
 

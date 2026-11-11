@@ -131,6 +131,9 @@ export interface BaseState {
   debt: number;
   reputation: number; // 0..100
   stock: number; // servings left
+  purse: number; // her own money
+  purseShare: number; // share of her tips she keeps, 0..1
+  purseToday: number;
   heroine: Heroine;
   patrons: Record<string, Patron>;
   nextPatron: number;

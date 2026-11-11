@@ -27,6 +27,9 @@ export const baseMod: Mod = {
       debt: start.debt,
       reputation: start.reputation,
       stock: start.stock,
+      purse: 0,
+      purseShare: content.balance.purse.start,
+      purseToday: 0,
       heroine: newHeroine(),
       patrons: {},
       nextPatron: 1,
@@ -94,3 +97,4 @@ export { CAUGHT_STOP, CAUGHT_WATCH, CONFRONT } from "./systems/secrecy";
 export { CALL_WIFE, PHONE_PEEK, sendMessage } from "./systems/phone";
 export type { Message, PhoneState } from "./systems/phone";
 export { ASK_OUTFIT, SET_DIRECTIVE } from "./systems/manners";
+export { TIP_SHARE } from "./systems/economy";

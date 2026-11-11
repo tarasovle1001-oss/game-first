@@ -44,6 +44,7 @@ export function TopBar({ state, t }: Common) {
         <span className="bad">
           {t("ui.debt")} {b.debt}
         </span>
+        <span className="muted">{t("ui.purse", { purse: b.purse })}</span>
       </div>
       <div className="cell">
         <span className="cap">{t("ui.stock")}</span>

@@ -41,6 +41,8 @@ export const balanceSchema = z
   .object({
     start: z.object({ money: z.number(), debt: z.number().min(0), reputation: z.number().min(0).max(100), stock: z.number().int().min(0) }).strict(),
     rentPerDay: z.number().min(0),
+    // what she keeps of the tips men leave her: the options offered, the default, and how each sits with her (mood per day)
+    purse: z.object({ shares: z.array(z.number().min(0).max(1)).min(1), start: z.number().min(0).max(1), moodAtNone: z.number(), moodAtAll: z.number(), actTipScale: z.number().min(0) }).strict(),
     debtLimit: z.number().min(0), // supplies can be bought on credit until the debt reaches this
     debtInterestPerDay: z.number().min(0), // fraction, 0.01 = 1%
     supplies: z.object({ packCost: z.number().positive(), packServings: z.number().int().positive() }).strict(),
