@@ -19,6 +19,25 @@ night: # what she does when she lies awake wanting more
   husbandWakesChance: 0.3 # he wakes up and finds the bed empty
   wakesSuspicion: 14
 
+bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
+  minutesPerTurn: 2
+  startHis: 15
+  hisRate: 10       # per turn, for a husband who lasts 12 minutes
+  hisRateSex: 13
+  hersRate: 8
+  faster: [1.5, 0.5]  # multipliers [his, hers]
+  slower: [0.5, 1.5]
+  talk: [5, 8]        # flat gains [his, hers]
+  kiss: [3, 10]
+  undress: 4          # her gain per piece of clothing, once each
+  cumAt: 70           # he can let go from here; at 100 it happens by itself
+  herCloseAt: 70      # if she is this far when he finishes, it tips her over
+  afterOrgasm: 35     # her meter after she comes: she can come again
+  looseForHim: 0.45   # the least he gets out of a wife stretched far beyond his size
+  unluckyStart: 45    # one of those nights
+  deniedStart: 6      # added to where he starts, per night he has gone without
+  switchBonus: 10     # it is easier to ask for something else once it is going
+
 husband:
   size: 13
   stamina: 1

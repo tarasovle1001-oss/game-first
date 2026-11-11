@@ -168,3 +168,21 @@
   minutes: 20
   tip: 72
   zones: [vagina]
+- id: grinding
+  tier: 4
+  base: -30
+  scene: patron_grinding
+  place: public
+  effects: { arousal: 12, mood: 1, energy: -2, interest: 7, affinity: 2 }
+  minutes: 10
+  tip: 14
+  zones: []
+- id: mutual_touching
+  tier: 5
+  base: -42
+  scene: patron_mutual_touching
+  place: private
+  effects: { arousal: 16, mood: 2, energy: -3, interest: 8, affinity: 3 }
+  minutes: 20
+  tip: 24
+  zones: [hands]

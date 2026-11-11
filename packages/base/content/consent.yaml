@@ -37,6 +37,7 @@ tired: 15        # she has no energy left
 satisfied: 0.25  # per point of "just had her fill", intimate acts only
 size: 2.2        # per cm of his size above what she takes comfortably, scaled by her taste for size
 sizeCap: 16
+marital: 16      # husband only: he is her husband, the bedroom is theirs
 desire: 0.6      # husband only: per point of her desire for him above 50
 resent: 0.6      # husband only: per point of her resentment
 

@@ -135,3 +135,36 @@
   figures:
     - { role: wife, pose: lie_back, x: -10, y: 0, flip: false }
     - { role: husband, pose: kneel, x: 32, y: 0, flip: true }
+- id: patron_grinding
+  figures:
+    - { role: patron, pose: sit, x: 0, y: 0, flip: false }
+    - { role: wife, pose: straddle, x: 10, y: 24, flip: true }
+- id: patron_mutual_touching
+  figures:
+    - { role: wife, pose: sit, x: -22, y: 0, flip: false }
+    - { role: patron, pose: sit, x: 22, y: 0, flip: true }
+# in bed with her husband
+- id: grinding
+  figures:
+    - { role: husband, pose: lie_back, x: 0, y: 0, flip: false }
+    - { role: wife, pose: straddle, x: 8, y: 14, flip: true }
+- id: mutual_touching
+  figures:
+    - { role: wife, pose: lie_back, x: -30, y: 0, flip: false }
+    - { role: husband, pose: lie_back, x: 34, y: 0, flip: true }
+- id: handjob
+  figures:
+    - { role: husband, pose: lie_back, x: 6, y: 0, flip: false }
+    - { role: wife, pose: kneel, x: -40, y: 0, flip: false }
+- id: blowjob
+  figures:
+    - { role: husband, pose: sit, x: 12, y: 0, flip: true }
+    - { role: wife, pose: kneel, x: -24, y: 0, flip: false }
+- id: riding
+  figures:
+    - { role: husband, pose: lie_back, x: 0, y: 0, flip: false }
+    - { role: wife, pose: straddle, x: 8, y: 14, flip: true }
+- id: anal
+  figures:
+    - { role: wife, pose: all_fours, x: -8, y: 0, flip: false }
+    - { role: husband, pose: kneel, x: -44, y: 0, flip: false }

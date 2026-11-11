@@ -147,6 +147,7 @@ export const consentSchema = z
     satisfied: z.number(), // she has just had her fill
     size: z.number(), // per cm of his size above what she takes comfortably, intimate acts only
     sizeCap: z.number(),
+    marital: z.number(), // husband only: flat, he is her husband
     desire: z.number(), // husband only: her desire for him
     resent: z.number(), // husband only: her resentment
     // how fast her character moves when she says yes
@@ -177,6 +178,28 @@ export const bodySchema = z
     orgasmAt: z.number(), // climax meter needed for her to come
     satisfiedCoolPerTick: z.number().min(0),
     night: nightSchema,
+    // the bedroom scene, turn by turn: both of them have a pleasure meter 0..100
+    bed: z
+      .object({
+        minutesPerTurn: z.number().int().positive(),
+        startHis: z.number(),
+        hisRate: z.number(), // per turn for a husband who lasts 12 minutes
+        hisRateSex: z.number(),
+        hersRate: z.number(),
+        faster: z.tuple([z.number(), z.number()]), // multipliers [his, hers]
+        slower: z.tuple([z.number(), z.number()]),
+        talk: z.tuple([z.number(), z.number()]), // flat gains [his, hers]
+        kiss: z.tuple([z.number(), z.number()]),
+        undress: z.number(), // her gain per piece of clothing, once each
+        cumAt: z.number(), // he can let go from here
+        herCloseAt: z.number(), // if she is this far when he finishes, it tips her over
+        afterOrgasm: z.number(), // her meter after she comes
+        looseForHim: z.number().min(0).max(1), // the least he gets out of a wife stretched far beyond his size
+        unluckyStart: z.number(),
+        deniedStart: z.number(), // added to his start per night he has gone without
+        switchBonus: z.number(), // consent bonus for changing what they do once it is going
+      })
+      .strict(),
     sizeTasteGain: z.number().min(0), // taste for size gained per orgasm with someone bigger than her husband
     husband: z
       .object({

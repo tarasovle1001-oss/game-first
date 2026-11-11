@@ -656,3 +656,14 @@ header {
   margin: 3px 0;
   font-style: italic;
 }
+
+/* ---- bedroom scene ---- */
+.meters { margin-top: 8px; }
+.meters .bar { grid-template-columns: 3.5em 1fr 2.2em; }
+.fill.his { background: #3b7dd8; }
+.fill.hers { background: #d6457a; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { padding: 5px 10px; font-size: 0.9em; }
+.card-title.sub { margin-top: 10px; }
+.small { font-size: 0.88em; margin-top: 4px; }

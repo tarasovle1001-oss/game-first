@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { bs, content, WAIT } from "@tc/base";
+import { BED, bs, content, WAIT } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -83,7 +83,8 @@ function App() {
   const all = engine.listActions(state);
   const waits = all.filter((a) => a.type === WAIT);
   const advance = all.find((a) => a.type === CORE_ADVANCE);
-  const other = all.filter((a) => a.type !== WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE);
+  const bed = all.filter((a) => a.type === BED);
+  const other = all.filter((a) => a.type !== WAIT && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED);
 
   // keys 1-4 for the waits, Enter for the next phase
   useEffect(() => {
@@ -186,6 +187,26 @@ function App() {
             </div>
           )}
           {state.time.phase === "shift" && waits.length === 0 && advance && <div className="muted">{t("ui.closing")}</div>}
+          {bed.length > 0 && (
+            <div className="card">
+              <div className="card-title">{t("action.bed")}</div>
+              <div className="grid2">
+                {bed.filter((a) => !a.payload?.to).map((a, i) => (
+                  <button key={i} className={a.payload?.do === "finish" ? "primary" : ""} onClick={() => act(a)}>
+                    {actionLabel(a, t, lang)}
+                  </button>
+                ))}
+              </div>
+              <div className="card-title sub">{t("ui.bed.switch")}</div>
+              <div className="chips">
+                {bed.filter((a) => a.payload?.to).map((a, i) => (
+                  <button key={i} onClick={() => act(a)}>
+                    {t(`act.${a.payload!.to}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {other.length > 0 && (
             <div className="card">
               <div className="card-title">{t(`ui.todo.${state.time.phase}`)}</div>

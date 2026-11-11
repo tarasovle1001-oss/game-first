@@ -65,7 +65,7 @@ export const baseMod: Mod = {
         labelKey: `base.phase.${id}`,
         order: i,
         // the shift cannot be skipped: it runs its ticks first
-        canLeave: id === "shift" ? (state) => ticksDone(bs(state).shift) : undefined,
+        canLeave: id === "shift" ? (state) => ticksDone(bs(state).shift) : id === "night" ? (state) => !bs(state).night?.sex : undefined,
       }),
     );
     registerPlaces(api);
@@ -99,7 +99,7 @@ export { BUY_SUPPLIES, REPAY_DEBT, addMoney, addReputation } from "./systems/eco
 export { changeHeroine } from "./systems/heroine";
 export { renderLog, renderParams, patronName } from "./text";
 export { fitOf, pleasureFromSize } from "./systems/body";
-export { NIGHT_ACT, NIGHT_ACTS } from "./systems/marriage";
+export { BED, BED_ACTS, NIGHT_ACT, NIGHT_ACTS } from "./systems/marriage";
 export { CAUGHT_STOP, CAUGHT_WATCH, CONFRONT } from "./systems/secrecy";
 export { CALL_WIFE, PHONE_PEEK, sendMessage } from "./systems/phone";
 export type { Message, PhoneState } from "./systems/phone";

@@ -126,6 +126,16 @@ export function ScenePanel({ state, t, lang, scene, open }: Common & { scene: Sc
     <div className="scene">
       <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
       {!wifeHere && <div className="hint">{t("ui.not_here")}</div>}
+      {b.night?.sex && (
+        <div className="meters">
+          <Bar label={t("ui.bed.his")} value={b.night.sex.his} tone="his" />
+          <Bar label={t("ui.bed.hers")} value={b.night.sex.hers} tone="hers" />
+          <div className="muted small">
+            {t(`act.${b.night.sex.act}`)} · {b.night.sex.turns * content.body.bed.minutesPerTurn} {t("ui.min")}
+            {b.night.sex.came > 0 ? ` · ${t("ui.bed.came", { n: String(b.night.sex.came) })}` : ""}
+          </div>
+        </div>
+      )}
       {record && <WhyLine record={record} state={state} t={t} lang={lang} open={open} />}
     </div>
   );

@@ -28,6 +28,45 @@ export function pleasureFromSize(ratio: number): number {
   return 25;
 }
 
+/** Stretch and practice from one act with a partner of the given size. Returns how much it gives her, 0..100. */
+export function useBody(ctx: Ctx, act: Act, size: number): number {
+  const h = bs(ctx.state).heroine;
+  const zone = stretchZone(act);
+  let pleasure = 20; // she is the one giving
+  if (act.id === "cunnilingus") pleasure = 75;
+  else if (act.id === "grinding") pleasure = 45;
+  else if (act.id === "mutual_touching") pleasure = 60;
+  else if (zone === "vagina" || zone === "anus") {
+    const fit = fitOf(ctx.state, zone);
+    pleasure = pleasureFromSize(size / fit) * (zone === "anus" ? 0.75 : 1);
+    const over = size - fit;
+    if (over > 0) {
+      const z = h.body[zone];
+      z.stretch = clamp(z.stretch + over * B.stretchPerCm);
+      z.peak = Math.max(z.peak, z.stretch);
+    }
+  } else if (zone === "mouth") {
+    const over = size - fitOf(ctx.state, "mouth");
+    if (over > 0 && act.id === "deepthroat") {
+      const z = h.body.mouth;
+      z.stretch = clamp(z.stretch + over * B.stretchPerCm);
+      z.peak = Math.max(z.peak, z.stretch);
+    }
+  }
+  const skill = h.skills[act.id] ?? 0;
+  h.skills[act.id] = clamp(skill + B.skillGain * (1 - skill / 100));
+  return pleasure;
+}
+
+/** She comes: the same bookkeeping wherever it happens. */
+export function orgasm(ctx: Ctx) {
+  const h = bs(ctx.state).heroine;
+  h.orgasms += 1;
+  h.satisfied = 100;
+  changeHeroine(ctx, "arousal", -h.arousal + 8, "orgasm");
+  changeHeroine(ctx, "mood", 8, "orgasm");
+}
+
 export interface ActOutcome {
   pleasure: number; // 0..100, hers
   came: boolean;

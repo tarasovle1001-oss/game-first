@@ -1,16 +1,19 @@
 // The night at home: him and her. Goes through the same consent formula as any guest,
 // and through the same body rules, so a husband who does little for her shows up in the numbers.
-import type { ModApi } from "@tc/core";
+import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import { fitOf, resolveBody } from "./body";
+import { fitOf, orgasm, resolveBody, useBody } from "./body";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
-export const NIGHT_ACTS = ["kiss", "cunnilingus", "sex", "anal"];
+export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal"];
+export const BED = "base/bed";
+/** What a bedroom scene can turn into once it is going. */
+export const BED_ACTS = ["grinding", "mutual_touching", "handjob", "blowjob", "cunnilingus", "sex", "riding", "anal"];
 const BEDROOM = "home.bedroom";
 
 export function registerMarriage(api: ModApi) {
@@ -20,7 +23,7 @@ export function registerMarriage(api: ModApi) {
     if (phase === "night") {
       ctx.state.where[HUSBAND] = BEDROOM;
       ctx.state.where[WIFE] = BEDROOM;
-      b.night = { scene: "sleeping", asked: false };
+      b.night = { scene: "sleeping", asked: false, sex: null };
     }
     if (phase === "prep" && ctx.state.time.day > 1) {
       ctx.state.where[HUSBAND] = "cafe.hall";
@@ -31,13 +34,41 @@ export function registerMarriage(api: ModApi) {
     if (e.payload!.phase === "night") bs(ctx.state).night = null;
   });
 
+  const B = content.body.bed;
+  const H = content.body.husband;
+  const feel = (ctx: Ctx, desire: number, resent: number) => {
+    const m = bs(ctx.state).heroine.marriage;
+    // the closer to the top, the less a good night adds
+    m.desire = clamp(m.desire + (desire > 0 ? (desire * (100 - m.desire)) / 50 : desire));
+    m.resent = clamp(m.resent + resent);
+  };
+  const ask = (ctx: Ctx, actId: string, bonus = 0) => {
+    const b = bs(ctx.state);
+    const input: ConsentInput = { act: actId, partner: HUSBAND, loc: BEDROOM, offer: 0, pressure: 0 };
+    const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
+    const total = res.total + bonus;
+    const verdict = verdictOf(total);
+    b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: actId, loc: BEDROOM, verdict, seen: true, total, rows: bonus ? [...res.rows, { id: "consent.going", labelKey: "factor.consent.going", value: bonus }] : res.rows });
+    if (b.proposals.length > 12) b.proposals.shift();
+    return verdict;
+  };
+  /** Starts or changes what they are doing: her body takes it, the scene picture follows. */
+  const setAct = (ctx: Ctx, actId: string) => {
+    const b = bs(ctx.state);
+    const sex = b.night!.sex!;
+    sex.act = actId;
+    sex.pleasure = useBody(ctx, actById(actId), b.husband.size);
+    b.night!.scene = actId === "sex" ? "sex" : actId;
+  };
+
+  // He reaches for her. If she is willing, the scene begins and runs turn by turn.
   api.actions.register({
     id: NIGHT_ACT,
     labelKey: "action.night",
     describe: (a) => ({ key: `action.night.${a.payload!.act}` }),
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase !== "night" || !b.night || b.night.asked) return [];
+      if (state.time.phase !== "night" || !b.night || b.night.asked || b.night.sex) return [];
       if (state.where[HUSBAND] !== BEDROOM || state.where[WIFE] !== BEDROOM) return [];
       return NIGHT_ACTS.map((act) => ({ type: NIGHT_ACT, payload: { act } }));
     },
@@ -45,87 +76,208 @@ export function registerMarriage(api: ModApi) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const act = actById(action.payload!.act as string);
-      const input: ConsentInput = { act: act.id, partner: HUSBAND, loc: BEDROOM, offer: 0, pressure: 0 };
-      const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
-      const verdict = verdictOf(res.total);
       b.night!.asked = true;
-      b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: act.id, loc: BEDROOM, verdict, seen: true, total: res.total, rows: res.rows });
-      if (b.proposals.length > 12) b.proposals.shift();
-
-      const feel = (desire: number, resent: number) => {
-        // the closer to the top, the less a good night adds
-        h.marriage.desire = clamp(h.marriage.desire + (desire > 0 ? (desire * (100 - h.marriage.desire)) / 50 : desire));
-        h.marriage.resent = clamp(h.marriage.resent + resent);
-      };
+      const verdict = ask(ctx, act.id);
       if (verdict === "refuse") {
         b.night!.scene = "cold_back";
-        feel(0, 1);
+        feel(ctx, 0, 1);
         ctx.log("log.husband.refuse", { act: `action.night.${act.id}` });
         ctx.emit("husband:refused", { act: act.id });
         return;
       }
       if (act.id === "kiss") {
-        feel(1, -1);
+        feel(ctx, 1, -1);
         changeHeroine(ctx, "mood", 2, "husband");
         ctx.log("log.husband.kiss");
         return;
       }
       // being wanted by the man she wants does part of the work
-      changeHeroine(ctx, "arousal", h.marriage.desire * content.body.husband.foreplay, "husband");
-      const oral = act.id === "cunnilingus";
-      // how long he lasts tonight: less after days without, less the better she has become at this
-      const H = content.body.husband;
-      const skill = h.skills[act.id] ?? 0;
-      const unlucky = !oral && ctx.rng.chance(H.prematureChance + Math.max(0, b.denied) * H.prematureChancePerDeniedNight);
-      const lasts = oral
-        ? 15
-        : b.husband.minutes * Math.max(0.15, 1 - Math.max(0, b.denied) * H.shorterPerDeniedNight) * (1 - skill / H.skillHalvesAt / 2) * (unlucky ? 0.3 : 1);
-      changeHeroine(ctx, "energy", act.effects.energy, "husband");
+      changeHeroine(ctx, "arousal", h.marriage.desire * H.foreplay, "husband");
+      const unlucky = ctx.rng.chance(H.prematureChance + Math.max(0, b.denied) * H.prematureChancePerDeniedNight);
+      b.night!.sex = {
+        act: act.id,
+        his: clamp(B.startHis + Math.max(0, b.denied) * B.deniedStart + (unlucky ? B.unluckyStart : 0)),
+        hers: clamp(h.arousal * 0.4),
+        came: 0,
+        turns: 0,
+        top: false,
+        skirt: false,
+        pleasure: 0,
+      };
+      setAct(ctx, act.id);
+      ctx.log("log.bed.start", { act: `act.${act.id}` });
+      ctx.emit("bed:started", { act: act.id });
+    },
+  });
 
-      if (!oral && lasts < H.tooSoonBelow) {
-        // over before it began: nothing for her at all
-        b.night!.scene = "came_too_soon_foreplay";
-        feel(-2, 2.5);
-        changeHeroine(ctx, "arousal", 12, "left wanting");
-        changeHeroine(ctx, "mood", -4, "left wanting");
-        ctx.log("log.husband.too_soon");
-        ctx.emit("husband:act", { act: act.id, came: false, pleasure: 0, outcome: "too_soon" });
-        return;
-      }
-      const out = resolveBody(ctx, act, { size: b.husband.size, minutes: lasts });
-      let outcome: string;
-      if (out.came) {
-        outcome = "came";
-        b.night!.scene = oral ? "cunnilingus" : "sex";
-        feel(oral ? 2 : 3, -3);
-        ctx.log(`log.husband.${oral ? "oral" : "sex"}.came`);
+  /** How much one turn gives each of them, before the pace multiplier. */
+  const rates = (state: GameState) => {
+    const b = bs(state);
+    const h = b.heroine;
+    const sex = b.night!.sex!;
+    const act = actById(sex.act);
+    const inside = act.zones.includes("vagina") || act.zones.includes("anus");
+    // a wife stretched far past his size gives him less to feel
+    const zone = act.zones.includes("anus") ? "anus" : "vagina";
+    const tight = inside ? clamp((b.husband.size / fitOf(state, zone)) * 1.05, B.looseForHim, 1) : 1;
+    const skill = h.skills[sex.act] ?? 0;
+    const his = (inside ? B.hisRateSex : B.hisRate) * (12 / b.husband.minutes) * tight * (1 + skill / 150) * (act.id === "cunnilingus" ? 0.25 : 1);
+    const taste = 1 + (h.tastes.acts[sex.act] ?? 0) / 100;
+    const hers = B.hersRate * (sex.pleasure / 60) * taste * (0.6 + h.arousal / 120) * (1 - h.satisfied / 160);
+    return { his, hers };
+  };
+
+  /** One turn passes. Returns true when the scene is over. */
+  const turn = (ctx: Ctx, his: number, hers: number): boolean => {
+    const b = bs(ctx.state);
+    const sex = b.night!.sex!;
+    sex.turns += 1;
+    ctx.state.time.minute += B.minutesPerTurn;
+    sex.his = clamp(sex.his + his);
+    sex.hers = clamp(sex.hers + hers);
+    if (sex.hers >= 100) {
+      sex.came += 1;
+      sex.hers = B.afterOrgasm;
+      orgasm(ctx);
+      ctx.log("log.bed.she_comes");
+    }
+    if (sex.his >= 100) {
+      finish(ctx, "auto");
+      return true;
+    }
+    return false;
+  };
+
+  /** He comes (or stops). What it leaves her with depends on how far she got and on who she is. */
+  const finish = (ctx: Ctx, how: "auto" | "choice" | "stop") => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const sex = b.night!.sex!;
+    const act = actById(sex.act);
+    const oral = sex.act === "cunnilingus";
+    b.night!.sex = null;
+    if (how === "stop") {
+      // nobody finished: he just stopped
+      b.night!.scene = sex.came > 0 ? "sleeping" : "left_wanting";
+      if (sex.came === 0 && sex.hers >= 40) {
+        feel(ctx, -1, 1);
+        changeHeroine(ctx, "mood", -2, "stopped");
+      } else if (sex.came > 0) feel(ctx, 2, -2);
+      ctx.log(sex.came > 0 ? "log.bed.stop.she_came" : "log.bed.stop");
+      ctx.emit("bed:ended", { act: sex.act, came: sex.came > 0, outcome: "stopped", turns: sex.turns });
+      return;
+    }
+    // close enough when he finishes: it tips her over
+    if (sex.came === 0 && sex.hers >= B.herCloseAt) {
+      sex.came = 1;
+      orgasm(ctx);
+    }
+    changeHeroine(ctx, "energy", act.effects.energy, "husband");
+    const premature = sex.turns <= 2;
+    let outcome: string;
+    if (sex.came > 0) {
+      outcome = "came";
+      b.night!.scene = oral ? "cunnilingus" : "sex";
+      feel(ctx, oral ? 2 : 3, -3);
+      ctx.log(`log.husband.${oral ? "oral" : "sex"}.came`);
+    } else if (sex.turns === 0 || (premature && sex.his >= 100 && sex.turns <= 1)) {
+      outcome = "too_soon";
+      b.night!.scene = "came_too_soon_foreplay";
+      feel(ctx, -2, 2.5);
+      changeHeroine(ctx, "arousal", 12, "left wanting");
+      changeHeroine(ctx, "mood", -4, "left wanting");
+      ctx.log("log.husband.too_soon");
+    } else {
+      feel(ctx, premature ? -1.5 : -1, premature ? 2 : 1.5);
+      changeHeroine(ctx, "mood", -3, "left wanting");
+      if (h.traits.honesty < H.fakesBelowHonesty && h.marriage.desire >= 40) {
+        // she puts on a show for him: he believes it, the transparent log knows better
+        outcome = "faked";
+        b.night!.scene = "faking_it";
+        h.traits.honesty = clamp(h.traits.honesty - 1);
+        changeHeroine(ctx, "arousal", 10, "left wanting");
+        ctx.log("log.husband.sex.came");
+        ctx.log("log.husband.faked", undefined, ["unseen"]);
+      } else if (h.traits.libido >= H.finishesHerselfAtLibido || h.arousal >= 60) {
+        outcome = "finished_herself";
+        b.night!.scene = "finishing_herself";
+        h.satisfied = 60;
+        changeHeroine(ctx, "arousal", -h.arousal * 0.6, "finished herself");
+        ctx.log(premature ? "log.husband.premature.finishes_herself" : "log.husband.finishes_herself");
       } else {
-        // he is done, she is not. What she does about it depends on who she is
-        const premature = !oral && lasts < H.prematureBelow;
-        feel(premature ? -1.5 : -1, premature ? 2 : 1.5);
-        changeHeroine(ctx, "mood", -3, "left wanting");
-        if (h.traits.honesty < H.fakesBelowHonesty && h.marriage.desire >= 40) {
-          // she puts on a show for him: he believes it, the debug log knows better
-          outcome = "faked";
-          b.night!.scene = "faking_it";
-          h.traits.honesty = clamp(h.traits.honesty - 1);
-          changeHeroine(ctx, "arousal", 10, "left wanting");
-          ctx.log("log.husband.sex.came");
-          ctx.log("log.husband.faked", undefined, ["unseen"]);
-        } else if (h.traits.libido >= H.finishesHerselfAtLibido || h.arousal >= 60) {
-          outcome = "finished_herself";
-          b.night!.scene = "finishing_herself";
-          h.satisfied = 60;
-          changeHeroine(ctx, "arousal", -h.arousal * 0.6, "finished herself");
-          ctx.log(premature ? "log.husband.premature.finishes_herself" : "log.husband.finishes_herself");
-        } else {
-          outcome = premature ? "premature" : "left_wanting";
-          b.night!.scene = premature ? "premature_finish" : "left_wanting";
-          changeHeroine(ctx, "arousal", 10, "left wanting");
-          ctx.log(premature ? `log.husband.premature.${act.id === "anal" ? "anal" : "sex"}` : "log.husband.left_wanting");
+        outcome = premature ? "premature" : "left_wanting";
+        b.night!.scene = premature ? "premature_finish" : "left_wanting";
+        changeHeroine(ctx, "arousal", 10, "left wanting");
+        ctx.log(premature ? `log.husband.premature.${sex.act === "anal" ? "anal" : "sex"}` : "log.husband.left_wanting");
+      }
+    }
+    ctx.emit("husband:act", { act: sex.act, came: sex.came > 0, pleasure: sex.pleasure, outcome, turns: sex.turns });
+    ctx.emit("bed:ended", { act: sex.act, came: sex.came > 0, outcome, turns: sex.turns });
+  };
+
+  // What he can do while it lasts.
+  api.actions.register({
+    id: BED,
+    labelKey: "action.bed",
+    describe: (a) => (a.payload!.to ? { key: "action.bed.switch", params: { act: `act.${a.payload!.to}` } } : { key: `action.bed.${a.payload!.do}` }),
+    enumerate(state) {
+      const sex = bs(state).night?.sex;
+      if (state.time.phase !== "night" || !sex) return [];
+      const dos = ["keep", "faster", "slower", "talk", "kiss"];
+      if (!sex.top) dos.push("top");
+      if (!sex.skirt) dos.push("skirt");
+      if (sex.his >= B.cumAt) dos.push("finish");
+      const out = dos.map((d) => ({ type: BED, payload: { do: d } as Record<string, string> }));
+      for (const to of BED_ACTS) if (to !== sex.act) out.push({ type: BED, payload: { do: "switch", to } });
+      out.push({ type: BED, payload: { do: "stop" } });
+      return out;
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const sex = b.night!.sex!;
+      const what = action.payload!.do as string;
+      const r = rates(ctx.state);
+      switch (what) {
+        case "keep":
+          turn(ctx, r.his, r.hers);
+          break;
+        case "faster":
+          turn(ctx, r.his * B.faster[0], r.hers * B.faster[1]);
+          break;
+        case "slower":
+          turn(ctx, r.his * B.slower[0], r.hers * B.slower[1]);
+          break;
+        case "talk":
+          // dirty talk lands with an open woman and falls flat with a shy one
+          turn(ctx, B.talk[0], B.talk[1] * (0.4 + b.heroine.traits.openness / 80));
+          break;
+        case "kiss":
+          turn(ctx, B.kiss[0], B.kiss[1] * (0.5 + b.heroine.marriage.desire / 100));
+          break;
+        case "top":
+        case "skirt":
+          sex[what] = true;
+          turn(ctx, 2, B.undress);
+          break;
+        case "finish":
+          finish(ctx, "choice");
+          break;
+        case "stop":
+          finish(ctx, "stop");
+          break;
+        case "switch": {
+          const to = action.payload!.to as string;
+          if (ask(ctx, to, B.switchBonus) === "refuse") {
+            ctx.log("log.bed.switch.no", { act: `act.${to}` });
+            turn(ctx, 0, -6);
+          } else {
+            setAct(ctx, to);
+            ctx.log("log.bed.switch.yes", { act: `act.${to}` });
+            turn(ctx, 2, 2);
+          }
+          break;
         }
       }
-      ctx.emit("husband:act", { act: act.id, came: out.came, pleasure: out.pleasure, outcome });
     },
   });
 

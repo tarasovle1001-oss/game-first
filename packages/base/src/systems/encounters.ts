@@ -314,6 +314,7 @@ export function registerEncounters(api: ModApi) {
     return clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap);
   });
   // him: her husband
+  row("marital", 36, (_s, _i, _a, p) => (p ? null : c.marital));
   row("desire", 37, (s, _i, _a, p) => (p ? null : (her(s).marriage.desire - 50) * c.desire));
   row("resent", 38, (s, _i, _a, p) => (p ? null : -her(s).marriage.resent * c.resent));
   row("power_denies", 39, (s, _i, act, p) => (p || bs(s).mode !== "open" || act.tier < 5 ? null : -bs(s).power * sec.powerDenies));

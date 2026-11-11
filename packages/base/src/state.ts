@@ -78,6 +78,18 @@ export interface Visit {
   rounds: number; // intimate acts he has had tonight
 }
 
+/** The two of them in bed, turn by turn. */
+export interface BedScene {
+  act: string;
+  his: number; // 0..100
+  hers: number; // 0..100
+  came: number; // times she has come in this scene
+  turns: number;
+  top: boolean; // her top is open
+  skirt: boolean; // her skirt is pushed up
+  pleasure: number; // what the current act gives her, 0..100
+}
+
 export type Verdict = "eager" | "hesitant" | "refuse";
 
 /** Something is happening between her and a guest right now. The scene is derived from it. */
@@ -150,7 +162,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea

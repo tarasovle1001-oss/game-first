@@ -37,8 +37,17 @@ export const awayStrategy: Strategy = (actions, state) => {
 };
 
 /** Kitchen owner who also sleeps with his wife every night. */
-export const lovingStrategy: Strategy = (actions, state, roll) =>
-  actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") ?? awayStrategy(actions, state, roll);
+export const lovingStrategy: Strategy = (actions, state, roll) => {
+  const bed = actions.filter((a) => a.type === "base/bed");
+  if (bed.length) {
+    // an attentive husband: slows down while she is behind, lets go once she has come
+    const sex = (state.mods.base as { night: { sex: { his: number; hers: number; came: number } } }).night.sex;
+    const pick = (d: string) => bed.find((a) => a.payload?.do === d);
+    if (sex.came > 0) return pick("finish") ?? pick("faster")!;
+    return (sex.his > sex.hers ? pick("slower") : pick("keep"))!;
+  }
+  return actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") ?? awayStrategy(actions, state, roll);
+};
 
 /** Kitchen owner who checks the back room when she disappears, and stays to watch. */
 export const snoopStrategy: Strategy = (actions, state, roll) => {
