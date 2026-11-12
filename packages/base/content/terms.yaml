@@ -67,6 +67,9 @@ dares:                # "I dare you", tonight, with a man and a reason
     - { id: sit_lap, act: sit_on_lap }
     - { id: let_touch, act: grope }
     - { id: lap_dance, act: lap_dance }
+    - { id: striptease, act: striptease }
+    - { id: body_shot, act: body_shot }
+    - { id: massage, act: sauna_massage }
     - { id: flash, bare: top, margin: 12 }       # a flash is easier than staying that way
     - { id: walk_naked, bare: all, margin: 0 }
   reasons: { just: 0, hostess: 4, coin: 6, curious: 0 }   # curious adds by her openness on top

@@ -162,7 +162,7 @@ describe("in front of him", () => {
     expect(hows.map((a) => a.payload!.how)).toEqual(expect.arrayContaining(["cheer", "limit", "lead_away", "leave"]));
     for (const a of hows) {
       const next = engine.dispatch(found!, a);
-      expect(next.log.length).toBeGreaterThan(found!.log.length);
+      expect(next.turn).toBeGreaterThan(found!.turn);
       expect(engine.checkInvariants(next)).toEqual([]);
       expect(engine.listActions(next).length).toBeGreaterThan(0);
     }

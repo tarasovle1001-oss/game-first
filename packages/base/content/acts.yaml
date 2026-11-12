@@ -469,3 +469,34 @@
   only: husband
   motives: [affection]
   lines: true
+# --- with guests, from the questionnaires: a guest may ask for these, and her husband may dare her to ---
+- id: striptease
+  tier: 4
+  base: -34
+  scene: striptease
+  place: public
+  effects: { arousal: 9, mood: 1, energy: -4, interest: 7, affinity: 2 }
+  minutes: 10
+  tip: 25
+  zones: []
+  lines: true
+- id: body_shot
+  tier: 4
+  base: -34
+  scene: body_shot
+  place: public
+  effects: { arousal: 9, mood: 1, energy: -4, interest: 7, affinity: 2 }
+  minutes: 10
+  tip: 20
+  zones: []
+  lines: true
+- id: sauna_massage
+  tier: 5
+  base: -42
+  scene: sauna_massage
+  place: private
+  effects: { arousal: 9, mood: 1, energy: -4, interest: 7, affinity: 2 }
+  minutes: 10
+  tip: 30
+  zones: []
+  lines: true

@@ -8,12 +8,14 @@ import { actById, CONSENT_FORMULA, endEncounter, isIntimate, verdictOf } from ".
 import type { ConsentInput } from "./encounters";
 import { changeHim } from "./rhythm";
 import { changeHeroine } from "./heroine";
+import { feel } from "./mind";
 import { HALL, husbandSees } from "./places";
 
 export const REACT_STOP = "base/react-stop";
 export const REACT_APPROVE = "base/react-approve";
 /** Everything else he can do while it is happening in front of him: payload.how. */
 export const REACT = "base/react";
+export const KISS_AFTER = "base/kiss-after";
 const E = content.consent.expect;
 const TOLD_LIMIT = 10;
 
@@ -123,6 +125,7 @@ export function registerExpectations(api: ModApi) {
       const enc = b.encounter?.patron === r.patron ? b.encounter : null;
       const name = p?.name ?? "";
       const out: { type: string; payload: Record<string, string | number> }[] = ["cheer", "limit", "lead_away", "leave"].map((how) => ({ type: REACT, payload: { how, name } }));
+      if (enc && actById(r.act).tier >= 5 && b.husband.spentDay !== state.time.day) out.push({ type: REACT, payload: { how: "watch_stroke", name } });
       if (enc) {
         // somewhere with a door: the staff room, his room if he has one upstairs, their own bed
         if (enc.loc !== "cafe.staff") out.push({ type: REACT, payload: { how: "send_staff", name } });
@@ -152,6 +155,18 @@ export function registerExpectations(api: ModApi) {
         changeHeroine(ctx, "arousal", 7, "cheered on");
         p.memory.interest = clamp(p.memory.interest + 6);
         ctx.log("log.react.cheer", { name, act: `act.${act.id}` });
+      } else if (how === "watch_stroke") {
+        // he sits down and takes himself in hand: there is no plainer way of saying he likes it
+        up(9, 30);
+        tell(ctx, "told.watch_stroke", { act: `act.${act.id}` });
+        ctx.log("log.act.watch_stroke.start", { name });
+        ctx.log(`log.act.watch_stroke.turn.${ctx.rng.int(1, 3)}`, { name });
+        ctx.log("log.bed.his.watch_stroke");
+        changeHeroine(ctx, "arousal", h.traits.openness >= 50 ? 8 : 2, "he watches");
+        if (h.traits.fidelity >= 60) feel(ctx, "contempt", 4);
+        b.power = clamp(b.power + 2);
+        changeHim(ctx, "arousal", -40, "watched");
+        b.husband.spentDay = ctx.state.time.day;
       } else if (how === "limit") {
         // this far and one step more; past that, no
         up(act.tier + 1, 20);
@@ -209,6 +224,31 @@ export function registerExpectations(api: ModApi) {
         }
       }
       ctx.emit("reaction", { how, act: act.id, patron: p.id });
+    },
+  });
+
+  // Straight after another man she kisses her husband, if he asks for it: he tastes what was there.
+  api.actions.register({
+    id: KISS_AFTER,
+    labelKey: "action.kiss_after",
+    enumerate(state) {
+      const b = bs(state);
+      const sh = b.shift;
+      if (state.time.phase !== "shift" || !sh || b.encounter || b.reaction || b.caught || b.night || state.where[HUSBAND] !== state.where[WIFE] || b.kissedAfter === sh.tick) return [];
+      const last = [...b.proposals].reverse().find((p) => p.day === state.time.day && p.patron !== HUSBAND && p.verdict !== "refuse" && p.seen && isIntimate(actById(p.act)) && sh.tick - p.tick <= 20);
+      return last && (b.kissedAfter ?? -99) < last.tick ? [{ type: KISS_AFTER }] : [];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      b.kissedAfter = b.shift!.tick;
+      for (const a of content.acts) if (!a.only && a.tier <= 7) nudge(ctx, a.id, 12, 90);
+      ctx.log("log.act.kiss_wife_after.start");
+      ctx.log(`log.act.kiss_wife_after.turn.${ctx.rng.int(1, 3)}`);
+      changeHeroine(ctx, "arousal", 6, "kissed after");
+      h.marriage.trust = clamp((h.marriage.trust ?? 50) + 1);
+      b.power = clamp(b.power + 1);
+      ctx.emit("couple:kiss-after");
     },
   });
 

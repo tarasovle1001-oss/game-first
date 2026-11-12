@@ -572,3 +572,15 @@
   figures:
     - {"role": "wife", "pose": "sit", "x": -24, "y": 0, "flip": false, "torso": 84, "armR": [-70, 20]}
     - {"role": "husband", "pose": "sit", "x": 24, "y": 0, "flip": true, "torso": 84, "head": 70, "armR": [-60, -20]}
+- id: striptease
+  figures:
+    - {"role": "patron", "pose": "sit", "x": -4, "y": 0, "flip": false, "torso": 98, "armR": {"to": "wife.butt"}, "armL": {"to": "wife.pelvis", "dy": 6}}
+    - {"role": "wife", "pose": "straddle", "x": 12, "y": 20, "flip": true, "torso": 84, "armR": {"to": "patron.neck", "dx": -3}, "armL": {"to": "patron.shoulderL"}, "legR": [-10, -95], "legL": [-4, -98]}
+- id: body_shot
+  figures:
+    - {"role": "wife", "pose": "stand", "x": 5, "y": 0, "flip": false, "torso": 92, "head": 96, "armR": {"to": "patron.handR", "dy": 3}, "armL": [-80, -70]}
+    - {"role": "patron", "pose": "stand", "x": -8, "y": 0, "flip": false, "torso": 86, "head": 74, "armR": {"to": "wife.chest", "dx": 4}, "armL": {"to": "wife.groin", "dx": 2}}
+- id: sauna_massage
+  figures:
+    - {"role": "wife", "pose": "stand", "x": 5, "y": 0, "flip": false, "torso": 92, "head": 96, "armR": {"to": "patron.handR", "dy": 3}, "armL": [-80, -70]}
+    - {"role": "patron", "pose": "stand", "x": -8, "y": 0, "flip": false, "torso": 86, "head": 74, "armR": {"to": "wife.chest", "dx": 4}, "armL": {"to": "wife.groin", "dx": 2}}

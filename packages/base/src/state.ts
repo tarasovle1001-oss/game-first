@@ -271,6 +271,7 @@ export interface BaseState {
   changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   gossip: number; // 0..100, what the town says about her
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
+  kissedAfter?: number; // the minute of the shift she last kissed him straight after another man
   retroDay?: number; // the day she last asked him about a guest
   approach: { kind: string; patron?: string; public: boolean; at?: number; act?: string } | null; // she has come to him with something and waits for an answer
   approached: Record<string, number>; // kind -> last day she came with it
