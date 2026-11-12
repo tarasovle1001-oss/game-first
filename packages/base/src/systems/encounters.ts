@@ -619,7 +619,7 @@ export function registerEncounters(api: ModApi) {
   row("mood", 12, (s) => (her(s).mood - 50) * c.mood);
   row("tired", 13, (s, _i, act) => (her(s).energy < 20 && act.tier >= 2 ? -c.tired : null));
   // nights that left her wanting add up, and at some point they speak for any man who is not her husband
-  row("frustrated", 13.5, (s, _i, act, p) => (p && act.tier >= 3 && her(s).frustration >= 10 ? her(s).frustration * c.frustrated : null));
+  row("frustrated", 13.5, (s, _i, act) => (act.tier >= 3 && her(s).frustration >= 10 ? her(s).frustration * c.frustrated : null));
   row("satisfied", 14, (s, _i, act) => (isIntimate(act) ? -her(s).satisfied * c.satisfied : null));
   // her character
   row("openness", 20, (s, _i, act) => (her(s).traits.openness - 50) * c.openness * (0.3 + depth(act)));
@@ -667,7 +667,7 @@ export function registerEncounters(api: ModApi) {
     return clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap) * (p ? 1 : c.sizeHusband);
   });
   // him: her husband
-  row("marital", 36, (_s, _i, _a, p) => (p ? null : c.marital));
+  row("marital", 36, (_s, i, _a, p) => (p ? null : c.marital + (i.loc === "home.bedroom" ? c.maritalBed : 0)));
   row("desire", 37, (s, _i, _a, p) => (p ? null : (her(s).marriage.desire - 50) * c.desire));
   // he has gone without for nights: a wife who still cares lets him, out of tenderness or pity. One who holds the power does not
   row("pity", 38, (s, _i, _a, p) => {

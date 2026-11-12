@@ -207,15 +207,17 @@ export const consentSchema = z
     strangerBelow: z.number(),
     sizeHusband: z.number(),
     marital: z.number(), // husband only: flat, he is her husband
+    maritalBed: z.number(),
     desire: z.number(), // husband only: her desire for him
     resent: z.number(), // husband only: her resentment
     // how fast her character moves when she says yes
-    drift: z.object({ openness: z.number(), fidelity: z.number(), confidence: z.number(), husbandSize: z.number(), husbandSizeGap: z.number() }).strict(),
+    drift: z.object({ openness: z.number(), fidelity: z.number(), confidence: z.number(), husbandSize: z.number(), husbandSizeGap: z.number(), husbandOthers: z.number() }).strict(),
   })
   .strict();
 
 export const nightSchema = z
   .object({
+    withoutPerLibido: z.number().min(0), // frustration she gains per point of libido on a day that brought her no release
     restlessArousal: z.number(), // she cannot sleep above this arousal when the evening left her unsatisfied
     selfChance: z.number().min(0).max(1), // she takes care of herself in the bathroom
     slipOutChance: z.number().min(0).max(1), // she goes to a lover instead, if she has one
@@ -292,6 +294,7 @@ export const bodySchema = z
         finishesHerselfAtLibido: z.number(),
         foreplay: z.number().min(0), // arousal she gets from him per point of her desire for him
         desire: z.number().min(0).max(100), // her desire for him at the start
+        desireGain: z.number().min(0), // how much of a good night with him turns into wanting him more
         resent: z.number().min(0).max(100),
       })
       .strict(),

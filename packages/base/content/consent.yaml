@@ -101,6 +101,7 @@ frustrated: 0.2  # per point of piled-up frustration, with guests, from tier 3
 satisfied: 0.25  # per point of "just had her fill", intimate acts only
 size: 2.2        # per cm of his size above what she takes comfortably, scaled by her taste for size
 sizeCap: 16
+maritalBed: 16   # husband only, on top of "marital": at home in their own bedroom
 marital: 16      # husband only: he is her husband, the bedroom is theirs
 desire: 0.6      # husband only: per point of her desire for him above 50
 resent: 0.6      # husband only: per point of her resentment
@@ -111,4 +112,5 @@ drift:
   fidelity: 0.1
   confidence: 0.05
   husbandSize: 0.05   # desire for her husband lost per day, per cm she is used to above his size, times her taste for size / 50
+  husbandOthers: 1    # desire for her husband lost on every day she went as far as her mouth or further with another man
   husbandSizeGap: 12  # cm counted at most: past that it is no longer about how stretched she is

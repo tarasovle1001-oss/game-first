@@ -59,6 +59,9 @@ export function registerHeroine(api: ModApi) {
   api.events.on("day:end", (ctx) => {
     const h = bs(ctx.state).heroine;
     h.frustration = Math.max(0, (h.frustration ?? 0) - 2); // it fades slowly on its own
+    // a day that brought her nothing adds to it, by how much she needs it
+    const came = bs(ctx.state).diary?.find((d) => d.day === ctx.state.time.day)?.came ?? 0;
+    if (came === 0) h.frustration = clamp(h.frustration + h.traits.libido * content.body.night.withoutPerLibido);
   });
   api.events.on("shift:tick", (ctx) => {
     const b = bs(ctx.state);

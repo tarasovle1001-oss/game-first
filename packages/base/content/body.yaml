@@ -1,9 +1,9 @@
 # Body progression, pleasure and the husband. All numbers are tunable.
 fit: # the size (cm) a zone takes comfortably = base + stretch * perStretch
-  vagina: { base: 12.5, perStretch: 0.28 } # 100 stretch = about 40 cm
-  anus: { base: 8, perStretch: 0.28 }
+  vagina: { base: 12.5, perStretch: 0.215 } # 100 stretch = about 34 cm
+  anus: { base: 8, perStretch: 0.215 }
   mouth: { base: 11, perStretch: 0.08 }
-stretchPerCm: 0.5   # stretch gained per cm above the comfortable size, per act
+stretchPerCm: 0.65   # stretch gained per cm above the comfortable size, per act
 recoverPerDay: 0.16
 permanentShare: 0.6 # part of the peak stretch that never goes back
 skillGain: 7        # per practice, shrinking as the skill grows
@@ -12,6 +12,7 @@ satisfiedCoolPerTick: 1.2
 sizeTasteGain: 4    # taste for size gained per orgasm with someone bigger than her husband
 
 night: # what she does when she lies awake wanting more
+  withoutPerLibido: 0.1   # frustration gained per point of her libido on a day without a single release (it fades by 2 a day on its own)
   restlessArousal: 40     # she cannot sleep above this arousal if nobody satisfied her tonight
   selfChance: 0.6         # she slips into the bathroom and takes care of herself
   slipOutChance: 0.35     # ...or goes to a lover, if there is a man she has slept with and has his number
@@ -91,5 +92,6 @@ husband:
   finishesHerselfAtLibido: 60
   foreplay: 0.25    # arousal she gets from him per point of her desire for him
   style: naive      # naive | jealous | encouraging
-  desire: 60        # her desire for him at the start
+  desire: 50        # her desire for him at the start
+  desireGain: 0.3   # share of a good night with him that turns into wanting him more
   resent: 5

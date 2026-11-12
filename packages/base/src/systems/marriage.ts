@@ -1,7 +1,7 @@
 // The night at home: him and her. Goes through the same consent formula as any guest,
 // and through the same body rules, so a husband who does little for her shows up in the numbers.
 import type { Ctx, GameState, ModApi } from "@tc/core";
-import { content } from "../content";
+import { actOf, content } from "../content";
 import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { fitOf, orgasm, pleasureFor, resolveBody, useBody } from "./body";
@@ -100,7 +100,7 @@ export function registerMarriage(api: ModApi) {
   const feel = (ctx: Ctx, desire: number, resent: number) => {
     const m = bs(ctx.state).heroine.marriage;
     // the closer to the top, the less a good night adds
-    m.desire = clamp(m.desire + (desire > 0 ? (desire * (100 - m.desire)) / 50 : desire));
+    m.desire = clamp(m.desire + (desire > 0 ? (desire * H.desireGain * (100 - m.desire)) / 50 : desire));
     m.resent = clamp(m.resent + resent);
   };
   const ask = (ctx: Ctx, actId: string, bonus = 0, why = "going", loc: string = BEDROOM, more: [string, number][] = []) => {
@@ -1093,6 +1093,10 @@ export function registerMarriage(api: ModApi) {
     const Dr = content.consent.drift;
     // what counts is how much she has come to want more than he has, not the stretch itself
     if (gap > 1) b.heroine.marriage.desire = clamp(b.heroine.marriage.desire - Math.min(gap, Dr.husbandSizeGap) * Dr.husbandSize * (b.heroine.sizeTaste / 50));
+    // a day on which she went far with another man takes a little of her wanting her husband with it
+    const today = b.diary?.find((d) => d.day === ctx.state.time.day);
+    const far = Object.entries(today?.with ?? {}).some(([who, acts]) => who !== HUSBAND && Object.keys(acts).some((a) => (actOf(a)?.tier ?? 0) >= 5));
+    if (far) b.heroine.marriage.desire = clamp(b.heroine.marriage.desire - Dr.husbandOthers);
   });
 
   api.scenes.register({

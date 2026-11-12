@@ -48,10 +48,10 @@ thoughts:
   from: 6           # a single surge of a feeling at least this big may surface as a thought
   gap: 25           # minutes between thoughts
 trust:
-  start: 60
+  start: 50
   consent: 0.15     # per point above or below 50, in what she answers her husband
   confess: 0.3      # per point above 50, added to her honesty when she decides whether to tell
-  change: { heard: 3, probed: 1, pushedBack: -4, protected: 4, stoppedHerFun: -2, woken: -3, date: 2, chores: 1, turnedDown: -1, walkedIn: -1, pushedToGuest: -3, caughtStop: -2 }
+  change: { heard: 1.5, probed: 1, pushedBack: -4, protected: 4, stoppedHerFun: -2, woken: -3, date: 2, chores: 1, turnedDown: -1, walkedIn: -1, pushedToGuest: -3, caughtStop: -2 }
 attributes:         # 0..100, 50 is ordinary
   spread: 10        # seeded spread around 50 at the start
   charm: { tipShare: 0.1 }          # share of the bill at 100, taken away at 0
