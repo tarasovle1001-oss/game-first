@@ -237,6 +237,24 @@ export function registerFloor(api: ModApi) {
     b.today.income += g.bill;
     ctx.log("log.group.leave", { bill: g.bill, n: g.size });
   };
+  /** The company is sent off at the door, or left standing there until it leaves. */
+  const turnAway = (ctx: Ctx, waited: boolean) => {
+    const sh = bs(ctx.state).shift!;
+    sh.group = undefined;
+    addReputation(ctx, -2);
+    ctx.log(waited ? "log.group.gone" : "log.group.decline");
+  };
+  /** A round they asked for and did not get. The first is forgiven. */
+  const ignored = (ctx: Ctx, waited: boolean) => {
+    const sh = bs(ctx.state).shift!;
+    const g = sh.group!;
+    g.wants = undefined;
+    g.nextTray = sh.tick + Gr.trayEvery;
+    g.ignored = (g.ignored ?? 0) + 1;
+    g.heat = clamp(g.heat - 5);
+    if (g.ignored >= 2) addReputation(ctx, -1);
+    ctx.log(g.ignored >= 2 ? "log.group.ignored.again" : waited ? "log.group.ignored.waited" : "log.group.ignored");
+  };
   const tierFor = (heat: number) => Gr.tierByHeat.filter(([from]) => heat >= from).at(-1)?.[1] ?? 1;
   api.events.on("shift:minute", (ctx) => {
     const b = bs(ctx.state);
@@ -249,13 +267,20 @@ export function registerFloor(api: ModApi) {
       lead.memory.visits = 1;
       lead.memory.lastDay = ctx.state.time.day;
       const sauna = b.upgrades.includes("sauna") && ctx.rng.chance(Gr.saunaChance);
-      sh.group = { kind: ctx.rng.pick(Gr.kinds), size: ctx.rng.int(Gr.size[0], Gr.size[1]), lead: lead.id, until: sh.tick + Gr.stay, heat: sauna ? Gr.saunaHeat : 10, nextTray: sh.tick + 5, rounds: 0, bill: 0, ...(sauna ? { sauna: true } : {}) };
+      sh.group = { kind: ctx.rng.pick(Gr.kinds), size: ctx.rng.int(Gr.size[0], Gr.size[1]), lead: lead.id, until: sh.tick + Gr.stay, heat: sauna ? Gr.saunaHeat : 10, nextTray: sh.tick + 5, rounds: 0, bill: 0, pending: sh.tick, ...(sauna ? { sauna: true } : {}) };
       sh.interrupt = true;
       ctx.log(sauna ? "log.group.arrive.sauna" : `log.group.arrive.${sh.group.kind}`, { n: sh.group.size });
       return;
     }
     const g = sh.group;
     if (!g) return;
+    if (g.pending !== undefined) {
+      // they stand in the doorway waiting for a yes; not for ever
+      if (sh.tick - g.pending >= 20) turnAway(ctx, true);
+      return;
+    }
+    // a round nobody brought: they notice, and it costs the house
+    if (g.wants !== undefined && sh.tick - g.wants >= 20) ignored(ctx, true);
     // she comes back out
     if (g.herOut !== undefined && sh.tick >= g.herOut) {
       g.herOut = undefined;
@@ -351,8 +376,10 @@ export function registerFloor(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       const g = b.shift?.group;
-      if (state.time.phase !== "shift" || !g || g.wants === undefined || b.caught || b.night?.sex) return [];
-      const dos: string[] = [];
+      if (state.time.phase !== "shift" || !g || b.caught || b.night?.sex) return [];
+      if (g.pending !== undefined) return ["accept", "decline"].map((d) => ({ type: GROUP, payload: { do: d } }));
+      if (g.wants === undefined) return [];
+      const dos: string[] = ["ignore"];
       if (!b.encounter && g.herOut === undefined && b.heroine.energy > 0) dos.push("send_her");
       if (state.where[HUSBAND] === HALL || state.where[HUSBAND] === "cafe.bar") dos.push("self");
       return dos.map((d) => ({ type: GROUP, payload: { do: d } }));
@@ -361,7 +388,19 @@ export function registerFloor(api: ModApi) {
       const b = bs(ctx.state);
       const sh = b.shift!;
       const g = sh.group!;
-      const her = action.payload!.do === "send_her";
+      const what = action.payload!.do as string;
+      if (what === "accept") {
+        // a full back room is talked about, and they pay for every round
+        g.pending = undefined;
+        g.until = sh.tick + Gr.stay;
+        g.nextTray = sh.tick + 5;
+        addReputation(ctx, 2);
+        ctx.log("log.group.accept", { n: g.size });
+        return;
+      }
+      if (what === "decline") return void turnAway(ctx, false);
+      if (what === "ignore") return void ignored(ctx, false);
+      const her = what === "send_her";
       g.wants = undefined;
       g.rounds += 1;
       g.nextTray = sh.tick + Gr.trayEvery;

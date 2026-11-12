@@ -59,8 +59,18 @@ const privateRoomFor = (state: GameState, engine: EngineView, partner?: string):
   // If the secret itself excites her, next door is exactly where she goes.
   const b = bs(state);
   const thrill = b.heroine.latents.guilt_thrill !== undefined;
-  const risk = (r: string) => (husbandIn(state, r) ? 2 : husbandNextTo(state, r) ? (thrill ? -1 : 1) : 0);
-  return b.mode === "open" ? rooms[0]! : [...rooms].sort((x, y) => risk(x) - risk(y) || x.localeCompare(y))[0]!;
+  // a room whose only door opens into the room he is standing in means walking the man past him: as bad as his own room
+  const here = state.where[HUSBAND] ?? "";
+  const pastHim = (r: string) => {
+    const doors = content.rooms.find((x) => x.id === r)?.links ?? [];
+    return doors.length > 0 && doors.every((d) => d === here);
+  };
+  const risk = (r: string) => (husbandIn(state, r) || pastHim(r) ? 2 : husbandNextTo(state, r) ? (thrill ? -1 : 1) : 0);
+  // when it is in the open between them there is nothing to walk around
+  if (b.mode === "open") return rooms[0]!;
+  const best = [...rooms].sort((x, y) => risk(x) - risk(y) || x.localeCompare(y))[0]!;
+  // nowhere to go without passing him: not now
+  return risk(best) >= 2 && !thrill ? null : best;
 };
 
 /** Money he puts on the table: the paying kind does, once per time with her. */

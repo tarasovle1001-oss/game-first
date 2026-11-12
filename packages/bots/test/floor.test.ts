@@ -58,6 +58,8 @@ describe("the floor", () => {
     let s = structuredClone(evening(4, { base: { preset: "curious" } }));
     bs(s).shift!.groupAt = bs(s).shift!.tick + 1;
     s = wait(s, 10);
+    // they wait in the doorway until he says yes; a company let in is worth a little to the name of the place
+    { const rep = bs(s).reputation; s = engine.dispatch(s, { type: GROUP, payload: { do: "accept" } }); expect(bs(s).reputation).toBe(Math.min(100, rep + 2)); }
     expect(bs(s).shift!.group).toBeDefined();
     let guard = 0;
     while (!has(s, GROUP) && guard++ < 20) s = wait(s, 5);
@@ -77,6 +79,10 @@ describe("the floor", () => {
     let s = structuredClone(evening(4));
     bs(s).shift!.groupAt = bs(s).shift!.tick + 1;
     s = wait(s, 10);
+    // they wait in the doorway until he says yes; a company let in is worth a little to the name of the place
+    { const rep = bs(s).reputation; s = engine.dispatch(s, { type: GROUP, payload: { do: "accept" } }); expect(bs(s).reputation).toBe(Math.min(100, rep + 2)); }
+    { let g = 0; while (!has(s, GROUP, (p) => p.do === "self") && g++ < 20) s = wait(s, 5); }
+    expect(has(s, GROUP, (p) => p.do === "ignore")).toBe(true); // he can also let them wait
     s = engine.dispatch(s, { type: GROUP, payload: { do: "self" } });
     const bill = bs(s).shift!.group!.bill;
     const income = bs(s).today.income;

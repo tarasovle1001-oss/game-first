@@ -213,7 +213,7 @@ export interface Shift {
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
   groupAt?: number; // minute a company walks in
-  group?: { kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number; sauna?: boolean }; // the company in the back room
+  group?: { pending?: number; ignored?: number; kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number; sauna?: boolean }; // the company in the back room
   tableSat?: number;
   tableWith?: string[];
 }

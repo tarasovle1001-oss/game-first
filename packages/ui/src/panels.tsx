@@ -392,10 +392,12 @@ function fmt(v: number) {
 
 /** One line "who, what, verdict" + the three biggest reasons; the full table opens on click. */
 export function WhyLine({ record, state, t, lang, open: transparent }: Common & { record: ProposalRecord }) {
-  const [open, setOpen] = useState(false);
+  // a card, not a line: every reason on its own row, biggest first, with a bar for its weight
+  const [open, setOpen] = useState(true);
   const p = bs(state).patrons[record.patron];
-  const top = [...record.rows].sort((a, c) => Math.abs(c.value) - Math.abs(a.value)).slice(0, 3);
-  const rows = open ? record.rows : top;
+  const sorted = [...record.rows].sort((a, c) => Math.abs(c.value) - Math.abs(a.value));
+  const rows = open ? sorted : sorted.slice(0, 3);
+  const peak = Math.max(1, ...sorted.map((r) => Math.abs(r.value)));
   return (
     <div className={`why verdict-${record.verdict}`}>
       <div className="why-head">
@@ -412,13 +414,20 @@ export function WhyLine({ record, state, t, lang, open: transparent }: Common & 
           {open ? t("ui.why.less") : t("ui.why.more")}
         </button>
       </div>
-      <div className={open ? "rows open" : "rows"}>
+      <div className="why-cap">{t(record.verdict === "refuse" ? "ui.why.cap.no" : "ui.why.cap.yes")}</div>
+      <div className="why-list">
         {rows.map((r) => (
-          <span key={r.id} className="row">
-            {t(!transparent && r.id.startsWith("consent.latent.") ? "factor.consent.latent" : r.labelKey)} <b className={r.value < 0 ? "neg" : "pos"}>{fmt(r.value)}</b>
-          </span>
+          <div key={r.id} className={`why-row ${r.value < 0 ? "neg" : "pos"}`}>
+            <span className="why-arrow">{r.value < 0 ? "↓" : "↑"}</span>
+            <span className="why-label">{t(!transparent && r.id.startsWith("consent.latent.") ? "factor.consent.latent" : r.labelKey)}</span>
+            <span className="why-bar">
+              <i style={{ width: `${Math.max(6, Math.round((Math.abs(r.value) / peak) * 100))}%` }} />
+            </span>
+            {transparent && <b className={r.value < 0 ? "neg" : "pos"}>{fmt(r.value)}</b>}
+          </div>
         ))}
       </div>
+      <div className="why-foot muted small">{t("ui.why.foot", { total: fmt(record.total), yes: content.consent.hesitantAt, eager: content.consent.eagerAt })}</div>
     </div>
   );
 }

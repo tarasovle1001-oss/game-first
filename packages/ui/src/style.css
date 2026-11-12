@@ -900,3 +900,14 @@ header { min-width: 0; }
 /* she is out of his sight: drawn where he saw her last */
 .rg-who i.wife.guess { opacity: 0.45; background: transparent; border: 1px dashed currentColor; color: var(--pink, #e0558c); }
 .entry.k-noise, .entry[class*="noise"] { opacity: 0.6; font-style: italic; }
+
+/* why she does it: a card of reasons under the picture */
+.why-cap { font-size: 0.72em; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; margin: 6px 0 4px; }
+.why-list { display: flex; flex-direction: column; gap: 3px; }
+.why-row { display: grid; grid-template-columns: 1.2em minmax(0, 1fr) 72px auto; align-items: center; gap: 8px; padding: 3px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.why-row.pos .why-arrow { color: #46c98b; } .why-row.neg .why-arrow { color: #e5645b; }
+.why-row.neg .why-label { opacity: 0.75; }
+.why-bar { height: 7px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; overflow: hidden; display: flex; justify-content: flex-end; }
+.why-bar i { display: block; height: 100%; border-radius: 4px; background: #46c98b; }
+.why-row.neg .why-bar i { background: #e5645b; }
+.why-foot { margin-top: 6px; }
