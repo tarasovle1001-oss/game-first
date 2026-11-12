@@ -58,8 +58,8 @@ shop:                 # in town; she also buys for herself from her purse
   toyStretchAbove: 4  # she buys a toy at most this much above what she takes comfortably
   toySatisfied: 80
   solo: # her own drawer: what she buys and uses by herself
-    at: 30          # frustration from which she shuts herself in before opening
-    buyAt: 40       # frustration from which she buys her first one; half of it is enough for the next size
+    at: 15          # frustration from which she shuts herself in before opening
+    buyAt: 20       # frustration from which she buys her first one; half of it is enough for the next size
     firstSize: 11   # nothing smaller is worth her money
     outgrown: 2     # she wants the next size once she takes comfortably within this many cm of her biggest
     relief: 25      # frustration a session with a toy takes off (half with fingers only)
@@ -107,7 +107,7 @@ world:                # the week and the sky: more people on some days, fewer on
     - { id: heat, weight: 1, arrivals: 0.1 }
     - { id: cold, weight: 1, arrivals: -0.08 }
     - { id: storm, weight: 0.5, arrivals: -0.3 }
-  famePerRegular: 3
-  famePerDay: 0.5
+  famePerRegular: 2
+  famePerDay: 0.3
   fameArrivals: 0.002  # per point of fame
   fameTiers: [[0, nobody], [20, known], [45, talked], [70, famous], [90, legend]]

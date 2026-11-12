@@ -1,7 +1,7 @@
 # Economy and pacing numbers. Change here, not in code.
 start:
   money: 400
-  debt: 6000
+  debt: 10000
   reputation: 40
   stock: 30
 rentPerDay: 560
@@ -11,7 +11,7 @@ purse: # tips the men leave her for more than coffee: part goes into her purse, 
   start: 0.5
   moodAtNone: -3   # her mood per day when she keeps nothing of what she earned
   moodAtAll: 2
-  actTipScale: 0.6 # overall size of those tips
+  actTipScale: 1.0 # overall size of those tips
 trouble: # things break, and an unwatched till gets robbed
   breakdownChancePerDay: 0.07
   breakdownCost: [120, 420]
@@ -19,6 +19,10 @@ trouble: # things break, and an unwatched till gets robbed
   tillTheftShare: [10, 30]     # percent of tonight's takings
 debtLimit: 20000 # supplies can be bought on credit until the debt reaches this
 debtInterestPerDay: 0.008 # fraction of the debt added every day
+service: # how the place is run, 0..100 ("reputation" in the code)
+  served: 0.25    # per guest who was served and left
+  ignored: 1      # lost per guest who walked out unserved
+  taperFrom: 50   # above this a served guest adds less and less: nothing at 100
 supplies:
   packCost: 60
   packServings: 12
@@ -33,7 +37,7 @@ clock: # minute of the day each phase starts at
 loan: # the debt is paid in instalments; miss one and the lender starts dropping by
   everyDays: 7
   firstDueDay: 7
-  share: 0.15         # of what is owed
+  share: 0.1          # of what is owed
   min: 500
   lateFee: 0.15       # of the missed instalment, added to the debt
   visitsAfterMiss: 3  # evenings he comes by after a missed date

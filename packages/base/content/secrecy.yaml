@@ -27,8 +27,8 @@ lead:
 
 gossip: # what the town says about her, 0..100
   fromTier: 3        # things from this tier up, done on the floor with other guests there, get talked about
-  perTier: 0.5       # per tier above that, per witness (up to three)
-  braggart: 1        # a dishonest man who got far tells his friends
+  perTier: 0.25       # per tier above that, per witness (up to three)
+  braggart: 0.5        # a dishonest man who got far tells his friends
   noticeFrom: 15     # below this nobody has heard anything
   interest: 0.25     # a new guest walks in already wanting her, per point of gossip
   arrivals: 0.004    # share added to the evening flow per point

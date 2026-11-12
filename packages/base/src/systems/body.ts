@@ -61,7 +61,7 @@ export function useBody(ctx: Ctx, act: Act, size: number): number {
     const over = size - fit;
     if (over > 0) {
       const z = h.body[zone];
-      z.stretch = clamp(z.stretch + over * B.stretchPerCm);
+      z.stretch = clamp(z.stretch + over * B.stretchPerCm * (B.stretchZone[zone] ?? 1));
       z.peak = Math.max(z.peak, z.stretch);
     }
   } else if (zone === "mouth") {
@@ -112,7 +112,7 @@ export function resolveBody(ctx: Ctx, act: Act, partner: { size: number; minutes
     const over = partner.size - fitOf(ctx.state, zone);
     if (over > 0) {
       const z = h.body[zone];
-      z.stretch = clamp(z.stretch + over * B.stretchPerCm);
+      z.stretch = clamp(z.stretch + over * B.stretchPerCm * (B.stretchZone[zone] ?? 1));
       z.peak = Math.max(z.peak, z.stretch);
     }
   }

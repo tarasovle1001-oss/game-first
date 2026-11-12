@@ -148,12 +148,13 @@ function leave(ctx: Ctx, v: Visit, reason: "done" | "ignored" | "closing") {
   const b = bs(ctx.state);
   const p = b.patrons[v.patron]!;
   if (reason === "ignored") {
-    addReputation(ctx, -1);
+    addReputation(ctx, -content.balance.service.ignored);
     p.memory.affinity = clamp(p.memory.affinity - 5, -100, 100);
     ctx.log("log.patron.walks_out", { name: `@name:${p.name}` });
     interrupt(ctx);
   } else if (v.served > 0) {
-    addReputation(ctx, 0.25);
+    // a place that is already run well has less to gain from one more guest served
+    addReputation(ctx, content.balance.service.served * Math.min(1, (100 - b.reputation) / (100 - content.balance.service.taperFrom)));
   }
   delete ctx.state.where[p.id];
   ctx.emit("patron:left", { id: p.id, reason, served: v.served });

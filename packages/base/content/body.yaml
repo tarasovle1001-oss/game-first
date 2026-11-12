@@ -3,6 +3,7 @@ fit: # the size (cm) a zone takes comfortably = base + stretch * perStretch
   vagina: { base: 12.5, perStretch: 0.215 } # 100 stretch = about 34 cm
   anus: { base: 8, perStretch: 0.215 }
   mouth: { base: 11, perStretch: 0.08 }
+stretchZone: { anus: 0.6 }  # the back way starts 4.5 cm tighter, so every man is "too big" there: without this it outruns the front
 stretchPerCm: 0.65   # stretch gained per cm above the comfortable size, per act
 recoverPerDay: 0.16
 permanentShare: 0.6 # part of the peak stretch that never goes back

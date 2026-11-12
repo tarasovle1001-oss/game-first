@@ -55,6 +55,7 @@ export const balanceSchema = z
       .strict(),
     debtLimit: z.number().min(0), // supplies can be bought on credit until the debt reaches this
     debtInterestPerDay: z.number().min(0), // fraction, 0.01 = 1%
+    service: z.object({ served: z.number(), ignored: z.number(), taperFrom: z.number() }).strict(),
     supplies: z.object({ packCost: z.number().positive(), packServings: z.number().int().positive() }).strict(),
     heroine: z.object({ arousalCoolPerTick: z.number().min(0), moodSettlePerTick: z.number().min(0).max(1), soberPerTick: z.number().min(0) }).strict(),
     // clock: minute of the day each phase starts at (for the log and the top bar)
@@ -237,6 +238,7 @@ export const bodySchema = z
     // the size (cm) a zone takes comfortably = base + stretch * perStretch
     fit: z.object({ vagina: zoneFit, anus: zoneFit, mouth: zoneFit }).strict(),
     stretchPerCm: z.number().min(0), // stretch gained per cm above the comfortable size
+    stretchZone: z.record(z.string(), z.number()), // share of that gain a zone takes; absent = all of it
     recoverPerDay: z.number().min(0),
     permanentShare: z.number().min(0).max(1), // part of the peak stretch that never goes back
     skillGain: z.number().min(0), // per practice, shrinking as the skill grows
