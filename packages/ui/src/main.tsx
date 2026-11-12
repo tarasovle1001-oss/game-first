@@ -9,7 +9,8 @@ import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
 import { loadPack, packInfo } from "./pack";
-import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
+import { useStoredFlag } from "./stored";
+import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, TopBar, WhyTab } from "./panels";
 import { ActionMenu } from "./menu";
 import "./style.css";
 
@@ -23,7 +24,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "12p";
+const BUILD = "12q";
 const RESUME_KEY = "test-city.resume";
 const RESUME_BUDGET = 2_500_000; // characters: the browser gives a page about twice that
 /** A save with the steps back in it: the game as it is now, and as many earlier moments as fit. */
@@ -70,53 +71,11 @@ function App() {
   const [lang, setLang] = useState<Lang>("ru");
   const [debug, setDebug] = useState(false);
   // transparent: everything is shown; immersive: only what the husband could know. Remembered between visits.
-  const [transparent, setTransparentState] = useState(() => {
-    try {
-      return localStorage.getItem("test-city.transparent") === "1";
-    } catch {
-      return false;
-    }
-  });
-  const setTransparent = (v: boolean) => {
-    setTransparentState(v);
-    try {
-      localStorage.setItem("test-city.transparent", v ? "1" : "0");
-    } catch {
-      /* no storage: the setting just lasts for this visit */
-    }
-  };
+  const [transparent, setTransparent] = useStoredFlag("test-city.transparent");
   // watch: the pictures and the lines of what happens follow her everywhere, but her thoughts and the numbers stay closed
-  const [watch, setWatchState] = useState(() => {
-    try {
-      return localStorage.getItem("test-city.watch") === "1";
-    } catch {
-      return false;
-    }
-  });
-  const setWatch = (v: boolean) => {
-    setWatchState(v);
-    try {
-      localStorage.setItem("test-city.watch", v ? "1" : "0");
-    } catch {
-      /* no storage: the setting just lasts for this visit */
-    }
-  };
+  const [watch, setWatch] = useStoredFlag("test-city.watch");
   // the inspector: what the last action changed, under the scene. Remembered between visits.
-  const [inspector, setInspectorState] = useState(() => {
-    try {
-      return localStorage.getItem("test-city.inspector") === "1";
-    } catch {
-      return false;
-    }
-  });
-  const setInspector = (v: boolean) => {
-    setInspectorState(v);
-    try {
-      localStorage.setItem("test-city.inspector", v ? "1" : "0");
-    } catch {
-      /* no storage: the setting just lasts for this visit */
-    }
-  };
+  const [inspector, setInspector] = useStoredFlag("test-city.inspector");
   const [lastWhat, setLastWhat] = useState("");
   // the look of the screen, remembered between visits: column widths (in shares) and the size of the text
   const [look, setLookState] = useState<{ cols: number[]; font: number }>(() => {

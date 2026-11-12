@@ -1,7 +1,7 @@
 // How much she has had of being asked and pawed at. It builds through the day from guests and from
 // her husband alike, takes the edge off every yes, and past a point she simply does not want hands on her.
 import type { Ctx, GameState, ModApi } from "@tc/core";
-import { content } from "../content";
+import { actOf, content } from "../content";
 import { bs, clamp, HUSBAND } from "../state";
 import { CONSENT_FORMULA } from "./encounters";
 import type { ConsentInput } from "./encounters";
@@ -35,7 +35,7 @@ export function annoy(ctx: Ctx, amount: number, who: Who = "guests") {
 export function registerAnnoy(api: ModApi) {
   api.events.on("encounter:proposed", (ctx, e) => {
     const { act, verdict } = e.payload as { act: string; verdict: string };
-    const tier = content.acts.find((a) => a.id === act)?.tier ?? 0;
+    const tier = actOf(act)?.tier ?? 0;
     if (tier < 2) return;
     annoy(ctx, verdict === "refuse" ? A.guestRefused : verdict === "hesitant" ? A.guestHesitant : A.guestEager);
   });
@@ -63,7 +63,7 @@ export function registerAnnoy(api: ModApi) {
     labelKey: "factor.consent.annoyed",
     order: 16,
     eval: (state, input) => {
-      const act = content.acts.find((a) => a.id === input.act);
+      const act = actOf(input.act);
       const n = annoyanceOf(state, input.partner === HUSBAND ? "him" : "guests");
       if (!act || n < 5 || (input.partner !== HUSBAND && act.tier < 2)) return null;
       return -n * A.consent;

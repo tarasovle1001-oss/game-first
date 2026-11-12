@@ -9,7 +9,7 @@ import type { ConsentInput } from "./encounters";
 import { changeHim } from "./rhythm";
 import { changeHeroine } from "./heroine";
 import { feel } from "./mind";
-import { HALL, husbandSees } from "./places";
+import { HALL } from "./places";
 
 export const REACT_STOP = "base/react-stop";
 export const REACT_APPROVE = "base/react-approve";

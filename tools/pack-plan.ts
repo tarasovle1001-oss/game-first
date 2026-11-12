@@ -5,7 +5,7 @@
 // Also lists the general keys the game falls back to (scene/roles/room without tags, scene/*), so every scene has something.
 // pnpm exec tsx tools/pack-plan.ts [days=30] [seeds=6] [out=pack-plan.json] [cast=default]
 import { writeFileSync } from "node:fs";
-import { baseMod, bs, content, pictureScene, promptFor, withLook } from "../packages/base/src";
+import { actOf, baseMod, bs, content, pictureScene, promptFor, withLook } from "../packages/base/src";
 import { createEngine, sceneKey } from "../packages/core/src";
 import type { GameState, SceneDesc } from "../packages/core/src";
 import { awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy } from "../packages/bots/src";
@@ -23,7 +23,7 @@ const count = (desc: SceneDesc | null) => {
 /** What is really going on with her, whether or not the husband sees it (the transparent mode shows these). */
 const truth = (s: GameState): SceneDesc | null => {
   const b = bs(s);
-  const act = b.encounter ? content.acts.find((a) => a.id === b.encounter!.act) : null;
+  const act = b.encounter ? actOf(b.encounter!.act) : null;
   if (!b.encounter || !act) return null;
   return withLook(s, { type: act.scene, location: b.encounter.loc, participants: [{ id: "wife", role: "wife" }, { id: b.encounter.patron, role: "patron" }], tags: {} });
 };

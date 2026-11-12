@@ -2,7 +2,7 @@
 // own thing, apart from wanting him; she is made of a few plain attributes; and every so often a feeling
 // surfaces as a thought. All of it is derived from events other systems already emit.
 import type { Ctx, GameState, ModApi } from "@tc/core";
-import { content } from "../content";
+import { actOf, content } from "../content";
 import { EMOTIONS } from "../content/schema";
 import type { Emotion } from "../content/schema";
 import { bs, clamp, HUSBAND } from "../state";
@@ -289,7 +289,7 @@ export function registerMind(api: ModApi) {
     labelKey: "factor.consent.feelings",
     order: 17,
     eval: (state, { partner, act }) => {
-      const tier = content.acts.find((a) => a.id === act)?.tier ?? 0;
+      const tier = actOf(act)?.tier ?? 0;
       if (partner !== HUSBAND && tier < 2) return null;
       const w = partner === HUSBAND ? M.consent.husband : M.consent.guest;
       const total = (Object.entries(w) as [Emotion, number][]).reduce((s, [e, k]) => s + feelingOf(state, e) * k, 0);

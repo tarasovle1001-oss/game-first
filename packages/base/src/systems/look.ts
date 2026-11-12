@@ -2,7 +2,7 @@
 // the game: who is there, what she has on and what is off, her face, what her body has become, what is on
 // her and in her. A picture pack takes the coarse part of it as a key; an image model takes all of it as tags.
 import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
-import { content } from "../content";
+import { actOf, content } from "../content";
 import { bs, HUSBAND, WIFE } from "../state";
 import { sizeClass } from "./body";
 import { bareOf, dressOf } from "./dress";
@@ -95,7 +95,7 @@ export function describeScene(state: GameState, open = false): SceneWords {
   } else if (partner) {
     const p = b.patrons[partner];
     second.push(...(W.man.patron ?? []));
-    if (p && actId && content.acts.find((a) => a.id === actId)?.place === "private") second.push(W.size[sizeClass(p.size)]!, "erection");
+    if (p && actId && actOf(actId)?.place === "private") second.push(W.size[sizeClass(p.size)]!, "erection");
     const v = b.shift?.visits.find((x) => x.patron === partner);
     if ((v?.cumOn ?? 0) > 0) second.push(W.hisCum);
     if ((v?.drunk ?? 0) >= 60) second.push("drunk");
@@ -108,7 +108,7 @@ export function describeScene(state: GameState, open = false): SceneWords {
   if (men.length > 0) {
     second.push(men.length === 1 ? "2boys, threesome, mmf threesome" : `${1 + men.length}boys, gangbang`);
     const slots = new Set(men.map((m) => m.slot));
-    const main = actId ? content.acts.find((a) => a.id === actId)?.zones ?? [] : [];
+    const main = actId ? actOf(actId)?.zones ?? [] : [];
     const inPussy = slots.has("pussy") || main.includes("vagina");
     const inAss = slots.has("anus") || main.includes("anus");
     if (inPussy && inAss) action.push("double penetration");
@@ -232,7 +232,7 @@ export function registerLook(api: ModApi) {
   // while they are at it her clothes are where the act needs them; afterwards she looks like it
   api.events.on("encounter:started", (ctx, e) => {
     const h = bs(ctx.state).heroine;
-    const act = content.acts.find((a) => a.id === (e.payload!.act as string));
+    const act = actOf((e.payload!.act as string));
     if (!act) return;
     const lower = act.zones.includes("vagina") || act.zones.includes("anus");
     if (lower && bareOf(ctx.state) !== "all" && bareOf(ctx.state) !== "bottom") {
@@ -246,7 +246,7 @@ export function registerLook(api: ModApi) {
     if (h.panties === "aside") h.panties = "on";
     if (intimate) h.after = { ...L.after };
   };
-  api.events.on("encounter:ended", (ctx, e) => ended(ctx, content.acts.find((a) => a.id === (e.payload!.act as string))?.place === "private"));
+  api.events.on("encounter:ended", (ctx, e) => ended(ctx, actOf((e.payload!.act as string))?.place === "private"));
   api.events.on("bed:ended", (ctx) => ended(ctx, true));
   api.events.on("shift:minute", (ctx) => pass(ctx, 1));
   api.events.on("prep:tick", (ctx) => pass(ctx, 10));
@@ -293,7 +293,7 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
   const tags = full.tags ?? {};
   const wife = desc.participants.find((p) => p.role === "wife");
   const enc = bs(state).encounter;
-  const sceneOf = (act: string | undefined) => content.acts.find((a) => a.id === act)?.scene;
+  const sceneOf = (act: string | undefined) => actOf(act)?.scene;
   const grouped = !!enc && desc.participants.some((p) => p.id === enc.patron) && ((enc.men?.length ?? 0) > 0 || desc.type.startsWith("join_"));
   const inserts: SceneDesc[] = [];
   if (wife)

@@ -161,7 +161,7 @@ export const baseMod: Mod = {
 };
 
 export const baseLocales: Record<string, Dict> = content.locales;
-export { content, patronType, room } from "./content";
+export { content, patronType, room, actById, actOf } from "./content";
 export * from "./state";
 export type { Content, PatronType, Room, Balance, Act, SceneLayout } from "./content/schema";
 export { CONSENT_FORMULA, groupScene, nextProposal, verdictOf } from "./systems/encounters";

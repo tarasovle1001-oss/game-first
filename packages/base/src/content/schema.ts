@@ -661,6 +661,7 @@ export const floorSchema = z
   .strict();
 export type Floor = z.infer<typeof floorSchema>;
 
+const ids = z.array(z.string());
 export const intimacySchema = z
   .object({
     lead: z.object({ ordinaryShare: z.number(), variety: z.number(), takesAtPower: z.number(), takesChance: z.number(), cruelTakes: z.number(), hisActsPower: z.number(), holdAt: z.number(), slipPerTurn: z.number(), slipped: nums, minTurns: z.number(), maxTurns: z.number(), begAllowDesire: z.number(), begDenied: nums, takeBack: nums, ending: z.object({ ruined: z.number(), snowball: z.number(), lickClean: z.number() }).strict(), ruinedPower: z.number(), snowballPower: z.number(), snowballOpenness: z.number(), lickPower: z.number(), power: z.number() }).strict(),
@@ -671,6 +672,9 @@ export const intimacySchema = z
     marks: z.object({ visible: z.array(z.string()), guests: nums, husbandSuspicion: z.number(), husbandOpen: z.record(z.string(), nums), cleanPerMark: z.number(), cleanAfter: z.number(), skipChance: z.number() }).strict(),
     dress: z.object({ lowMood: z.number(), lowMoodStep: z.number(), fearStep: z.number(), wantStep: z.number(), wishStep: z.number() }).strict(),
     wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string() }).strict(),
+    bedroom: z
+      .object({ ask: ids, counter: ids, counterHard: ids, his: ids, needsToy: ids, upstairs: ids, join: ids, switchTo: ids, ownEnd: ids, herPleasure: nums, herPleasureDefault: z.number(), fixedPleasure: nums, finish: z.record(z.string(), ids), pullOut: ids, soft: ids, givesHer: ids, needsHer: ids })
+      .strict(),
   })
   .strict();
 export type Intimacy = z.infer<typeof intimacySchema>;

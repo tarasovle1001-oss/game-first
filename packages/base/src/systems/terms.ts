@@ -48,7 +48,6 @@ const W = T.wishRead;
 /** How much of a wish still stands: 1 while fresh, less as it fades unrepeated. */
 export const wishShare = (state: GameState, id: string) => (wished(state, id) ? Math.min(1, (bs(state).wishStr?.[id] ?? W.say) / W.full) : 0);
 const honestyShare = (state: GameState) => bs(state).heroine.traits.honesty / 100;
-const stamp = (state: GameState) => `${state.time.day}:${state.time.phase}`;
 const said = (ctx: Ctx, key: string, params?: Record<string, string | number>) => {
   const b = bs(ctx.state);
   b.told.push({ day: ctx.state.time.day, key, ...(params ? { params } : {}) });

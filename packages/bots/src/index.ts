@@ -1,5 +1,6 @@
 import { CORE_ADVANCE, CORE_MOVE, loadGame, makeRng, saveGame } from "@tc/core";
 import type { Action, Engine, GameState, Mod } from "@tc/core";
+import { bs } from "@tc/base";
 
 export type Strategy = (actions: Action[], state: GameState, roll: () => number) => Action;
 
@@ -22,14 +23,14 @@ export const rushStrategy: Strategy = (actions) =>
 export const ownerStrategy: Strategy = (actions, state) =>
   actions.find((a) => a.type === "base/prep-wait" && a.payload?.until === "done") ?? // sees through what he has started
   actions.find((a) => a.type === "base/loan-pay") ??
-  (state.mods.base.stock < 45 ? actions.find((a) => a.type === "base/buy-supplies") : undefined) ??
-  (state.mods.base.clean < 60 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "clean") : undefined) ??
+  (bs(state).stock < 45 ? actions.find((a) => a.type === "base/buy-supplies") : undefined) ??
+  (bs(state).clean < 60 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "clean") : undefined) ??
   // the side job and the flyers are in town: he walks to the square while the afternoon is young
   actions.find((a) => a.type === "base/day" && a.payload?.do === "side_job") ??
-  (state.mods.base.money > 150 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "flyers") : undefined) ??
-  (state.time.phase === "prep" && state.mods.base.day.left > 300 && state.where.husband === "cafe.hall" && !state.mods.base.day.done.includes("side_job") ? actions.find((a) => a.type === CORE_MOVE && a.payload?.to === "town.square") : undefined) ??
-  (state.mods.base.money > 400 ? actions.find((a) => a.type === "base/repay-debt") : undefined) ??
-  (state.mods.base.encounter ? actions.find((a) => a.type === "base/serve") : undefined) ??
+  (bs(state).money > 150 ? actions.find((a) => a.type === "base/day" && a.payload?.do === "flyers") : undefined) ??
+  (state.time.phase === "prep" && bs(state).day!.left > 300 && state.where.husband === "cafe.hall" && !bs(state).day!.done.includes("side_job") ? actions.find((a) => a.type === CORE_MOVE && a.payload?.to === "town.square") : undefined) ??
+  (bs(state).money > 400 ? actions.find((a) => a.type === "base/repay-debt") : undefined) ??
+  (bs(state).encounter ? actions.find((a) => a.type === "base/serve") : undefined) ??
   actions.find((a) => a.type === CORE_ADVANCE) ??
   hourWait(actions) ??
   actions.find((a) => a.type !== CORE_MOVE) ??
@@ -51,7 +52,7 @@ export const lovingStrategy: Strategy = (actions, state, roll) => {
   const bed = actions.filter((a) => a.type === "base/bed");
   if (bed.length) {
     // an attentive husband: slows down while she is behind, lets go once she has come
-    const sex = (state.mods.base as { night: { sex: { his: number; hers: number; came: number; asks: string | null; out: boolean } } }).night.sex;
+    const sex = bs(state).night!.sex!;
     const pick = (d: string) => bed.find((a) => a.payload?.do === d);
     // he listens: gives her what she asks for, wraps it up when she wants it over, and helps himself once she is gone
     if (sex.asks === "finish") return pick("finish") ?? pick("hand") ?? pick("faster")!;
@@ -67,7 +68,7 @@ export const lovingStrategy: Strategy = (actions, state, roll) => {
 export const snoopStrategy: Strategy = (actions, state, roll) => {
   const watch = actions.find((a) => a.type === "base/caught-watch");
   if (watch) return watch;
-  const enc = state.mods.base.encounter;
+  const enc = bs(state).encounter;
   const tenMinutes = (actions.some((a) => a.type === "base/wait") ? { type: "base/wait", payload: { minutes: 10 } } : undefined);
   const advance = actions.find((a) => a.type === CORE_ADVANCE);
   if (state.time.phase === "shift" && !tenMinutes && advance) return advance; // closing time

@@ -2,7 +2,7 @@
 // In the bedroom it is easy; in an empty room it takes an open wife; in front of guests it takes
 // a very open one, or one who likes being looked at. What the guests see, they react to.
 import type { Ctx, GameState, ModApi } from "@tc/core";
-import { content } from "../content";
+import { actOf, content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Bare } from "../state";
 import { CONSENT_FORMULA } from "./encounters";
@@ -165,7 +165,7 @@ export function registerDress(api: ModApi) {
     order: 44,
     eval: (state, input) => {
       const bare = bareOf(state);
-      const act = content.acts.find((a) => a.id === input.act);
+      const act = actOf(input.act);
       return bare === "none" || !act || act.tier < 2 || input.partner === HUSBAND ? null : D.consent[bare];
     },
   });

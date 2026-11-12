@@ -1,7 +1,7 @@
 // Guests try their luck with her, she answers through one formula.
 // Every row of that formula is named and visible; mods add rows with api.formulas.addFactor(CONSENT_FORMULA, ...).
 import type { Ctx, EngineView, GameState, ModApi } from "@tc/core";
-import { content } from "../content";
+import { actById, actOf, content } from "../content";
 import { outcomeOf, refusalWhy, setOutcome } from "./voice";
 import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -29,13 +29,8 @@ export interface ConsentInput {
   pressure: number; // times he already insisted
 }
 
-const acts = new Map(content.acts.map((a) => [a.id, a]));
 const topTier = Math.max(...content.acts.filter((a) => !a.only).map((a) => a.tier)); // what guests can reach: acts kept for the marriage do not count
-export const actById = (id: string): Act => {
-  const a = acts.get(id);
-  if (!a) throw new Error(`unknown act "${id}"`);
-  return a;
-};
+export { actById }; // lives with the content now; kept here for the systems that import it from encounters
 
 export function verdictOf(total: number): Verdict {
   const c = content.consent;
@@ -773,7 +768,7 @@ export function registerEncounters(api: ModApi) {
     if (!b.shift) return "encounter outside of a shift";
     if (!b.shift.visits.some((v) => v.patron === enc.patron)) return `encounter with ${enc.patron} who is not here`;
     if (s.where[WIFE] !== enc.loc || s.where[enc.patron] !== enc.loc) return "encounter participants are not in its room";
-    const act = acts.get(enc.act);
+    const act = actOf(enc.act);
     if (!act) return `encounter with unknown act "${enc.act}"`;
     return null;
   });

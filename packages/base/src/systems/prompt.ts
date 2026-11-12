@@ -4,7 +4,7 @@
 // Words: look.yaml (clothes, face, marks, act, room, size), prompt.yaml (style, poses), cast.yaml (who each figure is).
 import type { SceneDesc } from "@tc/core";
 import { sceneFileName, sceneKey } from "@tc/core";
-import { content } from "../content";
+import { actOf, content } from "../content";
 import type { Act, Cast } from "../content/schema";
 
 const W = content.look.words;
@@ -27,7 +27,7 @@ export interface ScenePrompt {
 }
 
 /** The act a layout draws, if it is one: by the layout acts.yaml names, else by its own id (the bed uses act ids). */
-export const sceneAct = (type: string): Act | undefined => content.acts.find((a) => a.scene === type) ?? content.acts.find((a) => a.id === type);
+export const sceneAct = (type: string): Act | undefined => content.acts.find((a) => a.scene === type) ?? actOf(type);
 
 const nth = (table: [number, string][] | undefined, n: number) => (n > 0 ? table?.[n - 1]?.[1] : undefined);
 /** "v2a1" -> [["v", 2], ["a", 1]] */

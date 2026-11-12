@@ -71,3 +71,34 @@ wear:                 # what she has on outside the shift, by situation
   boldOpenness: 60
   wash: towel
   home: homewear
+bedroom:              # which act is what in bed with him. Order matters: it is the order of the menu and of her choices
+  # what he can ask for at night; each needs a text "action.night.<id>" and a picture layout named after the act
+  ask: [kiss, grinding, mutual_touching, cunnilingus, sex, anal, rimming_him, prostate, dildo_him, pegging, fisting_him, ignore_handjob, facesitting, edging, cleanup, chastity, toy_on_her, masturbate_show, footjob, spank_him, tease_denial, thigh_ride, titfuck]
+  # what she may offer instead of what he asked for; the "hard" ones only from a wife who has the upper hand
+  counter: [cunnilingus, rimming_her]
+  counterHard: [prostate, dildo_him, pegging, fisting_him]
+  # done to him: her finger, a toy in her hand, a toy on straps, her whole hand
+  his: [prostate, dildo_him, pegging, fisting_him]
+  needsToy: [dildo_him, pegging]
+  # what he can ask for by day or during the shift, anywhere in the house
+  upstairs: [mutual_touching, blowjob, cunnilingus, sex]
+  # only while a guest is in the bed with them
+  join: [join_dp, join_two_mouths, join_hold, join_after]
+  # what a scene that is going can turn into
+  switchTo: [ignore_handjob, facesitting, edging, cleanup, chastity, toy_on_her, masturbate_show, footjob, spank_him, tease_denial, thigh_ride, join_dp, join_two_mouths, join_hold, join_after, grinding, mutual_touching, breast_play, fingering, handjob, blowjob, cunnilingus, sixty_nine, rimming_her, sex, riding, anal, rimming_him, prostate, dildo_him, pegging, fisting_him]
+  # acts that end in a picture ("came_<id>") and a line of their own
+  ownEnd: [ignore_handjob, facesitting, edging, cleanup, chastity, toy_on_her, masturbate_show, footjob, spank_him, tease_denial, thigh_ride, join_dp, join_two_mouths, join_hold, join_after]
+  # what she gets out of an act that is not about a zone of hers being filled (acts with their own lines; the rest get herPleasureDefault)
+  herPleasure: { facesitting: 70, cleanup: 60, toy_on_her: 72, masturbate_show: 60, thigh_ride: 66, tease_denial: 45, join_dp: 80, join_two_mouths: 30, join_hold: 75, join_after: 60 }
+  herPleasureDefault: 15
+  # set pleasure for acts where his size says nothing
+  fixedPleasure: { rimming_her: 65, rimming_him: 20 }
+  # where he can finish, by what they are doing; the first is the plain ending. Not listed = on her
+  finish: { blowjob: [mouth, face, chest], sixty_nine: [mouth], handjob: [on_her, chest], sex: [inside, belly, chest, face], riding: [inside, belly], anal: [inside, back], grinding: [belly], mutual_touching: [on_her] }
+  pullOut: [on_her, belly, back, chest]
+  # what a man can still do for her with nothing left in him
+  soft: [facesitting, cleanup, chastity, toy_on_her, masturbate_show, spank_him, thigh_ride, cunnilingus, fingering, rimming_her, breast_play, mutual_touching, prostate, dildo_him, pegging, fisting_him]
+  # he is the one doing something for her: whether he is hard does not matter
+  givesHer: [cunnilingus, rimming_her, fingering, breast_play]
+  # she has to be doing something for these: they stop when she is out of it
+  needsHer: [handjob, blowjob, riding, sixty_nine, rimming_him, prostate, dildo_him, pegging, fisting_him, grinding, mutual_touching]

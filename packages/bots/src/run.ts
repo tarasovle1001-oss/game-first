@@ -1,5 +1,6 @@
 // Headless run: pnpm bot [--days 14] [--seeds 20]
-import { baseMod } from "@tc/base";
+import { baseMod, bs } from "@tc/base";
+import type { BaseState } from "@tc/base";
 import { createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 import { exampleMod } from "@tc/mod-example";
@@ -37,13 +38,13 @@ for (const [name, strategy] of Object.entries(strategies)) {
     }
   }
   // balance snapshot after the run: the quickest way to see if the economy drifts
-  const b = finals.map((f) => f.mods.base);
+  const b = finals.map(bs);
   console.log(
     `${name.padEnd(7)} money ${avg(b.map((x) => x.money))}  debt ${avg(b.map((x) => x.debt))}  rep ${avg(b.map((x) => x.reputation))}  ` +
-      `served/day ${avg(b.map((x) => avg(x.history.map((h: any) => h.served))))}  known patrons ${avg(b.map((x) => Object.keys(x.patrons).length))}  ` +
-      `regulars ${avg(b.map((x) => Object.values(x.patrons).filter((p: any) => p.regular).length))}`,
+      `served/day ${avg(b.map((x) => avg(x.history.map((h) => h.served))))}  known patrons ${avg(b.map((x) => Object.keys(x.patrons).length))}  ` +
+      `regulars ${avg(b.map((x) => Object.values(x.patrons).filter((p) => p.regular).length))}`,
   );
-  const top = (x: any) => Math.max(-1, ...Object.values(x.patrons).map((p: any) => p.memory.tier));
+  const top = (x: BaseState) => Math.max(-1, ...Object.values(x.patrons).map((p) => p.memory.tier));
   console.log(
     `        her: fidelity ${avg(b.map((x) => x.heroine.traits.fidelity))}  openness ${avg(b.map((x) => x.heroine.traits.openness))}  ` +
       `top tier reached: avg ${(b.reduce((a, x) => a + top(x), 0) / b.length).toFixed(1)}, max ${Math.max(...b.map(top))}`,

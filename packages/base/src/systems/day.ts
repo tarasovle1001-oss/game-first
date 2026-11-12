@@ -228,7 +228,6 @@ function herMorning(ctx: Ctx) {
 /** An hour and a half at the gym in town. He trains; if she came along, the women's changing room is out of his sight. */
 function gym(ctx: Ctx, together: boolean) {
   const b = bs(ctx.state);
-  const h = b.heroine;
   const G = D.gym;
   const base = content.body.husband.minutes;
   b.husband.fitness = clamp((b.husband.fitness ?? 0) + G.fitness);
@@ -492,7 +491,6 @@ export function registerDay(api: ModApi) {
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
-      const h = b.heroine;
       const { kind, id } = action.payload as { kind: string; id: string };
       if (kind === "outfit" || kind === "toy") {
         const price = kind === "outfit" ? content.outfits.find((x) => x.id === id)!.price : D.shop.toys.find((x) => x.id === id)!.price;

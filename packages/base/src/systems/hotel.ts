@@ -1,7 +1,7 @@
 // The rooms upstairs. A guest who takes one pays for the night, comes down to the cafe in the evening,
 // has a door that locks, and is still in the building when the cafe is closed and the husband is asleep.
 import type { Ctx, GameState, ModApi } from "@tc/core";
-import { content } from "../content";
+import { actById, actOf, content } from "../content";
 import { bs, HUSBAND, WIFE } from "../state";
 import { passNight } from "./rhythm";
 import { resolveBody } from "./body";
@@ -139,7 +139,7 @@ export function registerHotel(api: ModApi) {
       let rows: { id: string; labelKey: string; value: number }[] = [];
       let total = 0;
       for (const id of LADDER) {
-        const act = content.acts.find((a) => a.id === id);
+        const act = actOf(id);
         if (!act || act.tier > B.cap) continue;
         const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { act: id, partner: patron, loc: room, offer: 0, pressure: 0 });
         const t = res.total + B.sent;
@@ -154,7 +154,7 @@ export function registerHotel(api: ModApi) {
         ctx.log("log.send_up.no", { name });
         return;
       }
-      const act = content.acts.find((a) => a.id === done)!;
+      const act = actById(done);
       const stays = act.tier >= 7 && ctx.rng.chance(0.35); // sometimes she does not come back before morning
       b.proposals.push({ day: ctx.state.time.day, tick: -1, patron, act: done, loc: room, verdict: verdictOf(total), seen: false, total, rows });
       ctx.log(`log.send_up.go.${brief}`, { name });

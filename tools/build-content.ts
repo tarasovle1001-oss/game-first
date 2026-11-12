@@ -176,6 +176,21 @@ if (prompt) {
   }
   for (const id of Object.keys(prompt.poses)) if (!sceneIds.has(id)) errors.push(`prompt.yaml: poses for unknown scene "${id}"`);
 }
+// the bedroom lists name acts; what he can ask for needs its menu text, and every act that can be on in bed needs a picture layout
+if (intimacy) {
+  const B = intimacy.bedroom;
+  const actIds = new Set(acts.map((a) => a.id));
+  const lists: Record<string, string[]> = { ask: B.ask, counter: B.counter, counterHard: B.counterHard, his: B.his, needsToy: B.needsToy, upstairs: B.upstairs, join: B.join, switchTo: B.switchTo, ownEnd: B.ownEnd, soft: B.soft, givesHer: B.givesHer, needsHer: B.needsHer, herPleasure: Object.keys(B.herPleasure), fixedPleasure: Object.keys(B.fixedPleasure), finish: Object.keys(B.finish) };
+  for (const [name, list] of Object.entries(lists)) {
+    for (const id of list) if (!actIds.has(id)) errors.push(`intimacy.yaml: bedroom.${name} names unknown act "${id}"`);
+    if (new Set(list).size !== list.length) errors.push(`intimacy.yaml: bedroom.${name} lists an act twice`);
+  }
+  for (const id of new Set([...B.ask, ...B.counter, ...B.counterHard, ...B.join])) need(`action.night.${id}`);
+  // a kiss goodnight is a line, not a scene
+  for (const id of new Set([...B.ask, ...B.switchTo, ...B.counter, ...B.counterHard, ...B.upstairs])) if (id !== "kiss" && actIds.has(id) && !sceneIds.has(id)) errors.push(`intimacy.yaml: bedroom act "${id}" has no picture layout "${id}" in scenes.yaml`);
+  for (const id of new Set([...B.ownEnd, ...B.his])) if (!sceneIds.has(`came_${id}`)) errors.push(`intimacy.yaml: bedroom act "${id}" ends in its own picture, but there is no layout "came_${id}"`);
+  for (const id of B.needsToy) if (!B.his.includes(id)) errors.push(`intimacy.yaml: bedroom.needsToy "${id}" is not in bedroom.his`);
+}
 if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !prompt || !mind || !terms || !floor || !intimacy) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
