@@ -243,6 +243,7 @@ describe("open marriage, her lead", () => {
     s = open;
     let led = 0;
     for (let night = 0; night < 12; night++) {
+      { const q = engine.listActions(s).find((a) => a.type === "base/answer-her"); if (q) s = engine.dispatch(s, q); } // she may have a question about tonight first
       s = engine.dispatch(s, { type: CORE_ADVANCE }); // leave this night
       s = toNight(s);
       if (bs(s).night!.scene.startsWith("fd_")) {

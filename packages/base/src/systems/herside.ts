@@ -6,18 +6,20 @@ import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { sizeClass } from "./body";
 import { actById } from "./encounters";
+import { nudge } from "./expectations";
 import { changeHeroine } from "./heroine";
 import { HALL } from "./places";
 
 export const ANSWER = "base/answer-her";
 const A = content.manners.talk.her;
 const BEDROOM = "home.bedroom";
-type Kind = "harassed" | "affection" | "tease" | "comfort";
+type Kind = "harassed" | "affection" | "tease" | "comfort" | "retro";
 const ANSWERS: Record<Kind, string[]> = {
   harassed: ["protect", "endure", "ask"],
   affection: ["return", "busy"],
   tease: ["let", "later"],
   comfort: ["comfort", "later"],
+  retro: ["right", "further", "dont", "yours"],
 };
 
 const feel = (ctx: Ctx, desire: number, resent: number) => {
@@ -152,6 +154,20 @@ export function registerHerSide(api: ModApi) {
     if (b.approach) b.approach = null; // a guest got to her first
   });
 
+  // After closing she brings up the man it went furthest with tonight, as far as she is ready to say it, and asks if she did right.
+  api.events.on("phase:enter", (ctx, e) => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    if (e.payload!.phase !== "night" || b.approach || b.complaint || b.retroDay === ctx.state.time.day) return;
+    const tonight = b.proposals.filter((r) => r.day === ctx.state.time.day && r.patron !== HUSBAND && r.verdict !== "refuse" && b.patrons[r.patron] && actById(r.act).tier >= 2);
+    // what he did not see and she is ashamed of, she keeps to herself while she hides things
+    const sayable = tonight.filter((r) => r.seen || b.mode !== "hidden" || actById(r.act).tier < 5 || (h.marriage.trust ?? 50) >= 55);
+    const top = sayable.sort((x, y) => actById(y.act).tier - actById(x.act).tier)[0];
+    if (!top) return;
+    b.retroDay = ctx.state.time.day;
+    b.approach = { kind: "retro", patron: top.patron, public: false, act: top.act };
+    ctx.log("log.approach.retro", { name: `@name:${b.patrons[top.patron]!.name}`, act: `act.${top.act}` });
+  }, 80);
   api.actions.register({
     id: ANSWER,
     labelKey: "action.answer",
@@ -166,6 +182,28 @@ export function registerHerSide(api: ModApi) {
       const ap = b.approach!;
       const say = action.payload!.say as string;
       b.approach = null;
+      if (ap.kind === "retro") {
+        // she asked whether she did right by a man tonight: his answer is what she goes by from now on
+        const act = actById(ap.act ?? "flirt");
+        const name = `@name:${b.patrons[ap.patron ?? ""]?.name ?? ""}`;
+        if (say === "right") {
+          nudge(ctx, act.id, 22, 85);
+          h.marriage.trust = clamp((h.marriage.trust ?? 50) + 2);
+        } else if (say === "further") {
+          for (const a of content.acts) if (!a.only && a.tier <= act.tier + 1) nudge(ctx, a.id, 28, 90);
+          changeHeroine(ctx, "arousal", 5, "he wants more");
+        } else if (say === "dont") {
+          for (const a of content.acts) if (a.tier >= act.tier) b.expect[a.id] = Math.min(b.expect[a.id] ?? 0, -30);
+          changeHeroine(ctx, "mood", h.traits.fidelity >= 60 ? 1 : -3, "told off");
+        } else {
+          // "you decide" teaches her nothing about what he wants, but a lot about how much rope she has
+          h.marriage.trust = clamp((h.marriage.trust ?? 50) + 1);
+          b.power = clamp(b.power + 1);
+        }
+        ctx.log(`log.answer.retro.${say}`, { name, act: `act.${act.id}` });
+        ctx.emit("her:answered", { kind: ap.kind, say });
+        return;
+      }
       const key = `log.answer.${ap.kind}.${say}`;
       if (ap.kind === "harassed") {
         const v = b.shift?.visits.find((x) => x.patron === ap.patron);
