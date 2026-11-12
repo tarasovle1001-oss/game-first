@@ -157,8 +157,16 @@ export function registerSecrecy(api: ModApi) {
     },
   });
   // If it is over before he decided, he was seen standing there.
-  api.events.on("encounter:ended", (ctx) => {
-    if (bs(ctx.state).caught) goOpen(ctx, "caught");
+  api.events.on("encounter:ended", (ctx, e) => {
+    const b = bs(ctx.state);
+    if (b.caught) return void goOpen(ctx, "caught");
+    // while she hides it: he goes first, she stays a few minutes to put herself right
+    const { loc, act } = e.payload as { loc: string; act: string };
+    const sh = b.shift;
+    if (b.mode === "hidden" && sh && loc !== HALL && isIntimate(actById(act)) && ctx.state.where[WIFE] === loc) {
+      sh.awayUntil = Math.max(sh.awayUntil ?? 0, sh.tick + 4);
+      ctx.log("log.enc.apart", undefined, ["unseen"]);
+    }
   });
 
   const caughtNow = (state: Parameters<typeof bs>[0]) => state.time.phase === "shift" && bs(state).caught !== null;

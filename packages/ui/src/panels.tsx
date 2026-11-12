@@ -33,7 +33,7 @@ const who = (id: string, state: GameState, t: T, lang: Lang) => {
 
 // ---------------------------------------------------------------- top bar
 
-export function TopBar({ state, t }: Common) {
+export function TopBar({ state, t, onMoney }: Common & { onMoney?: () => void }) {
   const b = bs(state);
   return (
     <div className="topbar">
@@ -46,8 +46,8 @@ export function TopBar({ state, t }: Common) {
           {b.weather ? ` · ${t(`weather.${b.weather}`).split(",")[0]!.toLowerCase()}` : ""}
         </span>
       </div>
-      <div className="cell">
-        <span className="cap">{t("ui.money")}</span>
+      <div className="cell clickable" onClick={onMoney} title={t("ui.money.open")}>
+        <span className="cap">{t("ui.money")} ▾</span>
         <span className="big gold">{b.money}</span>
         <span className="muted">{t("ui.purse", { purse: b.purse })}</span>
       </div>
@@ -398,9 +398,9 @@ function fmt(v: number) {
 }
 
 /** One line "who, what, verdict" + the three biggest reasons; the full table opens on click. */
-export function WhyLine({ record, state, t, lang, open: transparent }: Common & { record: ProposalRecord }) {
+export function WhyLine({ record, state, t, lang, open: transparent, folded }: Common & { record: ProposalRecord; folded?: boolean }) {
   // a card, not a line: every reason on its own row, biggest first, with a bar for its weight
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(!folded);
   const p = bs(state).patrons[record.patron];
   const sorted = [...record.rows].sort((a, c) => Math.abs(c.value) - Math.abs(a.value));
   const rows = open ? sorted : sorted.slice(0, 3);
@@ -1224,7 +1224,7 @@ export function WhyTab({ state, t, lang, debug }: Common & { debug: boolean }) {
   return (
     <div className="why-list">
       {list.map((p, i) => (
-        <WhyLine key={`${p.day}-${p.tick}-${p.patron}-${i}`} record={p} state={state} t={t} lang={lang} open={debug} />
+        <WhyLine key={`${p.day}-${p.tick}-${p.patron}-${i}`} record={p} state={state} t={t} lang={lang} open={debug} folded />
       ))}
     </div>
   );

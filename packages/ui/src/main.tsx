@@ -18,6 +18,10 @@ const DEFAULT_FONT = 17;
 const MIN_COL = 0.12;
 type Tab = "her" | "you" | "why" | "phone" | "stats" | "none";
 
+/** What lives behind the money in the top bar, and inside the phone, instead of in the menu. */
+const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
+const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
+const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const RESUME_KEY = "test-city.resume";
 const RESUME_BUDGET = 2_500_000; // characters: the browser gives a page about twice that
 /** A save with the steps back in it: the game as it is now, and as many earlier moments as fit. */
@@ -146,6 +150,8 @@ function App() {
   const packInput = useRef<HTMLInputElement | null>(null);
   const [setupOpen, setSetupOpen] = useState(!resumed); // the first thing a player sees, unless there is a game to come back to
   const [tab, setTab] = useState<Tab>("none");
+  const [phoneOpen, setPhoneOpen] = useState(false);
+  const [moneyOpen, setMoneyOpen] = useState(false);
   const [error, setError] = useState("");
   // the last few states, to step back from a misclick: states are immutable, so keeping them costs little
   const [past, setPast] = useState<GameState[]>(() => resumed?.past ?? []);
@@ -243,12 +249,19 @@ function App() {
   const seenAt = useRef<string | undefined>(state.where["wife"]);
   if (state.where["wife"] === state.where["husband"] || husbandSees(state, state.where["wife"] ?? "")) seenAt.current = state.where["wife"];
   const common = { state, t, lang, open: transparent, guess: seenAt.current };
+  const unread = Object.values(bs(state).phone.threads).flat().filter((m) => !m.seen).length;
+  const moneyActs = engine.listActions(state).filter((a) => MONEY_ACTS.has(a.type));
+  const phoneActs = engine.listActions(state).filter((a) => PHONE_ACTS.has(a.type));
   const b = bs(state);
 
   return (
     <div className="app">
       <header>
-        <TopBar {...common} />
+        <TopBar {...common} onMoney={() => setMoneyOpen(true)} />
+        <button className="phone-btn" title={t("ui.tab.phone")} onClick={() => setPhoneOpen(true)}>
+          <span className="phone-ico" />
+          {unread > 0 && <span className="phone-badge">{unread}</span>}
+        </button>
         <div className="tools">
           <button disabled={past.length === 0} title={t("ui.undo.hint")} onClick={undo}>
             {t("ui.undo")} {past.length > 0 ? past.length : ""}
@@ -350,7 +363,7 @@ function App() {
           {inspector && state.time.phase !== "summary" && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
           {inspector && state.time.phase !== "summary" && <ConsentCalc {...common} />}
           <div className="tabs">
-            {(["her", "you", "why", "phone", "stats"] as Tab[]).map((k) => (
+            {(["her", "why", "stats"] as Tab[]).map((k) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(tab === k ? "none" : k)}>
                 {t(`ui.tab.${k}`)}
               </button>
@@ -358,7 +371,12 @@ function App() {
           </div>
           {tab !== "none" && (
             <div className="tab-body">
-              {tab === "her" && <HeroineTab {...common} />}
+              {tab === "her" && (
+                <>
+                  <HeroineTab {...common} />
+                  <CoupleTab {...common} />
+                </>
+              )}
               {tab === "stats" && <StatsTab {...common} />}
               {tab === "you" && <CoupleTab {...common} />}
               {tab === "why" && <WhyTab {...common} debug={transparent} />}
@@ -378,6 +396,52 @@ function App() {
         </aside>
       </div>
       {debug && <CheatPanel {...common} onAct={act} onClose={() => setDebug(false)} />}
+      {moneyOpen && (
+        <div className="overlay" onClick={() => setMoneyOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{t("ui.money.title")}</h3>
+            <p className="muted small">{t("ui.money.now", { money: bs(state).money, debt: bs(state).debt, purse: bs(state).purse })}</p>
+            {moneyActs.length === 0 && <p className="muted">{t("ui.money.none")}</p>}
+            <div className="stack">
+              {moneyActs.map((a, i) => (
+                <button key={i} onClick={() => act(a)}>
+                  {actionLabel(a, t, lang)}
+                </button>
+              ))}
+            </div>
+            <button className="quiet" onClick={() => setMoneyOpen(false)}>
+              {t("ui.close")}
+            </button>
+          </div>
+        </div>
+      )}
+      {phoneOpen && (
+        <div className="overlay" onClick={() => setPhoneOpen(false)}>
+          <div className="modal phone" onClick={(e) => e.stopPropagation()}>
+            <div className="phone-top">{clockOf(state)}</div>
+            <div className="phone-apps">
+              {(["messages", "calls", "social", "camera", "bank", "notes"] as const).map((app) => (
+                <div key={app} className={`phone-app${app === "messages" || app === "calls" ? "" : " soon"}`} title={app === "messages" || app === "calls" ? undefined : t("ui.phone.soon")}>
+                  <span className="phone-app-ico">{t(`ui.phone.app.${app}`).slice(0, 1)}</span>
+                  <span>{t(`ui.phone.app.${app}`)}</span>
+                  {app === "messages" && unread > 0 && <span className="phone-badge">{unread}</span>}
+                </div>
+              ))}
+            </div>
+            <div className="phone-body">
+              {phoneActs.map((a, i) => (
+                <button key={i} onClick={() => act(a)}>
+                  {actionLabel(a, t, lang)}
+                </button>
+              ))}
+              <PhoneTab {...common} debug={transparent} />
+            </div>
+            <button className="quiet" onClick={() => setPhoneOpen(false)}>
+              {t("ui.close")}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -27,6 +27,8 @@ const ALLOW_GROUPS: [string, string[]][] = [
   ["sex", ["her_hand", "her_mouth", "his_mouth", "sex", "anal"]],
   ["cum", ["cum_mouth", "cum_face", "cum_body", "cum_inside"]],
 ];
+/** Shown behind the money in the top bar and inside the phone, not here. */
+const ELSEWHERE = new Set(["base/tip-share", "base/repay-debt", "base/call-wife", "base/phone-peek"]);
 const CLOTHES = new Set(["top", "skirt", "panties_aside", "panties_off", "naked"]);
 const SECTIONS = ["chat", "touch", "sex", "ask", "want", "dare", "allow", "about"] as const;
 const LETTERS = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l"];
@@ -72,7 +74,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   trail.current.set(state.turn, path);
   const b = bs(state);
   const phase = state.time.phase;
-  const all = engine.listActions(state);
+  const all = engine.listActions(state).filter((a) => !ELSEWHERE.has(a.type));
   const isWait = (a: Action) => a.type === WAIT || a.type === PREP_WAIT || a.type === NIGHT_WAIT;
   const waits = all.filter(isWait);
   const advance = all.find((a) => a.type === CORE_ADVANCE);

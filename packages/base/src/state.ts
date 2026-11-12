@@ -210,6 +210,7 @@ export interface Shift {
   marksSeen?: boolean;
   show?: { type: string; until: number; patron?: string }; // a short thing on the floor that is the picture for a few minutes
   marksGuests?: boolean;
+  hisQuiet?: boolean; // he has gone up to lie down in the middle of the evening
   quietUntil?: number; // she went up to lie down: the minute she is back
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
@@ -304,6 +305,7 @@ export interface BaseState {
   remarked: string[]; // things she has already said once about her body, his, and other men
   complaint: string | null; // what she has brought up tonight and he has not answered yet
   complainedDay: number;
+  wantsBare?: number; // 0..100: how sure she is that he wants her seen without her underwear
   orders: string[]; // single things about her dress he asked for tonight and she agreed to
   ordersAsked: string[];
   memories: { id: string; day: number; key: string; params?: Record<string, string | number>; seen: boolean }[]; // firsts, dated

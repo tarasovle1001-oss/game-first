@@ -50,6 +50,7 @@ export const CHEAT_FIELDS: CheatField[] = [
   stat("power", "ui.power", "couple"),
   stat("husband.size", "cheats.husband.size", "couple", 5, 30),
   stat("husband.minutes", "cheats.husband.minutes", "couple", 1, 60),
+  stat("husband.stretch", "cheats.husband.stretch", "him"),
   stat("husband.energy", "inspect.him.energy", "him"),
   stat("husband.mood", "inspect.him.mood", "him"),
   stat("husband.arousal", "inspect.him.arousal", "him"),

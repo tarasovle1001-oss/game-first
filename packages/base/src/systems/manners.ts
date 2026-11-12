@@ -55,6 +55,13 @@ export function registerManners(api: ModApi) {
         if (b.told.length > 10) b.told.shift();
         // it tells her how he wants her seen
         for (const a of content.acts) if (a.tier <= 2) b.expect[a.id] = Math.max(b.expect[a.id] ?? 0, 40);
+        if (o.id === "no_panties") {
+          // an evening on the floor with nothing under the skirt: it opens her a little, and tells her he likes her bare where people are
+          b.heroine.traits.openness = clamp(b.heroine.traits.openness + 0.8);
+          b.wantsBare = clamp((b.wantsBare ?? 0) + 15);
+          for (const a of content.acts) if (a.tier === 3) b.expect[a.id] = Math.max(b.expect[a.id] ?? 0, 15);
+          ctx.log("log.order.no_panties.thinks", undefined, ["unseen", "thought"]);
+        }
       } else b.heroine.marriage.resent = clamp(b.heroine.marriage.resent + 0.5);
       ctx.log(`log.order.${o.id}.${ok ? "yes" : "no"}`);
     },

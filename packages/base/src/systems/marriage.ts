@@ -490,6 +490,7 @@ export function registerMarriage(api: ModApi) {
     sex.turns += 1;
     if (ctx.state.time.phase === "night") ctx.emit("bed:turn");
     else ctx.state.time.minute += B.minutesPerTurn;
+    if (sex.turns % 3 === 0 && (b.night!.third || b.night!.here === "public")) ctx.log(`log.bed.${b.night!.third ? "third" : "watched"}.${ctx.rng.int(1, 4)}`, b.night!.third ? { name: `@name:${b.patrons[b.night!.third]?.name ?? ""}` } : undefined);
     if (actById(sex.act).lines && sex.turns % 2 === 0) ctx.log(`log.act.${sex.act}.turn.${ctx.rng.int(1, 3)}`);
     sex.his = clamp(sex.his + his);
     sex.hers = clamp(sex.hers + hers);

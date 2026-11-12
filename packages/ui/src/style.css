@@ -915,3 +915,26 @@ header { min-width: 0; }
 /* scene: her clothes as a small row of chips */
 .m-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
 .m-chips .chip { padding: 5px 10px; font-size: 0.85em; border-radius: 999px; }
+
+/* money behind the top bar, the phone as a thing of its own */
+.topbar .cell.clickable { cursor: pointer; border-radius: 8px; }
+.topbar .cell.clickable:hover { background: rgba(255, 255, 255, 0.06); }
+.modal { background: #1f1c23; border: 1px solid #46404d; border-radius: 14px; padding: 18px 20px; min-width: 320px; max-width: 520px; max-height: 86vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+.modal .stack { display: flex; flex-direction: column; gap: 6px; }
+.modal.phone { width: 360px; border-radius: 28px; padding: 14px 16px 16px; border-width: 3px; }
+.phone-top { text-align: center; font-weight: 600; opacity: 0.8; }
+.phone-apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.phone-app { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.78em; }
+.phone-app.soon { opacity: 0.4; }
+.phone-app-ico { width: 46px; height: 46px; border-radius: 12px; background: #2f2a36; display: grid; place-items: center; font-weight: 700; font-size: 1.2em; }
+.phone-body { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #46404d; padding-top: 10px; }
+.phone-btn { position: relative; width: 34px; height: 30px; padding: 0; margin-right: 6px; }
+.phone-ico { display: block; width: 12px; height: 19px; margin: 0 auto; border: 2px solid currentColor; border-radius: 3px; }
+.phone-badge { position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #e5645b; color: #fff; font-size: 11px; line-height: 16px; text-align: center; }
+/* text grows a little with the width of its column; cards do not break when it is narrow */
+.col-story, .col-house, .col-focus, .col-actions { container-type: inline-size; }
+.col-story > *, .col-house > *, .col-focus > *, .col-actions > * { font-size: clamp(0.86em, 0.62em + 1.1cqw, 1.2em); }
+.mitem { min-width: 0; } .mi-body { min-width: 0; overflow-wrap: anywhere; }
+.mwait .row, .mwait > div:last-child { flex-wrap: wrap; }
+.mwait button { flex: 1 1 84px; min-width: 0; }
+@container (max-width: 300px) { .mi-sub { display: none; } .mitem { padding: 8px; } .tell-row { flex-wrap: wrap; } }

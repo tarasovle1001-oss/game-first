@@ -223,6 +223,17 @@ export function registerRhythm(api: ModApi) {
     const was = tired(ctx.state);
     changeHim(ctx, "energy", -R.him.shiftPerTick, "shift");
     if (!was && tired(ctx.state)) ctx.log("log.him.tired");
+    // nothing left at all: he goes up and lies down, and gets it back for as long as he stays there
+    const sh = b.shift;
+    if (sh && himOf(ctx.state).energy <= 0 && !sh.hisQuiet && !b.night && !b.caught && !b.reaction) {
+      sh.hisQuiet = true;
+      sh.interrupt = true;
+      ctx.state.where[HUSBAND] = "home.bedroom";
+      ctx.log("log.quiet.him.shift");
+    } else if (sh?.hisQuiet) {
+      if (ctx.state.where[HUSBAND] === "home.bedroom" && himOf(ctx.state).energy < 60) changeHim(ctx, "energy", R.him.shiftPerTick + R.quiet.her / 6, "quiet hour");
+      else sh.hisQuiet = false;
+    }
     // what he watches does not leave him cold
     if (b.reaction || b.caught) changeHim(ctx, "arousal", R.him.arousal.watch, "watching");
     else if ((b.heroine.bare ?? "none") !== "none" && husbandSees(ctx.state, ctx.state.where[WIFE] ?? "")) changeHim(ctx, "arousal", R.him.arousal.bare, "her bare");
