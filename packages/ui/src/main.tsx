@@ -23,7 +23,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "12o";
+const BUILD = "12p";
 const RESUME_KEY = "test-city.resume";
 const RESUME_BUDGET = 2_500_000; // characters: the browser gives a page about twice that
 /** A save with the steps back in it: the game as it is now, and as many earlier moments as fit. */
@@ -283,7 +283,8 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const scene = engine.currentScene(state);
+  // watching everything: the picture follows her wherever she is, whether he could see it or not
+  const scene = engine.currentScene(transparent ? { ...state, mods: { ...state.mods, base: { ...bs(state), viewAll: true } } } : state);
   const problems = engine.checkInvariants(state);
   // where he last saw her himself: the map shows that, faintly, while she is out of his sight
   const seenAt = useRef<string | undefined>(state.where["wife"]);

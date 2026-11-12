@@ -595,6 +595,9 @@ export function groupScene(actId: string, joined: string[]): string | null {
   return null;
 }
 
+/** What the screen may show: what the husband can see from where he stands, or everything when the player has asked to watch it all. */
+const onScreen = (state: GameState, loc: string) => husbandSees(state, loc) || bs(state).viewAll === true;
+
 export function registerEncounters(api: ModApi) {
   const c = content.consent;
   const sec = content.secrecy;
@@ -719,7 +722,7 @@ export function registerEncounters(api: ModApi) {
     priority: 100,
     match(state) {
       const enc = bs(state).encounter;
-      if (!enc || !husbandSees(state, enc.loc)) return null;
+      if (!enc || !onScreen(state, enc.loc)) return null;
       const joining = enc.joined && enc.joinUntil !== undefined && (bs(state).shift?.tick ?? 0) < enc.joinUntil;
       return {
         type: joining ? `join_${enc.joined}` : (groupScene(enc.act, (enc.men ?? []).map((m) => m.slot)) ?? actById(enc.act).scene),
@@ -739,7 +742,7 @@ export function registerEncounters(api: ModApi) {
     priority: 90,
     match(state) {
       const f = bs(state).shift?.fin;
-      if (!f || bs(state).encounter || (bs(state).shift?.tick ?? 0) >= f.until || !husbandSees(state, f.loc)) return null;
+      if (!f || bs(state).encounter || (bs(state).shift?.tick ?? 0) >= f.until || !onScreen(state, f.loc)) return null;
       return { type: FIN_SCENE[f.place] ?? actById(f.act).scene, location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), fin: f.place } };
     },
   });
@@ -750,7 +753,7 @@ export function registerEncounters(api: ModApi) {
     priority: 50,
     match(state) {
       const m = bs(state).shift?.moment;
-      if (!m || !husbandSees(state, HALL) || state.where[WIFE] !== HALL) return null;
+      if (!m || !onScreen(state, HALL) || state.where[WIFE] !== HALL) return null;
       return {
         type: actById(m.act).scene,
         location: HALL,

@@ -265,6 +265,7 @@ export interface BaseState {
   toys: string[];
   upgrades: string[];
   billBonus: number; // share added to every bill by upgrades
+  viewAll?: boolean; // never saved as true by the game: the screen sets it on its own copy when the player watches everything
   herToys?: string[]; // toys she bought herself, out of her own purse
   soloDay?: number; // the day she last shut herself in with one
   lastToy?: { id: string; size: number; zone: string; day: number }; // what she used last, for the picture

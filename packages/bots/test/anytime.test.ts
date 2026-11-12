@@ -344,3 +344,25 @@ describe("her own drawer", () => {
     expect(engine.checkInvariants(s), JSON.stringify(engine.checkInvariants(s))).toEqual([]);
   });
 });
+
+describe("watching everything", () => {
+  it("the picture follows her out of his sight only when the player asked to see it all", () => {
+    let found = false;
+    for (let seed = 1; seed <= 12 && !found; seed++) {
+      let s = engine.init(seed);
+      for (let i = 0; i < 1500 && !found; i++) {
+        const acts = engine.listActions(s);
+        if (!acts.length) break;
+        s = engine.dispatch(s, acts[(i * 7 + seed) % acts.length]!);
+        const all = { ...s, mods: { ...s.mods, base: { ...bs(s), viewAll: true } } } as GameState;
+        const hidden = JSON.stringify(engine.currentScene(s) ?? null);
+        const shown = JSON.stringify(engine.currentScene(all) ?? null);
+        if (hidden !== shown) {
+          expect(shown).not.toBe("null");
+          found = true;
+        }
+      }
+    }
+    expect(found).toBe(true);
+  });
+});
