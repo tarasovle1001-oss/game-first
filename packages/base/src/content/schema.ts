@@ -660,7 +660,7 @@ export type Floor = z.infer<typeof floorSchema>;
 
 export const intimacySchema = z
   .object({
-    lead: z.object({ takesAtPower: z.number(), takesChance: z.number(), cruelTakes: z.number(), hisActsPower: z.number(), holdAt: z.number(), slipPerTurn: z.number(), slipped: nums, minTurns: z.number(), maxTurns: z.number(), begAllowDesire: z.number(), begDenied: nums, takeBack: nums, ending: z.object({ ruined: z.number(), snowball: z.number(), lickClean: z.number() }).strict(), ruinedPower: z.number(), snowballPower: z.number(), snowballOpenness: z.number(), lickPower: z.number(), power: z.number() }).strict(),
+    lead: z.object({ ordinaryShare: z.number(), variety: z.number(), takesAtPower: z.number(), takesChance: z.number(), cruelTakes: z.number(), hisActsPower: z.number(), holdAt: z.number(), slipPerTurn: z.number(), slipped: nums, minTurns: z.number(), maxTurns: z.number(), begAllowDesire: z.number(), begDenied: nums, takeBack: nums, ending: z.object({ ruined: z.number(), snowball: z.number(), lickClean: z.number() }).strict(), ruinedPower: z.number(), snowballPower: z.number(), snowballOpenness: z.number(), lickPower: z.number(), power: z.number() }).strict(),
     finish: z.object({ dodgeConfidence: z.number(), holdArousal: z.number(), holdDesire: z.number(), holdChance: z.number() }).strict(),
     after: z.object({ willingOpenness: z.number(), reversePower: z.number(), done: nums, reversed: nums, refused: nums }).strict(),
     talk: z.object({ sayMine: nums, sayMineLaugh: nums, sayMinePower: z.number(), lookAtMe: nums }).strict(),

@@ -670,11 +670,19 @@ export function registerMarriage(api: ModApi) {
     // what is best for her right now, including what she may decide he takes
     const own = (a: string) => !HIS_ACTS.includes(a) || b.power >= LEAD.hisActsPower || h.latents.cruel_streak !== undefined;
     const now = rewardOf(ctx.state, sex.act, sex.pleasure);
-    const best = BED_ACTS.filter((a) => a !== sex.act && hisActOpen(ctx.state, a) && own(a))
+    // she does not do the same thing twice in one scene, and she does not always reach for the same favourite:
+    // among what is better than now she picks by how much better, and now and then she simply takes them to something ordinary
+    const tried = (sex.tried = sex.tried ?? [sex.act]);
+    const options = BED_ACTS.filter((a) => a !== sex.act && !tried.includes(a) && hisActOpen(ctx.state, a) && own(a))
       .map((a) => ({ a, r: rewardOf(ctx.state, a, HIS_ACTS.includes(a) ? herFromHis(ctx.state, a) : pleasureFor(ctx.state, actById(a), b.husband.size)) }))
-      .sort((x, y) => y.r - x.r || x.a.localeCompare(y.a))[0];
-    if (best && best.r >= now + R.better && (sex.switched ?? 0) < 3) {
+      .filter((o) => o.r >= now + R.better)
+      .sort((x, y) => y.r - x.r || x.a.localeCompare(y.a));
+    const ordinary = options.filter((o) => !HIS_ACTS.includes(o.a));
+    const pool = ordinary.length > 0 && ordinary.length < options.length && ctx.rng.chance(LEAD.ordinaryShare) ? ordinary : options;
+    const best = pool.length > 0 ? ctx.rng.weighted(pool.map((o) => ({ item: o, weight: Math.pow(Math.max(1, o.r - now), LEAD.variety) }))) : undefined;
+    if (best && (sex.switched ?? 0) < 3) {
       sex.switched = (sex.switched ?? 0) + 1;
+      tried.push(best.a);
       setAct(ctx, best.a);
       ctx.log("log.bed.lead.switch", { act: `act.${best.a}` });
       return void turn(ctx, 2, 3);

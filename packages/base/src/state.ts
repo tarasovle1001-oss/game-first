@@ -137,6 +137,7 @@ export interface BedScene {
   lead?: boolean; // she runs the scene
   heldSaid?: boolean;
   switched?: number;
+  tried?: string[]; // what she has already had them do in this scene while leading
   panties?: "on" | "aside" | "off";
   naked?: boolean;
 }

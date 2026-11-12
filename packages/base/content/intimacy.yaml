@@ -4,6 +4,8 @@ lead:                 # she runs the scene
   takesAtPower: 50    # once it is in the open and she has this much power, some nights she simply takes over
   takesChance: 0.5
   cruelTakes: 0.8     # with a cruel streak
+  ordinaryShare: 0.18 # when she changes what they do, this often she takes them to something ordinary rather than something done to him
+  variety: 2          # how strongly she prefers the best option over the next ones (1 = by reward, higher = pickier); she does not repeat herself within one scene
   hisActsPower: 30    # from here she may decide it is his turn to take something
   holdAt: 88          # she does not let him past this while she has not come
   slipPerTurn: 0.12   # chance per held turn that he comes anyway; halves for a husband who lasts long
