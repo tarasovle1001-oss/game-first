@@ -179,7 +179,7 @@ export type { Message, PhoneState } from "./systems/phone";
 export { ASK_OUTFIT, SET_DIRECTIVE } from "./systems/manners";
 export { TIP_SHARE } from "./systems/economy";
 export type { BaseSetup } from "./systems/setup";
-export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
+export { REACT_APPROVE, REACT, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
 export { GUEST, HEAR, TALK, TELL, guestInView, together } from "./systems/couple";
 export { BUY, GIVE, SHOP_TOGETHER, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";

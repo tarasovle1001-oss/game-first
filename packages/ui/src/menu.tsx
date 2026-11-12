@@ -2,7 +2,7 @@
 // Root = what the phase offers; "her" = talk, touch, ask, by section; a group = one kind of action with many targets.
 // Items are cards with a hotkey, a title and (where the texts have one) a line of explanation.
 import { useEffect, useState } from "react";
-import { HEAR, CAUGHT_STOP, CAUGHT_WATCH, REACT_APPROVE, REACT_STOP, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, renderLog } from "@tc/base";
+import { HEAR, CAUGHT_STOP, CAUGHT_WATCH, REACT_APPROVE, REACT_STOP, REACT, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, renderLog } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { engine } from "./game";
@@ -20,7 +20,7 @@ const SECTION: Record<string, string> = {
 };
 // things that take the whole column until he answers, and things happening in front of him that he may answer
 const SITUATION = new Set<string>([ANSWER, PERMIT, DEAL, HEAR, CAUGHT_STOP, CAUGHT_WATCH]);
-const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE]);
+const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE, REACT]);
 const SECTIONS = ["chat", "touch", "sex", "ask", "want", "dare", "allow", "about"] as const;
 const LETTERS = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const sectionOf = (a: Action) => (a.type === TALK ? (a.payload?.group as string) : SECTION[a.type]);

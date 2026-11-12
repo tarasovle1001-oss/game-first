@@ -3,13 +3,17 @@
 // In the open she goes by it. Behind his back it binds her only as far as she is honest.
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
-import { bs, clamp, WIFE } from "../state";
-import { actById, endEncounter, isIntimate } from "./encounters";
+import { bs, clamp, HUSBAND, WIFE } from "../state";
+import { actById, CONSENT_FORMULA, endEncounter, isIntimate, verdictOf } from "./encounters";
+import type { ConsentInput } from "./encounters";
+import { changeHim } from "./rhythm";
 import { changeHeroine } from "./heroine";
 import { HALL, husbandSees } from "./places";
 
 export const REACT_STOP = "base/react-stop";
 export const REACT_APPROVE = "base/react-approve";
+/** Everything else he can do while it is happening in front of him: payload.how. */
+export const REACT = "base/react";
 const E = content.consent.expect;
 const TOLD_LIMIT = 10;
 
@@ -102,6 +106,107 @@ export function registerExpectations(api: ModApi) {
       if (isIntimate(act) && ctx.state.where[WIFE] !== HALL) ctx.state.where[WIFE] = HALL;
       b.reaction = null;
       ctx.emit("reaction", { how: "stop", act: act.id, patron: p.id });
+    },
+  });
+
+  // The rest of what a husband can do with it: say it aloud, set a limit, take her away, walk off, send them somewhere, join.
+  const JOIN = ["handjob", "blowjob", "sex"];
+  api.actions.register({
+    id: REACT,
+    labelKey: "action.react.more",
+    describe: (a) => ({ key: `action.react.${a.payload!.how}${a.payload!.act ? `.${a.payload!.act}` : ""}`, params: { name: `@name:${a.payload!.name ?? ""}` } }),
+    enumerate(state) {
+      const r = pending(state);
+      if (!r) return [];
+      const b = bs(state);
+      const p = b.patrons[r.patron];
+      const enc = b.encounter?.patron === r.patron ? b.encounter : null;
+      const name = p?.name ?? "";
+      const out: { type: string; payload: Record<string, string | number> }[] = ["cheer", "limit", "lead_away", "leave"].map((how) => ({ type: REACT, payload: { how, name } }));
+      if (enc) {
+        // somewhere with a door: the staff room, his room if he has one upstairs, their own bed
+        if (enc.loc !== "cafe.staff") out.push({ type: REACT, payload: { how: "send_staff", name } });
+        if (Object.values(b.lodgers ?? {}).some((l) => l.patron === r.patron)) out.push({ type: REACT, payload: { how: "send_room", name } });
+        out.push({ type: REACT, payload: { how: "send_bed", name } });
+        if (actById(r.act).tier >= 3 && b.husband.spentDay !== state.time.day) for (const act of JOIN) out.push({ type: REACT, payload: { how: "join", act, name } });
+      }
+      return out;
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const r = b.reaction!;
+      const act = actById(r.act);
+      const p = b.patrons[r.patron]!;
+      const how = action.payload!.how as string;
+      const name = `@name:${p.name}`;
+      const up = (toTier: number, by: number) => {
+        for (const a of content.acts) if (!a.only && a.tier <= toTier) nudge(ctx, a.id, by, 90);
+      };
+      r.reacted = true;
+      if (how === "cheer") {
+        // said aloud, in front of the man: this and the next step up are wanted, not just allowed
+        b.expect[act.id] = Math.max(b.expect[act.id] ?? 0, E.approve + 15);
+        up(act.tier + 1, 25);
+        tell(ctx, "told.cheer", { act: `act.${act.id}` });
+        changeHeroine(ctx, "arousal", 7, "cheered on");
+        p.memory.interest = clamp(p.memory.interest + 6);
+        ctx.log("log.react.cheer", { name, act: `act.${act.id}` });
+      } else if (how === "limit") {
+        // this far and one step more; past that, no
+        up(act.tier + 1, 20);
+        for (const a of content.acts) if (a.tier > act.tier + 1) b.expect[a.id] = Math.min(b.expect[a.id] ?? 0, E.forbidHigher);
+        tell(ctx, "told.limit", { act: `act.${act.id}` });
+        ctx.log("log.react.limit", { name, act: `act.${act.id}` });
+      } else if (how === "lead_away") {
+        // no scene, no verdict: he simply needs her somewhere else
+        nudge(ctx, act.id, -10);
+        p.memory.interest = clamp(p.memory.interest - 3);
+        changeHeroine(ctx, "mood", h.traits.fidelity >= 60 ? 2 : -2, "led away");
+        ctx.log("log.react.lead_away", { name });
+        if (b.encounter?.patron === p.id) endEncounter(ctx, true);
+        ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
+        b.reaction = null;
+      } else if (how === "leave") {
+        // he turns his back on it: she is on her own, and she knows he knew
+        up(act.tier + 2, 18);
+        tell(ctx, "told.leave", { act: `act.${act.id}` });
+        ctx.log("log.react.leave", { name });
+        ctx.state.where[HUSBAND] = ctx.state.where[HUSBAND] === "cafe.kitchen" ? "cafe.bar" : "cafe.kitchen";
+        b.reaction = null;
+      } else if (how === "send_staff" || how === "send_room" || how === "send_bed") {
+        // a door between them and the room: nobody watching counts for a lot with her, and so does who sent her
+        const to = how === "send_staff" ? "cafe.staff" : how === "send_bed" ? "home.bedroom" : (Object.entries(b.lodgers).find(([, l]) => l.patron === p.id)?.[0] ?? "cafe.staff");
+        up(9, how === "send_bed" ? 35 : 28);
+        tell(ctx, "told.sent", { act: `act.${act.id}` });
+        ctx.log(`log.react.${how}`, { name });
+        if (b.encounter) b.encounter.loc = to;
+        ctx.state.where[WIFE] = to;
+        if (ctx.state.where[p.id] !== undefined) ctx.state.where[p.id] = to;
+        changeHeroine(ctx, "arousal", 5, "sent off with him");
+        b.reaction = null;
+      } else if (how === "join") {
+        const mine = action.payload!.act as string;
+        const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { act: mine, partner: HUSBAND, loc: b.encounter?.loc ?? ctx.state.where[WIFE]!, offer: 0, pressure: 0 });
+        // already in the middle of it with another man: her own heat argues for him, her shame against
+        const total = res.total + h.arousal * 0.3 - (100 - h.traits.openness) * 0.25;
+        const verdict = verdictOf(total);
+        b.proposals.push({ day: ctx.state.time.day, tick: b.shift?.tick ?? -1, patron: HUSBAND, act: mine, loc: b.encounter?.loc ?? "", verdict, seen: true, total, rows: [...res.rows, { id: "consent.joined", labelKey: "factor.consent.joined", value: total - res.total }] });
+        if (verdict === "refuse") {
+          changeHeroine(ctx, "mood", -3, "too much at once");
+          ctx.log("log.react.join.no", { name });
+        } else {
+          up(9, 30);
+          tell(ctx, "told.join", { act: `act.${mine}` });
+          changeHeroine(ctx, "arousal", 15, "both of them");
+          h.traits.openness = clamp(h.traits.openness + 1);
+          changeHim(ctx, "arousal", -40, "joined");
+          b.husband.spentDay = ctx.state.time.day;
+          p.memory.affinity = clamp(p.memory.affinity + 5, -100, 100);
+          ctx.log("log.react.join.yes", { name, act: `act.${mine}` });
+        }
+      }
+      ctx.emit("reaction", { how, act: act.id, patron: p.id });
     },
   });
 

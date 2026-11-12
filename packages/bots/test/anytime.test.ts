@@ -138,3 +138,33 @@ describe("run dry", () => {
     expect(charmOf(bold)).toBeLessThanOrEqual(100);
   });
 });
+
+describe("in front of him", () => {
+  it("he has more than a nod and a no: every answer is on offer, does something, and breaks nothing", () => {
+    // play evenings until something starts under his eyes
+    let found: GameState | null = null;
+    for (let seed = 1; seed <= 10 && !found; seed++) {
+      let s = engine.init(seed);
+      let r = seed * 7919;
+      const rnd = () => (r = (r * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+      for (let i = 0; i < 2500 && s.time.day <= 9 && !found; i++) {
+        const acts = engine.listActions(s);
+        if (acts.some((a) => a.type === "base/react")) found = s;
+        else {
+          const wait = acts.filter((a) => /wait|advance/.test(a.type));
+          const other = acts.filter((a) => !/wait|advance|move/.test(a.type));
+          s = engine.dispatch(s, other.length && rnd() < 0.45 ? other[Math.floor(rnd() * other.length)]! : wait.length ? wait[Math.floor(rnd() * wait.length)]! : acts[Math.floor(rnd() * acts.length)]!);
+        }
+      }
+    }
+    expect(found).not.toBeNull();
+    const hows = engine.listActions(found!).filter((a) => a.type === "base/react");
+    expect(hows.map((a) => a.payload!.how)).toEqual(expect.arrayContaining(["cheer", "limit", "lead_away", "leave"]));
+    for (const a of hows) {
+      const next = engine.dispatch(found!, a);
+      expect(next.log.length).toBeGreaterThan(found!.log.length);
+      expect(engine.checkInvariants(next)).toEqual([]);
+      expect(engine.listActions(next).length).toBeGreaterThan(0);
+    }
+  });
+});
