@@ -10,7 +10,7 @@ import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
-import { canDo, wakeMinute } from "./rhythm";
+import { canDo, himOf, wakeMinute } from "./rhythm";
 
 export const DAY_DO = "base/day";
 export const BUY = "base/buy";
@@ -33,6 +33,14 @@ const isAt = (state: GameState, at: string | undefined) => {
 };
 type Activity = (typeof D.activities)[number];
 
+/** What an activity does for her, by the share of it that was actually done. */
+function herShare(ctx: Ctx, a: Activity, share: number) {
+  const b = bs(ctx.state);
+  for (const [k, v] of Object.entries(a.her ?? {})) {
+    if (k === "desire" || k === "resent") b.heroine.marriage[k] = clamp(b.heroine.marriage[k] + v * share);
+    else changeHeroine(ctx, k as "mood", v * share, a.id);
+  }
+}
 /** What an afternoon activity does once the time for it has been put in. */
 function finish(ctx: Ctx, a: Activity) {
   const b = bs(ctx.state);
@@ -41,6 +49,7 @@ function finish(ctx: Ctx, a: Activity) {
   if (a.gradual) {
     // done a minute at a time: there is nothing left to hand out at the end, and it can be taken up again
     ctx.log(`log.day.${a.id}`, { money: 0, cost: 0, stock: b.stock });
+    herShare(ctx, a, spent / a.minutes);
     ctx.emit("day:did", { do: a.id, share: spent / a.minutes });
     return;
   }
@@ -49,10 +58,7 @@ function finish(ctx: Ctx, a: Activity) {
   if (a.clean) b.clean = clamp(b.clean + a.clean);
   if (a.arrivals) b.day!.arrivals += a.arrivals;
   if (a.stock) b.stock += a.stock;
-  for (const [k, v] of Object.entries(a.her ?? {})) {
-    if (k === "desire" || k === "resent") b.heroine.marriage[k] = clamp(b.heroine.marriage[k] + v);
-    else changeHeroine(ctx, k as "mood", v, a.id);
-  }
+  herShare(ctx, a, 1);
   if (a.gym) gym(ctx, a.gym === "together");
   else if (a.gossip) {
     // what he hears depends on how much there is to hear; hearing it is not the same as knowing
@@ -100,6 +106,7 @@ function herDone(ctx: Ctx) {
     ctx.log("log.her.back");
   }
   if (day.her?.task === "shopping") ctx.log("log.her.shop_done");
+  if (day.her?.task === "quiet") changeHeroine(ctx, "energy", D.rhythm.quiet.her, "quiet hour");
   if (t?.clean) b.clean = clamp(b.clean + t.clean);
   for (const [k, v] of Object.entries(t?.her ?? {})) changeHeroine(ctx, k as "mood", v, t!.id);
   herNext(ctx);
@@ -113,6 +120,16 @@ export function passPrep(ctx: Ctx, minutes: number) {
   for (let i = 0; i < minutes && day.left > 0; i++) {
     day.left -= 1;
     ctx.state.time.minute = opening - day.left;
+    // run dry, either of them simply lies down for an hour
+    if (!day.busy && himOf(ctx.state).energy <= 0 && !b.night && !inTown(ctx.state.where[HUSBAND])) {
+      day.busy = { id: "nap", left: Math.min(D.rhythm.quiet.minutes, day.left) };
+      ctx.log("log.quiet.him");
+    }
+    if (b.heroine.energy <= 0 && !b.night && !day.herOut && !["quiet", "away"].includes(day.her?.task ?? "")) {
+      day.her = { task: "quiet", left: D.rhythm.quiet.minutes };
+      ctx.state.where[WIFE] = "home.bedroom";
+      ctx.log("log.quiet.her");
+    }
     if (day.busy) {
       const a = D.activities.find((x) => x.id === day.busy!.id)!;
       day.busy.left -= 1;
@@ -400,7 +417,10 @@ export function registerDay(api: ModApi) {
       const spent = day.busy!.spent ?? 0;
       ctx.log(a.gradual ? "log.day.stop.gradual" : "log.day.stop", { what: `day.${a.id}`, minutes: spent });
       day.busy = undefined;
-      if (a.gradual && spent > 0) ctx.emit("day:did", { do: a.id, share: spent / a.minutes });
+      if (a.gradual && spent > 0) {
+        herShare(ctx, a, spent / a.minutes);
+        ctx.emit("day:did", { do: a.id, share: spent / a.minutes });
+      }
     },
   });
   // The afternoon is waited through like the evening: a stretch at a time, or until what he is doing is done.
@@ -467,7 +487,7 @@ export function registerDay(api: ModApi) {
         for (const o of content.outfits) if (!b.owned.includes(o.id) && !bag.includes(o.id) && b.money >= o.price) out.push({ type: BUY, payload: { kind: "outfit", id: o.id, cost: o.price } });
         for (const t of D.shop.toys) if (!b.toys.includes(t.id) && !bag.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
       }
-      for (const u of D.upgrades) if (!b.upgrades.includes(u.id) && canPay(state, u.cost)) out.push({ type: BUY, payload: { kind: "upgrade", id: u.id, cost: u.cost } });
+      if (inTown(state.where[HUSBAND])) for (const u of D.upgrades) if (!b.upgrades.includes(u.id) && canPay(state, u.cost)) out.push({ type: BUY, payload: { kind: "upgrade", id: u.id, cost: u.cost } });
       return out;
     },
     apply(ctx, action) {

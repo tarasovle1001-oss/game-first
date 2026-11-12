@@ -26,7 +26,7 @@ night: # what she does when she lies awake wanting more
 sizeClasses: [11, 14, 17, 21] # cm: below the first is tiny, then small, average, big; from the last up is huge
 
 bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
-  minutesPerTurn: 2
+  minutesPerTurn: 1
   startHis: 15
   hisRate: 10       # per turn, for a husband who lasts 12 minutes
   hisRateSex: 13

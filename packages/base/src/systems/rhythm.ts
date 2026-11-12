@@ -29,6 +29,7 @@ export const himOf = (state: GameState) => {
 export function changeHim(ctx: Ctx, key: HimKey, amount: number, reason: string) {
   const h = bs(ctx.state).husband;
   const before = himOf(ctx.state)[key];
+  if (key === "energy" && amount < 0) amount *= R.energyCost;
   h[key] = clamp(before + amount);
   if (h[key] !== before) ctx.emit("husband:changed", { key, amount: h[key]! - before, reason });
 }

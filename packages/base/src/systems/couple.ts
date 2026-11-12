@@ -132,7 +132,7 @@ export function registerCouple(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       if (!together(state)) return [];
-      const out = T.options.filter((o) => (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
+      const out = T.options.filter((o) => (!o.room || state.where[HUSBAND] === o.room) && (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
       out.unshift({ type: TALK, payload: { do: "how_are_you", group: "chat" } });
       out.push({ type: TALK, payload: { do: "where_we_stand", group: "chat" } });
       if (state.time.phase === "night") out.push({ type: TALK, payload: { do: "how_tonight", group: "chat" } });

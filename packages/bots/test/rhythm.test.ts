@@ -60,7 +60,7 @@ describe("the day around the clock", () => {
     expect(bs(s).clean).toBeCloseTo(20 + 45 / 4, 5);
     s = engine.dispatch(s, { type: "base/prep-wait", payload: { until: "done" } });
     expect(bs(s).clean).toBeCloseTo(65, 5);
-    expect(himOf(s).energy).toBeCloseTo(before - 14, 5);
+    expect(himOf(s).energy).toBeCloseTo(before - 14 * 0.55, 5);
     expect(can(s, "clean")).toBe(true); // and it can be taken up again
     s = structuredClone(s);
     bs(s).husband.energy = 5;

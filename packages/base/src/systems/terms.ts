@@ -110,12 +110,20 @@ export function registerTerms(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       if (!together(state) || b.night?.herAsleep || b.complaint) return [];
-      return Object.keys(T.wishes).map((id) => ({ type: WISH, payload: { id } }));
+      return [...Object.keys(T.wishes), ...(b.wishes?.length ? ["never_mind"] : [])].map((id) => ({ type: WISH, payload: { id } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const id = action.payload!.id as string;
+      if (id === "never_mind") {
+        // he takes it all back: what she already believes he wants does not vanish, but nothing stands any more
+        b.wishes = [];
+        b.wishStr = {};
+        b.directive = "natural";
+        ctx.log("log.wish.never_mind");
+        return;
+      }
       const w = T.wishes[id]!;
       // the opposite said earlier today no longer stands
       const undo = [...(T.against[id] ?? []), ...Object.entries(T.against).filter(([, list]) => list.includes(id)).map(([k]) => k)];

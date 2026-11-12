@@ -44,7 +44,7 @@ talk: # small things between the two of them; each once a day
     - { id: stroke_hair, group: touch, effects: { mood: 2, desire: 0.5 } }
     - { id: fondle_breast, group: touch, effects: { arousal: 6 }, needs: { stat: desire, min: 40, publicExtra: 30 }, fail: { mood: -2, resent: 0.5 } }
     - { id: under_skirt, group: touch, effects: { arousal: 9 }, needs: { stat: desire, min: 50, publicExtra: 35 }, fail: { mood: -3, resent: 1 } }
-    - { id: cuddle, group: touch, effects: { mood: 3, desire: 1, resent: -0.5 }, phases: [prep, night] }
+    - { id: cuddle, group: touch, effects: { mood: 3, desire: 1, resent: -0.5 }, phases: [prep, night], room: home.bedroom }
     - { id: carry_bed, group: touch, effects: { mood: 3, arousal: 4, desire: 1 }, needs: { stat: desire, min: 35 }, fail: { mood: -1 }, phases: [night] }
     - { id: pour_drink, group: touch, effects: { drunk: 10, mood: 2 }, stock: 1, phases: [shift, night] }
   groups: # what he can say "go on" or "don't" about

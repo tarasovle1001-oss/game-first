@@ -14,7 +14,7 @@ type Path = { at: "root" } | { at: "her"; sec: string | null } | { at: "group"; 
 const SECTION: Record<string, string> = {
   "base/night-act": "sex", "base/upstairs": "sex", "base/night-self": "sex", "base/night-decline": "sex",
   [STRIP]: "ask", "base/ask-outfit": "ask", "base/outfit-back": "ask",
-  [TELL]: "allow", [ALLOW]: "allow", "base/directive": "want", "base/order": "want", [WISH]: "want", [DARE]: "dare",
+  [TELL]: "allow", [ALLOW]: "allow", "base/directive": "want", "base/order": "ask", [WISH]: "want", [DARE]: "dare",
   "base/give": "ask", "base/shop-together": "chat",
   [ABOUT]: "about", [STANCE]: "about", [PROMISE]: "about", [PRESS]: "sex",
 };

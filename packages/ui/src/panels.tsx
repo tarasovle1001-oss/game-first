@@ -660,9 +660,8 @@ export function InspectorBlock({ prev, state, t, lang, what }: Common & { prev: 
   const amount = (r: DeltaRow) => (r.id.startsWith("perm.") ? t(r.to > 0 ? "inspect.perm.allow" : "inspect.perm.forbid") : `${fmt(r.delta)} ${r.delta > 0 ? "↑" : "↓"}`);
   const tone = (r: DeltaRow) => (r.good === null ? "flat" : r.good ? "pos" : "neg");
   const via = (v: DeltaVia) => (v.key.startsWith("told.") ? t(v.key, renderParams(v.params, t, lang)) : reasonLabel(v.key, t)) + (v.amount !== undefined ? ` ${fmt(v.amount)}` : "");
-  const main = ins.rows.filter((r) => r.main);
   // a big number comes down as a row too when somebody left a reason next to it
-  const small = ins.rows.filter((r) => !r.main || r.via.length > 0);
+  const small = ins.rows; // one list: every change with where it came from
   const shown = all ? small : small.slice(0, INSPECT_SHORT);
   return (
     <div className="inspector">
@@ -672,15 +671,6 @@ export function InspectorBlock({ prev, state, t, lang, what }: Common & { prev: 
         {ins.minutes > 0 && <span className="muted small">{t("inspect.minutes", { n: ins.minutes })}</span>}
       </div>
       {ins.rows.length === 0 && <div className="muted small">{t("inspect.none")}</div>}
-      {main.length > 0 && (
-        <div className="insp-main">
-          {main.map((r) => (
-            <span key={r.id} title={`${r.from} → ${r.to}`}>
-              {label(r)} <b className={tone(r)}>{amount(r)}</b>
-            </span>
-          ))}
-        </div>
-      )}
       {shown.length > 0 && (
         <div className="insp-rows">
           {shown.map((r) => (

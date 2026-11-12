@@ -404,6 +404,8 @@ export const daySchema = z
         wake: z.array(z.number().int().min(5).max(14)).min(1), // hours he may sleep till; the first is what happens by default
         herWake: z.number().int(),
         energyPerHour: z.object({ him: z.number(), her: z.number() }).strict(),
+    energyCost: z.number().positive(),
+    quiet: z.object({ minutes: z.number().int().positive(), her: z.number() }).strict(),
         herBedtime: z.number().int(), // minutes after midnight she falls asleep if nothing keeps her up
         wakeHer: z.object({ consent: z.number(), annoy: z.number(), mood: z.number() }).strict(),
         nightWaits: z.array(z.number().int().positive()).min(1),
@@ -453,6 +455,7 @@ export const mannersSchema = z
               needs: z.object({ stat: z.string(), min: z.number(), publicExtra: z.number().optional() }).strict().optional(),
               fail: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()).optional(),
               phases: z.array(z.string()).optional(),
+              room: z.string().optional(), // only in this room
               stock: z.number().optional(),
             })
             .strict(),
