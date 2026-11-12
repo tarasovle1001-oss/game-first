@@ -437,3 +437,133 @@
   figures:
     - { role: husband, pose: sit, x: -46, y: 0, flip: false, torso: 84, armR: [-20, 60] }
     - { role: patron, pose: sit, x: 46, y: 0, flip: true, torso: 82, armR: [-20, 70] }
+
+# --- layouts for the questionnaire acts: borrowed from the nearest existing pose until they get their own ---
+- id: ignore_handjob
+  figures:
+    - {"role": "wife", "pose": "lie_side", "x": -28, "y": 0, "flip": false, "armR": [150, 60], "head": 150}
+    - {"role": "husband", "pose": "kneel", "x": 46, "y": 0, "flip": true, "head": 70, "penis": {"angle": 40}, "armR": [-70, -60]}
+- id: came_ignore_handjob
+  figures:
+    - {"role": "wife", "pose": "lie_side", "x": -28, "y": 0, "flip": false, "armR": [150, 60], "head": 150}
+    - {"role": "husband", "pose": "kneel", "x": 46, "y": 0, "flip": true, "head": 70, "penis": {"angle": 40}, "armR": [-70, -60]}
+- id: facesitting
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": 14, "y": 0, "flip": false, "legR": [10, -14], "legL": [6, -10], "penis": {"angle": 78}, "armR": {"to": "wife.kneeR", "dy": 6}}
+    - {"role": "wife", "pose": "straddle", "x": -29, "y": 6, "flip": false, "torso": 84, "legR": [-20, -160], "legL": [-14, -160], "armR": {"to": "husband.chest", "dy": 3}, "armL": [-110, -130]}
+- id: came_facesitting
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": 14, "y": 0, "flip": false, "legR": [10, -14], "legL": [6, -10], "penis": {"angle": 78}, "armR": {"to": "wife.kneeR", "dy": 6}}
+    - {"role": "wife", "pose": "straddle", "x": -29, "y": 6, "flip": false, "torso": 84, "legR": [-20, -160], "legL": [-14, -160], "armR": {"to": "husband.chest", "dy": 3}, "armL": [-110, -130]}
+- id: edging
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": -6, "y": 0, "flip": false, "penis": {"angle": 80}, "armR": [10, 0], "legR": [18, -24], "legL": [12, -18]}
+    - {"role": "wife", "pose": "kneel_sit", "x": 30, "y": 0, "flip": true, "torso": 74, "armR": {"to": "husband.penisTip", "dy": -3}, "armL": {"to": "husband.kneeR", "dy": 4}}
+- id: came_edging
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": -6, "y": 0, "flip": false, "penis": {"angle": 80}, "armR": [10, 0], "legR": [18, -24], "legL": [12, -18]}
+    - {"role": "wife", "pose": "kneel_sit", "x": 30, "y": 0, "flip": true, "torso": 74, "armR": {"to": "husband.penisTip", "dy": -3}, "armL": {"to": "husband.kneeR", "dy": 4}}
+- id: cleanup
+  figures:
+    - {"role": "wife", "pose": "lie_open", "x": -8, "y": 0, "flip": false, "armR": {"to": "husband.head", "dy": 3}, "armL": [160, 120]}
+    - {"role": "husband", "pose": "kneel_sit", "x": 44, "y": 0, "flip": true, "torso": 22, "head": 8, "armR": {"to": "wife.kneeR", "dy": -8}, "armL": {"to": "wife.pelvis", "dy": 6}}
+- id: came_cleanup
+  figures:
+    - {"role": "wife", "pose": "lie_open", "x": -8, "y": 0, "flip": false, "armR": {"to": "husband.head", "dy": 3}, "armL": [160, 120]}
+    - {"role": "husband", "pose": "kneel_sit", "x": 44, "y": 0, "flip": true, "torso": 22, "head": 8, "armR": {"to": "wife.kneeR", "dy": -8}, "armL": {"to": "wife.pelvis", "dy": 6}}
+- id: chastity
+  figures:
+    - {"role": "husband", "pose": "lie_open", "x": -4, "y": 0, "flip": false, "penis": {"angle": 120, "len": 11}, "armR": [10, -10]}
+    - {"role": "wife", "pose": "kneel_sit", "x": 40, "y": 0, "flip": true, "torso": 76, "head": 60, "armR": {"to": "husband.butt", "dy": -1}, "armL": {"to": "husband.kneeR", "dy": -6}}
+- id: came_chastity
+  figures:
+    - {"role": "husband", "pose": "lie_open", "x": -4, "y": 0, "flip": false, "penis": {"angle": 120, "len": 11}, "armR": [10, -10]}
+    - {"role": "wife", "pose": "kneel_sit", "x": 40, "y": 0, "flip": true, "torso": 76, "head": 60, "armR": {"to": "husband.butt", "dy": -1}, "armL": {"to": "husband.kneeR", "dy": -6}}
+- id: toy_on_her
+  figures:
+    - {"role": "wife", "pose": "lie_open", "x": -8, "y": 0, "flip": false, "legR": [55, -10], "legL": [70, 10], "armR": [160, 100], "armL": {"to": "husband.elbowR"}}
+    - {"role": "husband", "pose": "kneel_sit", "x": 40, "y": 0, "flip": true, "torso": 70, "head": 50, "armR": {"to": "wife.groin", "dx": 1}, "armL": {"to": "wife.kneeR", "dy": -6}}
+- id: came_toy_on_her
+  figures:
+    - {"role": "wife", "pose": "lie_open", "x": -8, "y": 0, "flip": false, "legR": [55, -10], "legL": [70, 10], "armR": [160, 100], "armL": {"to": "husband.elbowR"}}
+    - {"role": "husband", "pose": "kneel_sit", "x": 40, "y": 0, "flip": true, "torso": 70, "head": 50, "armR": {"to": "wife.groin", "dx": 1}, "armL": {"to": "wife.kneeR", "dy": -6}}
+- id: masturbate_show
+  figures:
+    - {"role": "wife", "pose": "lie_open", "x": -22, "y": 0, "flip": false, "legR": [60, -30], "legL": [72, -18], "armR": {"to": "self.groin", "dy": 2}, "armL": {"to": "self.chest", "dy": 5}}
+    - {"role": "husband", "pose": "lie_side", "x": 58, "y": 0, "flip": true, "armR": [200, 120]}
+- id: came_masturbate_show
+  figures:
+    - {"role": "wife", "pose": "lie_open", "x": -22, "y": 0, "flip": false, "legR": [60, -30], "legL": [72, -18], "armR": {"to": "self.groin", "dy": 2}, "armL": {"to": "self.chest", "dy": 5}}
+    - {"role": "husband", "pose": "lie_side", "x": 58, "y": 0, "flip": true, "armR": [200, 120]}
+- id: footjob
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": -6, "y": 0, "flip": false, "penis": {"angle": 80}, "armR": [10, 0], "legR": [18, -24], "legL": [12, -18]}
+    - {"role": "wife", "pose": "kneel_sit", "x": 30, "y": 0, "flip": true, "torso": 74, "armR": {"to": "husband.penisTip", "dy": -3}, "armL": {"to": "husband.kneeR", "dy": 4}}
+- id: came_footjob
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": -6, "y": 0, "flip": false, "penis": {"angle": 80}, "armR": [10, 0], "legR": [18, -24], "legL": [12, -18]}
+    - {"role": "wife", "pose": "kneel_sit", "x": 30, "y": 0, "flip": true, "torso": 74, "armR": {"to": "husband.penisTip", "dy": -3}, "armL": {"to": "husband.kneeR", "dy": 4}}
+- id: spank_him
+  figures:
+    - {"role": "husband", "pose": "all_fours", "x": 8, "y": 0, "flip": false, "head": 20, "penis": {"angle": -70, "len": 11}}
+    - {"role": "wife", "pose": "kneel", "x": -17, "y": 0, "flip": false, "torso": 84, "armR": {"to": "husband.pelvis", "dx": 2, "dy": 4}, "armL": {"to": "husband.neck", "dx": -8}, "toy": {"from": "groin", "to": "husband.butt", "len": 18}}
+- id: came_spank_him
+  figures:
+    - {"role": "husband", "pose": "all_fours", "x": 8, "y": 0, "flip": false, "head": 20, "penis": {"angle": -70, "len": 11}}
+    - {"role": "wife", "pose": "kneel", "x": -17, "y": 0, "flip": false, "torso": 84, "armR": {"to": "husband.pelvis", "dx": 2, "dy": 4}, "armL": {"to": "husband.neck", "dx": -8}, "toy": {"from": "groin", "to": "husband.butt", "len": 18}}
+- id: tease_denial
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": -8, "y": 0, "flip": false, "legR": [6, -8], "legL": [2, -4], "penis": {"angle": 75}, "armR": [150, 190]}
+    - {"role": "wife", "pose": "kneel", "x": 34, "y": 0, "flip": true, "torso": 84, "armR": {"to": "husband.penisTip", "dx": 3, "dy": 6}, "armL": [-100, -120]}
+- id: came_tease_denial
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": -8, "y": 0, "flip": false, "legR": [6, -8], "legL": [2, -4], "penis": {"angle": 75}, "armR": [150, 190]}
+    - {"role": "wife", "pose": "kneel", "x": 34, "y": 0, "flip": true, "torso": 84, "armR": {"to": "husband.penisTip", "dx": 3, "dy": 6}, "armL": [-100, -120]}
+- id: thigh_ride
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": 0, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "armL": {"to": "wife.kneeL", "dy": 4}, "legR": [20, -30], "legL": [14, -24]}
+    - {"role": "wife", "pose": "straddle", "x": 3, "y": 3, "flip": true, "torso": 82, "armR": {"to": "husband.chest", "dy": 2}, "armL": {"to": "husband.chest", "dx": 6, "dy": 2}, "legR": [-25, -165], "legL": [-18, -165]}
+- id: came_thigh_ride
+  figures:
+    - {"role": "husband", "pose": "lie_back", "x": 0, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "armL": {"to": "wife.kneeL", "dy": 4}, "legR": [20, -30], "legL": [14, -24]}
+    - {"role": "wife", "pose": "straddle", "x": 3, "y": 3, "flip": true, "torso": 82, "armR": {"to": "husband.chest", "dy": 2}, "armL": {"to": "husband.chest", "dx": 6, "dy": 2}, "legR": [-25, -165], "legL": [-18, -165]}
+- id: join_dp
+  figures:
+    - {"role": "patron", "pose": "lie_back", "x": -2, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "legR": [20, -30], "legL": [14, -24], "penis": {"to": "wife.groin", "dy": 3}}
+    - {"role": "wife", "pose": "straddle", "x": 1, "y": 3, "flip": true, "torso": 48, "head": 30, "armR": {"to": "patron.shoulderR", "dy": 2}, "armL": {"to": "patron.chest", "dx": 6}, "legR": [-25, -165], "legL": [-18, -165]}
+    - {"role": "husband", "pose": "kneel", "x": 30, "y": 0, "flip": true, "torso": 76, "head": 56, "penis": {"to": "wife.butt", "dy": 2}, "armR": {"to": "wife.pelvis", "dx": -2, "dy": 4}, "armL": {"to": "wife.shoulderR", "dy": 2}, "scale": 0.88}
+- id: came_join_dp
+  figures:
+    - {"role": "patron", "pose": "lie_back", "x": -2, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "legR": [20, -30], "legL": [14, -24], "penis": {"to": "wife.groin", "dy": 3}}
+    - {"role": "wife", "pose": "straddle", "x": 1, "y": 3, "flip": true, "torso": 48, "head": 30, "armR": {"to": "patron.shoulderR", "dy": 2}, "armL": {"to": "patron.chest", "dx": 6}, "legR": [-25, -165], "legL": [-18, -165]}
+    - {"role": "husband", "pose": "kneel", "x": 30, "y": 0, "flip": true, "torso": 76, "head": 56, "penis": {"to": "wife.butt", "dy": 2}, "armR": {"to": "wife.pelvis", "dx": -2, "dy": 4}, "armL": {"to": "wife.shoulderR", "dy": 2}, "scale": 0.88}
+- id: join_two_mouths
+  figures:
+    - {"role": "wife", "pose": "all_fours", "x": 2, "y": 0, "flip": false, "head": 14}
+    - {"role": "patron", "pose": "kneel", "x": -26, "y": 0, "flip": false, "torso": 82, "penis": {"to": "wife.butt", "dy": 1}, "armR": {"to": "wife.pelvis", "dx": 2, "dy": 4}, "armL": {"to": "wife.butt", "dy": 6}}
+    - {"role": "husband", "pose": "kneel", "x": 40, "y": 0, "flip": true, "torso": 92, "head": 70, "penis": {"to": "wife.mouth", "dx": 1}, "armR": {"to": "wife.head", "dy": 4}}
+- id: came_join_two_mouths
+  figures:
+    - {"role": "wife", "pose": "all_fours", "x": 2, "y": 0, "flip": false, "head": 14}
+    - {"role": "patron", "pose": "kneel", "x": -26, "y": 0, "flip": false, "torso": 82, "penis": {"to": "wife.butt", "dy": 1}, "armR": {"to": "wife.pelvis", "dx": 2, "dy": 4}, "armL": {"to": "wife.butt", "dy": 6}}
+    - {"role": "husband", "pose": "kneel", "x": 40, "y": 0, "flip": true, "torso": 92, "head": 70, "penis": {"to": "wife.mouth", "dx": 1}, "armR": {"to": "wife.head", "dy": 4}}
+- id: join_hold
+  figures:
+    - {"role": "patron", "pose": "lie_back", "x": -2, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "legR": [20, -30], "legL": [14, -24], "penis": {"to": "wife.groin", "dy": 3}}
+    - {"role": "wife", "pose": "straddle", "x": 1, "y": 3, "flip": true, "torso": 48, "head": 30, "armR": {"to": "patron.shoulderR", "dy": 2}, "armL": {"to": "patron.chest", "dx": 6}, "legR": [-25, -165], "legL": [-18, -165]}
+    - {"role": "husband", "pose": "kneel", "x": 28, "y": 0, "flip": true, "torso": 76, "head": 56, "penis": {"to": "wife.butt", "dy": 2}, "armR": {"to": "wife.pelvis", "dx": -2, "dy": 4}, "armL": {"to": "wife.shoulderR", "dy": 2}}
+- id: came_join_hold
+  figures:
+    - {"role": "patron", "pose": "lie_back", "x": -2, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "legR": [20, -30], "legL": [14, -24], "penis": {"to": "wife.groin", "dy": 3}}
+    - {"role": "wife", "pose": "straddle", "x": 1, "y": 3, "flip": true, "torso": 48, "head": 30, "armR": {"to": "patron.shoulderR", "dy": 2}, "armL": {"to": "patron.chest", "dx": 6}, "legR": [-25, -165], "legL": [-18, -165]}
+    - {"role": "husband", "pose": "kneel", "x": 28, "y": 0, "flip": true, "torso": 76, "head": 56, "penis": {"to": "wife.butt", "dy": 2}, "armR": {"to": "wife.pelvis", "dx": -2, "dy": 4}, "armL": {"to": "wife.shoulderR", "dy": 2}}
+- id: join_after
+  figures:
+    - {"role": "patron", "pose": "lie_back", "x": -2, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "legR": [20, -30], "legL": [14, -24], "penis": {"to": "wife.groin", "dy": 3}}
+    - {"role": "wife", "pose": "straddle", "x": 1, "y": 3, "flip": true, "torso": 48, "head": 30, "armR": {"to": "patron.shoulderR", "dy": 2}, "armL": {"to": "patron.chest", "dx": 6}, "legR": [-25, -165], "legL": [-18, -165]}
+    - {"role": "husband", "pose": "kneel", "x": 28, "y": 0, "flip": true, "torso": 76, "head": 56, "penis": {"to": "wife.butt", "dy": 2}, "armR": {"to": "wife.pelvis", "dx": -2, "dy": 4}, "armL": {"to": "wife.shoulderR", "dy": 2}}
+- id: came_join_after
+  figures:
+    - {"role": "patron", "pose": "lie_back", "x": -2, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "legR": [20, -30], "legL": [14, -24], "penis": {"to": "wife.groin", "dy": 3}}
+    - {"role": "wife", "pose": "straddle", "x": 1, "y": 3, "flip": true, "torso": 48, "head": 30, "armR": {"to": "patron.shoulderR", "dy": 2}, "armL": {"to": "patron.chest", "dx": 6}, "legR": [-25, -165], "legL": [-18, -165]}
+    - {"role": "husband", "pose": "kneel", "x": 28, "y": 0, "flip": true, "torso": 76, "head": 56, "penis": {"to": "wife.butt", "dy": 2}, "armR": {"to": "wife.pelvis", "dx": -2, "dy": 4}, "armL": {"to": "wife.shoulderR", "dy": 2}}

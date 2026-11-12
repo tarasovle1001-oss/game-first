@@ -288,3 +288,184 @@
   zones: []
   only: husband
   motives: [power]
+# --- written from Alexey's questionnaires (docs/ACTS-HOWTO.md): the marriage bed, and the bed with a guest in it ---
+- id: ignore_handjob
+  tier: 5
+  base: -28
+  scene: ignore_handjob
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: facesitting
+  tier: 6
+  base: -34
+  scene: facesitting
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: edging
+  tier: 5
+  base: -28
+  scene: edging
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: cleanup
+  tier: 6
+  base: -34
+  scene: cleanup
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: chastity
+  tier: 4
+  base: -22
+  scene: chastity
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: toy_on_her
+  tier: 5
+  base: -28
+  scene: toy_on_her
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [affection]
+  lines: true
+- id: masturbate_show
+  tier: 4
+  base: -22
+  scene: masturbate_show
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: footjob
+  tier: 5
+  base: -28
+  scene: footjob
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: spank_him
+  tier: 3
+  base: -16
+  scene: spank_him
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: tease_denial
+  tier: 4
+  base: -22
+  scene: tease_denial
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: thigh_ride
+  tier: 5
+  base: -28
+  scene: thigh_ride
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [power]
+  lines: true
+- id: join_dp
+  tier: 8
+  base: -46
+  scene: join_dp
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [affection]
+  lines: true
+- id: join_two_mouths
+  tier: 6
+  base: -34
+  scene: join_two_mouths
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [affection]
+  lines: true
+- id: join_hold
+  tier: 7
+  base: -40
+  scene: join_hold
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [affection]
+  lines: true
+- id: join_after
+  tier: 7
+  base: -40
+  scene: join_after
+  place: private
+  effects: { arousal: 8, mood: 1, energy: -2, interest: 0, affinity: 0 }
+  minutes: 15
+  tip: 0
+  zones: [hands]
+  only: husband
+  motives: [affection]
+  lines: true

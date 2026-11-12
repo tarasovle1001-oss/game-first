@@ -15,7 +15,7 @@ import { passPrep } from "./day";
 import { himOf, tired } from "./rhythm";
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
-export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him"];
+export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him", "ignore_handjob", "facesitting", "edging", "cleanup", "chastity", "toy_on_her", "masturbate_show", "footjob", "spank_him", "tease_denial", "thigh_ride"];
 /** What is done to him: her finger, a toy in her hand, a toy on straps, her whole hand. */
 export const HIS_ACTS = ["prostate", "dildo_him", "pegging", "fisting_him"];
 const NEEDS_TOY = new Set(["dildo_him", "pegging"]);
@@ -27,7 +27,13 @@ export const UPSTAIRS = "base/upstairs";
 /** What he can pull her away from work for. */
 export const UPSTAIRS_ACTS = ["mutual_touching", "blowjob", "cunnilingus", "sex"];
 /** What a bedroom scene can turn into once it is going. */
-export const BED_ACTS = ["grinding", "mutual_touching", "breast_play", "fingering", "handjob", "blowjob", "cunnilingus", "sixty_nine", "rimming_her", "sex", "riding", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him"];
+/** Acts for the bed with a guest in it: only while he is there. */
+export const JOIN_ACTS = ["join_dp", "join_two_mouths", "join_hold", "join_after"];
+/** Acts that end in a picture and a line of their own. */
+const OWN_END = new Set(["ignore_handjob", "facesitting", "edging", "cleanup", "chastity", "toy_on_her", "masturbate_show", "footjob", "spank_him", "tease_denial", "thigh_ride", "join_dp", "join_two_mouths", "join_hold", "join_after"]);
+/** What she gets out of an act that is not about a zone of hers being filled. */
+const HER_PLEASURE: Record<string, number> = {"facesitting": 70, "cleanup": 60, "toy_on_her": 72, "masturbate_show": 60, "thigh_ride": 66, "tease_denial": 45, "join_dp": 80, "join_two_mouths": 30, "join_hold": 75, "join_after": 60};
+export const BED_ACTS = ["ignore_handjob", "facesitting", "edging", "cleanup", "chastity", "toy_on_her", "masturbate_show", "footjob", "spank_him", "tease_denial", "thigh_ride", "join_dp", "join_two_mouths", "join_hold", "join_after", "grinding", "mutual_touching", "breast_play", "fingering", "handjob", "blowjob", "cunnilingus", "sixty_nine", "rimming_her", "sex", "riding", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him"];
 /** Where he can finish, by what they are doing. "inside" is the plain ending. */
 const FINISH: Record<string, string[]> = { blowjob: ["mouth", "face", "chest"], sixty_nine: ["mouth"], handjob: ["on_her", "chest"], sex: ["inside", "belly", "chest", "face"], riding: ["inside", "belly"], anal: ["inside", "back"], grinding: ["belly"], mutual_touching: ["on_her"] };
 const PULL_OUT = new Set(["on_her", "belly", "back", "chest"]);
@@ -42,10 +48,11 @@ const toyForHim = (state: GameState) => {
 };
 /** Whether an act done to him is possible at all right now: a toy to do it with, a body that can take it. */
 /** What a man can still do for her with nothing left in him. */
-export const SOFT_ACTS = ["cunnilingus", "fingering", "rimming_her", "breast_play", "mutual_touching", "prostate", "dildo_him", "pegging", "fisting_him"];
+export const SOFT_ACTS = ["facesitting", "cleanup", "chastity", "toy_on_her", "masturbate_show", "spank_him", "thigh_ride", "cunnilingus", "fingering", "rimming_her", "breast_play", "mutual_touching", "prostate", "dildo_him", "pegging", "fisting_him"];
 export const hisActOpen = (state: GameState, act: string) => {
   const b = bs(state);
   if (b.night?.sex?.soft && !SOFT_ACTS.includes(act)) return false;
+  if (JOIN_ACTS.includes(act)) return !!b.night?.third;
   if (NEEDS_TOY.has(act) && toyForHim(state).toy === null) return false;
   if (act === "fisting_him") return toyForHim(state).fit + content.body.his.tooBig >= content.body.his.fistSize;
   return true;
@@ -114,6 +121,10 @@ export function registerMarriage(api: ModApi) {
     sex.act = actId;
     sex.pleasure = useBody(ctx, actById(actId), b.husband.size);
     if (actId === "rimming_her") sex.pleasure = 65;
+    if (actById(actId).lines) {
+      sex.pleasure = HER_PLEASURE[actId] ?? 15; // hers by what it is, not by his size
+      ctx.log(`log.act.${actId}.start`);
+    }
     if (actId === "rimming_him") sex.pleasure = 20; // she is the one giving
     if (HIS_ACTS.includes(actId)) {
       // his body learns the same way hers does; for her it is about who is holding whom
@@ -126,7 +137,7 @@ export function registerMarriage(api: ModApi) {
       b.power = clamp(b.power + (K.power[actId] ?? 0));
       sex.pleasure = herFromHis(ctx.state, actId);
     }
-    b.night!.scene = b.night!.third ? "join_husband" : actId === "sex" ? "sex" : actId; // with a guest in it there are three of them in the picture, whatever he does
+    b.night!.scene = b.night!.third && !JOIN_ACTS.includes(actId) ? "join_husband" : actId === "sex" ? "sex" : actId; // with a guest in it there are three of them in the picture, whatever he does
     // the first time he is inside her tonight, what she feels of him is said (or thought)
     const act = actById(actId);
     const zone = act.zones.includes("anus") ? "anus" : act.zones.includes("vagina") ? "vagina" : null;
@@ -479,6 +490,7 @@ export function registerMarriage(api: ModApi) {
     sex.turns += 1;
     if (ctx.state.time.phase === "night") ctx.emit("bed:turn");
     else ctx.state.time.minute += B.minutesPerTurn;
+    if (actById(sex.act).lines && sex.turns % 2 === 0) ctx.log(`log.act.${sex.act}.turn.${ctx.rng.int(1, 3)}`);
     sex.his = clamp(sex.his + his);
     sex.hers = clamp(sex.hers + hers);
     if (sex.hers >= 100) {
@@ -619,7 +631,7 @@ export function registerMarriage(api: ModApi) {
       orgasm(ctx);
     }
     changeHeroine(ctx, "energy", act.effects.energy, "husband");
-    if (HIS_ACTS.includes(sex.act) || sex.act === "rimming_him") {
+    if (HIS_ACTS.includes(sex.act) || sex.act === "rimming_him" || OWN_END.has(sex.act)) {
       // this one was about him; what it does to her is in who she was while doing it
       b.night!.scene = `came_${sex.act}`;
       feel(ctx, sex.came > 0 ? 1 : 0, b.power >= 30 ? -1 : 0);

@@ -290,3 +290,34 @@ describe("he is done and she is not", () => {
     expect(seen).toBeGreaterThan(0);
   });
 });
+
+describe("the acts written from the questionnaires", () => {
+  it("can be asked for at night, play with their own lines and end in their own picture", () => {
+    const acts = ["ignore_handjob", "facesitting", "edging", "cleanup", "chastity", "toy_on_her", "masturbate_show", "footjob", "spank_him", "tease_denial", "thigh_ride"];
+    let played = 0;
+    for (const act of acts) {
+      let s = engine.init(11);
+      while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
+      s = structuredClone(s);
+      const b = bs(s);
+      Object.assign(b.heroine.traits, { openness: 100, confidence: 80 });
+      b.heroine.marriage.desire = 100;
+      b.heroine.marriage.resent = 0;
+      b.heroine.arousal = 90;
+      b.heroine.mood = 90;
+      b.power = 80;
+      b.approach = null;
+      s.where.wife = s.where.husband!;
+      const ask = engine.listActions(s).find((a) => a.type === "base/night-act" && a.payload?.act === act);
+      expect(ask, act).toBeDefined();
+      s = engine.dispatch(s, ask!);
+      if (!bs(s).night?.sex) continue; // she may still say no
+      played++;
+      expect(s.log.some((e) => e.key === `log.act.${act}.start`)).toBe(true);
+      for (let i = 0; i < 120 && bs(s).night?.sex; i++) s = engine.dispatch(s, { type: "base/bed", payload: { do: "keep" } });
+      expect(bs(s).night?.sex ?? null).toBeNull();
+      expect(engine.checkInvariants(s), JSON.stringify(engine.checkInvariants(s))).toEqual([]);
+    }
+    expect(played).toBeGreaterThan(5);
+  });
+});
