@@ -267,6 +267,7 @@ export const bodySchema = z
         reward: z
           .object({ affection: z.number(), giving: z.number(), power: z.number(), cruel: z.number(), enough: z.number(), limit: z.number(), better: z.number(), lovingDesire: z.number(), lovingOut: z.number().min(0).max(1), dropChance: z.number().min(0).max(1) })
           .strict(),
+        after: z.object({ chance: z.number(), perDesire: z.number(), minHers: z.number(), maxResent: z.number(), maxTurns: z.number().int() }).strict(),
         soft: z.object({ whenOut: z.number(), whenLoose: z.number(), perResent: z.number(), belowHis: z.number() }).strict(),
         unluckyStart: z.number(),
         deniedStart: z.number(), // added to his start per night he has gone without

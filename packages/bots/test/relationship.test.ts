@@ -96,9 +96,12 @@ describe("night with the husband", () => {
     stretched.mods.base.heroine.marriage.desire = 100; // so that she still says yes
     stretched.mods.base.heroine.arousal = 95;
     stretched.mods.base.heroine.energy = 80;
-    s = playOut(engine.dispatch(stretched, { type: NIGHT_ACT, payload: { act: "sex" } }));
+    s = engine.dispatch(stretched, { type: NIGHT_ACT, payload: { act: "sex" } });
+    for (let i = 0; i < 200 && bs(s).night?.sex && !bs(s).night!.sex!.soft; i++) s = engine.dispatch(s, { type: BED, payload: { do: "keep" } });
+    // if she asks him to go on with his hands, this husband does not
+    if (bs(s).night?.sex) s = engine.dispatch(s, { type: BED, payload: { do: "stop" } });
     // he may not even get to the end: with nothing to feel he goes soft, or finishes himself, or she stops it
-    expect(["left_wanting", "finishing_herself", "faking_it", "went_soft", "by_hand", "cold_back"]).toContain(bs(s).night!.scene);
+    expect(["left_wanting", "finishing_herself", "faking_it", "went_soft", "by_hand", "cold_back", "sleeping"]).toContain(bs(s).night!.scene); // "sleeping": he was not enough, and she kept him at it with his hands and mouth until she got there
     expect(bs(s).heroine.marriage.resent).toBeGreaterThan(stretched.mods.base.heroine.marriage.resent);
   });
 });
@@ -157,7 +160,7 @@ describe("the husband's bad nights", () => {
       s.mods.base.heroine.arousal = 20;
       let st = engine.dispatch(s, { type: NIGHT_ACT, payload: { act: "sex" } });
       let turns = 0;
-      for (; bs(st).night?.sex && turns < 200; turns++) st = engine.dispatch(st, { type: BED, payload: { do: "keep" } });
+      for (; bs(st).night?.sex && !bs(st).night!.sex!.soft && turns < 200; turns++) st = engine.dispatch(st, { type: BED, payload: { do: "keep" } }); // how long he lasts, not what she makes of it afterwards
       return { turns, st, before: s };
     };
     const starved = turnsWith(8);
@@ -585,7 +588,7 @@ describe("what she does to him", () => {
         b.husband.stretch = 100;
       }));
       expect(bs(s).night!.sex).toBeNull();
-      expect([`came_${act}`, "went_soft", "cold_back"]).toContain(bs(s).night!.scene);
+      expect([`came_${act}`, "went_soft", "cold_back", "sleeping", "left_wanting"]).toContain(bs(s).night!.scene);
       expect(engine.checkInvariants(s)).toEqual([]);
     }
     const s = playOut(start("prostate", () => {}));

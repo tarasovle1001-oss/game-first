@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseMod, bs, charmOf, content, TALK } from "@tc/base";
+import { baseMod, bs, charmOf, content, SOFT_ACTS, TALK } from "@tc/base";
 import { createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 
@@ -166,6 +166,27 @@ describe("in front of him", () => {
       expect(engine.checkInvariants(next)).toEqual([]);
       expect(engine.listActions(next).length).toBeGreaterThan(0);
     }
+    // joining, when she lets him, is a scene of three that plays out turn by turn and ends cleanly
+    const keen = structuredClone(found!);
+    bs(keen).heroine.traits.openness = 100;
+    bs(keen).heroine.arousal = 100;
+    bs(keen).heroine.marriage.desire = 100;
+    bs(keen).husband.spentDay = undefined;
+    bs(keen).reaction!.act = "grope";
+    if (!bs(keen).encounter) bs(keen).encounter = { patron: bs(keen).reaction!.patron, act: "grope", loc: keen.where.wife!, verdict: "eager", startTick: bs(keen).shift!.tick, actTick: bs(keen).shift!.tick, nextTry: bs(keen).shift!.tick + 5, his: 0, hers: 0, hisRate: 5, pleasure: 30, came: 0 } as never;
+    else bs(keen).encounter!.act = "grope";
+    const join = engine.listActions(keen).find((a) => a.type === "base/react" && a.payload!.how === "join" && a.payload!.act === "sex");
+    expect(join).toBeDefined();
+    let j = engine.dispatch(keen, join!);
+    expect(bs(j).night?.sex).toBeTruthy();
+    if (bs(j).night?.sex) {
+      expect(bs(j).night!.third).toBeDefined();
+      expect(bs(j).night!.scene).toBe("join_husband");
+      expect(bs(j).encounter).toBeNull();
+      for (let i = 0; i < 200 && bs(j).night?.sex; i++) j = engine.dispatch(j, { type: "base/bed", payload: { do: "keep" } });
+      expect(bs(j).night).toBeNull();
+    }
+    expect(engine.checkInvariants(j), JSON.stringify(engine.checkInvariants(j))).toEqual([]);
   });
 });
 
@@ -235,4 +256,37 @@ describe("a closed door", () => {
     const heard = engine.dispatch(found!, doors[0]!);
     expect(engine.listActions(heard).some((a) => a.type === "base/door" && a.payload!.how === "listen")).toBe(false);
   }, 120000);
+});
+
+describe("he is done and she is not", () => {
+  it("sometimes she keeps him at it with what needs nothing of him, and only that is on offer", () => {
+    let seen = 0;
+    for (let seed = 1; seed <= 30 && seen === 0; seed++) {
+      let s = engine.init(seed);
+      while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
+      s = structuredClone(s);
+      const b = bs(s);
+      const h = b.heroine;
+      h.marriage.desire = 95;
+      h.marriage.resent = 0;
+      h.arousal = 70;
+      h.mood = 90;
+      b.husband.minutes = 3; // he will be done long before she is
+      b.approach = null;
+      s.where.wife = s.where.husband!;
+      const ask = engine.listActions(s).find((a) => a.type === "base/night-act" && a.payload?.act === "sex");
+      if (!ask) continue;
+      s = engine.dispatch(s, ask);
+      for (let i = 0; i < 60 && bs(s).night?.sex && !bs(s).night!.sex!.soft; i++) s = engine.dispatch(s, { type: "base/bed", payload: { do: "keep" } });
+      if (!bs(s).night?.sex?.soft) continue;
+      seen++;
+      expect(SOFT_ACTS).toContain(bs(s).night!.sex!.act);
+      const switches = engine.listActions(s).filter((a) => a.type === "base/bed" && typeof a.payload?.act === "string");
+      for (const a of switches) expect(SOFT_ACTS).toContain(a.payload!.act);
+      for (let i = 0; i < 40 && bs(s).night?.sex; i++) s = engine.dispatch(s, { type: "base/bed", payload: { do: "keep" } });
+      expect(bs(s).night?.sex ?? null).toBeNull();
+      expect(engine.checkInvariants(s), JSON.stringify(engine.checkInvariants(s))).toEqual([]);
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
 });

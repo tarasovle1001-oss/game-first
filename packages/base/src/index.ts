@@ -214,3 +214,4 @@ export type { Outcome, Voice } from "./systems/voice";
 export { charmOf, charmParts } from "./systems/charm";
 export { SEND_UP } from "./systems/hotel";
 export { DOOR } from "./systems/secrecy";
+export { SOFT_ACTS } from "./systems/marriage";

@@ -56,6 +56,7 @@ bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
     lovingDesire: 55  # from this desire for him she tries to make it work rather than check out
     lovingOut: 0.15   # ...but even then, sometimes
     dropChance: 0.5   # a confident wife who is not loving: chance she simply stops
+  after: { chance: 0.5, perDesire: 0.004, minHers: 35, maxResent: 60, maxTurns: 10 } # he is done (came or went soft) and she is not: how often she keeps him at it with what needs no erection; chance grows per point of her desire above 50
   soft: { whenOut: 0.04, whenLoose: 0.02, perResent: 0.0006, belowHis: 60 } # chance per turn that he goes soft
   unluckyStart: 45    # one of those nights
   deniedStart: 6      # added to where he starts, per night he has gone without

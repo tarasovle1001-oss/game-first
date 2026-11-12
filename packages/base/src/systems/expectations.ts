@@ -200,10 +200,12 @@ export function registerExpectations(api: ModApi) {
           tell(ctx, "told.join", { act: `act.${mine}` });
           changeHeroine(ctx, "arousal", 15, "both of them");
           h.traits.openness = clamp(h.traits.openness + 1);
-          changeHim(ctx, "arousal", -40, "joined");
-          b.husband.spentDay = ctx.state.time.day;
           p.memory.affinity = clamp(p.memory.affinity + 5, -100, 100);
           ctx.log("log.react.join.yes", { name, act: `act.${mine}` });
+          // not a line in the log: a scene of three, with him in it, turn by turn
+          if (b.encounter) endEncounter(ctx, true);
+          b.reaction = null;
+          ctx.emit("join:start", { act: mine, patron: p.id });
         }
       }
       ctx.emit("reaction", { how, act: act.id, patron: p.id });
