@@ -1,7 +1,7 @@
 // The right-hand column: everything he can do, as one menu with breadcrumbs.
 // Root = what the phase offers; "her" = talk, touch, ask, by section; a group = one kind of action with many targets.
 // Items are cards with a hotkey, a title and (where the texts have one) a line of explanation.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HEAR, CAUGHT_STOP, CAUGHT_WATCH, REACT_APPROVE, REACT_STOP, REACT, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, renderLog } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
@@ -21,6 +21,13 @@ const SECTION: Record<string, string> = {
 // things that take the whole column until he answers, and things happening in front of him that he may answer
 const SITUATION = new Set<string>([ANSWER, PERMIT, DEAL, HEAR, CAUGHT_STOP, CAUGHT_WATCH]);
 const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE, REACT, "base/door"]);
+/** "May and may not", one kind of thing at a time. */
+const ALLOW_GROUPS: [string, string[]][] = [
+  ["touch", ["flirt", "hands_on_her", "kiss", "lap"]],
+  ["sex", ["her_hand", "her_mouth", "his_mouth", "sex", "anal"]],
+  ["cum", ["cum_mouth", "cum_face", "cum_body", "cum_inside"]],
+];
+const CLOTHES = new Set(["top", "skirt", "panties_aside", "panties_off", "naked"]);
 const SECTIONS = ["chat", "touch", "sex", "ask", "want", "dare", "allow", "about"] as const;
 const LETTERS = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const sectionOf = (a: Action) => (a.type === TALK ? (a.payload?.group as string) : SECTION[a.type]);
@@ -51,6 +58,18 @@ function Item({ hot, title, sub, right, mark, onClick, tone, disabled }: { hot?:
 
 export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; lang: Lang; act(a: Action): void }) {
   const [path, setPath] = useState<Path>({ at: "root" });
+  // where the menu stood on each step: stepping back in time puts it back there too
+  const trail = useRef(new Map<number, Path>());
+  const lastTurn = useRef(state.turn);
+  useEffect(() => {
+    if (state.turn < lastTurn.current) {
+      const was = trail.current.get(state.turn);
+      if (was) setPath(was);
+      for (const k of [...trail.current.keys()]) if (k > state.turn) trail.current.delete(k);
+    }
+    lastTurn.current = state.turn;
+  }, [state.turn]);
+  trail.current.set(state.turn, path);
   const b = bs(state);
   const phase = state.time.phase;
   const all = engine.listActions(state);
@@ -85,13 +104,14 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   const markOf = (a: Action): string | undefined => (a.type === WISH && b.wishes?.includes(a.payload?.id as string) ? t("ui.said.today") : undefined);
 
   // what the digits mean right now, top to bottom on the screen
-  const sceneActs = bed.filter((a) => !a.payload?.to);
+  const sceneActs = bed.filter((a) => !a.payload?.to && !CLOTHES.has(a.payload?.do as string));
   const sceneSwitch = bed.filter((a) => a.payload?.to);
+  const sceneClothes = bed.filter((a) => !a.payload?.to && CLOTHES.has(a.payload?.do as string));
   const listed: Action[] =
     answers.length > 0
       ? answers
       : bed.length > 0
-        ? [...sceneActs, ...sceneSwitch]
+        ? [...sceneActs, ...sceneSwitch, ...sceneClothes]
         : here.at === "her" && here.sec
           ? withHer.filter((a) => sectionOf(a) === here.sec && a.type !== TELL && a.type !== ALLOW)
           : here.at === "group"
@@ -184,6 +204,14 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
         {sceneSwitch.map((a, i) => (
           <Item key={`s${i}`} hot={num(sceneActs.length + i)} title={t(`act.${a.payload!.to}`)} onClick={() => act(a)} />
         ))}
+        {sceneClothes.length > 0 && <div className="m-section">{t("ui.bed.clothes")}</div>}
+        <div className="m-chips">
+          {sceneClothes.map((a, i) => (
+            <button key={`c${i}`} className="chip" onClick={() => act(a)}>
+              {label(a)}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }
@@ -208,7 +236,20 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
         <div className="m-context">{t(`ui.her.sec.${sec}.hint`)}</div>
         {sec === "allow" && (
           <div className="stack sub">
-            {content.terms.items.map((it) => {
+            <div className="m-section">{t("ui.allow.g.looks")}</div>
+            {withHer.filter((a) => a.type === WISH && ["dress_bold", "cover_up"].includes(a.payload?.id as string)).map((a, i) => (
+              <div key={`w${i}`} className="tell-row">
+                <span>
+                  {label(a)}
+                  {markOf(a) && <span className="mi-mark"> {markOf(a)}</span>}
+                </span>
+                <button onClick={() => act(a)}>{t("ui.tell.say")}</button>
+              </div>
+            ))}
+            {ALLOW_GROUPS.map(([g, ids]) => (
+              <div key={g} className="stack sub">
+                <div className="m-section">{t(`ui.allow.g.${g}`)}</div>
+                {content.terms.items.filter((it) => ids.includes(it.id)).map((it) => {
               const now = b.perm?.[it.id];
               return (
                 <div key={it.id} className="tell-row">
@@ -225,6 +266,8 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
                 </div>
               );
             })}
+              </div>
+            ))}
             <div className="muted small">{t("ui.allow.groups")}</div>
             {[...new Set(withHer.filter((a) => a.type === TELL).map((a) => a.payload!.group as string))].map((g) => (
               <div key={g} className="tell-row">

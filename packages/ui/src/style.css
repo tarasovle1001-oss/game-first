@@ -911,3 +911,7 @@ header { min-width: 0; }
 .why-bar i { display: block; height: 100%; border-radius: 4px; background: #46c98b; }
 .why-row.neg .why-bar i { background: #e5645b; }
 .why-foot { margin-top: 6px; }
+
+/* scene: her clothes as a small row of chips */
+.m-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
+.m-chips .chip { padding: 5px 10px; font-size: 0.85em; border-radius: 999px; }
