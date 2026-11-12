@@ -12,6 +12,16 @@ taste: # her taste for an act (and for a type of man) moves with experience
   max: 40
   typeEager: 0.4
 
+charm: # how hard she is to look away from, 0..100; shown on her card
+  base: 30
+  nature: 0.4       # per point of her own charm (the attribute) away from 50
+  perAllure: 2      # per point of "allure" of the outfit, of each thing he asked her to take off or undo, of being bare
+  perMark: 5        # per mark the evening left on her: flushed, hair, what guests left
+  marksMax: 15
+  arousal: 8        # at full arousal
+  drunk: 6          # at fully drunk
+  tip: 0.3          # share of the bill per 100 points above base, while she is in the hall
+  interest: 0.02    # interest every guest in the hall gains per ten minutes, per point above base
 orders: # single things he can ask of her for tonight, on top of the outfit
   - { id: open_top, openness: 48, allure: 5, tip: 0.12, arousal: 0, consent: 0 }
   - { id: no_bra, openness: 55, allure: 4, tip: 0.08, arousal: 0.15, consent: 2 }

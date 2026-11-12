@@ -193,6 +193,18 @@ function tick(ctx: Ctx) {
   arrive(ctx);
   runProposals(ctx); // guests try their luck before she gets back to work
   serve(ctx);
+  // run dry in the middle of the evening, she goes up to lie down for an hour and the floor is his
+  const hq = bs(ctx.state);
+  if (sh.quietUntil !== undefined && sh.tick >= sh.quietUntil) {
+    sh.quietUntil = undefined;
+    changeHeroine(ctx, "energy", content.day.rhythm.quiet.her, "quiet hour");
+    ctx.log("log.quiet.her.back");
+  } else if (sh.quietUntil === undefined && hq.heroine.energy <= 0 && !hq.encounter && !hq.night && !hq.approach && !hq.ask && (sh.awayUntil ?? 0) <= sh.tick && sh.tick < TICKS_PER_SHIFT - 30) {
+    sh.quietUntil = sh.tick + content.day.rhythm.quiet.minutes;
+    sh.awayUntil = sh.quietUntil;
+    ctx.state.where[WIFE] = "home.bedroom";
+    ctx.log("log.quiet.her.shift");
+  }
   // she is on the floor while there are guests, behind the bar otherwise
   if (!bs(ctx.state).encounter && !bs(ctx.state).night && !bs(ctx.state).approach && !bs(ctx.state).ask && (sh.awayUntil ?? 0) <= sh.tick) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
   depart(ctx);

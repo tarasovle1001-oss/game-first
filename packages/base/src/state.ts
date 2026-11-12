@@ -207,6 +207,7 @@ export interface Shift {
   marksSeen?: boolean;
   show?: { type: string; until: number; patron?: string }; // a short thing on the floor that is the picture for a few minutes
   marksGuests?: boolean;
+  quietUntil?: number; // she went up to lie down: the minute she is back
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
   groupAt?: number; // minute a company walks in

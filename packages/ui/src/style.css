@@ -896,3 +896,7 @@ header { min-width: 0; }
 .mwait-row button { font-size: 0.88rem; }
 .insp-rows { font-size: 0.8rem; color: #c2bbcb; }
 .col-focus .tabs button { font-size: 0.86rem; }
+
+/* she is out of his sight: drawn where he saw her last */
+.rg-who i.wife.guess { opacity: 0.45; background: transparent; border: 1px dashed currentColor; color: var(--pink, #e0558c); }
+.entry.k-noise, .entry[class*="noise"] { opacity: 0.6; font-style: italic; }

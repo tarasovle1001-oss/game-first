@@ -439,6 +439,7 @@ export const mannersSchema = z
     // what the husband asked her to be like tonight: consent shift with guests and share added to tips
     directives: z.record(z.enum(["reserved", "natural", "friendly"]), z.object({ consent: z.number(), maxTier: z.number().int(), tip: z.number() }).strict()),
     askOutfitBonus: z.number(), // how much his asking lowers the openness an outfit needs
+    charm: z.object({ base: z.number(), nature: z.number(), perAllure: z.number(), perMark: z.number(), marksMax: z.number(), arousal: z.number(), drunk: z.number(), tip: z.number(), interest: z.number() }).strict(),
     orders: z.array(z.object({ id, openness: z.number(), allure: z.number(), tip: z.number(), arousal: z.number(), consent: z.number() }).strict()),
     change: z
       .object({ chancePerTick: z.number(), arousalFrom: z.number(), drunkFrom: z.number(), margin: z.number(), guestInterest: z.number(), guestChance: z.number(), guestMargin: z.number(), suspicion: z.number(), backResent: z.number() })

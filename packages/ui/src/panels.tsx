@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CONSENT_FORMULA, verdictOf, inspect, annoyedLevel, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
+import { CONSENT_FORMULA, charmOf, verdictOf, inspect, annoyedLevel, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
 import type { ConsentInput, DeltaRow, DeltaVia, Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
@@ -9,6 +9,8 @@ import { pictureFor } from "./pack";
 import type { Lang, T } from "./game";
 
 export interface Common {
+  /** Where he last saw her with his own eyes. */
+  guess?: string;
   state: GameState;
   t: T;
   lang: Lang;
@@ -131,7 +133,15 @@ function richLine(e: { key: string; params?: Record<string, unknown>; tags?: str
 type LogFilter = "all" | "people" | "money" | "lewd";
 export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
   const [filter, setFilter] = useState<LogFilter>("all");
-  const visible = state.log.filter((e) => debug || !e.tags?.includes("unseen"));
+  // what happens out of his sight is not told to him, but a house is not silent: one line of noise per moment of it
+  const visible: typeof state.log = [];
+  for (const e of state.log) {
+    if (debug || !e.tags?.includes("unseen")) visible.push(e);
+    else if (!e.tags?.includes("thought")) {
+      const last = visible[visible.length - 1];
+      if (!(last && last.key === "log.noise" && last.day === e.day && Math.abs(last.minute - e.minute) < 10)) visible.push({ ...e, key: "log.noise", params: undefined, tags: ["noise"] });
+    }
+  }
   const fits = (e: (typeof visible)[number]) => {
     if (filter === "all") return true;
     const kind = kindOf(e.key, e.params);
@@ -414,8 +424,9 @@ export function WhyLine({ record, state, t, lang, open: transparent }: Common & 
 }
 
 /** Who is where, as a grid of small room cards by floor: fits a narrow column, a click walks there. */
-export function RoomGrid({ state, t, lang, onAct }: Common & { onAct(a: Action): void }) {
+export function RoomGrid({ state, t, lang, onAct, open, guess }: Common & { onAct(a: Action): void }) {
   const here = state.where[HUSBAND];
+  const knowsHer = open || state.where[WIFE] === here || husbandSees(state, state.where[WIFE] ?? "");
   const moves = engine.listActions(state).filter((a) => a.type === CORE_MOVE && a.actor === HUSBAND);
   const rooms = engine.locations().map((l) => ({ ...l, m: (l.meta as { map: { x: number; y: number } }).map }));
   const floors = [...new Set(rooms.map((r) => r.m.y))].sort((a, c) => a - c);
@@ -430,14 +441,17 @@ export function RoomGrid({ state, t, lang, onAct }: Common & { onAct(a: Action):
               .sort((a, c) => a.m.x - c.m.x)
               .map((r) => {
                 const move = moves.find((a) => a.payload?.to === r.id);
-                const people = Object.keys(state.where).filter((id) => state.where[id] === r.id);
+                // what he cannot see from where he stands he does not know: she is drawn where he last saw her, faintly
+                const sees = open || r.id === here || husbandSees(state, r.id);
+                const herHere = sees ? state.where[WIFE] === r.id : !knowsHer && guess === r.id;
+                const people = Object.keys(state.where).filter((id) => (id === WIFE ? herHere : state.where[id] === r.id && (sees || id === HUSBAND)));
                 const guests = people.filter((id) => id !== WIFE && id !== HUSBAND);
                 return (
                   <button key={r.id} className={`rg-room${r.id === here ? " here" : ""}${move ? " reachable" : ""}${people.length === 0 ? " empty" : ""}`} disabled={!move} onClick={() => move && onAct(move)} title={t(r.nameKey)}>
                     <span className="rg-name">{t(r.nameKey)}</span>
                     <span className="rg-who">
                       {people.includes(HUSBAND) && <i className="husband">{t("ui.you")}</i>}
-                      {people.includes(WIFE) && <i className="wife">{who(WIFE, state, t, lang)}</i>}
+                      {people.includes(WIFE) && <i className={`wife${sees ? "" : " guess"}`} title={sees ? undefined : t("ui.guess.hint")}>{who(WIFE, state, t, lang)}{sees ? "" : "?"}</i>}
                       {guests.length === 1 && <i className="patron">{who(guests[0]!, state, t, lang)}</i>}
                       {guests.length > 1 && <i className="patron">×{guests.length}</i>}
                     </span>
@@ -454,8 +468,9 @@ export function RoomGrid({ state, t, lang, onAct }: Common & { onAct(a: Action):
 // ---------------------------------------------------------------- her, at a glance
 
 /** The card in the middle column: how she is right now, in one word, a few chips and two short columns of bars. */
-export function HerCard({ state, t, open, lang }: Common) {
+export function HerCard({ state, t, open, lang, guess }: Common) {
   const [more, setMore] = useState(true);
+  const knowsHer = open || state.where[WIFE] === state.where[HUSBAND] || husbandSees(state, state.where[WIFE] ?? "");
   const b = bs(state);
   const h = b.heroine;
   const chips: string[] = [];
@@ -502,8 +517,8 @@ export function HerCard({ state, t, open, lang }: Common) {
         </button>
       </div>
       <div className="muted small">
-        {t(`loc.${state.where[WIFE]}`)}
-        {task ? ` · ${t(`her.task.${task}`)}` : ""}
+        {knowsHer ? t(`loc.${state.where[WIFE]}`) : t("ui.guess.where", { where: t(`loc.${guess ?? state.where[WIFE]}`) })}
+        {task && knowsHer ? ` · ${t(`her.task.${task}`)}` : ""}
         {topWant ? ` · ${t("ui.wants.hint", { what: t(`want.${topWant}`) })}` : ""}
       </div>
       {seems && <div className="small hc-seems">{t(`ui.seems.${seems}`)}</div>}
@@ -520,6 +535,7 @@ export function HerCard({ state, t, open, lang }: Common) {
             <Bar label={t("stat.mood")} value={h.mood} tone="green" />
             {open && <Bar label={t("stat.arousal")} value={h.arousal} tone="pink" />}
             {h.drunk >= 1 && <Bar label={t("stat.drunk")} value={h.drunk} tone="amber" />}
+            <Bar label={t("ui.charm")} value={charmOf(state)} tone="pink" />
             {open && annoyanceOf(state) >= 1 && <Bar label={t("ui.annoyance")} value={annoyanceOf(state)} tone="amber" />}
           </div>
           <div>

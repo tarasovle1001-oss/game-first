@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseMod, bs, TALK } from "@tc/base";
+import { baseMod, bs, charmOf, content, TALK } from "@tc/base";
 import { createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 
@@ -112,5 +112,29 @@ describe("shopping", () => {
       expect(bs(s).owned).toContain(buy.payload!.id);
     }
     expect(engine.checkInvariants(s)).toEqual([]);
+  });
+});
+
+describe("run dry", () => {
+  it("in the middle of the evening she goes up for an hour and the floor is his; she comes back with something in her", () => {
+    let s = engine.dispatch(engine.init(9), { type: "core/advance" });
+    s = structuredClone(s);
+    bs(s).heroine.energy = 0;
+    s = engine.dispatch(s, { type: "base/wait", payload: { minutes: 5 } });
+    expect(s.where.wife).toBe("home.bedroom");
+    expect(bs(s).shift!.quietUntil).toBeDefined();
+    for (let i = 0; i < 5; i++) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 15) ?? engine.listActions(s)[0]!);
+    expect(bs(s).shift!.quietUntil).toBeUndefined();
+    expect(bs(s).heroine.energy).toBeGreaterThan(0);
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("what she wears and what the evening left on her is one number, and the room pays for it", () => {
+    const plain = structuredClone(engine.init(4));
+    const bold = structuredClone(plain);
+    bs(bold).heroine.outfit = content.outfits[content.outfits.length - 1]!.id;
+    bs(bold).heroine.arousal = 80;
+    expect(charmOf(bold)).toBeGreaterThan(charmOf(plain));
+    expect(charmOf(plain)).toBeGreaterThanOrEqual(0);
+    expect(charmOf(bold)).toBeLessThanOrEqual(100);
   });
 });

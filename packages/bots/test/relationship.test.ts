@@ -262,6 +262,8 @@ describe("where the husband stands", () => {
       const moved = structuredClone(s);
       moved.where.husband = room;
       moved.mods.base.heroine.energy = 0; // she is out of it tonight
+      moved.mods.base.shift.quietUntil = 9999; // and stays upstairs for the whole of it
+      moved.mods.base.shift.awayUntil = 9999;
       s = moved;
       while (engine.listActions(s).some((a) => a.type === WAIT)) {
         const serve = engine.listActions(s).find((a) => a.type === "base/serve");

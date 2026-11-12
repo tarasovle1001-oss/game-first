@@ -1,7 +1,7 @@
 import type { PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { tracer, resetTracer, bs, withLook } from "@tc/base";
+import { tracer, resetTracer, bs, withLook, husbandSees } from "@tc/base";
 import { loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
@@ -239,7 +239,10 @@ function App() {
 
   const scene = engine.currentScene(state);
   const problems = engine.checkInvariants(state);
-  const common = { state, t, lang, open: transparent };
+  // where he last saw her himself: the map shows that, faintly, while she is out of his sight
+  const seenAt = useRef<string | undefined>(state.where["wife"]);
+  if (state.where["wife"] === state.where["husband"] || husbandSees(state, state.where["wife"] ?? "")) seenAt.current = state.where["wife"];
+  const common = { state, t, lang, open: transparent, guess: seenAt.current };
   const b = bs(state);
 
   return (
