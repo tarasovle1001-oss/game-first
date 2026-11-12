@@ -321,3 +321,26 @@ describe("the acts written from the questionnaires", () => {
     expect(played).toBeGreaterThan(5);
   });
 });
+
+describe("her own drawer", () => {
+  it("left wanting, she buys a toy out of her own tips, uses it before opening, and her body changes without another man", () => {
+    let s = structuredClone(engine.init(21));
+    const start = bs(s).heroine.body.vagina.stretch;
+    const spent = () => 600 - bs(s).purse;
+    bs(s).purse = 600;
+    for (let i = 0; i < 4000 && s.time.day <= 6; i++) {
+      s = structuredClone(s);
+      bs(s).heroine.frustration = Math.max(bs(s).heroine.frustration, 70); // nothing at home gives her what she needs
+      if (bs(s).purse > 600) bs(s).purse = 600; // tips aside: only what she spends counts here
+      const acts = engine.listActions(s);
+      s = engine.dispatch(s, acts.find((a) => a.type === "core/advance") ?? acts.find((a) => a.type === "base/sleep") ?? acts.find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? acts.find((a) => /wait/.test(a.type)) ?? acts[0]!);
+    }
+    const b = bs(s);
+    expect((b.herToys ?? []).length).toBeGreaterThan(0);
+    expect(spent()).toBeGreaterThan(0);
+    expect(b.soloDay).toBeDefined();
+    expect(b.heroine.body.vagina.stretch).toBeGreaterThan(start);
+    expect(b.proposals.some((p) => p.patron !== "husband" && ["sex", "anal"].includes(p.act) && p.verdict !== "refuse")).toBe(false);
+    expect(engine.checkInvariants(s), JSON.stringify(engine.checkInvariants(s))).toEqual([]);
+  });
+});

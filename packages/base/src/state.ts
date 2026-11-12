@@ -265,6 +265,9 @@ export interface BaseState {
   toys: string[];
   upgrades: string[];
   billBonus: number; // share added to every bill by upgrades
+  herToys?: string[]; // toys she bought herself, out of her own purse
+  soloDay?: number; // the day she last shut herself in with one
+  lastToy?: { id: string; size: number; zone: string; day: number }; // what she used last, for the picture
   sentUp?: number; // the day he last sent her up to a lodger
   stayedUp?: { day: number; patron: string; act: string; tells: string }; // she did not come back before morning
   lodgers: Record<string, { patron: string; nights: number }>; // hotel room -> who stays there

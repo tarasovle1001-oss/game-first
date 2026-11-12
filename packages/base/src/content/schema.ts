@@ -383,6 +383,7 @@ export const daySchema = z
         toys: z.array(z.object({ id, size: z.number().positive(), price: z.number().positive() }).strict()),
         toyStretchAbove: z.number(),
         toySatisfied: z.number().min(0).max(100),
+        solo: z.object({ at: z.number(), buyAt: z.number(), firstSize: z.number(), outgrown: z.number(), relief: z.number(), analChance: z.number() }).strict(),
         gigolo: z
           .object({ price: z.number(), size: z.number(), minutes: z.number(), fidelityBelow: z.number(), sizeTasteFrom: z.number(), chance: z.number().min(0).max(1), suspicion: z.number() })
           .strict(),

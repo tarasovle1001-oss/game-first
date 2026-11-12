@@ -22,6 +22,8 @@ type Tab = "her" | "you" | "why" | "phone" | "stats" | "none";
 const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
+const NOTES_KEY = "test-city.notes";
+const BUILD = "12o";
 const RESUME_KEY = "test-city.resume";
 const RESUME_BUDGET = 2_500_000; // characters: the browser gives a page about twice that
 /** A save with the steps back in it: the game as it is now, and as many earlier moments as fit. */
@@ -150,6 +152,44 @@ function App() {
   const packInput = useRef<HTMLInputElement | null>(null);
   const [setupOpen, setSetupOpen] = useState(!resumed); // the first thing a player sees, unless there is a game to come back to
   const [tab, setTab] = useState<Tab>("none");
+  // playtest notes: one keypress, and the moment is written down with everything needed to find it again
+  const [notes, setNotes] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(NOTES_KEY) ?? "[]") as string[];
+    } catch {
+      return [];
+    }
+  });
+  const addNote = () => {
+    const text = window.prompt(t("ui.note.ask"));
+    if (!text) return;
+    const b = bs(state);
+    const h = b.heroine;
+    const line = `[${BUILD}] день ${state.time.day}, ${clockOf(state)}, ${t(`base.phase.${state.time.phase}`)} | после: ${lastWhat || "-"} | она: энергия ${Math.round(h.energy)}, настроение ${Math.round(h.mood)}, возбуждение ${Math.round(h.arousal)}, открытость ${Math.round(h.traits.openness)}, верность ${Math.round(h.traits.fidelity)}, неудовл. ${Math.round(h.frustration)} | деньги ${b.money}, долг ${b.debt}, репутация ${Math.round(b.reputation)} | seed ${state.seed}, ход ${state.turn}\n  ${text}`;
+    const next = [...notes, line];
+    setNotes(next);
+    try {
+      localStorage.setItem(NOTES_KEY, JSON.stringify(next));
+    } catch {
+      /* the note is still on screen for this session */
+    }
+  };
+  const saveNotes = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([notes.join("\n\n")], { type: "text/plain;charset=utf-8" }));
+    a.download = `playtest-notes-${BUILD}.txt`;
+    a.click();
+  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "F2") {
+        e.preventDefault();
+        addNote();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [moneyOpen, setMoneyOpen] = useState(false);
   const [error, setError] = useState("");
@@ -283,6 +323,15 @@ function App() {
           <button className={debug ? "on" : ""} title={t("ui.cheats.key")} onClick={() => setDebug(!debug)}>
             {t("ui.debug")}
           </button>
+          <button onClick={addNote} title={t("ui.note.hint")}>
+            {t("ui.note")}
+            {notes.length > 0 ? ` ${notes.length}` : ""}
+          </button>
+          {notes.length > 0 && (
+            <button onClick={saveNotes} title={t("ui.note.save.hint")}>
+              ⭳
+            </button>
+          )}
           <button onClick={() => setLang(lang === "en" ? "ru" : "en")}>{lang === "en" ? "RU" : "EN"}</button>
           <button className={menu ? "on" : ""} onClick={() => setMenu(!menu)}>
             {t("ui.menu")}

@@ -15,6 +15,7 @@ import { newPhone, registerPhone } from "./systems/phone";
 import { registerManners } from "./systems/manners";
 import { registerDress } from "./systems/dress";
 import { registerCharm } from "./systems/charm";
+import { registerSolo } from "./systems/solo";
 import { registerAnnoy } from "./systems/annoy";
 import { registerLook } from "./systems/look";
 import { registerHerSide } from "./systems/herside";
@@ -143,6 +144,7 @@ export const baseMod: Mod = {
     registerHerSide(api);
     registerDay(api);
     registerHotel(api);
+    registerSolo(api);
     registerGossip(api);
     registerLoan(api);
     registerMemories(api);
