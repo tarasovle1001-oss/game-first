@@ -261,6 +261,8 @@ export interface BaseState {
   toys: string[];
   upgrades: string[];
   billBonus: number; // share added to every bill by upgrades
+  sentUp?: number; // the day he last sent her up to a lodger
+  stayedUp?: { day: number; patron: string; act: string; tells: string }; // she did not come back before morning
   lodgers: Record<string, { patron: string; nights: number }>; // hotel room -> who stays there
   changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   gossip: number; // 0..100, what the town says about her

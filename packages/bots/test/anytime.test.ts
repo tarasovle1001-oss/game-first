@@ -168,3 +168,35 @@ describe("in front of him", () => {
     }
   });
 });
+
+describe("a lodger upstairs at night", () => {
+  const ROOM = content.rooms.find((r) => r.zone === "hotel" && r.tags.includes("guest"))!.id;
+  const night = (edit: (s: GameState) => void) => {
+    let s = engine.init(6);
+    while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
+    s = structuredClone(s);
+    const b = bs(s);
+    const p = Object.values(b.patrons)[0]!;
+    b.lodgers = { [ROOM]: { patron: p.id, nights: 2 } };
+    s.where.wife = s.where.husband!;
+    if (b.night) b.night.herAsleep = undefined;
+    b.complaint = null as never;
+    edit(s);
+    return s;
+  };
+  it("he can send her up with a word about how far; how far it goes is hers, and so is what she tells", () => {
+    const shy = night((s) => void ((bs(s).heroine.traits.openness = 15), (bs(s).heroine.traits.fidelity = 95)));
+    const sends = engine.listActions(shy).filter((a) => a.type === "base/send-up");
+    expect(sends.map((a) => a.payload!.brief)).toEqual(["all", "limit", "company", "her_call"]);
+    const bold = night((s) => void ((bs(s).heroine.traits.openness = 95), (bs(s).heroine.traits.fidelity = 10), (bs(s).heroine.arousal = 80)));
+    const all = (s: GameState) => engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/send-up" && a.payload!.brief === "all")!);
+    const a = all(shy);
+    const z = all(bold);
+    const tier = (s: GameState) => content.acts.find((x) => x.id === bs(s).proposals.filter((r) => r.loc === ROOM).at(-1)?.act)?.tier ?? -1;
+    expect(tier(z)).toBeGreaterThan(tier(a));
+    expect(engine.listActions(z).some((x) => x.type === "base/send-up")).toBe(false); // once a night
+    const company = engine.dispatch(bold, engine.listActions(bold).find((x) => x.type === "base/send-up" && x.payload!.brief === "company")!);
+    expect(tier(company)).toBeLessThanOrEqual(1);
+    for (const s of [a, z, company]) expect(engine.checkInvariants(s), JSON.stringify(engine.checkInvariants(s))).toEqual([]);
+  });
+});

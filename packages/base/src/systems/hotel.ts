@@ -2,7 +2,8 @@
 // has a door that locks, and is still in the building when the cafe is closed and the husband is asleep.
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
-import { bs } from "../state";
+import { bs, HUSBAND, WIFE } from "../state";
+import { passNight } from "./rhythm";
 import { resolveBody } from "./body";
 import { addHerTips, addMoney } from "./economy";
 import { CONSENT_FORMULA, isIntimate, verdictOf } from "./encounters";
@@ -86,6 +87,7 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast") {
     ctx.emit("hotel:towels", { patron: p.id, act: act.id, hours, kind });
 }
 
+export const SEND_UP = "base/send-up";
 export function registerHotel(api: ModApi) {
   api.events.on("shift:start", (ctx) => {
     const b = bs(ctx.state);
@@ -105,6 +107,94 @@ export function registerHotel(api: ModApi) {
   api.events.on("shift:tick", (ctx, e) => {
     if ((e.payload!.tick as number) !== H.comesDownAtTick) return;
     for (const l of Object.values(bs(ctx.state).lodgers)) ctx.emit("base:invite-arrives", { id: l.patron });
+  });
+  // At night, with a lodger behind one of the doors: "go up to him". What for, he says or leaves to her.
+  const LADDER = ["chat", "drink", "flirt", "kiss", "grope", "handjob", "blowjob", "sex"];
+  const BRIEF: Record<string, { cap: number; sent: number }> = { all: { cap: 9, sent: 18 }, limit: { cap: 4, sent: 12 }, company: { cap: 1, sent: 8 }, her_call: { cap: 9, sent: 0 } };
+  api.actions.register({
+    id: SEND_UP,
+    labelKey: "action.send_up",
+    describe: (a) => ({ key: `action.send_up.${a.payload!.brief}`, params: { name: `@name:${a.payload!.name}`, room: `loc.${a.payload!.room}` } }),
+    enumerate(state) {
+      const b = bs(state);
+      if (state.time.phase !== "night" || !b.night || b.night.sex || b.night.herAsleep || b.complaint || b.sentUp === state.time.day) return [];
+      if (state.where[HUSBAND] !== state.where[WIFE]) return [];
+      const out: { type: string; payload: Record<string, string | number> }[] = [];
+      for (const [room, l] of Object.entries(b.lodgers)) {
+        const p = b.patrons[l.patron];
+        if (p) for (const brief of Object.keys(BRIEF)) out.push({ type: SEND_UP, payload: { room, patron: p.id, name: p.name, brief } });
+      }
+      return out;
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const { room, patron, brief } = action.payload as { room: string; patron: string; brief: string };
+      const p = b.patrons[patron]!;
+      const B = BRIEF[brief]!;
+      const name = `@name:${p.name}`;
+      b.sentUp = ctx.state.time.day;
+      // how far it goes behind that door: the furthest step she would say yes to, within what he said
+      let done: string | null = null;
+      let rows: { id: string; labelKey: string; value: number }[] = [];
+      let total = 0;
+      for (const id of LADDER) {
+        const act = content.acts.find((a) => a.id === id);
+        if (!act || act.tier > B.cap) continue;
+        const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { act: id, partner: patron, loc: room, offer: 0, pressure: 0 });
+        const t = res.total + B.sent;
+        if (verdictOf(t) === "refuse") break;
+        done = id;
+        total = t;
+        rows = [...res.rows, ...(B.sent ? [{ id: "consent.sent", labelKey: "factor.consent.sent", value: B.sent }] : [])];
+      }
+      if (!done) {
+        h.marriage.resent = Math.min(100, h.marriage.resent + 2);
+        changeHeroine(ctx, "mood", -4, "sent to a stranger");
+        ctx.log("log.send_up.no", { name });
+        return;
+      }
+      const act = content.acts.find((a) => a.id === done)!;
+      const stays = act.tier >= 7 && ctx.rng.chance(0.35); // sometimes she does not come back before morning
+      b.proposals.push({ day: ctx.state.time.day, tick: -1, patron, act: done, loc: room, verdict: verdictOf(total), seen: false, total, rows });
+      ctx.log(`log.send_up.go.${brief}`, { name });
+      passNight(ctx, 20 + act.tier * 8);
+      changeHeroine(ctx, "arousal", act.tier * 4, done);
+      changeHeroine(ctx, "energy", -act.tier * 1.5, done);
+      h.traits.openness = Math.min(100, h.traits.openness + act.tier * 0.3);
+      p.memory.interest = Math.min(100, p.memory.interest + 5 + act.tier);
+      p.memory.affinity = Math.min(100, p.memory.affinity + 3 + act.tier);
+      b.power = Math.min(100, b.power + (act.tier >= 5 ? 2 : 0));
+      // what he hears afterwards: as much of it as her honesty and her shame allow
+      const shame = 100 - h.traits.openness;
+      const trust = h.marriage.trust ?? 50;
+      const tells = act.tier <= 2 || (brief !== "her_call" && trust >= 45 && shame < 65) ? "full" : trust >= 30 ? "less" : "nothing";
+      if (stays) {
+        if (b.night) b.night.herAsleep = b.night.minute ?? 0;
+        ctx.state.where[WIFE] = room;
+        b.stayedUp = { day: ctx.state.time.day, patron, act: done, tells };
+        ctx.log("log.send_up.stays", { name }, ["unseen"]);
+        ctx.log("log.send_up.alone");
+      } else {
+        ctx.log(`log.send_up.back.${tells}`, { name, act: `act.${tells === "less" ? (act.tier >= 5 ? "kiss" : "chat") : done}` });
+        if (tells !== "full") ctx.log("log.send_up.truth", { name, act: `act.${done}` }, ["unseen"]);
+      }
+      ctx.emit("hotel:sent-up", { patron, act: done, brief, stays });
+    },
+  });
+  // The morning after a night she did not come back from: the truth, or a pharmacy.
+  api.events.on("phase:enter", (ctx, e) => {
+    const b = bs(ctx.state);
+    const s = b.stayedUp;
+    if (e.payload!.phase !== "prep" || !s) return;
+    b.stayedUp = undefined;
+    const p = b.patrons[s.patron];
+    const name = `@name:${p?.name ?? ""}`;
+    ctx.log(s.tells === "full" ? "log.send_up.morning.full" : "log.send_up.morning.excuse", { name, act: `act.${s.act}` });
+    if (s.tells !== "full") {
+      ctx.log("log.send_up.truth", { name, act: `act.${s.act}` }, ["unseen"]);
+      if (b.mode === "hidden") b.suspicion = Math.min(100, b.suspicion + 4);
+    }
   });
   api.events.on("shift:end", (ctx) => {
     const b = bs(ctx.state);
