@@ -603,7 +603,8 @@ export type Mind = z.infer<typeof mindSchema>;
 const nums = z.record(z.string(), z.number());
 export const termsSchema = z
   .object({
-    wishes: z.record(z.string(), z.object({ consent: z.number().optional(), upTo: z.number().optional(), tip: z.number().optional(), needs: z.number(), outfit: z.number().optional(), offer: z.number().optional(), seen: z.boolean().optional(), expect: z.number().optional(), expectAll: z.number().optional() }).strict()),
+    wishRead: z.object({ say: z.number(), full: z.number(), fade: z.number(), perOpenness: z.number(), perUnfaithful: z.number(), perFresh: z.number(), gain: z.number(), cap: z.number(), againToday: z.number().int() }).strict(),
+    wishes: z.record(z.string(), z.object({ read: z.number().optional(), consent: z.number().optional(), upTo: z.number().optional(), tip: z.number().optional(), needs: z.number(), outfit: z.number().optional(), offer: z.number().optional(), seen: z.boolean().optional(), expect: z.number().optional(), expectAll: z.number().optional() }).strict()),
     against: z.record(z.string(), z.array(z.string())),
     wishShock: nums,
     wishGlad: nums,

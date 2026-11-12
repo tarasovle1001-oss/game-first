@@ -4,6 +4,7 @@
 import type { Ctx, GameState, ModApi, Params, Tracer } from "@tc/core";
 import { content } from "../content";
 import { bs } from "../state";
+import { expectOf } from "./expectations";
 import type { BaseState } from "../state";
 
 export interface TraceEntry {
@@ -113,7 +114,7 @@ const patronsHere = (b: BaseState): string[] => {
 };
 
 /** Every number worth watching, by row id. */
-function collect(state: GameState, also: string[]): Map<string, Watch> {
+function collect(state: GameState, also: string[], beliefs: string[] = []): Map<string, Watch> {
   const b = bs(state);
   const h = b.heroine;
   const out = new Map<string, Watch>();
@@ -142,7 +143,8 @@ function collect(state: GameState, also: string[]): Map<string, Watch> {
   for (const [a, v] of Object.entries(h.skills)) put(`skill.${a}`, { group: "trait", label: "inspect.skill", params: { act: `act.${a}` }, value: v, sign: 1, min: 0.05 });
 
   // what she thinks he allows, act by act: only the ones she has an idea about
-  for (const [a, v] of Object.entries(b.expect)) put(`belief.${a}`, { group: "belief", label: "inspect.belief", params: { act: `act.${a}` }, value: v, sign: 0 });
+  // (an act she had no idea about a moment ago starts from her guess, not from zero)
+  for (const a of new Set([...Object.keys(b.expect), ...beliefs])) put(`belief.${a}`, { group: "belief", label: "inspect.belief", params: { act: `act.${a}` }, value: expectOf(state, a), sign: 0 });
   for (const [item, say] of Object.entries(b.perm ?? {})) put(`perm.${item}`, { group: "belief", label: "inspect.perm", params: { item: `item.${item}` }, value: say === "allow" ? 1 : -1, sign: 0 });
 
   for (const id of new Set([...patronsHere(b), ...also])) {
@@ -181,8 +183,8 @@ export function inspect(prev: GameState, next: GameState): Inspection {
   const pb = bs(prev);
   const nb = bs(next);
   // guests who have just left still deserve their rows
-  const before = collect(prev, patronsHere(nb));
-  const after = collect(next, patronsHere(pb));
+  const before = collect(prev, patronsHere(nb), Object.keys(nb.expect));
+  const after = collect(next, patronsHere(pb), Object.keys(pb.expect));
   const trace = nb.trace && nb.trace.turn === next.turn ? nb.trace.why : [];
   // `told` is a short rolling list: what is new sits at its tail
   const told = nb.told.filter((x) => !pb.told.includes(x));

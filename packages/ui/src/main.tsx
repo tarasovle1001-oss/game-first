@@ -144,7 +144,7 @@ function App() {
   const [menu, setMenu] = useState(false);
   const [packCount, setPackCount] = useState(0);
   const packInput = useRef<HTMLInputElement | null>(null);
-  const [setupOpen, setSetupOpen] = useState(!resumed || resumed.state.turn === 0); // the first thing a player sees, unless there is a game to come back to
+  const [setupOpen, setSetupOpen] = useState(!resumed); // the first thing a player sees, unless there is a game to come back to
   const [tab, setTab] = useState<Tab>("none");
   const [error, setError] = useState("");
   // the last few states, to step back from a misclick: states are immutable, so keeping them costs little
@@ -159,7 +159,7 @@ function App() {
   };
   // every step is kept: close the tab at any moment and come back to the same one, steps back included
   useEffect(() => {
-    if (state.turn === 0) return;
+    if (setupOpen && state.turn === 0) return; // nothing chosen yet
     try {
       localStorage.setItem(RESUME_KEY, packSave(state, past));
     } catch {
@@ -169,7 +169,7 @@ function App() {
         /* storage may be full or unavailable; the game goes on */
       }
     }
-  }, [state, past]);
+  }, [state, past, setupOpen]);
   const saveInput = useRef<HTMLInputElement>(null);
   const modInput = useRef<HTMLInputElement>(null);
   const t = useMemo(() => game.translator(lang), [lang, extra]);

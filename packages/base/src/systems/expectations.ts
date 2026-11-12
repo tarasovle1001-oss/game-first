@@ -38,7 +38,7 @@ const tell = (ctx: Ctx, key: string, params?: Record<string, string | number>) =
   b.told.push({ day: ctx.state.time.day, key, ...(params ? { params } : {}) });
   if (b.told.length > TOLD_LIMIT) b.told.shift();
 };
-const nudge = (ctx: Ctx, actId: string, by: number, cap = 100) => {
+export const nudge = (ctx: Ctx, actId: string, by: number, cap = 100) => {
   const b = bs(ctx.state);
   const now = b.expect[actId] ?? expectOf(ctx.state, actId);
   b.expect[actId] = clamp(by > 0 ? Math.max(now, Math.min(cap, now + by)) : now + by, -100, 100);

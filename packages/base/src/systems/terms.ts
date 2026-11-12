@@ -10,7 +10,7 @@ import { together } from "./couple";
 import { bareMargin, eyesOn } from "./dress";
 import { actById, CONSENT_FORMULA, gate, startWith, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
-import { expectOf } from "./expectations";
+import { expectOf, nudge } from "./expectations";
 import { changeHeroine } from "./heroine";
 import { feel, trustOf } from "./mind";
 import type { Emotion } from "./mind";
@@ -44,6 +44,9 @@ function fx(ctx: Ctx, bag: Fx, reason: string, scale = 1) {
   }
 }
 export const wished = (state: GameState, id: string) => bs(state).wishes?.includes(id) ?? false;
+const W = T.wishRead;
+/** How much of a wish still stands: 1 while fresh, less as it fades unrepeated. */
+export const wishShare = (state: GameState, id: string) => (wished(state, id) ? Math.min(1, (bs(state).wishStr?.[id] ?? W.say) / W.full) : 0);
 const honestyShare = (state: GameState) => bs(state).heroine.traits.honesty / 100;
 const stamp = (state: GameState) => `${state.time.day}:${state.time.phase}`;
 const said = (ctx: Ctx, key: string, params?: Record<string, string | number>) => {
@@ -90,7 +93,15 @@ export function cumPlaces(ctx: Ctx, options: string[]): string[] {
 export function registerTerms(api: ModApi) {
   // --- 1. what he wants from her today -----------------------------------------------------------
   api.events.on("phase:enter", (ctx, e) => {
-    if (e.payload!.phase === "prep") bs(ctx.state).wishes = [];
+    if (e.payload!.phase !== "prep") return;
+    // nothing he said is forgotten overnight, but left unrepeated it fades
+    const b = bs(ctx.state);
+    const str = (b.wishStr = b.wishStr ?? {});
+    for (const id of b.wishes ?? []) {
+      str[id] = (str[id] ?? W.say) - W.fade;
+      if (str[id]! <= 0) delete str[id];
+    }
+    b.wishes = (b.wishes ?? []).filter((id) => str[id] !== undefined);
   });
   api.actions.register({
     id: WISH,
@@ -99,9 +110,7 @@ export function registerTerms(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       if (!together(state) || b.night?.herAsleep || b.complaint) return [];
-      return Object.keys(T.wishes)
-        .filter((id) => !wished(state, id))
-        .map((id) => ({ type: WISH, payload: { id } }));
+      return Object.keys(T.wishes).map((id) => ({ type: WISH, payload: { id } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
@@ -110,14 +119,18 @@ export function registerTerms(api: ModApi) {
       const w = T.wishes[id]!;
       // the opposite said earlier today no longer stands
       const undo = [...(T.against[id] ?? []), ...Object.entries(T.against).filter(([, list]) => list.includes(id)).map(([k]) => k)];
-      b.wishes = [...(b.wishes ?? []).filter((x) => !undo.includes(x)), id];
+      b.wishes = [...(b.wishes ?? []).filter((x) => !undo.includes(x) && x !== id), id];
+      const str = (b.wishStr = b.wishStr ?? {});
+      for (const x of undo) delete str[x];
+      const fresh = (str[id] = Math.min(100, (str[id] ?? 0) + W.say));
       b.directive = wished(ctx.state, "tone_down") ? "reserved" : wished(ctx.state, "friendlier") ? "friendly" : "natural";
       said(ctx, `told.wish.${id}`);
       // said day after day it stops being a wish and becomes nagging
       const run = (b.wishRun = b.wishRun ?? {});
       const r = run[id];
-      run[id] = { n: r && ctx.state.time.day - r.day <= 1 ? (r.day === ctx.state.time.day ? r.n : r.n + 1) : 1, day: ctx.state.time.day };
-      const stale = run[id]!.n > T.staleAfter;
+      const today = r?.day === ctx.state.time.day;
+      run[id] = { n: r && ctx.state.time.day - r.day <= 1 ? (today ? r.n : r.n + 1) : 1, day: ctx.state.time.day, times: today ? (r!.times ?? 1) + 1 : 1 };
+      const stale = run[id]!.n > T.staleAfter || run[id]!.times! > W.againToday;
       if (stale) {
         annoy(ctx, T.staleAnnoy, "him");
         ctx.log("log.wish.stale");
@@ -129,6 +142,13 @@ export function registerTerms(api: ModApi) {
       } else {
         if (w.needs > 0 && !stale) fx(ctx, T.wishGlad, "told");
         ctx.log(`log.wish.${id}`);
+        if (w.read !== undefined) {
+          // what it means is hers to decide: the same words reach as far as she herself is ready to go
+          const depth = Math.max(1, Math.min(9, w.read + (h.traits.openness - 40) * W.perOpenness + (60 - h.traits.fidelity) * W.perUnfaithful + Math.max(0, fresh - W.say) * W.perFresh));
+          for (const a of content.acts) if (!a.only && a.tier <= depth) nudge(ctx, a.id, Math.max(4, W.gain * (1 - a.tier / (depth + 1))), W.cap + fresh / 2);
+          ctx.log(`log.wish.read.${depth < 2 ? "talk" : depth < 4 ? "flirt" : depth < 6 ? "hands" : "far"}`, undefined, ["unseen", "thought"]);
+        }
+        if (id === "tone_down") for (const a of content.acts) if (a.tier >= 1) nudge(ctx, a.id, content.consent.expect.reserved);
         if (w.expectAll) for (const a of content.acts) if (!a.only) b.expect[a.id] = Math.max(b.expect[a.id] ?? 0, w.expectAll);
         if (w.expect) for (const a of content.acts) if (!a.only && a.tier <= (w.upTo ?? 99)) b.expect[a.id] = Math.max(b.expect[a.id] ?? 0, w.expect);
         if (id === "cover_up") {
@@ -155,8 +175,9 @@ export function registerTerms(api: ModApi) {
         const w = T.wishes[id]!;
         // "friendlier" and "tone it down" already count through the old directive row
         if (id === "friendlier" || id === "tone_down") continue;
-        if (w.consent && tier <= (w.upTo ?? 99) && (!w.seen || husbandSees(state, loc))) total += w.consent;
-        if (w.offer && offer > 0) total += offer * w.offer * content.consent.money;
+        const k = wishShare(state, id);
+        if (w.consent && tier <= (w.upTo ?? 99) && (!w.seen || husbandSees(state, loc))) total += w.consent * k;
+        if (w.offer && offer > 0) total += offer * w.offer * content.consent.money * k;
       }
       return total ? Math.round(total * 10) / 10 : null;
     },
@@ -166,7 +187,7 @@ export function registerTerms(api: ModApi) {
     labelKey: "factor.tip.wish",
     order: 35,
     eval: (state, { bill }) => {
-      const share = (bs(state).wishes ?? []).filter((id) => id !== "friendlier" && id !== "tone_down").reduce((s, id) => s + (T.wishes[id]!.tip ?? 0), 0);
+      const share = (bs(state).wishes ?? []).filter((id) => id !== "friendlier" && id !== "tone_down").reduce((s, id) => s + (T.wishes[id]!.tip ?? 0) * wishShare(state, id), 0);
       return share ? Math.round(bill * share * 10) / 40 : null;
     },
   });

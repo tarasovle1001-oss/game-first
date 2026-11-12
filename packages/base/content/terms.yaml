@@ -1,15 +1,25 @@
 # What is agreed between the two of them: what he says he wants today, what he allows one thing at a time,
 # what she asks him before she does it, where he stands on a particular man, dares, promises.
 wishes:               # "what I want from you today". needs = openness she needs to take it well
-  sexier:     { consent: 5, upTo: 4, tip: 0.08, needs: 35 }
+  sexier:     { read: 3, consent: 5, upTo: 4, tip: 0.08, needs: 35 }
   dress_bold: { outfit: 8, needs: 40 }
-  friendlier: { consent: 9, upTo: 4, tip: 0.12, needs: 0 }
-  more_coin:  { offer: 0.35, tip: 0.05, needs: 45 }        # what a guest's money is worth to her grows by this share
-  watch_you:  { consent: 8, upTo: 6, seen: true, expect: 25, needs: 55 }   # only counts where he can see
-  your_call:  { expectAll: 40, needs: 50 }
+  friendlier: { read: 2, consent: 9, upTo: 4, tip: 0.12, needs: 0 }
+  more_coin:  { read: 3, offer: 0.35, tip: 0.05, needs: 45 }        # what a guest's money is worth to her grows by this share
+  watch_you:  { read: 4, consent: 8, upTo: 6, seen: true, expect: 25, needs: 55 }   # only counts where he can see
+  your_call:  { read: 5, expectAll: 40, needs: 50 }
   tone_down:  { consent: -14, tip: -0.1, needs: 0 }
   cover_up:   { needs: 0 }
 against: { tone_down: [sexier, friendlier, watch_you, your_call, more_coin], cover_up: [dress_bold] }
+wishRead: # a wish is not an order with a list attached: what it means is hers to decide, and she decides by who she is
+  say: 60            # how fresh a wish is once said; said again it is topped up to 100
+  full: 60           # from this freshness it counts in full; below, by share
+  fade: 6            # what it loses every morning it is not repeated
+  perOpenness: 0.07  # per point of her openness above 40 she reads it one tier further ("read" on the wish is where a plain woman stops)
+  perUnfaithful: 0.07 # same, per point of fidelity below 60
+  perFresh: 0.02     # said again and again it reaches further: per point of freshness above "say"
+  gain: 28           # how much "he wants this" grows for the mildest thing; less for each tier up to her reading
+  cap: 30            # she is never surer than this from words alone, plus half the freshness
+  againToday: 2      # said more times than this in one day it is nagging
 wishShock: { mood: -3, resent: 2, trust: -2 }   # asked for more than she is
 wishGlad: { arousal: 3 }
 staleAfter: 3         # the same wish this many days running: "how many times will you ask"

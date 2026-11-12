@@ -26,7 +26,26 @@ describe("what is agreed between them", () => {
     s = engine.dispatch(s, { type: WISH, payload: { id: "tone_down" } });
     expect(wished(s, "sexier")).toBe(false);
     expect(bs(s).directive).toBe("reserved");
-    expect(has(s, WISH, (p) => p.id === "tone_down")).toBe(false);
+    expect(has(s, WISH, (p) => p.id === "tone_down")).toBe(true); // it can be said again
+  });
+  it("the same words mean more to a woman who is ready for more, at once, and they stand until they fade", () => {
+    const told = (traits: { openness: number; fidelity: number }) => engine.dispatch(atBar(5, { base: { traits } }), { type: WISH, payload: { id: "friendlier" } });
+    const plain = told({ openness: 30, fidelity: 85 });
+    const loose = told({ openness: 85, fidelity: 25 });
+    const moved = (s: GameState) => Object.keys(bs(s).expect).length;
+    expect(moved(plain)).toBeGreaterThan(0); // something changed the moment it was said
+    expect(moved(loose)).toBeGreaterThan(moved(plain));
+    expect(bs(plain).expect.sex).toBeUndefined();
+    expect(bs(loose).expect.sex).toBeDefined();
+    // said again it goes further; and it is still there tomorrow
+    const flirt = bs(loose).expect.flirt!;
+    let s = engine.dispatch(loose, { type: WISH, payload: { id: "friendlier" } });
+    expect(bs(s).expect.flirt!).toBeGreaterThan(flirt);
+    expect(bs(s).wishStr!.friendlier).toBe(100);
+    while (s.time.day < 2) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait") ?? engine.listActions(s)[0]!);
+    expect(wished(s, "friendlier")).toBe(true);
+    expect(bs(s).directive).toBe("friendly");
+    expect(bs(s).wishStr!.friendlier).toBeLessThan(100);
   });
   it("asked for more than she is, she takes it badly", () => {
     let s = atBar(5, { base: { traits: { openness: 10, fidelity: 90 } } });

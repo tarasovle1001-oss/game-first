@@ -272,8 +272,9 @@ export interface BaseState {
   tally?: { acts: Record<string, number>; partners: Record<string, number>; came: number };
   thoughtAt?: number;
   deal?: { patron: string; act: string; price: number; tick: number }; // a guest has come to him with money and waits
-  wishes?: string[]; // what he said he wants from her today
-  wishRun?: Record<string, { n: number; day: number }>; // days running each wish has been said
+  wishes?: string[]; // what he said he wants from her and still stands
+  wishStr?: Record<string, number>; // how fresh each of those is, 0..100: said again it is topped up, left alone it fades
+  wishRun?: Record<string, { n: number; day: number; times?: number }>; // days running each wish has been said
   perm?: Record<string, "allow" | "forbid">; // single things he allowed or forbade
   ask?: { patron: string; act: string; tick?: number }; // she is asking him before she says yes
   askWhy?: { patron: string; act: string }; // he said no and she wants to know why

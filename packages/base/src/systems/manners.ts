@@ -29,7 +29,8 @@ export function registerManners(api: ModApi) {
     const own = ownChoice(b.heroine.traits.openness + (ctx.state.time.day > 1 ? dressShift(ctx.state) : 0), b.owned);
     if (own.id !== b.heroine.outfit && ctx.state.time.day > 1) ctx.log("log.outfit.own", { outfit: `outfit.${own.id}` });
     b.heroine.outfit = own.id;
-    b.directive = "natural";
+    // what he said he wants of her stands until it fades or he says otherwise
+    b.directive = b.wishes?.includes("tone_down") ? "reserved" : b.wishes?.includes("friendlier") ? "friendly" : "natural";
     b.outfitAsked = false;
     b.changed = null;
     b.orders = [];
