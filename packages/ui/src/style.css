@@ -863,3 +863,36 @@ header { padding: 6px 12px; gap: 10px; align-items: center; }
 .since { text-align: center; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); border-top: 1px solid #6b5a3a; margin: 6px 0 2px; padding-top: 2px; opacity: 0.8; }
 .log .entry.old { opacity: 0.62; }
 .hc-seems { font-style: italic; margin-top: 2px; }
+
+/* ==== easier on the eyes: bigger text, more contrast, columns that can be dragged ==== */
+:root { font-size: 17px; --muted: #b5aebf; --line: #46404d; --text: #f1edf4; }
+.app { width: 100vw; overflow: hidden; }
+header { min-width: 0; }
+.topbar { min-width: 0; flex: 1 1 0; }
+.layout { min-width: 0; }
+.layout > * { position: relative; min-width: 0; overflow-x: hidden; }
+.splitter { position: absolute; top: 0; right: -4px; bottom: 0; width: 9px; cursor: col-resize; z-index: 5; touch-action: none; }
+.splitter:hover, .splitter:active { background: linear-gradient(90deg, transparent 3px, var(--accent) 3px, var(--accent) 6px, transparent 6px); }
+.fontsize { display: inline-flex; gap: 2px; }
+.fontsize button { padding: 4px 7px; }
+.tools button { font-size: 0.82rem; }
+.cell .cap, .cap { font-size: 0.7rem; color: var(--muted); }
+.log { font-size: 0.95rem; line-height: 1.5; }
+.log .entry.old { opacity: 0.78; }
+.log .time { color: var(--muted); }
+/* rooms: readable names, people stand out */
+.rg-floor { font-size: 0.7rem; margin-top: 4px; }
+.rg-row { grid-template-columns: repeat(auto-fill, minmax(6.4rem, 1fr)); gap: 4px; }
+.rg-room { min-height: 3.1rem; padding: 5px 7px; font-size: 0.8rem; }
+.rg-room:disabled { opacity: 0.8; }
+.rg-room.empty:disabled .rg-name { color: #8a8394; }
+.rg-name { font-size: 0.72rem; color: #cfc8d8; }
+.rg-room.reachable .rg-name, .rg-room.here .rg-name { color: var(--text); }
+.rg-who i { font-size: 0.76rem; padding: 1px 6px; }
+.hercard .bar { font-size: 0.88rem; }
+.mi-sub { font-size: 0.84rem; color: #c2bbcb; }
+.mi-right { font-size: 0.8rem; }
+.m-section { font-size: 0.72rem; }
+.mwait-row button { font-size: 0.88rem; }
+.insp-rows { font-size: 0.8rem; color: #c2bbcb; }
+.col-focus .tabs button { font-size: 0.86rem; }

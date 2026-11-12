@@ -1,3 +1,4 @@
+import type { PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { tracer, resetTracer, bs, withLook } from "@tc/base";
@@ -12,6 +13,9 @@ import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleT
 import { ActionMenu } from "./menu";
 import "./style.css";
 
+const DEFAULT_COLS = [24, 27, 28, 21];
+const DEFAULT_FONT = 17;
+const MIN_COL = 0.12;
 type Tab = "her" | "you" | "why" | "phone" | "stats" | "none";
 
 // The UI only reads state and dispatches actions. No game rules live here.
@@ -53,6 +57,51 @@ function App() {
     }
   };
   const [lastWhat, setLastWhat] = useState("");
+  // the look of the screen, remembered between visits: column widths (in shares) and the size of the text
+  const [look, setLookState] = useState<{ cols: number[]; font: number }>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("test-city.look") ?? "null") as { cols?: number[]; font?: number } | null;
+      if (saved && Array.isArray(saved.cols) && saved.cols.length === 4 && typeof saved.font === "number") return { cols: saved.cols, font: saved.font };
+    } catch {
+      /* nothing saved, or not ours */
+    }
+    return { cols: DEFAULT_COLS, font: DEFAULT_FONT };
+  });
+  const setLook = (next: { cols: number[]; font: number }) => {
+    setLookState(next);
+    try {
+      localStorage.setItem("test-city.look", JSON.stringify(next));
+    } catch {
+      /* no storage: lasts for this visit */
+    }
+  };
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${look.font}px`;
+  }, [look.font]);
+  // drag the line between two columns: what one gains the other loses
+  const drag = (i: number) => (down: PointerEvent<HTMLDivElement>) => {
+    down.preventDefault();
+    const width = (down.currentTarget.parentElement!.parentElement as HTMLElement).clientWidth;
+    const total = look.cols.reduce((a, c) => a + c, 0);
+    const start = down.clientX;
+    const from = look.cols;
+    const move = (e: globalThis.PointerEvent) => {
+      const shift = ((e.clientX - start) / width) * total;
+      const min = total * MIN_COL;
+      const d = Math.max(min - from[i]!, Math.min(from[i + 1]! - min, shift));
+      const cols = [...from];
+      cols[i] = from[i]! + d;
+      cols[i + 1] = from[i + 1]! - d;
+      setLook({ cols, font: look.font });
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+  const split = (i: number) => <div className="splitter" onPointerDown={drag(i)} onDoubleClick={() => setLook({ cols: DEFAULT_COLS, font: look.font })} title={t("ui.split.hint")} />;
   const [menu, setMenu] = useState(false);
   const [packCount, setPackCount] = useState(0);
   const packInput = useRef<HTMLInputElement | null>(null);
@@ -148,6 +197,14 @@ function App() {
           <button disabled={past.length === 0} title={t("ui.undo.hint")} onClick={undo}>
             {t("ui.undo")} {past.length > 0 ? past.length : ""}
           </button>
+          <span className="fontsize" title={t("ui.font.hint")}>
+            <button disabled={look.font <= 13} onClick={() => setLook({ ...look, font: look.font - 1 })}>
+              A-
+            </button>
+            <button disabled={look.font >= 24} onClick={() => setLook({ ...look, font: look.font + 1 })}>
+              A+
+            </button>
+          </span>
           <button className={transparent ? "on" : ""} title={t("ui.transparent.hint")} onClick={() => setTransparent(!transparent)}>
             {t("ui.transparent")}
           </button>
@@ -209,12 +266,14 @@ function App() {
 
       {(error || problems.length > 0) && <pre className="error">{[error, ...problems].filter(Boolean).join("\n")}</pre>}
 
-      <div className="layout">
+      <div className="layout" style={{ gridTemplateColumns: look.cols.map((c) => `minmax(0, ${c}fr)`).join(" ") }}>
         <aside className="col-story">
+          {split(0)}
           <Log {...common} debug={transparent} />
         </aside>
 
         <section className="col-house">
+          {split(1)}
           <details className="fold" open>
             <summary className="cap">{t("ui.house")}</summary>
             <RoomGrid {...common} onAct={act} />
@@ -229,6 +288,7 @@ function App() {
         </section>
 
         <section className="col-focus">
+          {split(2)}
           {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
           {state.time.phase !== "summary" && <OutcomeCard {...common} />}
           {inspector && state.time.phase !== "summary" && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
