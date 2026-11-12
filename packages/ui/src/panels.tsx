@@ -289,7 +289,14 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
   // the answer that led to what is on screen, if any
   const subject = b.encounter?.patron ?? b.shift?.moment?.patron ?? (b.night?.asked ? HUSBAND : undefined);
   const visible = scene && scene.type !== "idle" && scene.type !== "serving" && (scene.type !== "sleeping" || b.night?.asked);
-  const record = visible && subject ? [...b.proposals].reverse().find((p) => p.patron === subject && (subject === HUSBAND || p.verdict !== "refuse")) : undefined;
+  const asked = visible && subject ? [...b.proposals].reverse().find((p) => p.patron === subject && (subject === HUSBAND || p.verdict !== "refuse")) : undefined;
+  // something is going on that nobody asked her about in so many words (he pushed her to it, it grew out of the last thing): the reasons are worked out as they stand now
+  const live = (): ProposalRecord | undefined => {
+    if (!enc || !visible) return undefined;
+    const res = engine.evaluate<ConsentInput>(CONSENT_FORMULA, state, { act: enc.act, partner: enc.patron, loc: enc.loc, offer: 0, pressure: 0 });
+    return { day: state.time.day, tick: b.shift?.tick ?? -1, patron: enc.patron, act: enc.act, loc: enc.loc, verdict: verdictOf(res.total), seen: true, total: res.total, rows: res.rows };
+  };
+  const record = enc && (!asked || asked.act !== enc.act || asked.patron !== enc.patron) ? live() : asked;
   return (
     <div className="scene">
       {away ? (
