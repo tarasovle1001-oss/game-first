@@ -1,14 +1,14 @@
 import type { PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { tracer, resetTracer, bs, withLook, husbandSees } from "@tc/base";
+import { tracer, resetTracer, bs, husbandSees } from "@tc/base";
 import { loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
 import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
-import { loadPack, packInfo, pictureFor } from "./pack";
+import { loadPack, packInfo } from "./pack";
 import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, Summary, TopBar, WhyTab } from "./panels";
 import { ActionMenu } from "./menu";
 import "./style.css";
@@ -81,6 +81,22 @@ function App() {
     setTransparentState(v);
     try {
       localStorage.setItem("test-city.transparent", v ? "1" : "0");
+    } catch {
+      /* no storage: the setting just lasts for this visit */
+    }
+  };
+  // watch: the pictures and the lines of what happens follow her everywhere, but her thoughts and the numbers stay closed
+  const [watch, setWatchState] = useState(() => {
+    try {
+      return localStorage.getItem("test-city.watch") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const setWatch = (v: boolean) => {
+    setWatchState(v);
+    try {
+      localStorage.setItem("test-city.watch", v ? "1" : "0");
     } catch {
       /* no storage: the setting just lasts for this visit */
     }
@@ -284,7 +300,7 @@ function App() {
   });
 
   // watching everything: the picture follows her wherever she is, whether he could see it or not
-  const scene = engine.currentScene(transparent ? { ...state, mods: { ...state.mods, base: { ...bs(state), viewAll: true } } } : state);
+  const scene = engine.currentScene(transparent || watch ? { ...state, mods: { ...state.mods, base: { ...bs(state), viewAll: true } } } : state);
   const problems = engine.checkInvariants(state);
   // where he last saw her himself: the map shows that, faintly, while she is out of his sight
   const seenAt = useRef<string | undefined>(state.where["wife"]);
@@ -317,6 +333,9 @@ function App() {
           </span>
           <button className={transparent ? "on" : ""} title={t("ui.transparent.hint")} onClick={() => setTransparent(!transparent)}>
             {t("ui.transparent")}
+          </button>
+          <button className={watch || transparent ? "on" : ""} disabled={transparent} title={t("ui.watch.hint")} onClick={() => setWatch(!watch)}>
+            {t("ui.watch")}
           </button>
           <button className={inspector ? "on" : ""} title={t("ui.inspector.hint")} onClick={() => setInspector(!inspector)}>
             {t("ui.inspector")}
@@ -388,7 +407,7 @@ function App() {
       <div className="layout" style={{ gridTemplateColumns: look.cols.map((c) => `minmax(0, ${c}fr)`).join(" ") }}>
         <aside className="col-story">
           {split(0)}
-          <Log {...common} debug={transparent} />
+          <Log {...common} debug={transparent} watch={watch} />
         </aside>
 
         <section className="col-house">
@@ -408,7 +427,7 @@ function App() {
 
         <section className="col-focus">
           {split(2)}
-          {<ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
+          {<ScenePanel {...common} scene={scene} watch={watch} />}
           <OutcomeCard {...common} />
           {inspector && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
           {inspector && <ConsentCalc {...common} />}

@@ -2,7 +2,8 @@
 // the pack has for the scene on screen and falls back to the mannequin when there is none.
 import { sceneFileName, sceneKeyFallbacks } from "@tc/core";
 import type { SceneDesc } from "@tc/core";
-import { PICTURE_TAGS } from "@tc/base";
+import { PICTURE_TAGS, resolveFrames } from "@tc/base";
+import type { PictureFrames } from "@tc/base";
 
 const pictures = new Map<string, string[]>();
 let packName = "";
@@ -33,3 +34,7 @@ export function pictureFor(desc: SceneDesc, pick: number): { url: string; key: s
   }
   return null;
 }
+
+export type Shot = { url: string; key: string; exact: boolean };
+/** What to put on screen for a scene: the main picture and zero to three close-ups beside it. Null = draw the mannequin. */
+export const layoutFor = (frames: PictureFrames, pick: number) => resolveFrames<Shot>(frames, (d, i) => pictureFor(d, pick + i));

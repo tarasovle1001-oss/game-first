@@ -15,7 +15,7 @@ import { passPrep } from "./day";
 import { himOf, tired } from "./rhythm";
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
-export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him", "ignore_handjob", "facesitting", "edging", "cleanup", "chastity", "toy_on_her", "masturbate_show", "footjob", "spank_him", "tease_denial", "thigh_ride"];
+export const NIGHT_ACTS = ["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal", "rimming_him", "prostate", "dildo_him", "pegging", "fisting_him", "ignore_handjob", "facesitting", "edging", "cleanup", "chastity", "toy_on_her", "masturbate_show", "footjob", "spank_him", "tease_denial", "thigh_ride", "titfuck"];
 /** What is done to him: her finger, a toy in her hand, a toy on straps, her whole hand. */
 export const HIS_ACTS = ["prostate", "dildo_him", "pegging", "fisting_him"];
 const NEEDS_TOY = new Set(["dildo_him", "pegging"]);

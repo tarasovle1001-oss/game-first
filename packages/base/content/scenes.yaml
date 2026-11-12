@@ -584,3 +584,7 @@
   figures:
     - {"role": "wife", "pose": "stand", "x": 5, "y": 0, "flip": false, "torso": 92, "head": 96, "armR": {"to": "patron.handR", "dy": 3}, "armL": [-80, -70]}
     - {"role": "patron", "pose": "stand", "x": -8, "y": 0, "flip": false, "torso": 86, "head": 74, "armR": {"to": "wife.chest", "dx": 4}, "armL": {"to": "wife.groin", "dx": 2}}
+- id: titfuck
+  figures:
+    - { role: husband, pose: sit, x: 12, y: 0, flip: true, torso: 102, penis: { to: wife.chest, dy: 2 }, armR: { to: wife.shoulderR }, armL: [-95, -70] }
+    - { role: wife, pose: kneel, x: -12, y: 0, flip: false, torso: 74, head: 95, armR: { to: husband.penisTip, dx: 5, dy: -3 }, armL: { to: husband.penisTip, dx: 3, dy: 3 } }

@@ -46,3 +46,37 @@ describe("pictures", () => {
     for (const t of seen) expect(layouts.has(t), t).toBe(true);
   });
 });
+
+import { pictureFrames, resolveFrames } from "@tc/base";
+import { sceneKeyFallbacks, sceneFileName } from "@tc/core";
+
+describe("main picture and close-ups", () => {
+  const pair = { type: "blowjob", location: "storage", participants: [{ id: "wife", role: "wife" }, { id: "p1", role: "patron" }], tags: { outfit: "uniform" } };
+  const lookup = (have: string[]) => (d: { type: string; location: string; participants: { id: string; role: string }[]; tags?: Record<string, string> }) =>
+    sceneKeyFallbacks(d).map(sceneFileName).find((k) => have.includes(k)) ?? null;
+  it("shows the whole scene when the pack has it, and splits into portrait + close-ups when it does not", () => {
+    const s = engine.init(5, { base: { preset: "ordinary" } });
+    const f = pictureFrames(s, pair);
+    expect(f.portrait?.type).toBe("portrait");
+    expect(f.portrait?.tags?.face).toBeTruthy();
+    expect(f.inserts.map((i) => i.type)).toEqual(["insert_blowjob"]);
+    expect(f.inserts[0]!.tags?.face).toBeUndefined();
+    expect(resolveFrames(f, lookup(["blowjob__any"]))).toEqual({ main: "blowjob__any", inserts: [], split: false });
+    expect(resolveFrames(f, lookup(["portrait__any", "insert_blowjob__any"]))).toEqual({ main: "portrait__any", inserts: ["insert_blowjob__any"], split: true });
+    expect(resolveFrames(f, lookup(["portrait__any"]))).toEqual({ main: "portrait__any", inserts: [], split: true });
+    expect(resolveFrames(f, lookup(["insert_blowjob__any"]))).toBe(null);
+  });
+  it("builds a group from the close-ups of pairs, three at most", () => {
+    const s0 = engine.init(5, { base: { preset: "ordinary" } });
+    const s = structuredClone(s0);
+    const b = bs(s);
+    const ids = ["g1", "g2"];
+    const sex = content.acts.find((a) => a.id === "sex")!;
+    const bj = content.acts.find((a) => a.id === "blowjob")!;
+    b.encounter = { ...(b.encounter ?? {}), patron: ids[0]!, act: "sex", loc: "storage", men: [{ patron: ids[1]!, slot: "mouth", act: "blowjob" }] } as never;
+    const f = pictureFrames(s, { type: "group_spitroast", location: "storage", participants: [{ id: "wife", role: "wife" }, { id: ids[0]!, role: "patron" }, { id: ids[1]!, role: "patron2" }], tags: { men: "2" } });
+    expect(f.inserts.map((i) => i.type)).toEqual([`insert_${sex.scene}`, `insert_${bj.scene}`]);
+    expect(f.inserts.every((i) => i.participants[0]!.role === "patron")).toBe(true);
+    expect(f.portrait?.tags?.men).toBeUndefined();
+  });
+});

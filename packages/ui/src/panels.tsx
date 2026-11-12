@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { CONSENT_FORMULA, charmOf, verdictOf, inspect, annoyedLevel, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, withLook } from "@tc/base";
+import { CONSENT_FORMULA, charmOf, verdictOf, inspect, annoyedLevel, fameOf, fameTier, weekdayOf, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, himOf, worryOf, annoyanceOf, describeScene, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, pleasureFor, renderParams, WIFE, installment, husbandSees, sizeClass, pictureFrames } from "@tc/base";
 import type { ConsentInput, DeltaRow, DeltaVia, Patron, ProposalRecord } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action, GameState, SceneDesc } from "@tc/core";
 import { renderSchematic } from "@tc/schematics";
 import { engine } from "./game";
-import { pictureFor } from "./pack";
+import { layoutFor } from "./pack";
+import type { Shot } from "./pack";
 import type { Lang, T } from "./game";
 
 export interface Common {
@@ -131,13 +132,14 @@ function richLine(e: { key: string; params?: Record<string, unknown>; tags?: str
 }
 
 type LogFilter = "all" | "people" | "money" | "lewd";
-export function Log({ state, t, lang, debug }: Common & { debug: boolean }) {
+export function Log({ state, t, lang, debug, watch }: Common & { debug: boolean; watch?: boolean }) {
   const [filter, setFilter] = useState<LogFilter>("all");
   // what happens out of his sight is not told to him, but a house is not silent: one line of noise per moment of it
   const visible: typeof state.log = [];
   for (const e of state.log) {
-    if (debug || !e.tags?.includes("unseen")) visible.push(e);
-    else if (!e.tags?.includes("thought")) {
+    const thought = e.tags?.includes("thought");
+    if (debug || !e.tags?.includes("unseen") || (watch && !thought)) visible.push(e);
+    else if (!thought) {
       const last = visible[visible.length - 1];
       if (!(last && last.key === "log.noise" && last.day === e.day && Math.abs(last.minute - e.minute) < 10)) visible.push({ ...e, key: "log.noise", params: undefined, tags: ["noise"] });
     }
@@ -249,7 +251,33 @@ const WATCHERS = [
   { role: "watcher", pose: "stand" as const, x: 106, flip: true },
 ];
 
-export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { scene: SceneDesc | null; picture?: { url: string; key: string; exact: boolean } | null }) {
+/** A pack picture: alone, or her portrait with up to three close-ups beside it. A click on a close-up brings it to the middle. */
+function Photo({ main, inserts, alt, veiled, children }: { main: Shot; inserts: Shot[]; alt: string; veiled?: boolean; children?: React.ReactNode }) {
+  const [front, setFront] = useState<string | null>(null);
+  const shots = [main, ...inserts];
+  const big = shots.find((x) => x.key === front) ?? main;
+  const side = shots.filter((x) => x !== big);
+  return (
+    <div className={`picture photo${veiled ? " veiled" : ""}`}>
+      <div className={`frames n${side.length}`}>
+        <img className="main" src={big.url} alt={alt} />
+        {side.length > 0 && (
+          <div className="inserts">
+            {side.map((x) => (
+              <img key={x.key} src={x.url} alt="" onClick={() => setFront(x === main ? null : x.key)} />
+            ))}
+          </div>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { scene: SceneDesc | null; watch?: boolean }) {
+  const clear = !!open || !!watch; // the picture is not blurred; numbers still need `open`
+  const pick = state.time.day * 7 + state.turn;
+  const picture = scene ? layoutFor(pictureFrames(state, scene), pick) : null;
   const b = bs(state);
   const layout = scene ? (content.scenes.find((s) => s.id === scene.type) ?? content.scenes.find((s) => s.id === "idle")!) : null;
   const wifeHere = state.where[WIFE] === state.where[HUSBAND];
@@ -263,10 +291,10 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
         : { type: "idle", location: state.where[WIFE] ?? "", participants: [{ id: WIFE, role: "wife" }], tags: {} }
       : null;
   const awayLayout = away ? content.scenes.find((x) => x.id === away.type) : null;
-  const awayPicture = away ? pictureFor(withLook(state, away), state.time.day * 7 + state.turn) : null;
+  const awayPicture = away ? layoutFor(pictureFrames(state, away), pick) : null;
   const awaySvg = away
     ? renderSchematic(away.type === "idle" || !awayLayout ? [{ role: "wife", pose: "stand" as const, x: 0 }] : awayLayout.figures, {
-        title: open ? t(`scene.${awayLayout?.id ?? "idle"}`) : t("ui.scene.unseen"),
+        title: clear ? t(`scene.${awayLayout?.id ?? "idle"}`) : t("ui.scene.unseen"),
         subtitle: t(`loc.${away.location}`),
         legend: { wife: t("role.wife"), patron: t("role.patron"), husband: t("role.husband") },
       })
@@ -301,20 +329,17 @@ export function ScenePanel({ state, t, lang, scene, open, picture }: Common & { 
     <div className="scene">
       {away ? (
         awayPicture ? (
-          <div className={`picture photo${open ? "" : " veiled"}`}>
-            <img src={awayPicture.url} alt="" />
-          </div>
+          <Photo main={awayPicture.main} inserts={awayPicture.inserts} alt="" veiled={!clear} />
         ) : (
-          <div className={`picture${open ? "" : " veiled"}`} dangerouslySetInnerHTML={{ __html: awaySvg }} />
+          <div className={`picture${clear ? "" : " veiled"}`} dangerouslySetInnerHTML={{ __html: awaySvg }} />
         )
       ) : picture && scene && layout ? (
-        <div className="picture photo">
-          <img src={picture.url} alt={t(`scene.${layout.id}`)} />
+        <Photo main={picture.main} inserts={picture.inserts} alt={t(`scene.${layout.id}`)}>
           <div className="photo-cap">
             <b>{t(`scene.${layout.id}`)}</b> · {t(`loc.${scene.location}`)}
-            {open && !picture.exact && <span className="muted"> · {picture.key}</span>}
+            {open && (picture.split || !picture.main.exact) && <span className="muted"> · {[picture.main, ...picture.inserts].map((x) => x.key).join(" + ")}</span>}
           </div>
-        </div>
+        </Photo>
       ) : (
         <div className="picture" dangerouslySetInnerHTML={{ __html: svg }} />
       )}

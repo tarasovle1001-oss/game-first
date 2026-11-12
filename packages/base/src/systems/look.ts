@@ -269,3 +269,58 @@ export function registerLook(api: ModApi) {
     return null;
   });
 }
+
+/** What goes into a close-up: only what a frame without faces can show. */
+const INSERT_TAGS = ["fin", "size", "gape", "sore", "marks", "bare", "under", "skirt"];
+const SIZE_TAG: Record<string, string> = { patron: "size", patron2: "size2", patron3: "size3", husband: "hsize" };
+
+export interface PictureFrames {
+  /** The whole scene in one picture: what a pack shows when it has it. */
+  full: SceneDesc;
+  /** Her alone, face by her state: the main picture when the pack has no whole one. Null when she is not in the scene. */
+  portrait: SceneDesc | null;
+  /** Close-ups of contact without faces, one per man, at most three. A group is put together from the close-ups of pairs. */
+  inserts: SceneDesc[];
+}
+
+/**
+ * How a scene may be laid out on screen: one picture, or her portrait + up to three close-ups.
+ * Keys: `portrait/wife/<room>/<her look>` and `insert_<pair scene>/<patron|husband>/<room>/<size, marks...>`.
+ * The second and third man use the same files as a lone guest doing the same thing.
+ */
+export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames {
+  const full = withLook(state, desc);
+  const tags = full.tags ?? {};
+  const wife = desc.participants.find((p) => p.role === "wife");
+  const enc = bs(state).encounter;
+  const sceneOf = (act: string | undefined) => content.acts.find((a) => a.id === act)?.scene;
+  const grouped = !!enc && desc.participants.some((p) => p.id === enc.patron) && ((enc.men?.length ?? 0) > 0 || desc.type.startsWith("join_"));
+  const inserts: SceneDesc[] = [];
+  if (wife)
+    for (const p of desc.participants) {
+      if (inserts.length >= 3 || !(p.role in SIZE_TAG)) continue;
+      // in a group each man has his own part of her: his close-up is the one of a pair doing that
+      const pair = !grouped ? desc.type : p.id === enc!.patron ? sceneOf(enc!.act) : (sceneOf(enc!.men?.find((m) => m.patron === p.id)?.act) ?? desc.type);
+      const t: Record<string, string> = {};
+      for (const k of INSERT_TAGS) if (tags[k] !== undefined) t[k] = tags[k]!;
+      const size = tags[SIZE_TAG[p.role]!];
+      delete t.size;
+      if (size !== undefined) t.size = size;
+      inserts.push({ type: `insert_${pair ?? desc.type}`, location: desc.location, participants: [{ id: p.id, role: p.role === "husband" ? "husband" : "patron" }], tags: t });
+    }
+  const { men: _m, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, ...look } = tags;
+  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts };
+}
+
+/**
+ * The pack decides the layout by what it holds: a picture of the whole scene is shown alone;
+ * without one, her portrait becomes the main picture and the close-ups it has go beside it.
+ * `find` looks a picture up (the number tells the close-ups apart so they do not pick the same variant).
+ */
+export function resolveFrames<T>(frames: PictureFrames, find: (desc: SceneDesc, n: number) => T | null): { main: T; inserts: T[]; split: boolean } | null {
+  const full = find(frames.full, 0);
+  if (full) return { main: full, inserts: [], split: false };
+  const main = frames.portrait ? find(frames.portrait, 0) : null;
+  if (!main) return null;
+  return { main, inserts: frames.inserts.map((d, i) => find(d, i + 1)).filter((x): x is T => x !== null), split: true };
+}
