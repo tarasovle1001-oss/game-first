@@ -70,6 +70,7 @@ export function passNight(ctx: Ctx, minutes: number) {
   ctx.state.time.minute = MIDNIGHT + n.minute;
   if (!n.herAsleep && !n.sex && !n.wants && !b.complaint && !b.approach && n.minute >= R.herBedtime) {
     n.herAsleep = n.minute;
+    if (n.scene === "night_awake") n.scene = "sleeping";
     ctx.log("log.night.her_asleep");
   }
 }

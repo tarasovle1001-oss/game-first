@@ -180,6 +180,11 @@ export function registerMind(api: ModApi) {
   api.events.on("bed:ended", (ctx, e) => {
     const { outcome, came } = e.payload as { outcome: string; came: boolean };
     const h = bs(ctx.state).heroine;
+    // he could not, or not for long: she is sorry for him, and being sorry for a man is not wanting him
+    if (outcome === "went_soft" || outcome === "too_soon") {
+      feel(ctx, "pity", outcome === "went_soft" ? 14 : 10, 1, outcome);
+      h.marriage.desire = Math.max(0, h.marriage.desire - 0.5);
+    }
     if (came) {
       feelAll(ctx, "cameHusband");
       const p = page(ctx);

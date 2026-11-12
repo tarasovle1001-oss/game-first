@@ -567,3 +567,8 @@
     - {"role": "patron", "pose": "lie_back", "x": -2, "y": 0, "flip": false, "armR": {"to": "wife.pelvis", "dy": 5}, "legR": [20, -30], "legL": [14, -24], "penis": {"to": "wife.groin", "dy": 3}}
     - {"role": "wife", "pose": "straddle", "x": 1, "y": 3, "flip": true, "torso": 48, "head": 30, "armR": {"to": "patron.shoulderR", "dy": 2}, "armL": {"to": "patron.chest", "dx": 6}, "legR": [-25, -165], "legL": [-18, -165]}
     - {"role": "husband", "pose": "kneel", "x": 28, "y": 0, "flip": true, "torso": 76, "head": 56, "penis": {"to": "wife.butt", "dy": 2}, "armR": {"to": "wife.pelvis", "dx": -2, "dy": 4}, "armL": {"to": "wife.shoulderR", "dy": 2}}
+# the bedroom at night with nothing going on: she is sitting on the bed
+- id: night_awake
+  figures:
+    - {"role": "wife", "pose": "sit", "x": -24, "y": 0, "flip": false, "torso": 84, "armR": [-70, 20]}
+    - {"role": "husband", "pose": "sit", "x": 24, "y": 0, "flip": true, "torso": 84, "head": 70, "armR": [-60, -20]}

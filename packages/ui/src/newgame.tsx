@@ -13,7 +13,9 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
   const [attrs, setAttrs] = useState<Record<(typeof ATTRS)[number], number>>({ charm: 50, wit: 50, stamina: 50, composure: 50 });
   const [sizeTaste, setSizeTaste] = useState(first.sizeTaste);
   const [latents, setLatents] = useState<string[] | null>(null); // null = leave to the preset and chance
-  const [husband, setHusband] = useState({ size: content.body.husband.size, minutes: content.body.husband.minutes, style: content.body.husband.style });
+  const [husband, setHusband] = useState({ size: content.body.husband.size, minutes: content.body.husband.minutes, style: content.body.husband.style, stretch: 0 });
+  const [body, setBody] = useState({ vagina: 0, anus: 0, mouth: 0 });
+  const [bodiesOpen, setBodiesOpen] = useState(false);
   const [desire, setDesire] = useState(content.body.husband.desire);
   const [open, setOpen] = useState(false);
   const [seedText, setSeedText] = useState(String(seed));
@@ -99,6 +101,15 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
             <div className="cap">{t("ui.newgame.him")}</div>
             {slider(t("ui.newgame.size"), husband.size, (v) => setHusband({ ...husband, size: v }), 6, 26)}
             {slider(t("ui.newgame.minutes"), husband.minutes, (v) => setHusband({ ...husband, minutes: v }), 1, 40)}
+            <button className="link" onClick={() => setBodiesOpen(!bodiesOpen)}>
+              {t("ui.newgame.bodies")} {bodiesOpen ? "▴" : "▾"}
+            </button>
+            {bodiesOpen && (
+              <>
+                {slider(t("ui.newgame.his_stretch"), husband.stretch, (v) => setHusband({ ...husband, stretch: v }))}
+                {(["vagina", "anus", "mouth"] as const).map((z) => slider(t(`zone.${z}`), body[z], (v) => setBody({ ...body, [z]: v })))}
+              </>
+            )}
             <div className="cap gap">{t("ui.newgame.style")}</div>
             <div className="preset-row">
               {(["naive", "jealous", "encouraging"] as const).map((s) => (
@@ -136,6 +147,7 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
                 sizeTaste,
                 desire,
                 husband,
+                ...(bodiesOpen ? { body } : {}),
                 name,
                 tastes,
                 attrs,

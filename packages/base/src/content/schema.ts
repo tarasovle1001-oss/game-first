@@ -581,7 +581,7 @@ const cardSchema = z.object({ anchor: z.string().default(""), strength: z.number
 export const castSchema = z.object({ id, name: z.string(), wife: cardSchema, husband: cardSchema, patron: cardSchema, patron2: cardSchema, patron3: cardSchema, watcher: cardSchema }).strict();
 export type Cast = z.infer<typeof castSchema>;
 
-export const EMOTIONS = ["anger", "contempt", "guilt", "shame", "longing", "disgust", "fear", "pride", "tenderness", "delight"] as const;
+export const EMOTIONS = ["anger", "contempt", "guilt", "shame", "longing", "disgust", "fear", "pride", "tenderness", "delight", "pity"] as const;
 export type Emotion = (typeof EMOTIONS)[number];
 const feelings = z.record(z.enum(EMOTIONS), z.number());
 export const mindSchema = z

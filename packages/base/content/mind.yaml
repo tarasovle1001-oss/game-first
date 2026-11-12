@@ -10,10 +10,11 @@ emotions:           # each 0..100. fade = per 10 minutes awake, night = share ke
   pride:      { fade: 0.6, night: 0.6 }
   tenderness: { fade: 0.6, night: 0.75 }  # for him
   delight:    { fade: 1.8, night: 0.3 }
+  pity:       { fade: 0.5, night: 0.7 }   # for him, when he could not: it gets him a yes, and costs him her respect
 showFrom: 15        # below this a feeling is not listed
 consent:            # points of consent per point of feeling
-  guest:   { guilt: -0.15, shame: -0.12, fear: -0.2, disgust: -0.25, anger: 0.1, contempt: 0.12, delight: 0.08, longing: 0.1, tenderness: -0.08 }
-  husband: { anger: -0.25, contempt: -0.2, tenderness: 0.2, guilt: 0.1, longing: 0.15, disgust: -0.1, delight: 0.05 }
+  guest:   { guilt: -0.15, pity: 0.05, shame: -0.12, fear: -0.2, disgust: -0.25, anger: 0.1, contempt: 0.12, delight: 0.08, longing: 0.1, tenderness: -0.08 }
+  husband: { anger: -0.25, pity: 0.12, contempt: -0.2, tenderness: 0.2, guilt: 0.1, longing: 0.15, disgust: -0.1, delight: 0.05 }
 gain:               # what feeds what; scaled by who she is where the code says so
   pushed: { fear: 5, disgust: 3 }
   pushedFar: { fear: 10, disgust: 6 }

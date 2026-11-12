@@ -48,6 +48,7 @@ export const CHEAT_FIELDS: CheatField[] = [
   stat("heroine.marriage.resent", "stat.resent", "couple"),
   stat("suspicion", "ui.suspicion", "couple"),
   stat("power", "ui.power", "couple"),
+  stat("heroine.feel.pity", "emotion.pity", "couple"),
   stat("husband.size", "cheats.husband.size", "couple", 5, 30),
   stat("husband.minutes", "cheats.husband.minutes", "couple", 1, 60),
   stat("husband.stretch", "cheats.husband.stretch", "him"),

@@ -12,6 +12,7 @@ export interface BaseSetup {
   /** Exact set of hidden sides. Omit to let the preset and the dice decide. */
   latents?: string[];
   husband?: Partial<Husband>;
+  body?: Partial<Record<"vagina" | "anus" | "mouth", number>>; // how stretched each zone of hers starts, 0..100
   mode?: Mode;
   desire?: number;
   /** What she is made of, 0..100 each: charm, wit, stamina, composure. */
@@ -60,9 +61,18 @@ export function registerSetup(api: ModApi) {
         const zone = id === "oral" ? "mouth" : id === "anal" ? "anus" : null;
         if (zone) for (const a of content.acts) if (a.zones.includes(zone)) h.tastes.acts[a.id] = Math.round((v - 50) * 0.6);
       }
+      // how used her body already is, zone by zone
+      for (const [zone, v] of Object.entries(setup.body ?? {})) {
+        const z = h.body[zone as keyof typeof h.body];
+        if (z && typeof v === "number") {
+          z.stretch = clamp(v);
+          z.peak = Math.max(z.peak, z.stretch);
+        }
+      }
       if (setup.husband) {
         const u = setup.husband;
         if (typeof u.size === "number") b.husband.size = clamp(u.size, 5, 30);
+        if (typeof u.stretch === "number") b.husband.stretch = clamp(u.stretch);
         if (typeof u.minutes === "number") b.husband.minutes = clamp(u.minutes, 1, 60);
         if (typeof u.stamina === "number") b.husband.stamina = clamp(Math.round(u.stamina), 1, 5);
         if (u.style === "naive" || u.style === "jealous" || u.style === "encouraging") b.husband.style = u.style;

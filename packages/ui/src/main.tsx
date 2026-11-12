@@ -347,7 +347,7 @@ function App() {
             <summary className="cap">{t("ui.house")}</summary>
             <RoomGrid {...common} onAct={act} />
           </details>
-          {state.time.phase !== "summary" && <HerCard {...common} />}
+          <HerCard {...common} />
           {(b.shift || Object.keys(b.lodgers).length > 0) && (
             <div className="house-guests">
               <GuestsTab {...common} />
@@ -358,10 +358,10 @@ function App() {
 
         <section className="col-focus">
           {split(2)}
-          {state.time.phase === "summary" ? <Summary {...common} /> : <ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
-          {state.time.phase !== "summary" && <OutcomeCard {...common} />}
-          {inspector && state.time.phase !== "summary" && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
-          {inspector && state.time.phase !== "summary" && <ConsentCalc {...common} />}
+          {<ScenePanel {...common} scene={scene} picture={scene ? pictureFor(withLook(state, scene), state.time.day * 7 + state.turn) : null} />}
+          <OutcomeCard {...common} />
+          {inspector && <InspectorBlock {...common} prev={past[past.length - 1] ?? null} what={lastWhat} />}
+          {inspector && <ConsentCalc {...common} />}
           <div className="tabs">
             {(["her", "why", "stats"] as Tab[]).map((k) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(tab === k ? "none" : k)}>

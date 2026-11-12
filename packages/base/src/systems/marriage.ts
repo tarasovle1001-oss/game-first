@@ -74,7 +74,7 @@ export function registerMarriage(api: ModApi) {
     if (phase === "night") {
       ctx.state.where[HUSBAND] = BEDROOM;
       ctx.state.where[WIFE] = BEDROOM;
-      b.night = { scene: "sleeping", asked: false, sex: null };
+      b.night = { scene: "night_awake", asked: false, sex: null };
       // some nights she is the one who reaches for him
       const h = b.heroine;
       const W = content.body.night.wants;
