@@ -7,7 +7,7 @@ clean:                # how the state of the room shows in the evening
   dirtyBelow: 30      # below this the place loses reputation every evening
   dirtyReputation: 1
 activities:           # each once a day; at: cafe = at home, or the one place in town where it is done
-  - { id: clean, energy: 14, minutes: 60, clean: 45, at: cafe }
+  - { id: clean, energy: 14, minutes: 60, clean: 45, at: cafe, gradual: true } # gradual: every minute counts at once (0.75 a minute), can be dropped and taken up again
   - { id: her_chores, energy: 8, minutes: 60, withHer: true, at: cafe, her: { energy: 14, mood: 2, resent: -1 } }
   - { id: flyers, energy: 10, minutes: 60, cost: 40, arrivals: 0.2, at: town.square }
   - { id: side_job, energy: 32, minutes: 240, money: 70, at: town.square }
@@ -21,6 +21,7 @@ activities:           # each once a day; at: cafe = at home, or the one place in
 herDay:               # her own afternoon: one task after another, each in its room
   walkToTown: 10      # minutes between the cafe and the square
   walkInTown: 3
+  shopping: { minutes: 60, tryOn: 6, mood: 2 } # she comes to the shops with him: how long she stays, how much trying things on eases the openness an outfit needs, what the outing is worth
   awayMinutes: 150    # when she is out on her own
   trips: [town.shops, town.market, town.gym] # where she goes on an errand, or says she goes
   tripChance: 0.12    # per change of task, once a day

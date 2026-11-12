@@ -15,6 +15,7 @@ const SECTION: Record<string, string> = {
   "base/night-act": "sex", "base/upstairs": "sex", "base/night-self": "sex", "base/night-decline": "sex",
   [STRIP]: "ask", "base/ask-outfit": "ask", "base/outfit-back": "ask",
   [TELL]: "allow", [ALLOW]: "allow", "base/directive": "want", "base/order": "want", [WISH]: "want", [DARE]: "dare",
+  "base/give": "ask", "base/shop-together": "chat",
   [ABOUT]: "about", [STANCE]: "about", [PROMISE]: "about", [PRESS]: "sex",
 };
 // things that take the whole column until he answers, and things happening in front of him that he may answer

@@ -9,7 +9,7 @@ import { addReputation } from "./economy";
 import { actById, CONSENT_FORMULA, endEncounter } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
-import { annoyedLevel } from "./annoy";
+import { annoy, annoyedLevel } from "./annoy";
 import { setOutcome, slurTags, voiced } from "./voice";
 import { HALL, husbandSees } from "./places";
 
@@ -132,17 +132,23 @@ export function registerCouple(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       if (!together(state)) return [];
-      const out = T.options.filter((o) => !b.talked.includes(o.id) && (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
-      if (!b.talked.includes("how_are_you")) out.unshift({ type: TALK, payload: { do: "how_are_you", group: "chat" } });
-      if (!b.talked.includes("where_we_stand")) out.push({ type: TALK, payload: { do: "where_we_stand", group: "chat" } });
-      if (state.time.phase === "night" && !b.talked.includes("how_tonight")) out.push({ type: TALK, payload: { do: "how_tonight", group: "chat" } });
+      const out = T.options.filter((o) => (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
+      out.unshift({ type: TALK, payload: { do: "how_are_you", group: "chat" } });
+      out.push({ type: TALK, payload: { do: "where_we_stand", group: "chat" } });
+      if (state.time.phase === "night") out.push({ type: TALK, payload: { do: "how_tonight", group: "chat" } });
       return out;
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const what = action.payload!.do as string;
+      // nothing is said only once, but the same thing again the same day is worth less, and then nothing
+      const again = b.talked.filter((x) => x === what).length;
       b.talked.push(what);
+      if (again > 0 && (what === "where_we_stand" || what === "how_tonight")) {
+        ctx.log("log.talk.again.asked");
+        return;
+      }
       if (what === "how_are_you") {
         // "How are you?": the answer is whatever is uppermost in her right now
         const sore = Object.values(h.sore ?? {}).some((v) => v >= 40);
@@ -152,7 +158,7 @@ export function registerCouple(api: ModApi) {
         const when = ctx.state.time.phase === "prep" ? "prep" : ctx.state.time.phase === "night" ? "night" : "shift";
         ctx.log(`log.talk.how.${key}`);
         if (key === "fine" || key === "glad") ctx.log(`log.talk.how.when.${when}`);
-        changeHeroine(ctx, "mood", key === "fedup" ? 0 : 1, "husband");
+        changeHeroine(ctx, "mood", key === "fedup" || again > 0 ? 0 : 1, "husband");
         setOutcome(ctx, key === "fedup" ? "upset" : key === "resent" || key === "low" || key === "annoyed" ? "unsure" : "agrees", HUSBAND);
         ctx.emit("couple:talk", { do: what, ok: true });
         return;
@@ -200,9 +206,15 @@ export function registerCouple(api: ModApi) {
       const publicNow = ctx.state.time.phase === "shift" && ctx.state.where[WIFE] === HALL && (b.shift?.visits.length ?? 0) > 0;
       const need = o.needs ? o.needs.min + (publicNow ? (o.needs.publicExtra ?? 0) : 0) : 0;
       const ok = !o.needs || statOf(ctx.state, o.needs.stat) >= need;
-      applyFx(ctx, ok ? scaled(o.effects, talkScale(ctx.state)) : (o.fail ?? {}), "husband");
+      // a drink is a drink every time; a compliment is not
+      const worth = o.stock ? 1 : (T.repeat.scale[Math.min(again, T.repeat.scale.length - 1)] ?? 0);
+      applyFx(ctx, ok ? scaled(o.effects, talkScale(ctx.state) * worth) : (o.fail ?? {}), again > 0 ? "said again" : "husband");
+      // hands and hints again and again: that is pestering, and it adds up
+      const forward = o.group === "touch" || o.needs !== undefined;
+      if (again > 0 && forward && !o.stock) annoy(ctx, T.repeat.pester * again, "him");
       const line = voiced(ctx.state, `log.talk.${o.id}${ok ? "" : ".no"}`);
       ctx.log(line, undefined, slurTags(ctx.state, line));
+      if (ok && again > 0 && worth < 1) ctx.log(forward ? (worth > 0 ? "log.talk.again.forward" : "log.talk.again.forward.much") : worth > 0 ? "log.talk.again" : "log.talk.again.much");
       setOutcome(ctx, !ok ? "away" : (o.effects.arousal ?? 0) >= 4 ? "wants" : "agrees", HUSBAND);
       // a husband who has gone without long enough can lose it from a kiss
       const TC = T.touchCum;
@@ -351,7 +363,7 @@ export function registerCouple(api: ModApi) {
 
   api.invariants.add("couple", (s) => {
     const b = bs(s);
-    if (new Set(b.talked).size !== b.talked.length) return "the same talk twice in one day";
+    if (b.talked.length > 2000) return "the day's talk list is running away";
     return null;
   });
 }

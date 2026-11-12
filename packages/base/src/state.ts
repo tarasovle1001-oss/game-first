@@ -249,12 +249,12 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; sex: BedScene | null; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; sex: BedScene | null; here?: "here" | "public"; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
   told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
-  day: { left: number; done: string[]; arrivals: number; herOut?: boolean; busy?: { id: string; left: number }; her?: { task: string; left: number }; tripped?: boolean; cover?: string; coverSeen?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
+  day: { left: number; done: string[]; arrivals: number; herOut?: boolean; busy?: { id: string; left: number; spent?: number }; her?: { task: string; left: number }; tripped?: boolean; cover?: string; coverSeen?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
   clean: number; // 0..100, how the room looks
   owned: string[]; // outfits she has
   toys: string[];
@@ -299,7 +299,8 @@ export interface BaseState {
   orders: string[]; // single things about her dress he asked for tonight and she agreed to
   ordersAsked: string[];
   memories: { id: string; day: number; key: string; params?: Record<string, string | number>; seen: boolean }[]; // firsts, dated
-  talked: string[]; // what he already said or did with her today (each thing once a day)
+  talked: string[]; // what he already said or did with her today, repeats included
+  bag?: { kind: "outfit" | "toy"; id: string }[]; // bought without her: not hers until he gives it to her
   dayTop: { act: string; patron: string; seen: boolean } | null; // the furthest it went with a guest today
   reaction: { patron: string; act: string; reacted: boolean } | null; // something is happening in front of him right now
   outfitAsked: boolean;

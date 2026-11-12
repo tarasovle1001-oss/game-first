@@ -19,6 +19,8 @@ night: # what she does when she lies awake wanting more
   husbandWakesChance: 0.3 # he wakes up and finds the bed empty
   wakesSuspicion: 14
   work: 12 # consent she loses for being pulled away from a room full of guests
+  elsewhere: 4 # anywhere but their own bedroom, with nobody around: a little harder
+  public: { base: 25, perClosed: 0.5, exhibitionist: 30, gossip: 5, heat: 15, openness: 1.5 } # in front of guests: base plus per point of openness she lacks; what it does to the room
   wants: { arousal: 50, desire: 45, energy: 25, consent: 20, declineDesire: 1.5, declineResent: 3 } # she reaches for him herself
 
 sizeClasses: [11, 14, 17, 21] # cm: below the first is tiny, then small, average, big; from the last up is huge

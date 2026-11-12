@@ -10,6 +10,7 @@ import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { HALL, TICKS_PER_SHIFT } from "./places";
 import { runUnattended } from "./shift";
+import { passPrep } from "./day";
 
 import { himOf, tired } from "./rhythm";
 export const NIGHT_ACT = "base/night-act";
@@ -91,13 +92,14 @@ export function registerMarriage(api: ModApi) {
     m.desire = clamp(m.desire + (desire > 0 ? (desire * (100 - m.desire)) / 50 : desire));
     m.resent = clamp(m.resent + resent);
   };
-  const ask = (ctx: Ctx, actId: string, bonus = 0, why = "going") => {
+  const ask = (ctx: Ctx, actId: string, bonus = 0, why = "going", loc: string = BEDROOM, more: [string, number][] = []) => {
     const b = bs(ctx.state);
-    const input: ConsentInput = { act: actId, partner: HUSBAND, loc: BEDROOM, offer: 0, pressure: 0 };
+    const input: ConsentInput = { act: actId, partner: HUSBAND, loc, offer: 0, pressure: 0 };
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
-    const total = res.total + bonus;
+    const extra = [...(bonus ? [[why, bonus] as [string, number]] : []), ...more.filter(([, v]) => v !== 0)];
+    const total = res.total + extra.reduce((s, [, v]) => s + v, 0);
     const verdict = verdictOf(total);
-    b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: actId, loc: BEDROOM, verdict, seen: true, total, rows: bonus ? [...res.rows, { id: `consent.${why}`, labelKey: `factor.consent.${why}`, value: bonus }] : res.rows });
+    b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: actId, loc, verdict, seen: true, total, rows: [...res.rows, ...extra.map(([k, value]) => ({ id: `consent.${k}`, labelKey: `factor.consent.${k}`, value }))] });
     if (b.proposals.length > 12) b.proposals.shift();
     setOutcome(ctx, outcomeOf(verdict), HUSBAND);
     return verdict;
@@ -276,43 +278,77 @@ export function registerMarriage(api: ModApi) {
     },
   });
 
-  // In the middle of the evening: "come upstairs for a minute" (or right here, if the place is empty).
+  // Any time they are alone together, or not alone: "come upstairs for a minute", right here, or right here in front of everybody.
+  /** How many guests are sitting where the two of them are. */
+  const watching = (state: GameState) => {
+    const sh = bs(state).shift;
+    return state.time.phase === "shift" && sh && state.where[HUSBAND] === HALL ? sh.visits.filter((v) => v.stay > 0).length : 0;
+  };
   api.actions.register({
     id: UPSTAIRS,
     labelKey: "action.upstairs",
-    describe: (a) => ({ key: `action.upstairs.${a.payload!.here ? "here" : "up"}`, params: { act: `act.${a.payload!.act}` } }),
+    describe: (a) => ({ key: `action.upstairs.${a.payload!.pub ? "public" : a.payload!.here ? "here" : "up"}`, params: { act: `act.${a.payload!.act}` } }),
     enumerate(state) {
       const b = bs(state);
       const sh = b.shift;
-      if (b.husband.spentDay === state.time.day) return [];
-      if (state.time.phase !== "shift" || !sh || sh.upstairs || sh.tick >= TICKS_PER_SHIFT || b.encounter || b.caught || b.reaction || b.night) return [];
-      if (state.where[HUSBAND] !== state.where[WIFE]) return [];
-      const here = sh.visits.length === 0 ? 1 : 0;
-      return UPSTAIRS_ACTS.map((act) => ({ type: UPSTAIRS, payload: { act, here } }));
+      const phase = state.time.phase;
+      if (b.husband.spentDay === state.time.day || b.encounter || b.caught || b.reaction || b.night) return [];
+      if (phase === "shift" ? !sh || sh.tick >= TICKS_PER_SHIFT : phase !== "prep" || !b.day || !!b.day.busy || b.day.left < B.minutesPerTurn * 4) return [];
+      if (state.where[HUSBAND] !== state.where[WIFE] || state.where[HUSBAND]?.startsWith("town.")) return [];
+      const guests = phase === "shift" ? (state.where[HUSBAND] === HALL ? sh!.visits.length : 0) : 0;
+      if (guests === 0) return UPSTAIRS_ACTS.map((act) => ({ type: UPSTAIRS, payload: { act, here: 1 } }));
+      return [...UPSTAIRS_ACTS.map((act) => ({ type: UPSTAIRS, payload: { act, here: 0 } })), ...(watching(state) > 0 ? UPSTAIRS_ACTS.map((act) => ({ type: UPSTAIRS, payload: { act, here: 1, pub: 1 } })) : [])];
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const act = actById(action.payload!.act as string);
-      const guests = b.shift!.visits.length;
-      b.shift!.upstairs = true;
-      // leaving a full room to itself is not nothing for her
-      const verdict = ask(ctx, act.id, guests > 0 ? -content.body.night.work : 0, "work");
+      const pub = action.payload!.pub === 1;
+      const here = action.payload!.here === 1;
+      const loc = here ? ctx.state.where[HUSBAND]! : BEDROOM;
+      const N = content.body.night;
+      if (b.shift) b.shift.upstairs = true;
+      // their own bed is the easy place; an empty room is nearly as good; a room full of guests is another matter
+      const more: [string, number][] = [];
+      if (pub) more.push(["plain_sight", -Math.max(0, N.public.base + (100 - h.traits.openness) * N.public.perClosed - (h.latents.exhibitionist !== undefined ? N.public.exhibitionist : 0))]);
+      else if (here && loc !== BEDROOM) more.push(["elsewhere", -N.elsewhere]);
+      else if (!here) more.push(["work", -N.work]); // leaving a full room to itself is not nothing for her
+      const verdict = ask(ctx, act.id, 0, "going", loc, more);
       if (verdict === "refuse") {
-        feel(ctx, 0, 0.5);
-        ctx.log("log.upstairs.no");
+        feel(ctx, 0, pub ? 1 : 0.5);
+        if (pub) ctx.log("log.upstairs.no.public");
+        else if (!here) ctx.log("log.upstairs.no");
+        else {
+          const why = refusalKey("log.husband.refuse", b.proposals.at(-1)?.rows ?? []);
+          ctx.log(why, { act: `action.night.${act.id}` }, slurTags(ctx.state, why));
+        }
+        ctx.emit("husband:refused", { act: act.id });
         return;
       }
-      if (guests > 0) {
+      if (!here) {
         ctx.state.where[HUSBAND] = BEDROOM;
         ctx.state.where[WIFE] = BEDROOM;
       }
       changeHeroine(ctx, "arousal", h.marriage.desire * H.foreplay, "husband");
-      b.night = { scene: act.id, asked: true, sex: { act: act.id, his: clamp(B.startHis + Math.max(0, b.denied) * B.deniedStart), hers: clamp(h.arousal * 0.4), came: 0, turns: 0, top: false, skirt: false, pleasure: 0, bored: 0, asks: null, ignored: 0, out: false, byHand: false, looseSaid: false } };
+      b.night = { scene: act.id, asked: true, ...(here ? { here: pub ? ("public" as const) : ("here" as const) } : {}), sex: { act: act.id, his: clamp(B.startHis + Math.max(0, b.denied) * B.deniedStart), hers: clamp(h.arousal * 0.4), came: 0, turns: 0, top: false, skirt: false, pleasure: 0, bored: 0, asks: null, ignored: 0, out: false, byHand: false, looseSaid: false } };
       setAct(ctx, act.id);
-      ctx.log(guests > 0 ? "log.upstairs.up" : "log.upstairs.here", { act: `act.${act.id}` });
-      ctx.emit("bed:started", { act: act.id, shift: true });
+      if (pub) {
+        // the whole room has it to talk about, and to think about
+        b.gossip = clamp(b.gossip + N.public.gossip);
+        for (const v of b.shift!.visits) if (v.stay > 0) v.heat = clamp((v.heat ?? 0) + N.public.heat);
+        h.traits.openness = clamp(h.traits.openness + N.public.openness);
+      }
+      const start = pub ? "log.upstairs.public" : !here ? "log.upstairs.up" : ctx.state.time.phase === "shift" ? "log.upstairs.here" : "log.upstairs.prep";
+      ctx.log(start, { act: `act.${act.id}` });
+      ctx.emit("bed:started", { act: act.id, shift: ctx.state.time.phase === "shift", public: pub });
     },
+  });
+  // The doors open while they are at it: it stops there.
+  api.events.on("phase:enter", (ctx, e) => {
+    const b = bs(ctx.state);
+    if (e.payload!.phase !== "shift" || !b.night) return;
+    if (b.night.sex) finishScene(ctx, "stop");
+    b.night = null;
   });
   // Walking away in the middle of it ends it.
   api.events.on("entity:moved", (ctx, e) => {
@@ -442,7 +478,7 @@ export function registerMarriage(api: ModApi) {
       b.heroine.frustration = clamp(b.heroine.frustration + (sex.came > 0 ? 0 : 12));
       ctx.log(b.heroine.marriage.desire >= B.reward.lovingDesire ? "log.bed.soft.kind" : "log.bed.soft");
       ctx.emit("bed:ended", { act: sex.act, came: sex.came > 0, outcome: "went_soft", turns: sex.turns });
-      if (ctx.state.time.phase === "shift") backToWork(ctx, sex.turns);
+      if (ctx.state.time.phase !== "night") backToWork(ctx, sex.turns);
       return true;
     }
     // is she getting anything out of this?
@@ -460,7 +496,7 @@ export function registerMarriage(api: ModApi) {
       if (sex.bored >= R.limit) {
         herMove(ctx);
         if (!b.night?.sex) {
-          if (ctx.state.time.phase === "shift") backToWork(ctx, sex.turns);
+          if (ctx.state.time.phase !== "night") backToWork(ctx, sex.turns);
           return true;
         }
       }
@@ -472,16 +508,27 @@ export function registerMarriage(api: ModApi) {
   const finish = (ctx: Ctx, how: "auto" | "choice" | "stop") => {
     const turns = bs(ctx.state).night!.sex!.turns;
     finishScene(ctx, how);
-    if (ctx.state.time.phase === "shift") backToWork(ctx, turns);
+    if (ctx.state.time.phase !== "night") backToWork(ctx, turns);
   };
   /** Mid-shift: the scene object belongs to the night, and the floor has been waiting. */
   const backToWork = (ctx: Ctx, turns: number) => {
     const b = bs(ctx.state);
+    const here = b.night?.here;
     b.night = null;
-    if (ctx.state.where[HUSBAND] === BEDROOM) ctx.state.where[HUSBAND] = HALL;
-    ctx.state.where[WIFE] = HALL;
-    ctx.log("log.upstairs.back");
-    runUnattended(ctx, Math.max(1, turns) * B.minutesPerTurn);
+    const minutes = Math.max(1, turns) * B.minutesPerTurn;
+    if (ctx.state.time.phase === "prep") {
+      // the afternoon: nobody was waiting, but the clock did not stop
+      ctx.log("log.here.back");
+      passPrep(ctx, minutes);
+      ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
+      return;
+    }
+    if (!here) {
+      if (ctx.state.where[HUSBAND] === BEDROOM) ctx.state.where[HUSBAND] = HALL;
+      ctx.state.where[WIFE] = HALL;
+    }
+    ctx.log(here === "public" ? "log.here.back.public" : here ? "log.here.back" : "log.upstairs.back");
+    runUnattended(ctx, minutes);
   };
   const finishScene = (ctx: Ctx, how: "auto" | "choice" | "stop") => {
     const b = bs(ctx.state);
@@ -984,9 +1031,9 @@ export function registerMarriage(api: ModApi) {
   api.invariants.add("night-consistent", (s) => {
     const night = bs(s).night;
     if (s.time.phase === "night") return night ? null : "no night state at night";
-    // outside the night it exists only while he has her to himself in the middle of a shift
+    // outside the night it exists only while he has her to himself, in the afternoon or in the middle of a shift
     if (!night) return null;
-    if (s.time.phase !== "shift" || !night.sex) return "night state does not match the phase";
+    if ((s.time.phase !== "shift" && s.time.phase !== "prep") || !night.sex) return "night state does not match the phase";
     return s.where[HUSBAND] === s.where[WIFE] ? null : "a scene is running but they are in different rooms";
   });
 }

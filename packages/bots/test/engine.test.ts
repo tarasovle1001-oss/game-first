@@ -275,6 +275,15 @@ describe("the afternoon", () => {
     s = go(s, "town.square", "town.shops");
     const buy = engine.listActions(s).find((a) => a.type === "base/buy" && a.payload!.id === "revealing")!;
     s = engine.dispatch(s, buy);
+    // bought without her: it is in his bag, and she has said nothing about it yet
+    expect(s.mods.base.owned).not.toContain("revealing");
+    expect(s.mods.base.bag).toEqual([{ kind: "outfit", id: "revealing" }]);
+    expect(engine.listActions(s).some((a) => a.type === "base/buy" && a.payload!.id === "revealing")).toBe(false);
+    expect(engine.listActions(s).some((a) => a.type === "base/give")).toBe(false);
+    s = structuredClone(s);
+    s.where.wife = s.where.husband!;
+    s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/give")!);
+    expect(s.mods.base.bag).toEqual([]);
     expect(s.mods.base.owned).toContain("revealing");
     expect(engine.listActions(s).some((a) => a.type === "base/ask-outfit" && a.payload!.outfit === "revealing")).toBe(true);
     void doIt;

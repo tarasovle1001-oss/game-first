@@ -116,6 +116,9 @@ talk: # small things between the two of them; each once a day
     keptOvernight: 0.25  # share of it still there the next day
     consent: 0.15        # per point, against every ask (guests: from tier 2)
     strip: 0.5           # per point, against undressing
+  repeat: # the same word or touch again the same day
+    scale: [1, 0.4, 0]   # what the good of it is worth the first, second, third and later time
+    pester: 3            # what each repeat of something forward (touching, flirting, dirty talk) adds to her being fed up with him, times the repeat number
   touchCum: { from: [hug, kiss_her, grab_ass, fondle_breast, under_skirt, cuddle], fromDenied: 2, base: 0.02, perDenied: 0.04, max: 0.5 } # he has gone without for days: a kiss can finish him
   complainAt: 30          # her resentment from which she brings it up herself
   complainEveryDays: 4

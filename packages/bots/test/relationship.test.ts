@@ -317,14 +317,14 @@ describe("what she thinks he allows", () => {
 });
 
 describe("the two of them", () => {
-  it("each small thing works once a day", () => {
+  it("each small thing works, and stays on offer", () => {
     let s = engine.init(5);
     s = engine.dispatch(s, { type: CORE_MOVE, actor: "husband", payload: { to: "cafe.bar" } }); // she is behind the bar
     const before = bs(s).heroine.mood;
     expect(engine.listActions(s).some((a) => a.type === TALK && a.payload?.do === "compliment")).toBe(true);
     s = engine.dispatch(s, { type: TALK, payload: { do: "compliment", group: "chat" } });
     expect(bs(s).heroine.mood).toBeGreaterThan(before);
-    expect(engine.listActions(s).some((a) => a.type === TALK && a.payload?.do === "compliment")).toBe(false);
+    expect(engine.listActions(s).some((a) => a.type === TALK && a.payload?.do === "compliment")).toBe(true);
     expect(engine.checkInvariants(s)).toEqual([]);
   });
   it("saying it in words sets what she thinks he allows, for the whole kind of thing", () => {
@@ -397,7 +397,7 @@ describe("in the middle of the evening", () => {
     expect(bs(s).night).toBeNull();
     expect(bs(s).shift!.tick).toBeGreaterThan(tick);
     expect(has(s, WAIT) || has(s, CORE_ADVANCE)).toBe(true);
-    expect(engine.listActions(s).some((a) => a.type === "base/upstairs")).toBe(false); // once an evening
+    expect(bs(s).husband.spentDay === s.time.day || engine.listActions(s).some((a) => a.type === "base/upstairs")).toBe(true); // nothing is once an evening any more; only he can be done for the day
     expect(engine.checkInvariants(s)).toEqual([]);
   });
 });

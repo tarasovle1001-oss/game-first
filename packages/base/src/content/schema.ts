@@ -223,6 +223,8 @@ export const nightSchema = z
     wakesSuspicion: z.number(),
     wants: z.object({ arousal: z.number(), desire: z.number(), energy: z.number(), consent: z.number(), declineDesire: z.number(), declineResent: z.number() }).strict(),
     work: z.number(),
+    elsewhere: z.number(),
+    public: z.object({ base: z.number(), perClosed: z.number(), exhibitionist: z.number(), gossip: z.number(), heat: z.number(), openness: z.number() }).strict(),
   })
   .strict();
 
@@ -355,6 +357,7 @@ export const daySchema = z
           cost: z.number().optional(),
           money: z.number().optional(),
           clean: z.number().optional(),
+          gradual: z.boolean().optional(), // its effect comes a minute at a time; it can be dropped and taken up again
           arrivals: z.number().optional(), // share added to tonight's flow of guests
           at: z.string().optional(), // "cafe" (anywhere at home) or the one room in town where it is done
           withHer: z.boolean().optional(), // needs her to be around this afternoon
@@ -368,7 +371,7 @@ export const daySchema = z
     ),
     herDay: z
       .object({
-        walkToTown: z.number().int().positive(), walkInTown: z.number().int().positive(), awayMinutes: z.number().int().positive(), trips: z.array(id).min(1), tripChance: z.number().min(0).max(1), tripMinutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), notThereSuspicion: z.number(),
+        walkToTown: z.number().int().positive(), shopping: z.object({ minutes: z.number().int().positive(), tryOn: z.number(), mood: z.number() }).strict(), walkInTown: z.number().int().positive(), awayMinutes: z.number().int().positive(), trips: z.array(id).min(1), tripChance: z.number().min(0).max(1), tripMinutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), notThereSuspicion: z.number(),
         tasks: z.array(z.object({ id, loc: id, minutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), clean: z.number().optional(), her: z.record(z.enum(["mood", "energy", "arousal"]), z.number()).optional() }).strict()).min(2),
       })
       .strict(),
@@ -483,6 +486,7 @@ export const mannersSchema = z
           })
           .strict(),
         annoy: z.object({ tired: z.number(), done: z.number(), guestRefused: z.number(), guestHesitant: z.number(), guestEager: z.number(), guestPushed: z.number(), guestPushedFar: z.number(), husbandTouch: z.number(), husbandAsk: z.number(), husbandRefused: z.number(), cameRelief: z.number(), coolShift: z.number(), coolPrep: z.number(), keptOvernight: z.number(), consent: z.number(), strip: z.number(), spillToHim: z.number(), spillToGuests: z.number() }).strict(),
+        repeat: z.object({ scale: z.array(z.number()).min(1), pester: z.number() }).strict(),
         touchCum: z.object({ from: z.array(id), fromDenied: z.number().int(), base: z.number(), perDenied: z.number(), max: z.number().min(0).max(1) }).strict(),
         complainAt: z.number(),
         complainEveryDays: z.number().int(),

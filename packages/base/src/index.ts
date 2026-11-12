@@ -118,7 +118,7 @@ export const baseMod: Mod = {
         labelKey: `base.phase.${id}`,
         order: i,
         // the shift cannot be skipped: it runs its ticks first
-        canLeave: id === "shift" ? (state) => ticksDone(bs(state).shift) : id === "night" ? (state) => !bs(state).night?.sex && !bs(state).complaint : undefined,
+        canLeave: id === "shift" ? (state) => ticksDone(bs(state).shift) : id === "night" ? (state) => !bs(state).night?.sex && !bs(state).complaint : id === "prep" ? (state) => !bs(state).night?.sex : undefined,
       }),
     );
     registerPlaces(api);
@@ -179,7 +179,7 @@ export { TIP_SHARE } from "./systems/economy";
 export type { BaseSetup } from "./systems/setup";
 export { REACT_APPROVE, REACT_STOP, expectOf, expectLevel } from "./systems/expectations";
 export { GUEST, HEAR, TALK, TELL, guestInView, together } from "./systems/couple";
-export { BUY, DAY_DO, hasUpgrade } from "./systems/day";
+export { BUY, GIVE, SHOP_TOGETHER, DAY_DO, hasUpgrade } from "./systems/day";
 export { HOTEL_ROOMS, roomOf } from "./systems/hotel";
 export { OUTFIT_BACK } from "./systems/manners";
 export { ANSWER } from "./systems/herside";

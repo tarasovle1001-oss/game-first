@@ -213,7 +213,7 @@ export function registerRhythm(api: ModApi) {
   // --- what the day takes out of him ---------------------------------------------------------------
   api.events.on("day:did", (ctx, e) => {
     const a = content.day.activities.find((x) => x.id === (e.payload!.do as string));
-    if (a?.energy) changeHim(ctx, "energy", -a.energy, a.id);
+    if (a?.energy) changeHim(ctx, "energy", -a.energy * ((e.payload!.share as number | undefined) ?? 1), a.id);
     if (a?.id === "date") changeHim(ctx, "mood", 4, "date");
     if (a?.gym) changeHim(ctx, "mood", 3, "gym");
   });

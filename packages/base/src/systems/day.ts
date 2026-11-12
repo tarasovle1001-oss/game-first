@@ -14,6 +14,8 @@ import { canDo, wakeMinute } from "./rhythm";
 
 export const DAY_DO = "base/day";
 export const BUY = "base/buy";
+export const GIVE = "base/give";
+export const SHOP_TOGETHER = "base/shop-together";
 export const PREP_WAIT = "base/prep-wait";
 export const DAY_STOP = "base/day-stop";
 const D = content.day;
@@ -34,8 +36,15 @@ type Activity = (typeof D.activities)[number];
 /** What an afternoon activity does once the time for it has been put in. */
 function finish(ctx: Ctx, a: Activity) {
   const b = bs(ctx.state);
-  b.day!.done.push(a.id);
+  const spent = b.day!.busy?.spent ?? a.minutes;
   b.day!.busy = undefined;
+  if (a.gradual) {
+    // done a minute at a time: there is nothing left to hand out at the end, and it can be taken up again
+    ctx.log(`log.day.${a.id}`, { money: 0, cost: 0, stock: b.stock });
+    ctx.emit("day:did", { do: a.id, share: spent / a.minutes });
+    return;
+  }
+  b.day!.done.push(a.id);
   if (a.money) addMoney(ctx, a.money, a.id);
   if (a.clean) b.clean = clamp(b.clean + a.clean);
   if (a.arrivals) b.day!.arrivals += a.arrivals;
@@ -90,6 +99,7 @@ function herDone(ctx: Ctx) {
     day.herOut = false; // she is back
     ctx.log("log.her.back");
   }
+  if (day.her?.task === "shopping") ctx.log("log.her.shop_done");
   if (t?.clean) b.clean = clamp(b.clean + t.clean);
   for (const [k, v] of Object.entries(t?.her ?? {})) changeHeroine(ctx, k as "mood", v, t!.id);
   herNext(ctx);
@@ -104,8 +114,15 @@ export function passPrep(ctx: Ctx, minutes: number) {
     day.left -= 1;
     ctx.state.time.minute = opening - day.left;
     if (day.busy) {
+      const a = D.activities.find((x) => x.id === day.busy!.id)!;
       day.busy.left -= 1;
-      if (day.busy.left <= 0) finish(ctx, D.activities.find((x) => x.id === day.busy!.id)!);
+      if (a.gradual) {
+        // every minute of it counts at once: stop when you like, what is done is done
+        day.busy.spent = (day.busy.spent ?? 0) + 1;
+        if (a.clean) b.clean = clamp(b.clean + a.clean / a.minutes);
+        if (a.clean && b.clean >= 100) day.busy.left = 0; // nothing left to clean
+      }
+      if (day.busy.left <= 0) finish(ctx, a);
     }
     if (day.her && day.her.task !== "with_you") {
       day.her.left -= 1;
@@ -250,7 +267,75 @@ function gym(ctx: Ctx, together: boolean) {
   ctx.emit("gym:met", { patron: known.id, act: act.id, intimate });
 }
 
+/** She gets the thing in her hands: only now does she have something to say about it. */
+function present(ctx: Ctx, kind: "outfit" | "toy", id: string, inShop: boolean) {
+  const b = bs(ctx.state);
+  const h = b.heroine;
+  const S = D.herDay.shopping;
+  if (kind === "outfit") {
+    const o = content.outfits.find((x) => x.id === id)!;
+    b.owned.push(o.id);
+    // a present she is not ready for is still a present, but it stays in the wardrobe; trying it on herself helps
+    const ready = h.traits.openness + content.manners.askOutfitBonus + (inShop ? S.tryOn : 0) >= o.openness;
+    changeHeroine(ctx, "mood", ready ? 4 : 1, "present");
+    ctx.log(`log.${inShop ? "buy" : "give"}.outfit${ready ? "" : ".shy"}`, { outfit: `outfit.${o.id}` });
+  } else {
+    const t = D.shop.toys.find((x) => x.id === id)!;
+    b.toys.push(t.id);
+    const ok = h.traits.openness >= 40;
+    if (ok) changeHeroine(ctx, "arousal", 5, "present");
+    else changeHeroine(ctx, "mood", -2, "present");
+    // a toy bigger than him says something about him, and she hears it
+    if (t.size > b.husband.size + 2) b.power = clamp(b.power + 2);
+    ctx.log(`log.${inShop ? "buy" : "give"}.toy${ok ? "" : ".shy"}`, { toy: `toy.${t.id}` });
+  }
+  ctx.emit("presented", { kind, id });
+}
+
 export function registerDay(api: ModApi) {
+  // What he bought without her waits in a bag until they are in one room.
+  api.actions.register({
+    id: GIVE,
+    labelKey: "action.give",
+    describe: (a) => ({ key: "action.give.item", params: { item: `${a.payload!.kind}.${a.payload!.id}` } }),
+    enumerate(state) {
+      const b = bs(state);
+      if (!b.bag?.length || state.time.phase === "summary" || b.encounter || b.caught || b.reaction || b.night?.sex || b.day?.busy) return [];
+      if (state.where[HUSBAND] !== state.where[WIFE]) return [];
+      return b.bag.map((x) => ({ type: GIVE, payload: { kind: x.kind, id: x.id } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const { kind, id } = action.payload as { kind: "outfit" | "toy"; id: string };
+      b.bag = (b.bag ?? []).filter((x) => x.id !== id);
+      present(ctx, kind, id, false);
+    },
+  });
+  // "Come to the shops with me": she walks there with him and stays a while, so what he buys she sees and tries on.
+  api.actions.register({
+    id: SHOP_TOGETHER,
+    labelKey: "action.shop_together",
+    enumerate(state) {
+      const b = bs(state);
+      const day = b.day;
+      const S = D.herDay.shopping;
+      if (state.time.phase !== "prep" || !day || day.busy || day.herOut || day.her?.task === "away" || day.her?.task === "shopping" || b.night) return [];
+      if (state.where[HUSBAND] !== state.where[WIFE] || inTown(state.where[HUSBAND])) return [];
+      return day.left >= D.herDay.walkToTown * 2 + S.minutes / 2 ? [{ type: SHOP_TOGETHER }] : [];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      const S = D.herDay.shopping;
+      ctx.log("log.shop_together");
+      passPrep(ctx, D.herDay.walkToTown + D.herDay.walkInTown);
+      ctx.state.where[HUSBAND] = "town.shops";
+      ctx.state.where[WIFE] = "town.shops";
+      b.day!.her = { task: "shopping", left: S.minutes };
+      changeHeroine(ctx, "mood", S.mood, "out together");
+      ctx.emit("day:shopping");
+    },
+  });
+
   api.events.on(
     "phase:enter",
     (ctx, e) => {
@@ -282,19 +367,19 @@ export function registerDay(api: ModApi) {
     },
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase !== "prep" || !b.day || b.day.busy) return [];
+      if (state.time.phase !== "prep" || !b.day || b.day.busy || b.night?.sex) return [];
       const day = b.day;
       // doing something together needs her within reach: at home with him, or not out on her own
       const herFree = (a: Activity) => !a.withHer || (!day.herOut && day.her?.task !== "away");
       return D.activities
-        .filter((a) => !day.done.includes(a.id) && a.minutes <= day.left && isAt(state, a.at) && herFree(a) && canDo(state, a.energy) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
+        .filter((a) => (a.gradual ? day.left > 0 : !day.done.includes(a.id) && a.minutes <= day.left) && isAt(state, a.at) && herFree(a) && canDo(state, a.energy) && (!a.cost || b.money >= a.cost) && !(a.clean && b.clean >= 95))
         .map((a) => ({ type: DAY_DO, payload: { do: a.id } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const a = D.activities.find((x) => x.id === action.payload!.do)!;
       if (a.cost) addMoney(ctx, -a.cost, a.id);
-      b.day!.busy = { id: a.id, left: a.minutes };
+      b.day!.busy = { id: a.id, left: Math.min(a.minutes, b.day!.left) };
       if (a.withHer) {
         // she comes along and stays with him for as long as it takes
         ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
@@ -311,8 +396,11 @@ export function registerDay(api: ModApi) {
     enumerate: (state) => (state.time.phase === "prep" && bs(state).day?.busy ? [{ type: DAY_STOP }] : []),
     apply(ctx) {
       const day = bs(ctx.state).day!;
-      ctx.log("log.day.stop", { what: `day.${day.busy!.id}` });
+      const a = D.activities.find((x) => x.id === day.busy!.id)!;
+      const spent = day.busy!.spent ?? 0;
+      ctx.log(a.gradual ? "log.day.stop.gradual" : "log.day.stop", { what: `day.${a.id}`, minutes: spent });
       day.busy = undefined;
+      if (a.gradual && spent > 0) ctx.emit("day:did", { do: a.id, share: spent / a.minutes });
     },
   });
   // The afternoon is waited through like the evening: a stretch at a time, or until what he is doing is done.
@@ -322,7 +410,7 @@ export function registerDay(api: ModApi) {
     describe: (a) => (a.payload?.until ? { key: "action.wait.done" } : { key: "action.wait.minutes", params: { minutes: a.payload!.minutes as number } }),
     enumerate(state) {
       const day = bs(state).day;
-      if (state.time.phase !== "prep" || !day || day.left <= 0) return [];
+      if (state.time.phase !== "prep" || !day || day.left <= 0 || bs(state).night?.sex) return [];
       const out: { type: string; payload: Record<string, string | number> }[] = [5, 15, 60].filter((m) => m <= Math.max(5, day.left)).map((m) => ({ type: PREP_WAIT, payload: { minutes: m } }));
       if (day.busy) out.push({ type: PREP_WAIT, payload: { until: "done" } });
       return out;
@@ -371,12 +459,13 @@ export function registerDay(api: ModApi) {
     describe: (a) => ({ key: `action.buy.${a.payload!.kind}`, params: { item: `${a.payload!.kind === "upgrade" ? "upgrade" : a.payload!.kind}.${a.payload!.id}`, cost: a.payload!.cost as number } }),
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase !== "prep" || !b.day) return [];
+      if (state.time.phase !== "prep" || !b.day || b.night?.sex) return [];
       const out: { type: string; payload: Record<string, string | number> }[] = [];
       if (b.day.busy) return [];
       if (state.where[HUSBAND] === "town.shops") {
-        for (const o of content.outfits) if (!b.owned.includes(o.id) && b.money >= o.price) out.push({ type: BUY, payload: { kind: "outfit", id: o.id, cost: o.price } });
-        for (const t of D.shop.toys) if (!b.toys.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
+        const bag = (b.bag ?? []).map((x) => x.id);
+        for (const o of content.outfits) if (!b.owned.includes(o.id) && !bag.includes(o.id) && b.money >= o.price) out.push({ type: BUY, payload: { kind: "outfit", id: o.id, cost: o.price } });
+        for (const t of D.shop.toys) if (!b.toys.includes(t.id) && !bag.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
       }
       for (const u of D.upgrades) if (!b.upgrades.includes(u.id) && canPay(state, u.cost)) out.push({ type: BUY, payload: { kind: "upgrade", id: u.id, cost: u.cost } });
       return out;
@@ -385,24 +474,15 @@ export function registerDay(api: ModApi) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const { kind, id } = action.payload as { kind: string; id: string };
-      if (kind === "outfit") {
-        const o = content.outfits.find((x) => x.id === id)!;
-        addMoney(ctx, -o.price, "outfit");
-        b.owned.push(o.id);
-        // a present she is not ready for is still a present, but it stays in the wardrobe
-        const ready = h.traits.openness + content.manners.askOutfitBonus >= o.openness;
-        changeHeroine(ctx, "mood", ready ? 4 : 1, "present");
-        ctx.log(ready ? "log.buy.outfit" : "log.buy.outfit.shy", { outfit: `outfit.${o.id}` });
-      } else if (kind === "toy") {
-        const t = D.shop.toys.find((x) => x.id === id)!;
-        addMoney(ctx, -t.price, "toy");
-        b.toys.push(t.id);
-        const ok = h.traits.openness >= 40;
-        if (ok) changeHeroine(ctx, "arousal", 5, "present");
-        else changeHeroine(ctx, "mood", -2, "present");
-        // a toy bigger than him says something about him, and she hears it
-        if (t.size > b.husband.size + 2) b.power = clamp(b.power + 2);
-        ctx.log(ok ? "log.buy.toy" : "log.buy.toy.shy", { toy: `toy.${t.id}` });
+      if (kind === "outfit" || kind === "toy") {
+        const price = kind === "outfit" ? content.outfits.find((x) => x.id === id)!.price : D.shop.toys.find((x) => x.id === id)!.price;
+        addMoney(ctx, -price, kind);
+        // she is there to see it and try it on, or it goes home in a bag until he gives it to her
+        if (ctx.state.where[WIFE] === ctx.state.where[HUSBAND]) present(ctx, kind, id, true);
+        else {
+          (b.bag = b.bag ?? []).push({ kind, id });
+          ctx.log(`log.buy.${kind}.bag`, { [kind]: `${kind}.${id}` });
+        }
       } else {
         const u = D.upgrades.find((x) => x.id === id)!;
         if (b.money < u.cost) ctx.log("log.supplies.credit");

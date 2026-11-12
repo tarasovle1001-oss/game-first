@@ -53,9 +53,15 @@ describe("the day around the clock", () => {
     const can = (st: GameState, id: string) => engine.listActions(st).some((a) => a.type === DAY_DO && a.payload?.do === id);
     expect(can(s, "clean")).toBe(true);
     const before = himOf(s).energy;
+    bs(s).clean = 20;
     s = engine.dispatch(s, { type: DAY_DO, payload: { do: "clean" } });
+    // cleaning counts by the minute: a quarter of an hour in, a quarter of it is done
+    s = engine.dispatch(s, { type: "base/prep-wait", payload: { minutes: 15 } });
+    expect(bs(s).clean).toBeCloseTo(20 + 45 / 4, 5);
     s = engine.dispatch(s, { type: "base/prep-wait", payload: { until: "done" } });
-    expect(himOf(s).energy).toBe(before - 14);
+    expect(bs(s).clean).toBeCloseTo(65, 5);
+    expect(himOf(s).energy).toBeCloseTo(before - 14, 5);
+    expect(can(s, "clean")).toBe(true); // and it can be taken up again
     s = structuredClone(s);
     bs(s).husband.energy = 5;
     expect(can(s, "her_chores")).toBe(false);

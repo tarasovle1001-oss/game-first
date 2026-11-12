@@ -18,9 +18,48 @@ const DEFAULT_FONT = 17;
 const MIN_COL = 0.12;
 type Tab = "her" | "you" | "why" | "phone" | "stats" | "none";
 
+const RESUME_KEY = "test-city.resume";
+const RESUME_BUDGET = 2_500_000; // characters: the browser gives a page about twice that
+/** A save with the steps back in it: the game as it is now, and as many earlier moments as fit. */
+const packSave = (state: GameState, past: GameState[]) => {
+  const now = saveGame(state, engine);
+  const steps: string[] = [];
+  let size = now.length;
+  for (let i = past.length - 1; i >= 0; i--) {
+    const s = saveGame(past[i]!, engine);
+    if (size + s.length > RESUME_BUDGET) break;
+    size += s.length;
+    steps.unshift(s);
+  }
+  return JSON.stringify({ resume: 1, now, past: steps });
+};
+/** Reads either kind: a plain save, or one with the steps back. */
+const unpackSave = (json: string, mods: Parameters<typeof loadGame>[1]): { state: GameState; past: GameState[] } => {
+  const raw = JSON.parse(json) as { resume?: number; now?: string; past?: string[] };
+  if (raw.resume !== 1 || typeof raw.now !== "string") return { state: loadGame(json, mods).state, past: [] };
+  const past: GameState[] = [];
+  for (const s of raw.past ?? []) {
+    try {
+      past.push(loadGame(s, mods).state);
+    } catch {
+      past.length = 0; // a step that does not load breaks the chain before it
+    }
+  }
+  return { state: loadGame(raw.now, mods).state, past };
+};
+/** Where the player left off, if the tab was closed in the middle of a game. */
+const resumed = (() => {
+  try {
+    const json = localStorage.getItem(RESUME_KEY);
+    return json ? unpackSave(json, game.mods) : null;
+  } catch {
+    return null;
+  }
+})();
+
 // The UI only reads state and dispatches actions. No game rules live here.
 function App() {
-  const [state, setState] = useState<GameState>(() => engine.init(newSeed()));
+  const [state, setState] = useState<GameState>(() => resumed?.state ?? engine.init(newSeed()));
   const [extra, setExtra] = useState<ModPack[]>([]);
   const [lang, setLang] = useState<Lang>("ru");
   const [debug, setDebug] = useState(false);
@@ -105,11 +144,11 @@ function App() {
   const [menu, setMenu] = useState(false);
   const [packCount, setPackCount] = useState(0);
   const packInput = useRef<HTMLInputElement | null>(null);
-  const [setupOpen, setSetupOpen] = useState(true); // the first thing a player sees
+  const [setupOpen, setSetupOpen] = useState(!resumed || resumed.state.turn === 0); // the first thing a player sees, unless there is a game to come back to
   const [tab, setTab] = useState<Tab>("none");
   const [error, setError] = useState("");
   // the last few states, to step back from a misclick: states are immutable, so keeping them costs little
-  const [past, setPast] = useState<GameState[]>([]);
+  const [past, setPast] = useState<GameState[]>(() => resumed?.past ?? []);
   const UNDO_DEPTH = 20;
   const undo = () => {
     const prev = past[past.length - 1];
@@ -118,6 +157,19 @@ function App() {
     setState(prev);
     setLastWhat(t("ui.undo"));
   };
+  // every step is kept: close the tab at any moment and come back to the same one, steps back included
+  useEffect(() => {
+    if (state.turn === 0) return;
+    try {
+      localStorage.setItem(RESUME_KEY, packSave(state, past));
+    } catch {
+      try {
+        localStorage.setItem(RESUME_KEY, packSave(state, []));
+      } catch {
+        /* storage may be full or unavailable; the game goes on */
+      }
+    }
+  }, [state, past]);
   const saveInput = useRef<HTMLInputElement>(null);
   const modInput = useRef<HTMLInputElement>(null);
   const t = useMemo(() => game.translator(lang), [lang, extra]);
@@ -151,8 +203,9 @@ function App() {
   const load = (json: string | null) =>
     json &&
     guard(() => {
-      setPast([]);
-      setState(loadGame(json, game.mods).state);
+      const got = unpackSave(json, game.mods);
+      setPast(got.past.slice(-UNDO_DEPTH));
+      setState(got.state);
     });
   const addMod = (source: string) =>
     guard(() => {
@@ -222,7 +275,7 @@ function App() {
         {menu && (
           <div className="menu" onClick={() => setMenu(false)}>
             <button onClick={() => setSetupOpen(true)}>{t("ui.new")}</button>
-            <button onClick={() => guard(() => localStorage.setItem(SAVE_KEY, saveGame(state, engine)))}>{t("ui.save")}</button>
+            <button onClick={() => guard(() => localStorage.setItem(SAVE_KEY, packSave(state, past)))}>{t("ui.save")}</button>
             <button onClick={() => load(localStorage.getItem(SAVE_KEY))}>{t("ui.load")}</button>
             <button onClick={() => load(localStorage.getItem(AUTOSAVE_KEY))}>{t("ui.load.auto")}</button>
             <button onClick={() => downloadText(`test-city-day${state.time.day}.json`, saveGame(state, engine))}>{t("ui.save.file")}</button>
