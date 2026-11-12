@@ -200,3 +200,39 @@ describe("a lodger upstairs at night", () => {
     for (const s of [a, z, company]) expect(engine.checkInvariants(s), JSON.stringify(engine.checkInvariants(s))).toEqual([]);
   });
 });
+
+describe("a closed door", () => {
+  it("with her behind it he can listen, knock or walk in, and each leaves the game sound", () => {
+    let found: GameState | null = null;
+    for (let seed = 1; seed <= 12 && !found; seed++) {
+      let s = engine.init(seed);
+      let r = seed * 104729;
+      const rnd = () => (r = (r * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+      for (let i = 0; i < 3000 && s.time.day <= 12 && !found; i++) {
+        const acts = engine.listActions(s);
+        const enc = bs(s).encounter;
+        if (enc && s.time.phase === "shift" && enc.loc !== "cafe.hall" && !bs(s).caught && !bs(s).reaction) {
+          for (const room of content.rooms) {
+            const t = structuredClone(s);
+            t.where.husband = room.id;
+            if (engine.listActions(t).some((a) => a.type === "base/door")) found = t;
+          }
+        }
+        if (found) break;
+        const wait = acts.filter((a) => /wait|advance/.test(a.type));
+        const other = acts.filter((a) => !/wait|advance|move/.test(a.type));
+        s = engine.dispatch(s, other.length && rnd() < 0.4 ? other[Math.floor(rnd() * other.length)]! : wait.length ? wait[Math.floor(rnd() * wait.length)]! : acts[Math.floor(rnd() * acts.length)]!);
+      }
+    }
+    expect(found).not.toBeNull();
+    const doors = engine.listActions(found!).filter((a) => a.type === "base/door");
+    expect(doors.map((a) => a.payload!.how)).toEqual(["listen", "knock", "barge"]);
+    for (const a of doors) {
+      const next = engine.dispatch(found!, a);
+      expect(engine.checkInvariants(next), JSON.stringify(engine.checkInvariants(next))).toEqual([]);
+      expect(engine.listActions(next).length).toBeGreaterThan(0);
+    }
+    const heard = engine.dispatch(found!, doors[0]!);
+    expect(engine.listActions(heard).some((a) => a.type === "base/door" && a.payload!.how === "listen")).toBe(false);
+  }, 120000);
+});

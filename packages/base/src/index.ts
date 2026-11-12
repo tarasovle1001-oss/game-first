@@ -213,3 +213,4 @@ export { voiceOf, refusalWhy } from "./systems/voice";
 export type { Outcome, Voice } from "./systems/voice";
 export { charmOf, charmParts } from "./systems/charm";
 export { SEND_UP } from "./systems/hotel";
+export { DOOR } from "./systems/secrecy";

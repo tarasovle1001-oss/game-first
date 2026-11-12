@@ -30,6 +30,7 @@ export function goOpen(ctx: Ctx, reason: string) {
   ctx.emit("mode:changed", { mode: "open", reason });
 }
 
+export const DOOR = "base/door";
 export function registerSecrecy(api: ModApi) {
   api.events.on("encounter:started", (ctx, e) => {
     const b = bs(ctx.state);
@@ -106,6 +107,54 @@ export function registerSecrecy(api: ModApi) {
       ctx.log("log.caught", { name: `@name:${b.patrons[enc.patron]!.name}`, act: `act.${enc.act}` });
       ctx.emit("caught", { patron: enc.patron, act: enc.act });
     }
+  });
+  // A closed door with her behind it: he can put an ear to it, knock, or open it.
+  api.actions.register({
+    id: DOOR,
+    labelKey: "action.door",
+    describe: (a) => ({ key: `action.door.${a.payload!.how}`, params: { room: `loc.${a.payload!.room}` } }),
+    enumerate(state) {
+      const b = bs(state);
+      const enc = b.encounter;
+      if (state.time.phase !== "shift" || !enc || b.caught || b.reaction || state.where[HUSBAND] === enc.loc || husbandSees(state, enc.loc) || !husbandNextTo(state, enc.loc)) return [];
+      return [...(enc.heard ? [] : ["listen"]), "knock", "barge"].map((how) => ({ type: DOOR, payload: { how, room: enc.loc } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const enc = b.encounter!;
+      const act = actById(enc.act);
+      const p = b.patrons[enc.patron]!;
+      const name = `@name:${p.name}`;
+      const how = action.payload!.how as string;
+      if (how === "listen") {
+        // enough comes through a door to know what kind of thing it is, if not all of it
+        enc.heard = true;
+        const loud = isIntimate(act);
+        ctx.log(loud ? "log.door.listen.loud" : "log.door.listen.quiet", { name });
+        if (loud) {
+          b.secretKnows = true;
+          b.suspicion = clamp(b.suspicion + 40);
+        } else b.suspicion = clamp(b.suspicion + 8);
+      } else if (how === "knock") {
+        // it stops; nobody has seen anything; everybody knows something
+        ctx.log("log.door.knock", { name });
+        b.suspicion = clamp(b.suspicion + (isIntimate(act) ? 15 : 5));
+        b.expect[act.id] = clamp((b.expect[act.id] ?? 0) - 8, -100, 100);
+        p.memory.interest = clamp(p.memory.interest - 2);
+        changeHeroine(ctx, "arousal", -6, "interrupted");
+        endEncounter(ctx, true);
+        ctx.state.where[WIFE] = HALL;
+      } else {
+        ctx.state.where[HUSBAND] = enc.loc;
+        if (isIntimate(act)) {
+          b.caught = { patron: enc.patron, act: enc.act };
+          if (b.shift) b.shift.interrupt = true;
+          ctx.log("log.caught", { name, act: `act.${enc.act}` });
+          ctx.emit("caught", { patron: enc.patron, act: enc.act });
+        } else ctx.log("log.door.barge.nothing", { name, act: `act.${enc.act}` });
+      }
+      ctx.emit("door", { how, patron: enc.patron, act: enc.act });
+    },
   });
   // If it is over before he decided, he was seen standing there.
   api.events.on("encounter:ended", (ctx) => {

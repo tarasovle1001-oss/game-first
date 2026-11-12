@@ -158,6 +158,7 @@ export interface Encounter {
   pleasure: number; // what the current act gives her, 0..100
   came: number; // times she came in this one
   finished?: boolean; // he came at least once in this one
+  heard?: boolean; // the husband has had his ear to the door of this one
   owed?: number; // what he means to leave her when it is over
   refusals: number; // changes she said no to
   paid: boolean; // his offer of money is already on the table

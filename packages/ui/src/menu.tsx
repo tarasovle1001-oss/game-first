@@ -20,7 +20,7 @@ const SECTION: Record<string, string> = {
 };
 // things that take the whole column until he answers, and things happening in front of him that he may answer
 const SITUATION = new Set<string>([ANSWER, PERMIT, DEAL, HEAR, CAUGHT_STOP, CAUGHT_WATCH]);
-const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE, REACT]);
+const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE, REACT, "base/door"]);
 const SECTIONS = ["chat", "touch", "sex", "ask", "want", "dare", "allow", "about"] as const;
 const LETTERS = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const sectionOf = (a: Action) => (a.type === TALK ? (a.payload?.group as string) : SECTION[a.type]);
