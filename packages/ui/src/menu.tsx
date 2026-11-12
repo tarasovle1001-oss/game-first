@@ -161,7 +161,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
         <div className="m-title warn">{t("ui.situation")}</div>
         <div className="m-context">{lines.length > 0 ? lines.map((e, i) => <p key={i}>{renderLog(e, t, lang)}</p>) : t("ui.her.came")}</div>
         {answers.map((a, i) => (
-          <Item key={i} hot={num(i)} title={a.type === ANSWER || a.type === PERMIT || a.type === DEAL ? t(`action.answer.${a.payload!.kind}.${a.payload!.say}`) : label(a)} onClick={() => act(a)} />
+          <Item key={i} hot={num(i)} title={a.type === ANSWER ? t(`action.answer.${a.payload!.kind}.${a.payload!.say}`) : label(a)} onClick={() => act(a)} />
         ))}
       </div>
     );
