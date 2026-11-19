@@ -41,7 +41,7 @@ for (const l of content.scenes) {
   const roles = [...new Set(l.figures.map((f) => f.role))];
   const room = rooms[0]?.[0] ?? (roles.includes("husband") && !roles.some((r) => r.startsWith("patron")) ? "home.bedroom" : "cafe.hall");
   // what she has on, by place: the work dress at the cafe and in town, a nightgown at home (no outfit = the model picks)
-  const outfit = room.startsWith("home.") ? "nightgown" : "modest";
+  const outfit = /^(walk_naked|bath_walkin|bath_together)$/.test(l.id) ? "naked" : room.startsWith("home.") ? "nightgown" : "modest";
   push({ type: l.id, location: room, participants: roles.map((r) => ({ id: r, role: r })), tags: roles.includes("wife") ? { outfit } : {} }, "scene", rooms.reduce((a, r) => a + r[1], 0));
 }
 

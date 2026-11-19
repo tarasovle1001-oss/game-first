@@ -74,7 +74,7 @@ function who(cast: Cast, role: string, closeUp = false, exposed = false): string
   const adult = role === "wife" ? "adult woman, mature female" : "adult man, mature male";
   if (!card) return [adult];
   // nude words (his penis, her "ass visible through thighs") only where the scene shows the body: alone they undress a dressed figure
-  const penis = exposed ? card.nude : "";
+  const penis = exposed ? card.nude : role === "wife" ? "" : card.clothes; // a man not shown bare is drawn dressed
   // a faceless close-up keeps the body and the skin of the card, not the face, hair or jewellery that would pull a face in
   if (closeUp) return [adult, card.appearance.split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), card.body, penis];
   return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body, penis];
@@ -103,12 +103,14 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
     if (!v.trim()) empty.push(`poses.${desc.type}.${name}`);
     return v;
   };
-  const inDesc = new Set(desc.participants.map((p) => p.role));
+  // prompt.yaml: only - the figures a scene's picture draws (her alone at the stove: the husband stays out of it)
+  const onlyRoles = P.only[desc.type];
+  const inDesc = new Set(desc.participants.map((p) => p.role).filter((r) => !onlyRoles || onlyRoles.includes(r)));
   // a close-up has no layout: whoever is in it is drawn, so his skin and size (or her body) still come from the card
   const drawn = isDetail ? [...inDesc] : [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
 
   // counts: one girl, the men in the scene (several of one role still count each)
-  const men = Math.max(desc.participants.filter((p) => MEN.has(p.role)).length, Number(t.men ?? 0));
+  const men = Math.max(desc.participants.filter((p) => MEN.has(p.role) && inDesc.has(p.role)).length, onlyRoles ? 0 : Number(t.men ?? 0));
   const counts = [desc.participants.some((p) => p.role === "wife") ? "1girl" : "", men > 0 ? `${men}boy${men > 1 ? "s" : ""}` : ""];
   const act = sceneAct(desc.type);
   if (!P.style.prefix.trim()) empty.push("style.prefix");
@@ -143,7 +145,7 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
     regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed), role === "wife" ? wifeWords(t) : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
-  const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.2), multiple boys" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
+  const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.3), (multiple boys:1.3)" : men === 0 ? "1boy, male focus" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
   // her first, then the room, then the men (with tags the room sits between them, as in the old packs)
   const others = Object.entries(regions).filter(([r]) => r !== "wife").map(([, v]) => v);
   const positive = booru && !isDetail ? join([shared, regions.wife, room, ...others]) : join([shared, ...Object.values(regions)]);

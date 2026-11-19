@@ -42,8 +42,10 @@ for (const l of content.scenes) {
   const roles = [...new Set(l.figures.map((f) => f.role))];
   const act = content.acts.find((a) => a.scene === l.id);
   const husbandOnly = roles.includes("husband") && !roles.some((r) => r.startsWith("patron"));
-  const room = husbandOnly ? "home.bedroom" : act?.place === "private" ? "cafe.staff" : "cafe.hall";
-  items.push({ id: l.id, kind: "scene", roles, room, tags: roles.includes("wife") ? { outfit: room.startsWith("home.") ? "nightgown" : "modest" } : {} });
+  const room = l.id === "her_cook" ? "cafe.kitchen" : husbandOnly ? "home.bedroom" : act?.place === "private" ? "cafe.staff" : "cafe.hall";
+  // what she wears by default: the work dress, a nightgown at home, nothing where the scene is about her being naked
+  const outfit = /^(walk_naked|bath_walkin|bath_together)$/.test(l.id) ? "naked" : room.startsWith("home.") ? "nightgown" : "modest";
+  items.push({ id: l.id, kind: "scene", roles, room, tags: roles.includes("wife") ? { outfit } : {} });
 }
 // close-ups: the list and who is in each from docs/INSERTS.md, in the neutral middle of their tags
 for (const line of readFileSync(join(root, "docs", "INSERTS.md"), "utf8").split("\n").filter((x) => /^\| `/.test(x))) {
