@@ -606,7 +606,7 @@ export type Look = z.infer<typeof lookSchema>;
 export const PROMPT_ROLES = ["wife", "husband", "patron", "patron2", "patron3", "watcher"] as const;
 export const promptSchema = z
   .object({
-    style: z.object({ prefix: z.string().default(""), negative: z.string().default("") }).strict(),
+    style: z.object({ prefix: z.string().default(""), negative: z.string().default(""), detail: z.string().default("") }).strict(),
     poses: z.record(z.string(), z.record(z.string(), z.string().nullable().transform((s) => s ?? ""))),
     /** Words for the free close-ups (detail_<id>) and for their tags (`<tag>.<value>`): filled from the questionnaire. */
     details: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),

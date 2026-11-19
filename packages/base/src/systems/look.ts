@@ -315,7 +315,7 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const sizeOf = (id: string | undefined) => (id === HUSBAND ? b.husband.size : id ? b.patrons[id]?.size : undefined);
   const classOf = (id: string | undefined) => sizeClass(sizeOf(id) ?? 0);
   const roleOf = (id: string | undefined) => (id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron");
-  const add = (id: string, who: string, tags: Record<string, string> = {}) => void (out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: desc.location, participants: [{ id: who, role: roleOf(who) }], tags }));
+  const add = (id: string, who: string, tags: Record<string, string> = {}) => void (out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: "any", participants: [{ id: who, role: roleOf(who) }], tags })); // no room in a close-up: one file serves every room
   const aroused = (b.husband.arousal ?? 0) >= D.himArousal;
   // him in his trousers: plain, locked up, locked up and leaking - one close-up, three looks
   const cage: Record<string, string> = b.husband.caged ? { cage: aroused ? "leak" : "1" } : {};

@@ -104,7 +104,8 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
     act ? W.act[act.id] : undefined,
     t.fin ? W.fin[t.fin] : undefined,
     slot("scene"),
-    W.room[desc.location] ?? desc.location,
+    // a close-up has no room in it: a blank, out-of-focus background instead, so one picture fits anywhere
+    isDetail ? P.style.detail : (W.room[desc.location] ?? desc.location),
     t.crowd ? "crowd, onlookers" : undefined,
   ]);
 
