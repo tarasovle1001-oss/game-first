@@ -251,7 +251,7 @@ export function registerMarriage(api: ModApi) {
       if (b.night.counter) return [{ type: NIGHT_ACT, payload: { act: b.night.counter } }]; // tonight it is this or nothing
       // spent for today, he has only what needs nothing of him
       const spent = b.husband.spentDay === state.time.day || !!b.husband.caged;
-      return NIGHT_ACTS.filter((act) => hisActOpen(state, act) && (!spent || act === "kiss" || SOFT_ACTS.includes(act))).map((act) => ({ type: NIGHT_ACT, payload: { act } }));
+      return NIGHT_ACTS.filter((act) => hisActOpen(state, act) && (!spent || act === "kiss" || SOFT_ACTS.includes(act) || (!!b.husband.caged && content.body.cage.through.includes(act)))).map((act) => ({ type: NIGHT_ACT, payload: { act } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);

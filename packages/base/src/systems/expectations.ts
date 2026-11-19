@@ -105,7 +105,8 @@ export function registerExpectations(api: ModApi) {
       const h = b.heroine;
       h.marriage.resent = clamp(h.marriage.resent + (h.traits.fidelity >= 60 ? 0 : 3));
       if (b.encounter?.patron === p.id) endEncounter(ctx, true);
-      if (isIntimate(act) && ctx.state.where[WIFE] !== HALL) ctx.state.where[WIFE] = HALL;
+      // she comes out - unless she is by now with somebody else: then that is its own scene, and stays where it is
+      if (isIntimate(act) && !b.encounter && ctx.state.where[WIFE] !== HALL) ctx.state.where[WIFE] = HALL;
       b.reaction = null;
       ctx.emit("reaction", { how: "stop", act: act.id, patron: p.id });
     },
@@ -180,7 +181,7 @@ export function registerExpectations(api: ModApi) {
         changeHeroine(ctx, "mood", h.traits.fidelity >= 60 ? 2 : -2, "led away");
         ctx.log("log.react.lead_away", { name });
         if (b.encounter?.patron === p.id) endEncounter(ctx, true);
-        ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
+        if (!b.encounter) ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!; // not out of another man's arms: that needs its own answer
         b.reaction = null;
       } else if (how === "leave") {
         // he turns his back on it: she is on her own, and she knows he knew

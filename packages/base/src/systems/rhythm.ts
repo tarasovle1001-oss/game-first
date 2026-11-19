@@ -302,7 +302,7 @@ export function registerRhythm(api: ModApi) {
       const b = bs(state);
       // at home only: there is no shower in the middle of the market
       const here = state.where[HUSBAND] === state.where[WIFE] && b.day?.her?.task !== "away" && !(state.where[HUSBAND] ?? "").startsWith("town.");
-      return quiet(state) && here && !b.night?.herAsleep && b.sentWash !== stamp(state) ? [{ type: SEND_WASH }] : [];
+      return quiet(state) && here && !b.night?.sex && !b.night?.herAsleep && b.sentWash !== stamp(state) ? [{ type: SEND_WASH }] : [];
     },
     apply(ctx) {
       const b = bs(ctx.state);

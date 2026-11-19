@@ -91,7 +91,10 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   if (v.retry) act = actById(v.retry);
   else {
     const tier = Math.min(v.tier + 1, tierCap(p, v), topTier);
-    const options = content.acts.filter((a) => a.tier === tier && !a.only && (a.id !== "drink" || p.approach === "drink"));
+    // at the very top there is one act only: a man who has already been there does not ask for it every single time -
+    // he picks among everything of the top two steps
+    const wide = tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier;
+    const options = content.acts.filter((a) => (a.tier === tier || (wide && a.tier === topTier - 1)) && !a.only && (a.id !== "drink" || p.approach === "drink"));
     // the one who buys drinks keeps doing so while she is still fairly sober
     const drink = p.approach === "drink" && tier >= 1 && b.heroine.drunk < 45 && v.tier >= 0 && roll(10) < 4;
     act = drink ? actById("drink") : options[roll(options.length)]!;

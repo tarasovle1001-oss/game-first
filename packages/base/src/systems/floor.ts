@@ -156,7 +156,7 @@ export function registerFloor(api: ModApi) {
     describe: (a) => ({ key: `action.deal.${a.payload!.say}`, params: { price: (a.payload!.price as number) ?? 0 } }),
     enumerate(state) {
       const d = bs(state).deal;
-      if (!d || state.time.phase !== "shift") return [];
+      if (!d || state.time.phase !== "shift" || bs(state).night?.sex) return []; // not while he is in bed with her himself
       const out: { type: string; payload: Record<string, string | number> }[] = [
         { type: DEAL, payload: { say: "ask_her" } },
         { type: DEAL, payload: { say: "tell_her", price: d.price } },

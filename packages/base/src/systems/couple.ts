@@ -346,7 +346,7 @@ export function registerCouple(api: ModApi) {
         case "throw_out": {
           const pressed = visit.pressure > 0;
           if (b.encounter?.patron === p.id) endEncounter(ctx, true);
-          if (ctx.state.where[WIFE] !== HALL && b.shift) ctx.state.where[WIFE] = HALL;
+          if (ctx.state.where[WIFE] !== HALL && b.shift && !b.encounter) ctx.state.where[WIFE] = HALL;
           visit.blocked = true;
           visit.stay = 0;
           p.memory.affinity = clamp(p.memory.affinity - G.throwOut.affinity, -100, 100);

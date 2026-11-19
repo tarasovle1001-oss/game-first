@@ -72,6 +72,11 @@ export function registerRoam(api: ModApi) {
       ctx.emit("encounter:ended", { patron: p.id, act: done, loc: place.to, minutes: v.away.until - sh.tick, came: 0 });
     }
   });
+  // a guest who had stepped out and is now with her somewhere is no longer "away": he is where the scene is
+  api.events.on("encounter:started", (ctx, e) => {
+    const v = bs(ctx.state).shift?.visits.find((x) => x.patron === e.payload!.patron);
+    if (v?.away && bs(ctx.state).shift?.meet?.patron !== v.patron) v.away = undefined;
+  });
   api.invariants.add("roam", (s) => {
     const sh = bs(s).shift;
     const lost = sh?.visits.find((v) => v.away && s.where[v.patron] !== v.away.to && s.where[v.patron] !== HALL);

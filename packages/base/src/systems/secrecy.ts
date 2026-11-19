@@ -146,7 +146,11 @@ export function registerSecrecy(api: ModApi) {
         ctx.state.where[WIFE] = HALL;
       } else {
         ctx.state.where[HUSBAND] = enc.loc;
-        if (isIntimate(act)) {
+        if (isIntimate(act) && b.mode !== "hidden") {
+          // nothing is hidden between them: he walks in on what he already knows about
+          if (b.shift) b.shift.interrupt = true;
+          ctx.log("log.door.barge.open", { name, act: `act.${enc.act}` });
+        } else if (isIntimate(act)) {
           b.caught = { patron: enc.patron, act: enc.act };
           if (b.shift) b.shift.interrupt = true;
           ctx.log("log.caught", { name, act: `act.${enc.act}` });

@@ -28,7 +28,7 @@ moments:              # small things at a table; none of them is an "act"
     - { id: argues_bill, when: { maxGenerosity: 30 }, likeAffinity: 200, bad: { mood: -3, annoy: 2 } }
     - { id: toasts_her, when: { minDrunk: 20 }, likeAffinity: -100, good: { mood: 2, pride: 2 } }
     - { id: asks_closing, when: { minInterest: 50 }, good: { arousal: 2, affinity: 1, longing: 2 }, bad: { annoy: 2 } }
-    - { id: shows_her, when: { minInterest: 45 }, needOpen: 40, likeAffinity: 10, reveals: true, good: { arousal: 3, heat: 5 }, bad: { annoy: 4, shame: 3 } } # under the table, for her eyes only: now she knows what he has
+    - { id: shows_her, when: { minInterest: 45 }, needOpen: 35, likeAffinity: 0, reveals: true, good: { arousal: 3, heat: 5 }, bad: { annoy: 4, shame: 3 } } # under the table, for her eyes only: now she knows what he has
     - { id: touches_him, when: { minInterest: 30 }, needOpen: 55, likeAffinity: 30, hers: true, good: { arousal: 2, heat: 12, affinity: 1 } } # her hand brushes his lap in passing: her move, so only when she is up for it
     - { id: sings_along, when: { minDrunk: 35 }, likeAffinity: -100, good: { mood: 2 } }
 deal:                 # a guest with money goes to the husband first
