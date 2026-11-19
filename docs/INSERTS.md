@@ -41,7 +41,12 @@
 | `belly_bulge` | wife | size 2-4 | 3 |
 | `xray_v` | wife | size 0-4; fin | 10 |
 | `xray_a` | wife | size 0-4; fin | 10 |
+| `kiss_close` | wife | - | 1 |
+| `touch_bare` | patron / husband | size 0-4; ring (у гостя) | 10 |
+| `gape_v` | wife | gape 0-3; marks | 8 |
+| `gape_a` | wife | gape 0-3; marks | 8 |
+| `marks_face` | wife | marks: face / mouth | 3 |
+| `toy_drawer` | wife | tsize 0-4 | 5 |
+| `xray_toy` | wife | tsize 0-4; at: v / a | 10 |
 
-Всего 35 вставок, 202 вариантов по меткам (комнату пак может не различать).
-
-Ещё не срабатывают: `kiss_close`, `touch_bare` (идут обычными вставками актов), `gape_v`, `gape_a`, `marks_face` (закрыты метками на `show_*` и `wet`), `toy_drawer`, `xray_toy`.
+Всего 42 вставки, около 250 вариантов по меткам (комнату пак может не различать). Слова промпта для них - `prompt.yaml: details`, заполняются анкетой (`tools/anketa.py`).

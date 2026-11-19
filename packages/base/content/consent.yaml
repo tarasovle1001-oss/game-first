@@ -13,7 +13,7 @@ expect: # what she thinks her husband allows: -100 he made clear he does not wan
   friendly: 12      # "be nice to the guests" (acts up to touching)
   reserved: -20     # "keep your distance" (everything)
   behindBack: 28    # how much a believed "no" holds her back when he is not looking, times her honesty
-  permission: 12    # how much a believed "yes" helps, anywhere
+  permission: 17    # how much a believed "yes" helps, anywhere
 guest: # what a guest's evening does to him, and what she does about a guest herself
   drunkPerTick: 4      # per ten minutes once he has been served (the one who buys drinks: half as much again)
   boldDrunk: 50        # from here he dares as if he wanted her this much more...

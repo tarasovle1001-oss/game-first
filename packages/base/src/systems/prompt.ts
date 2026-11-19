@@ -80,7 +80,10 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const key = sceneKey(desc);
   const t = desc.tags ?? {};
   const layout = content.scenes.find((l) => l.id === desc.type);
-  const slots = P.poses[desc.type] ?? {};
+  // a free close-up has no layout: its words are one line, plus a line for each tag it carries
+  const isDetail = desc.type.startsWith("detail_");
+  const detailWords = isDetail ? [P.details[desc.type.slice(7)] ?? "", ...Object.entries(t).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
+  const slots = isDetail ? { scene: detailWords } : (P.poses[desc.type] ?? {});
   const empty: string[] = [];
   const slot = (name: string) => {
     const v = slots[name] ?? "";

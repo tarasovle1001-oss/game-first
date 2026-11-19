@@ -608,6 +608,8 @@ export const promptSchema = z
   .object({
     style: z.object({ prefix: z.string().default(""), negative: z.string().default("") }).strict(),
     poses: z.record(z.string(), z.record(z.string(), z.string().nullable().transform((s) => s ?? ""))),
+    /** Words for the free close-ups (detail_<id>) and for their tags (`<tag>.<value>`): filled from the questionnaire. */
+    details: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
   })
   .strict();
 export type PromptWords = z.infer<typeof promptSchema>;
