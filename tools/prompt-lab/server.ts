@@ -272,11 +272,13 @@ createServer(async (req, res) => {
     }
     if (r === "/api/compare" && req.method === "POST") {
       // the same scenes and seeds under several checkpoints / LoRA sets: one labelled take per variant
-      const b = (await body(req)) as { ids: string[]; n?: number; first?: boolean; variants: { label: string; ckpt?: string; loras?: string; extra?: string }[] };
+      const b = (await body(req)) as { ids: string[]; n?: number; first?: boolean; sameSeeds?: boolean; variants: { label: string; ckpt?: string; loras?: string; extra?: string }[] };
       const n = Number(b.n) || 4;
       let takes = 0;
       for (const it of items.filter((x) => b.ids.includes(x.id))) {
-        const seeds = Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
+        // sameSeeds: the seeds of the scene's last take, to add a variant to a comparison already drawn
+        const prev = stateOf(it.id).takes.at(-1);
+        const seeds = b.sameSeeds && prev ? prev.seeds.slice(0, n) : Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
         for (const v of b.variants) {
           const over: Partial<Settings> = {};
           if (v.ckpt) over.ckpt = v.ckpt;
