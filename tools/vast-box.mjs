@@ -10,7 +10,9 @@
 //   node tools/vast-box.mjs tunnel [--port 18188]     ssh -L 127.0.0.1:<port> -> proxy 18999 (stays in foreground)
 //   node tools/vast-box.mjs stop | resume             let the GPU go and keep the disk / take it back (then up + tunnel)
 //   node tools/vast-box.mjs fetch --civitai <ver> --name <f>  another checkpoint onto the box
+//   node tools/vast-box.mjs push <file>...            copy files (LoRAs) into the box's ComfyUI models/loras
 //   node tools/vast-box.mjs down                      destroy the rented instance
+//   up --avoid <machine,...>: skip machines that failed before (night-run passes the one it just gave up on)
 // Progress of `up`: .vast-box.json (step, message, at) and console lines.
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -40,7 +42,8 @@ async function offers(gpus = 1, disk = 100) {
   // machines the Quick Run has already marked broken
   let bad = [];
   try { bad = JSON.parse(readFileSync(join(WAYWARD, ".tools", "server-batches", "quick-config.json"), "utf8")).badMachines ?? []; } catch {}
-  return (r.offers ?? []).filter((o) => !bad.includes(o.machine_id) && !/(^|,\s*)(CN|HK)$|China|Hong Kong/i.test(String(o.geolocation ?? "")));
+  const avoid = String(opt("avoid", "")).split(",").filter(Boolean).map(Number);
+  return (r.offers ?? []).filter((o) => !bad.includes(o.machine_id) && !avoid.includes(o.machine_id) && !/(^|,\s*)(CN|HK)$|China|Hong Kong/i.test(String(o.geolocation ?? "")));
 }
 
 // the bootstrap and status scripts of the Wayward cloud panel
@@ -89,7 +92,7 @@ async function up() {
     save("rent", `offer ${o.id}: ${o.num_gpus}x ${o.gpu_name} $${o.dph_total.toFixed(2)}/h ${o.geolocation}`);
     const r = await vast(`/v0/asks/${o.id}/`, { method: "PUT", body: JSON.stringify({ client_id: "me", template_hash_id: TEMPLATE, disk: 100, label: "test-city-probe" }) });
     if (!r.new_contract) throw Error(`no instance: ${JSON.stringify(r).slice(0, 200)}`);
-    Object.assign(st, { instance: r.new_contract, rentedAt: Date.now(), price: o.dph_total });
+    Object.assign(st, { instance: r.new_contract, rentedAt: Date.now(), price: o.dph_total, machine: o.machine_id });
     save("rent", `instance ${st.instance}`);
   }
   const waitFrom = Date.now(); // a resumed box counts from now, not from when it was rented
@@ -141,6 +144,20 @@ if (cmd === "offers") for (const o of (await offers(Number(opt("gpus", "1")))).s
 else if (cmd === "up") await up().catch((e) => { save("error", e.message); process.exit(1); });
 else if (cmd === "status") { if (st.host) console.log(JSON.stringify(remote(script("remoteStatus")), null, 1)); else console.log(st); }
 else if (cmd === "tunnel") { const p = opt("port", "18188"); console.log(`tunnel 127.0.0.1:${p} -> box proxy 18999 (Ctrl+C to close)`); spawn("ssh", ["-N", "-o", "ExitOnForwardFailure=yes", "-L", `127.0.0.1:${p}:127.0.0.1:18999`, ...sshArgs()], { stdio: "inherit" }); }
+else if (cmd === "push") {
+  // LoRAs that the template does not bring (concept LoRAs for single scenes): scp from this PC; ComfyUI sees new files on the next prompt
+  const files = argv.slice(1).filter((f) => !f.startsWith("--"));
+  for (const f of files) {
+    const name = f.split(/[\\/]/).pop();
+    save("push", `${name}`);
+    const a = sshArgs();
+    const target = a.pop();
+    const port = a.splice(a.indexOf("-p"), 2)[1];
+    const r = spawnSync("scp", [...a, "-P", port, f, `${target}:/workspace/ComfyUI/models/loras/${name}`], { stdio: "inherit", timeout: 20 * 60000 });
+    if (r.status !== 0) { save("push", `failed: ${name}`); process.exit(1); }
+  }
+  save("push", `${files.length} file(s) on the box`);
+}
 else if (cmd === "fetch") {
   // another checkpoint from Civitai onto the box, by version id: fetch --civitai 1887507 --name illumiyume_v35_vpred.safetensors
   const ver = opt("civitai"), name = opt("name");

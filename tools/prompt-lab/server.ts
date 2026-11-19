@@ -5,9 +5,11 @@
 //
 //   Start-PromptLab.bat   or   pnpm exec tsx tools/prompt-lab/server.ts [--port 8195] [--comfy http://127.0.0.1:8188]
 //   then http://127.0.0.1:8195
+// A second lab for a night run on a rented box (own data, nothing written into the game):
+//   ... server.ts --port 8196 --data tools/prompt-lab/night --comfy http://127.0.0.1:18188 --inflight 4 --nosave
 import { createServer } from "node:http";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { parse } from "yaml";
@@ -16,11 +18,15 @@ import type { SceneDesc } from "../../packages/core/src";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const here = join(root, "tools", "prompt-lab");
-const dataDir = join(here, "data");
 const yamlFile = join(root, "packages", "base", "content", "prompt.yaml");
 const argv = process.argv.slice(2);
 const opt = (n: string, d: string) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[i + 1] ? argv[i + 1]! : d; };
 const PORT = Number(opt("port", "8195"));
+const dataDir = resolve(root, opt("data", join("tools", "prompt-lab", "data")));
+// pictures drawn at once (a rented 5090 keeps several in flight; the laptop one)
+const INFLIGHT = Math.max(1, Number(opt("inflight", "1")));
+// a lab that must not write into the game (the night run: Alexey looks first)
+const NOSAVE = argv.includes("--nosave");
 mkdirSync(dataDir, { recursive: true });
 
 // ---------- settings (persisted) ----------
@@ -35,8 +41,9 @@ const settings: Settings = {
 const saveJson = (f: string, v: unknown) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f + ".part", JSON.stringify(v, null, 1)); renameSync(f + ".part", f); };
 
 // ---------- the scenes and close-ups ----------
-type Item = { id: string; kind: "scene" | "detail"; roles: string[]; room: string; tags: Record<string, string> };
-const P = content.prompt as unknown as { tags: Record<string, string>; negatives: Record<string, string>; tags_wayward: Record<string, string>; poses: Record<string, Record<string, string>>; details: Record<string, string> };
+// type: the scene whose layout draws it (a portrait drawn on the layout of idle); close: drawn as a close-up of its own words
+type Item = { id: string; kind: "scene" | "detail"; roles: string[]; room: string; tags: Record<string, string>; type?: string; close?: boolean; hands?: string[]; face?: boolean; about?: string; extra?: boolean };
+const P = content.prompt as unknown as { tags: Record<string, string>; negatives: Record<string, string>; tags_wayward: Record<string, string>; poses: Record<string, Record<string, string>>; details: Record<string, string>; detail_hands: Record<string, string[]>; detail_with: Record<string, string[]> };
 const items: Item[] = [];
 for (const l of content.scenes) {
   const roles = [...new Set(l.figures.map((f) => f.role))];
@@ -56,31 +63,59 @@ for (const line of readFileSync(join(root, "docs", "INSERTS.md"), "utf8").split(
 // what happens in each scene, in Russian (about.yaml), plus the game's own short name of the scene
 const ABOUT = parse(readFileSync(join(here, "about.yaml"), "utf8")) as { scenes: Record<string, string>; details: Record<string, string> };
 const RU = (content.locales as unknown as Record<string, Record<string, string>>).ru ?? {};
-const aboutOf = (id: string) => (id.startsWith("detail_") ? ABOUT.details[id.slice(7)] : ABOUT.scenes[id]) ?? "";
+const aboutOf = (id: string) => items.find((x) => x.id === id)?.about ?? (id.startsWith("detail_") ? ABOUT.details[id.slice(7)] : ABOUT.scenes[id]) ?? "";
+// keys the game has no line for yet (portraits, close-ups of an act): registered by a comparison, kept in <data>/items.json
+const extraFile = join(dataDir, "items.json");
+const extraTags: Record<string, string> = existsSync(extraFile) ? JSON.parse(readFileSync(extraFile, "utf8")).tags ?? {} : {};
+for (const it of existsSync(extraFile) ? (JSON.parse(readFileSync(extraFile, "utf8")).items as Item[]) : []) items.push(it);
+const saveExtra = () => saveJson(extraFile, { items: items.filter((x) => x.extra), tags: extraTags });
 const ROOMS = Object.keys((content.look as unknown as { words: { room: Record<string, string> } }).words.room);
 
 // per scene state: room / look overrides, marks, note, takes
-type Take = { id: string; label?: string; at: string; tags: string; negative: string; positive: string; negativeFull: string; seeds: number[]; files: (string | null)[]; marks: (string | null)[]; settings: Partial<Settings>; room: string };
+type Take = { id: string; label?: string; at: string; tags: string; negative: string; positive: string; negativeFull: string; seeds: number[]; files: (string | null)[]; marks: (string | null)[]; settings: Partial<Settings>; room: string; size?: string };
 type SceneState = { room?: string; look?: Record<string, string>; note?: string; status?: "todo" | "work" | "done"; takes: Take[]; savedTags?: string };
 const stateFile = (id: string) => join(dataDir, id, "state.json");
 const stateOf = (id: string): SceneState => (existsSync(stateFile(id)) ? JSON.parse(readFileSync(stateFile(id), "utf8")) : { takes: [] });
 const saveState = (id: string, s: SceneState) => saveJson(stateFile(id), s);
 
 // the words of an item: tags of a scene live in prompt.yaml (tags:), close-ups in details: (their own id line)
-const tagsOf = (it: Item) => (it.kind === "scene" ? P.tags[it.id] ?? "" : P.details[it.id.slice(7)] ?? "");
-function descOf(it: Item, st: SceneState): SceneDesc {
-  return { type: it.id, location: st.room ?? it.room, participants: it.roles.map((r) => ({ id: r, role: r })), tags: { ...it.tags, ...(st.look ?? {}) } };
+const tagsOf = (it: Item) => (it.extra ? extraTags[it.id] ?? "" : it.kind === "scene" ? P.tags[it.id] ?? "" : P.details[it.id.slice(7)] ?? "");
+// how one picture is drawn: the item as it is, or a comparison variant that draws it another way
+type Way = { roles?: string[]; close?: boolean; type?: string; hands?: string[]; face?: boolean; look?: Record<string, string>; cast?: Record<string, Record<string, string>> };
+const wayOf = (it: Item, v: Way = {}): Required<Pick<Way, "roles" | "hands">> & Way => ({ roles: v.roles ?? it.roles, close: v.close ?? it.close ?? it.kind === "detail", type: v.type ?? it.type, hands: v.hands ?? it.hands ?? [], face: v.face ?? it.face, look: v.look, cast: v.cast });
+// the key its words are read from while it is assembled: a scene (or the layout it borrows), a close-up line, or a scratch close-up
+const NIGHT = "__variant";
+function keyOf(it: Item, w: ReturnType<typeof wayOf>) {
+  if (w.close) return { section: "details" as const, key: it.kind === "detail" && !it.extra && !w.type ? it.id.slice(7) : NIGHT };
+  return { section: "tags" as const, key: w.type ?? it.id };
 }
-function promptWith(it: Item, st: SceneState, tags: string, negative: string) {
+function descOf(it: Item, st: SceneState, w = wayOf(it)): SceneDesc {
+  const k = keyOf(it, w);
+  return { type: k.section === "details" ? `detail_${k.key}` : k.key, location: st.room ?? it.room, participants: w.roles.map((r) => ({ id: r, role: r })), tags: { ...it.tags, ...(st.look ?? {}), ...(w.look ?? {}) } };
+}
+function promptWith(it: Item, st: SceneState, tags: string, negative: string, v: Way = {}) {
   // try the edited words without saving: swap them in, assemble, put the old ones back
-  const keepT = it.kind === "scene" ? P.tags[it.id] : P.details[it.id.slice(7)];
-  const keepN = P.negatives[it.id];
-  if (it.kind === "scene") P.tags[it.id] = tags; else P.details[it.id.slice(7)] = tags;
-  P.negatives[it.id] = negative;
-  try { return promptFor(descOf(it, st), settings.cast); }
+  const w = wayOf(it, v);
+  const k = keyOf(it, w);
+  const desc = descOf(it, st, w);
+  const book = k.section === "details" ? P.details : P.tags;
+  const keepT = book[k.key], keepN = P.negatives[desc.type], keepH = P.detail_hands[k.key], keepW = P.detail_with[k.key];
+  book[k.key] = tags;
+  P.negatives[desc.type] = negative;
+  if (k.key === NIGHT) { P.detail_hands[NIGHT] = w.hands; P.detail_with[NIGHT] = []; }
+  // card words changed for this picture only (her face in a portrait close-up, looser trousers, less body hair)
+  const cast = content.casts.find((c) => c.id === settings.cast) ?? content.casts[0]!;
+  const cards = cast as unknown as Record<string, Record<string, string>>;
+  const kept: [Record<string, string>, string, string | undefined][] = [];
+  const patch = (card: Record<string, string> | undefined, f: string, val: string) => { if (!card) return; kept.push([card, f, card[f]]); card[f] = val; };
+  for (const [role, fields] of Object.entries(w.cast ?? {})) for (const [f, val] of Object.entries(fields)) patch(cards[role], f, val);
+  if (w.face && cards.wife && !w.cast?.wife?.closeup) patch(cards.wife, "closeup", `${cards.wife.appearance}, ${cards.wife.body}`);
+  try { return promptFor(desc, settings.cast); }
   finally {
-    if (it.kind === "scene") P.tags[it.id] = keepT!; else P.details[it.id.slice(7)] = keepT!;
-    if (keepN === undefined) delete P.negatives[it.id]; else P.negatives[it.id] = keepN;
+    if (keepT === undefined) delete book[k.key]; else book[k.key] = keepT;
+    if (keepN === undefined) delete P.negatives[desc.type]; else P.negatives[desc.type] = keepN;
+    if (k.key === NIGHT) { if (keepH === undefined) delete P.detail_hands[NIGHT]; else P.detail_hands[NIGHT] = keepH; if (keepW === undefined) delete P.detail_with[NIGHT]; else P.detail_with[NIGHT] = keepW; }
+    for (const [card, f, old] of kept.reverse()) { if (old === undefined) delete card[f]; else card[f] = old; }
   }
 }
 
@@ -131,19 +166,20 @@ function graph(positive: string, negative: string, seed: number, size: string, p
   g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `prompt-lab/${prefix}` } };
   return g;
 }
-type Job = { scene: string; take: string; i: number; status: "queued" | "drawing" | "done" | "error"; error?: string; promptId?: string; batch?: boolean };
+type Job = { scene: string; take: string; i: number; status: "queued" | "drawing" | "done" | "error"; error?: string; promptId?: string; batch?: boolean; tries?: number };
 const jobs: Job[] = [];
 let running = 0;
+let loaded = "";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function pump() {
   // one at a time on a laptop GPU, in order; whatever else is in the ComfyUI queue is left alone
-  if (running) return;
-  running = 1;
+  // up to INFLIGHT workers, each takes the next picture; one is enough on a laptop GPU
+  if (running >= INFLIGHT) return;
+  running++;
   try {
     // your own clicks go first; the batch over the scenes waits behind them
     // within the batch, stay on the checkpoint / LoRA set already loaded: switching reloads the model (tens of seconds)
     const setOf = (j: Job) => { const t = stateOf(j.scene).takes.find((x) => x.id === j.take); return `${t?.settings.ckpt ?? ""}|${t?.settings.loras ?? ""}`; };
-    let loaded = "";
     const next = () => {
       const mine = jobs.find((x) => x.status === "queued" && !x.batch);
       if (mine) return mine;
@@ -155,17 +191,24 @@ async function pump() {
     };
     for (let j = next(); j; j = next()) {
       j.status = "drawing";
-      try { await draw(j); j.status = "done"; } catch (e) { j.status = "error"; j.error = (e as Error).message.slice(0, 300); }
+      try { await draw(j); j.status = "done"; }
+      catch (e) {
+        // a dropped tunnel or a busy box: back into the queue a few times before it counts as an error
+        j.tries = (j.tries ?? 0) + 1;
+        j.error = (e as Error).message.slice(0, 300);
+        if (j.tries < 6) { j.status = "queued"; await sleep(5000 * j.tries); } else j.status = "error";
+      }
     }
-  } finally { running = 0; }
+  } finally { running--; }
 }
+const kick = () => { for (let i = running; i < INFLIGHT; i++) void pump(); };
 async function draw(j: Job) {
   const st = stateOf(j.scene);
   const t = st.takes.find((x) => x.id === j.take)!;
   const it = items.find((x) => x.id === j.scene)!;
   // a take is drawn with the settings it was made with (a comparison of checkpoints / LoRAs keeps each its own)
   const use: Settings = { ...settings, ...t.settings, comfy: settings.comfy };
-  const size = it.kind === "detail" ? use.detailSize : use.sceneSize;
+  const size = t.size ?? (it.kind === "detail" ? use.detailSize : use.sceneSize);
   const prefix = `${j.scene}_${j.take}_${j.i}`;
   const r = await fetch(`${settings.comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(t.positive, t.negativeFull, t.seeds[j.i]!, size, prefix, use), client_id: "prompt-lab" }) });
   if (!r.ok) throw Error(`ComfyUI ${r.status}: ${(await r.text()).slice(0, 200)}`);
@@ -193,12 +236,15 @@ async function draw(j: Job) {
 
 
 let takeN = 0;
-function newTake(it: Item, nIn: number, tagsIn: string | undefined, negative: string, room: string | undefined, sameSeeds: boolean, batch: boolean, over?: { label: string; settings: Partial<Settings>; extra: string; seeds: number[] }) {
+function newTake(it: Item, nIn: number, tagsIn: string | undefined, negative: string, room: string | undefined, sameSeeds: boolean, batch: boolean, over?: { label: string; settings: Partial<Settings>; extra: string; seeds: number[]; way?: Way }) {
   const n = Math.max(1, Math.min(8, nIn));
   const st = stateOf(it.id);
-  if (room) st.room = room;
+  // a comparison variant's room is its own; a click in the lab moves the scene to that room
+  if (room && !over) st.room = room;
+  const at = room && over ? { ...st, room } : st;
   const tags = tagsIn ?? tagsOf(it);
-  const base = promptWith(it, st, tags, negative);
+  const base = promptWith(it, at, tags, negative, over?.way);
+  const close = wayOf(it, over?.way).close;
   // a comparison variant may add its trigger words right after the quality tags
   const p = over?.extra ? { ...base, positive: base.positive.replace(/^(masterpiece, best quality, )?/, (m) => `${m}${over.extra}, `) } : base;
   // same seeds as the last take (to see what an edit changed) or fresh ones
@@ -206,11 +252,11 @@ function newTake(it: Item, nIn: number, tagsIn: string | undefined, negative: st
   const seeds = over ? over.seeds.slice(0, n) : sameSeeds && last ? Array.from({ length: n }, (_, i) => last.seeds[i] ?? Math.floor(Math.random() * 2 ** 31)) : Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
   const id = `t${Date.now().toString(36)}${(takeN++ % 1000).toString(36)}`;
   const { comfy: _c, ...used } = settings;
-  st.takes.push({ id, label: over?.label, at: new Date().toISOString(), tags, negative, positive: p.positive, negativeFull: p.negative, seeds, files: seeds.map(() => null), marks: seeds.map(() => null), settings: { ...used, ...(over?.settings ?? {}) }, room: st.room ?? it.room });
+  st.takes.push({ id, label: over?.label, at: new Date().toISOString(), tags, negative, positive: p.positive, negativeFull: p.negative, seeds, files: seeds.map(() => null), marks: seeds.map(() => null), settings: { ...used, ...(over?.settings ?? {}) }, room: at.room ?? it.room, size: close ? settings.detailSize : settings.sceneSize });
   st.status = "work"; // a new take means the scene is being looked at again, even if it was marked done
   saveState(it.id, st);
   seeds.forEach((_, i) => jobs.push({ scene: it.id, take: id, i, status: "queued", batch }));
-  void pump();
+  kick();
   return id;
 }
 // pictures still owed after a restart (a closed window, a crash): put them back in the queue
@@ -218,7 +264,7 @@ for (const it of items) {
   if (!existsSync(stateFile(it.id))) continue;
   for (const t of stateOf(it.id).takes) t.files.forEach((f, i) => { if (!f) jobs.push({ scene: it.id, take: t.id, i, status: "queued", batch: true }); });
 }
-if (jobs.length) { console.log(`resuming ${jobs.length} pictures left from last time`); void pump(); }
+if (jobs.length) { console.log(`resuming ${jobs.length} pictures left from last time`); kick(); }
 // ---------- HTTP ----------
 const json = (res: import("node:http").ServerResponse, code: number, v: unknown) => { res.writeHead(code, { "content-type": "application/json; charset=utf-8" }); res.end(JSON.stringify(v)); };
 const body = (req: import("node:http").IncomingMessage) => new Promise<Record<string, unknown>>((ok) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => ok(b ? JSON.parse(b) : {})); });
@@ -229,6 +275,9 @@ createServer(async (req, res) => {
   const r = url.pathname;
   try {
     if (r === "/") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(readFileSync(join(here, "index.html"))); return; }
+    // the morning page of a night run (night-report.mjs writes it into the data folder)
+    if (r === "/report") { const f = join(dataDir, "report.html"); res.writeHead(existsSync(f) ? 200 : 404, { "content-type": "text/html; charset=utf-8" }); res.end(existsSync(f) ? readFileSync(f) : "no report yet: node tools/prompt-lab/night-report.mjs"); return; }
+    if (r === "/sheet") { const f = join(dataDir, "_sheets", (url.searchParams.get("f") ?? "").replace(/[^\w.-]/g, "")); if (!existsSync(f)) return json(res, 404, { error: "no sheet" }); res.writeHead(200, { "content-type": "image/jpeg" }); res.end(readFileSync(f)); return; }
     if (r === "/api/list") {
       return json(res, 200, items.map((it) => {
         const st = stateOf(it.id);
@@ -272,9 +321,36 @@ createServer(async (req, res) => {
     }
     if (r === "/api/compare" && req.method === "POST") {
       // the same scenes and seeds under several checkpoints / LoRA sets: one labelled take per variant
-      const b = (await body(req)) as { ids: string[]; n?: number; first?: boolean; sameSeeds?: boolean; variants: { label: string; ckpt?: string; loras?: string; extra?: string }[] };
+      // a variant may also draw the scene another way: its own tags / negative / room, other figures, as a close-up, on another layout
+      type V = Way & { label: string; ckpt?: string; loras?: string; extra?: string; tags?: string; negative?: string; room?: string };
+      const b = (await body(req)) as { ids: string[]; n?: number; first?: boolean; sameSeeds?: boolean; seeds?: number[]; variants: V[]; add?: (Item & { tags_text?: string })[]; plan?: { id: string; seeds?: number[]; variants: V[] }[] };
       const n = Number(b.n) || 4;
       let takes = 0;
+      // new keys (portraits, close-ups of an act): kept in this lab only, never in the game
+      for (const a of b.add ?? []) {
+        if (!SAFE.test(a.id) || items.some((x) => x.id === a.id && !x.extra)) continue;
+        const { tags_text, ...it } = a;
+        const i = items.findIndex((x) => x.id === a.id);
+        const item: Item = { ...it, extra: true, tags: it.tags ?? {} };
+        if (i >= 0) items[i] = item; else items.push(item);
+        extraTags[a.id] = tags_text ?? "";
+      }
+      if (b.add?.length) saveExtra();
+      const one = (it: Item, variants: V[], given?: number[]) => {
+        const prev = stateOf(it.id).takes.at(-1);
+        const seeds = given?.length ? given.slice(0, n) : b.sameSeeds && prev ? prev.seeds.slice(0, n) : Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
+        for (const v of variants) {
+          const over: Partial<Settings> = {};
+          if (v.ckpt) over.ckpt = v.ckpt;
+          if (v.loras !== undefined) over.loras = v.loras;
+          const { label, ckpt: _k, loras: _l, extra, tags, negative, room, ...way } = v;
+          newTake(it, n, tags, negative ?? P.negatives[it.id] ?? "", room, false, !b.first, { label, settings: over, extra: extra ?? "", seeds, way });
+          takes++;
+        }
+      };
+      // plan: each scene with its own variants, all on the same seeds
+      for (const e of b.plan ?? []) { const it = items.find((x) => x.id === e.id); if (it) one(it, e.variants, e.seeds); }
+      if (b.plan) return json(res, 200, { takes, pictures: takes * n });
       for (const it of items.filter((x) => b.ids.includes(x.id))) {
         // sameSeeds: the seeds of the scene's last take, to add a variant to a comparison already drawn
         const prev = stateOf(it.id).takes.at(-1);
@@ -304,10 +380,12 @@ createServer(async (req, res) => {
     }
     if (r === "/api/jobs") {
       const live = jobs.filter((j) => j.status === "queued" || j.status === "drawing");
+      const drawingAll = live.filter((j) => j.status === "drawing").length;
       const errs = jobs.filter((j) => j.status === "error" && j.error !== "cancelled").slice(-3);
       let comfyOk = false;
       try { comfyOk = (await fetch(`${settings.comfy}/system_stats`, { signal: AbortSignal.timeout(1500) })).ok; } catch {}
-      return json(res, 200, { batch: live.filter((j) => j.batch).length, queued: live.filter((j) => j.status === "queued").length, drawing: live.find((j) => j.status === "drawing") ?? null, errors: errs, comfyOk, comfy: settings.comfy });
+      const done = jobs.filter((j) => j.status === "done").length;
+      return json(res, 200, { done, total: jobs.length, nosave: NOSAVE, batch: live.filter((j) => j.batch).length, queued: live.filter((j) => j.status === "queued").length, drawing: live.find((j) => j.status === "drawing") ?? null, drawingAll, errors: errs, comfyOk, comfy: settings.comfy });
     }
     if (r === "/api/mark" && req.method === "POST") {
       const b = await body(req);
@@ -327,6 +405,7 @@ createServer(async (req, res) => {
       saveState(String(b.id), st);
       return json(res, 200, { ok: true });
     }
+    if (r === "/api/save" && req.method === "POST" && NOSAVE) return json(res, 403, { error: "this lab does not write into the game (--nosave)" });
     if (r === "/api/save" && req.method === "POST") {
       // into the game: tags (or the close-up's line) and the scene's negative in prompt.yaml, then rebuild content
       const b = await body(req);
