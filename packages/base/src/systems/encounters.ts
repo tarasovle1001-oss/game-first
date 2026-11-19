@@ -156,7 +156,13 @@ function nextInScene(ctx: Ctx, v: Visit, p: Patron, enc: Encounter): Act | null 
   const liked = options.filter((a) => p.likes?.includes(a.id)).sort((x, y) => y.tier - x.tier);
   if (liked.length > 0 && ctx.rng.chance(S.likeChance)) return liked[0]!;
   const up = options.filter((a) => a.tier === now.tier + 1);
-  if (up.length > 0) return ctx.rng.pick(up);
+  // the last step has one act on it: not every scene has to end there
+  const toTop = now.tier + 1 === topTier;
+  if (up.length > 0 && (!toTop || ctx.rng.chance(S.topChance))) return ctx.rng.pick(up);
+  if (toTop) {
+    const same = options.filter((a) => a.tier === now.tier);
+    return same.length > 0 ? ctx.rng.pick(same) : null;
+  }
   const further = options.filter((a) => a.tier > now.tier);
   return ctx.rng.pick(further.length > 0 ? further : options);
 }
@@ -472,7 +478,8 @@ function herOwnMove(ctx: Ctx) {
   const tier = Math.max(1, Math.min(v.tier + 1, p.memory.tier + 1, topTier));
   const score = (i: ConsentInput) => ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, i);
   const options = content.acts
-    .filter((a) => a.tier === tier && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina))
+    // at the top of the ladder there is one act only: with a man she has been there with, she chooses among the top two steps
+    .filter((a) => (a.tier === tier || (tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier && a.tier === topTier - 1)) && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina))
     .map((a) => {
       const at = (loc: string): ConsentInput => ({ act: a.id, partner: p.id, loc, offer: 0, pressure: 0 });
       const room = isIntimate(a) ? privateRoomFor(ctx.state, ctx.engine, p.id) : null;
