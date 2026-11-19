@@ -60,7 +60,7 @@ const aboutOf = (id: string) => (id.startsWith("detail_") ? ABOUT.details[id.sli
 const ROOMS = Object.keys((content.look as unknown as { words: { room: Record<string, string> } }).words.room);
 
 // per scene state: room / look overrides, marks, note, takes
-type Take = { id: string; at: string; tags: string; negative: string; positive: string; negativeFull: string; seeds: number[]; files: (string | null)[]; marks: (string | null)[]; settings: Partial<Settings>; room: string };
+type Take = { id: string; label?: string; at: string; tags: string; negative: string; positive: string; negativeFull: string; seeds: number[]; files: (string | null)[]; marks: (string | null)[]; settings: Partial<Settings>; room: string };
 type SceneState = { room?: string; look?: Record<string, string>; note?: string; status?: "todo" | "work" | "done"; takes: Take[]; savedTags?: string };
 const stateFile = (id: string) => join(dataDir, id, "state.json");
 const stateOf = (id: string): SceneState => (existsSync(stateFile(id)) ? JSON.parse(readFileSync(stateFile(id), "utf8")) : { takes: [] });
@@ -110,13 +110,13 @@ function rebuild() {
 }
 
 // ---------- ComfyUI ----------
-function graph(positive: string, negative: string, seed: number, size: string, prefix: string) {
+function graph(positive: string, negative: string, seed: number, size: string, prefix: string, use: Settings = settings) {
   const [w, h] = size.split("x").map(Number) as [number, number];
   const g: Record<string, { class_type: string; inputs: Record<string, unknown> }> = {};
-  g.ckpt = { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: settings.ckpt } };
+  g.ckpt = { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: use.ckpt } };
   let model: [string, number] = ["ckpt", 0];
   let clip: [string, number] = ["ckpt", 1];
-  settings.loras.split(",").map((s) => s.trim()).filter(Boolean).forEach((s, i) => {
+  use.loras.split(",").map((s) => s.trim()).filter(Boolean).forEach((s, i) => {
     const [name, wt] = s.split(":");
     g[`lora${i}`] = { class_type: "LoraLoader", inputs: { model, clip, lora_name: name, strength_model: Number(wt ?? 1), strength_clip: Number(wt ?? 1) } };
     model = [`lora${i}`, 0];
@@ -126,7 +126,7 @@ function graph(positive: string, negative: string, seed: number, size: string, p
   g.pos = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: positive } };
   g.neg = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: negative } };
   g.latent = { class_type: "EmptyLatentImage", inputs: { width: w, height: h, batch_size: 1 } };
-  g.sample = { class_type: "KSampler", inputs: { model, positive: ["pos", 0], negative: ["neg", 0], latent_image: ["latent", 0], seed, steps: settings.steps, cfg: settings.cfg, sampler_name: settings.sampler, scheduler: settings.scheduler, denoise: 1 } };
+  g.sample = { class_type: "KSampler", inputs: { model, positive: ["pos", 0], negative: ["neg", 0], latent_image: ["latent", 0], seed, steps: use.steps, cfg: use.cfg, sampler_name: use.sampler, scheduler: use.scheduler, denoise: 1 } };
   g.decode = { class_type: "VAEDecode", inputs: { samples: ["sample", 0], vae: ["ckpt", 2] } };
   g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `prompt-lab/${prefix}` } };
   return g;
@@ -152,9 +152,11 @@ async function draw(j: Job) {
   const st = stateOf(j.scene);
   const t = st.takes.find((x) => x.id === j.take)!;
   const it = items.find((x) => x.id === j.scene)!;
-  const size = it.kind === "detail" ? settings.detailSize : settings.sceneSize;
+  // a take is drawn with the settings it was made with (a comparison of checkpoints / LoRAs keeps each its own)
+  const use: Settings = { ...settings, ...t.settings, comfy: settings.comfy };
+  const size = it.kind === "detail" ? use.detailSize : use.sceneSize;
   const prefix = `${j.scene}_${j.take}_${j.i}`;
-  const r = await fetch(`${settings.comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(t.positive, t.negativeFull, t.seeds[j.i]!, size, prefix), client_id: "prompt-lab" }) });
+  const r = await fetch(`${settings.comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(t.positive, t.negativeFull, t.seeds[j.i]!, size, prefix, use), client_id: "prompt-lab" }) });
   if (!r.ok) throw Error(`ComfyUI ${r.status}: ${(await r.text()).slice(0, 200)}`);
   const { prompt_id } = (await r.json()) as { prompt_id: string };
   j.promptId = prompt_id;
@@ -180,18 +182,20 @@ async function draw(j: Job) {
 
 
 let takeN = 0;
-function newTake(it: Item, nIn: number, tagsIn: string | undefined, negative: string, room: string | undefined, sameSeeds: boolean, batch: boolean) {
+function newTake(it: Item, nIn: number, tagsIn: string | undefined, negative: string, room: string | undefined, sameSeeds: boolean, batch: boolean, over?: { label: string; settings: Partial<Settings>; extra: string; seeds: number[] }) {
   const n = Math.max(1, Math.min(8, nIn));
   const st = stateOf(it.id);
   if (room) st.room = room;
   const tags = tagsIn ?? tagsOf(it);
-  const p = promptWith(it, st, tags, negative);
+  const base = promptWith(it, st, tags, negative);
+  // a comparison variant may add its trigger words right after the quality tags
+  const p = over?.extra ? { ...base, positive: base.positive.replace(/^(masterpiece, best quality, )?/, (m) => `${m}${over.extra}, `) } : base;
   // same seeds as the last take (to see what an edit changed) or fresh ones
   const last = st.takes[st.takes.length - 1];
-  const seeds = sameSeeds && last ? Array.from({ length: n }, (_, i) => last.seeds[i] ?? Math.floor(Math.random() * 2 ** 31)) : Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
+  const seeds = over ? over.seeds.slice(0, n) : sameSeeds && last ? Array.from({ length: n }, (_, i) => last.seeds[i] ?? Math.floor(Math.random() * 2 ** 31)) : Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
   const id = `t${Date.now().toString(36)}${(takeN++ % 1000).toString(36)}`;
   const { comfy: _c, ...used } = settings;
-  st.takes.push({ id, at: new Date().toISOString(), tags, negative, positive: p.positive, negativeFull: p.negative, seeds, files: seeds.map(() => null), marks: seeds.map(() => null), settings: used, room: st.room ?? it.room });
+  st.takes.push({ id, label: over?.label, at: new Date().toISOString(), tags, negative, positive: p.positive, negativeFull: p.negative, seeds, files: seeds.map(() => null), marks: seeds.map(() => null), settings: { ...used, ...(over?.settings ?? {}) }, room: st.room ?? it.room });
   st.status = "work"; // a new take means the scene is being looked at again, even if it was marked done
   saveState(it.id, st);
   seeds.forEach((_, i) => jobs.push({ scene: it.id, take: id, i, status: "queued", batch }));
@@ -254,6 +258,23 @@ createServer(async (req, res) => {
       const todo = ids ? items.filter((it) => ids.includes(it.id)) : items.filter((it) => (!kind || it.kind === kind) && stateOf(it.id).takes.length === 0);
       for (const it of todo) newTake(it, Number(b.n) || 4, undefined, P.negatives[it.id] ?? "", undefined, false, true);
       return json(res, 200, { scenes: todo.length, pictures: todo.length * (Number(b.n) || 4) });
+    }
+    if (r === "/api/compare" && req.method === "POST") {
+      // the same scenes and seeds under several checkpoints / LoRA sets: one labelled take per variant
+      const b = (await body(req)) as { ids: string[]; n?: number; variants: { label: string; ckpt?: string; loras?: string; extra?: string }[] };
+      const n = Number(b.n) || 4;
+      let takes = 0;
+      for (const it of items.filter((x) => b.ids.includes(x.id))) {
+        const seeds = Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
+        for (const v of b.variants) {
+          const over: Partial<Settings> = {};
+          if (v.ckpt) over.ckpt = v.ckpt;
+          if (v.loras !== undefined) over.loras = v.loras;
+          newTake(it, n, undefined, P.negatives[it.id] ?? "", undefined, false, true, { label: v.label, settings: over, extra: v.extra ?? "", seeds });
+          takes++;
+        }
+      }
+      return json(res, 200, { takes, pictures: takes * n });
     }
     if (r === "/api/batch/cancel" && req.method === "POST") {
       // drop the batch pictures not drawn yet; takes left without a single picture are removed, drawn ones stay

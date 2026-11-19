@@ -110,7 +110,7 @@ function render() {
   if ($("#room")) $("#room").onchange = preview;
 }
 function takeHtml(t) {
-  return `<div class="take" data-take="${t.id}"><div class="meta"><b>${new Date(t.at).toLocaleTimeString()}</b> · ${t.room} · ${t.settings.ckpt?.replace(".safetensors", "")} ${t.settings.steps} шагов cfg ${t.settings.cfg} · правка к текущим: ${diff(t.tags, scene.tags)}
+  return `<div class="take" data-take="${t.id}"><div class="meta">${t.label ? `<b style="color:#c9f">[${esc(t.label)}]</b> ` : ""}<b>${new Date(t.at).toLocaleTimeString()}</b> · ${t.room} · ${t.settings.ckpt?.replace(".safetensors", "")} ${esc((t.settings.loras || "").replace(/\.safetensors/g, ""))} ${t.settings.steps} шагов cfg ${t.settings.cfg} · правка к текущим: ${diff(t.tags, scene.tags)}
     <a href="#" class="use" title="вернуть эти теги в поле">↺ взять эти теги</a></div>
     <div class="imgs">${t.seeds.map((sd, i) => `<div class="im ${t.marks[i] ?? ""}">${t.files[i] ? `<img src="/img?id=${scene.id}&f=${t.files[i]}" loading="lazy">` : `<div class="wait">рисую…</div>`}
       <div class="bt"><button data-m="ok" data-i="${i}">✓</button><button data-m="bad" data-i="${i}">✗</button><button data-m="" data-i="${i}" title="сид">${sd % 10000}</button></div></div>`).join("")}</div></div>`;
