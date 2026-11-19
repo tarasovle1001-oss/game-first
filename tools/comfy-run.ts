@@ -108,7 +108,7 @@ function graph(job: (typeof jobs)[number], depth: string | undefined) {
     inputs: { model, positive: cond[0], negative: cond[1], latent_image: ["latent", 0], seed: job.seed, steps: Number(opt("steps", "9")), cfg: Number(opt("cfg", "1.5")), sampler_name: opt("sampler", "euler_ancestral"), scheduler: opt("scheduler", "simple"), denoise: 1 },
   };
   g.decode = { class_type: "VAEDecode", inputs: { samples: ["sample", 0], vae: ["ckpt", 2] } };
-  g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `test-city/${stem(job.row)}` } };
+  g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `test-city/${stem(job.row)}_s${job.seed}` } // unique per job: two ComfyUI copies both numbering _00001_ made the proxy hand back one copy's file for both };
   return g;
 }
 
