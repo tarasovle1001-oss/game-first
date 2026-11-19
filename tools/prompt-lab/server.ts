@@ -249,7 +249,9 @@ createServer(async (req, res) => {
       // N frames for every scene (or close-up) that has no takes yet, in list order, behind your own clicks
       const b = await body(req);
       const kind = b.kind === "detail" ? "detail" : b.kind === "all" ? null : "scene";
-      const todo = items.filter((it) => (!kind || it.kind === kind) && stateOf(it.id).takes.length === 0);
+      // ids: an explicit list (e.g. the weak scenes to redo); otherwise every scene of the kind that has no takes yet
+      const ids = Array.isArray(b.ids) ? (b.ids as string[]) : null;
+      const todo = ids ? items.filter((it) => ids.includes(it.id)) : items.filter((it) => (!kind || it.kind === kind) && stateOf(it.id).takes.length === 0);
       for (const it of todo) newTake(it, Number(b.n) || 4, undefined, P.negatives[it.id] ?? "", undefined, false, true);
       return json(res, 200, { scenes: todo.length, pictures: todo.length * (Number(b.n) || 4) });
     }

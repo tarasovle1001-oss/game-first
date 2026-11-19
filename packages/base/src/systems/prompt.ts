@@ -76,6 +76,8 @@ function who(cast: Cast, role: string, closeUp = false, exposed = false): string
   // nude words (his penis, her "ass visible through thighs") only where the scene shows the body: alone they undress a dressed figure
   const penis = exposed ? card.nude : role === "wife" ? "" : card.clothes; // a man not shown bare is drawn dressed
   // a faceless close-up keeps the body and the skin of the card, not the face, hair or jewellery that would pull a face in
+  // a man's close-up has its own masculine words (body hair, his skin): his slim, soft, pale card alone reads as a woman's
+  if (closeUp && card.closeup) return [adult, card.closeup, penis];
   if (closeUp) return [adult, card.appearance.split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), card.body, penis];
   return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body, penis];
 }
@@ -88,13 +90,19 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const layout = content.scenes.find((l) => l.id === desc.type);
   // a free close-up has no layout: its words are one line, plus a line for each tag it carries
   const isDetail = desc.type.startsWith("detail_");
-  const detailWords = isDetail ? [P.details[desc.type.slice(7)] ?? "", ...Object.entries(t).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
+  const detailId = isDetail ? desc.type.slice(7) : "";
+  const detailMain = isDetail ? (P.details[detailId] ?? "") : "";
+  // a dressed close-up (a bulge, a stain) does not take the size words: they name a penis and undress him; his size shows as the bulge
+  const dressedDetail = isDetail && !!P.penis_unless && new RegExp(P.penis_unless, "i").test(detailMain);
+  const detailWords = isDetail ? [detailMain, ...Object.entries(t).filter(([k]) => !(dressedDetail && k === "size")).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
   // booru tags of the scene (prompt.yaml: tags) lead the prompt; a scene that has them does not use its English pose slots
   const booru = isDetail ? "" : (P.tags[desc.type] ?? "").trim();
   // rules on top of the scene tags (prompt.yaml: rules): by what the tags say and who is in the scene
   const has = (role: string) => desc.participants.some((p) => (role === "patron" ? p.role.startsWith("patron") : p.role === role));
-  const fired = booru
-    ? P.rules.filter((r) => new RegExp(r.when, "i").test(booru) && !(r.unless && new RegExp(r.unless, "i").test(booru)) && (!r.with || has(r.with)) && (!r.without || !has(r.without)))
+  // close-ups get the rules too (fluids, no censoring), matched on their own words
+  const ruleWords = booru || detailWords;
+  const fired = ruleWords
+    ? P.rules.filter((r) => new RegExp(r.when, "i").test(ruleWords) && !(r.unless && new RegExp(r.unless, "i").test(ruleWords)) && (!r.with || has(r.with)) && (!r.without || !has(r.without)))
     : [];
   const slots = isDetail ? { scene: detailWords } : booru ? {} : (P.poses[desc.type] ?? {});
   const empty: string[] = [];
@@ -105,13 +113,15 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   };
   // prompt.yaml: only - the figures a scene's picture draws (her alone at the stove: the husband stays out of it)
   const onlyRoles = P.only[desc.type];
-  const inDesc = new Set(desc.participants.map((p) => p.role).filter((r) => !onlyRoles || onlyRoles.includes(r)));
+  const nobody = isDetail && P.detail_nobody.includes(detailId);
+  // a close-up draws its keyed figure and whoever else it shows (his hand on her: her body is the subject)
+  const inDesc = new Set(nobody ? [] : [...desc.participants.map((p) => p.role), ...(isDetail ? (P.detail_with[detailId] ?? []) : [])].filter((r) => !onlyRoles || onlyRoles.includes(r)));
   // a close-up has no layout: whoever is in it is drawn, so his skin and size (or her body) still come from the card
   const drawn = isDetail ? [...inDesc] : [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
 
   // counts: one girl, the men in the scene (several of one role still count each)
-  const men = Math.max(desc.participants.filter((p) => MEN.has(p.role) && inDesc.has(p.role)).length, onlyRoles ? 0 : Number(t.men ?? 0));
-  const counts = [desc.participants.some((p) => p.role === "wife") ? "1girl" : "", men > 0 ? `${men}boy${men > 1 ? "s" : ""}` : ""];
+  const men = isDetail ? [...inDesc].filter((r) => MEN.has(r)).length : Math.max(desc.participants.filter((p) => MEN.has(p.role) && inDesc.has(p.role)).length, onlyRoles ? 0 : Number(t.men ?? 0));
+  const counts = [inDesc.has("wife") ? "1girl" : "", men > 0 ? `${men}boy${men > 1 ? "s" : ""}` : "", nobody ? "no humans" : ""];
   const act = sceneAct(desc.type);
   if (!P.style.prefix.trim()) empty.push("style.prefix");
   // quality first, then who does what, then the style trigger (the order the Wayward packs were drawn with)
@@ -142,6 +152,12 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
     const cls = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? Number(t[SIZE_TAG[role]!]) : undefined;
     // dressed, his size shows as how much the bulge stands out, not as a penis
     const size = cls === undefined ? undefined : exposed ? W.size[cls] : `(bulge:${(0.9 + cls * 0.1).toFixed(1)})`;
+    // a figure that is only a hand in this close-up: its skin and the hand, nothing else
+    if (isDetail && (P.detail_hands[detailId] ?? []).includes(role)) {
+      const card = cast[role as Role];
+      regions[role] = join([role === "wife" ? "female hand" : "male hand", (card?.appearance ?? "").split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), role === "wife" ? "wedding ring" : ""]);
+      continue;
+    }
     regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed), role === "wife" ? wifeWords(t) : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
