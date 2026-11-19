@@ -48,7 +48,7 @@ deal:                 # a guest with money goes to the husband first
 groups:               # a company takes the back room
   fromDay: 3
   chancePerDay: 0.35
-  arriveTick: [40, 160]         # minute of the shift
+  arriveTick: [60, 300]         # minute of the shift
   stay: 150                     # minutes
   size: [3, 5]
   kinds: [stag, office, bikers, team]
@@ -124,3 +124,10 @@ finish:               # where a guest finishes, and what she makes of it
   unwilling: { shame: 6, disgust: 4, annoy: 4 }
   glad: { arousal: 3, affinity: 2 }
   shows: 4                    # minutes the ending stays as the scene
+roam: # guests get up and walk about: nobody sits in plain view the whole evening
+  chancePerMinute: 0.012   # per seated guest: about one trip per guest per evening
+  places:
+    - { id: toilet, to: cafe.toilet, weight: 5, minutes: [3, 6] }
+    - { id: bar, to: cafe.bar, weight: 3, minutes: [2, 5] }
+    - { id: call, to: hotel.landing, weight: 2, minutes: [3, 6] }   # a phone call on the stairs
+    - { id: peek, to: cafe.lounge, weight: 1, minutes: [1, 2] }     # a look into the small hall, when it is empty

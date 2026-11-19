@@ -80,3 +80,50 @@ describe("main picture and close-ups", () => {
     expect(f.portrait?.tags?.men).toBeUndefined();
   });
 });
+
+import { ALONE, CAGE, cagedDays, confidenceOf, DOORS, WORK } from "@tc/base";
+import { CORE_ADVANCE } from "@tc/core";
+
+describe("19c: the long evening, his own body, the cage", () => {
+  const acts = (s: ReturnType<typeof engine.init>, type: string) => engine.listActions(s).filter((a) => a.type === type);
+  it("he can work the floor, shut the door and close early; the night starts when he closes", () => {
+    let s = engine.dispatch(engine.init(3, { base: { preset: "ordinary" } }), { type: CORE_ADVANCE });
+    expect(s.time.minute).toBe(content.balance.shift.opensAt * 60);
+    expect(acts(s, WORK).length).toBeGreaterThan(0);
+    const clean = bs(s).clean;
+    s = engine.dispatch(s, { type: WORK, payload: { minutes: 60 } });
+    expect(bs(s).shift!.tick).toBe(60);
+    expect(bs(s).clean).toBeGreaterThanOrEqual(clean - 3); // he tidies as fast as the evening dirties
+    s = engine.dispatch(s, { type: DOORS, payload: { do: "shut" } });
+    const before = s.log.length;
+    for (let i = 0; i < 40 && !acts(s, DOORS).some((a) => a.payload?.do === "close"); i++) s = engine.dispatch(s, { type: "base/wait", payload: { minutes: 15 } });
+    expect(s.log.slice(before).some((e) => e.key === "log.patron.arrives")).toBe(false);
+    s = engine.dispatch(s, { type: DOORS, payload: { do: "close" } });
+    const closedAt = s.time.minute;
+    expect(closedAt).toBeLessThan((content.balance.shift.opensAt + content.balance.shift.hours) * 60);
+    s = engine.dispatch(s, { type: CORE_ADVANCE });
+    expect(s.time.phase).toBe("night");
+    expect(bs(s).nightStart).toBe(closedAt);
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("alone at home he can settle himself; locked in the cage only what needs nothing of him is left, and asking is up to her", () => {
+    let s = engine.init(3, { base: { preset: "ordinary" } });
+    const mine = structuredClone(s);
+    mine.where.husband = "home.bathroom";
+    mine.where.wife = "cafe.kitchen";
+    expect(acts(mine, ALONE).map((a) => a.payload?.do)).toContain("hand");
+    const after = engine.dispatch(mine, { type: ALONE, payload: { do: "hand" } });
+    expect(bs(after).husband.spentDay).toBe(1);
+    expect(acts(after, ALONE)).toEqual([]);
+    expect(confidenceOf(after)).toBeGreaterThanOrEqual(content.body.nerve.confidence.floor);
+    const locked = structuredClone(mine);
+    bs(locked).husband.caged = { day: 1 };
+    expect(cagedDays(locked)).toBe(0);
+    expect(acts(locked, ALONE).map((a) => a.payload?.do)).not.toContain("hand");
+    locked.where.wife = locked.where.husband!;
+    expect(acts(locked, CAGE).length).toBe(1);
+    const asked = engine.dispatch(locked, { type: CAGE });
+    expect(acts(asked, CAGE)).toEqual([]); // once a day
+    expect(engine.checkInvariants(asked)).toEqual([]);
+  });
+});

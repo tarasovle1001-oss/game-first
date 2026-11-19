@@ -460,7 +460,7 @@ function herOwnMove(ctx: Ctx) {
   const drawn = (p: Patron) =>
     p.memory.affinity + (h.tastes.types[p.type] ?? 0) * 0.5 + (h.latents.new_faces !== undefined && p.memory.visits <= 1 ? H.traitPull : 0) + (h.latents.likes_rough !== undefined && p.approach === "push" ? H.traitPull : 0) + (h.latents.size_queen !== undefined && p.memory.sizeKnown ? (p.size - b.husband.size) * 2 : 0);
   const best = sh.visits
-    .filter((v) => !v.blocked && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && v.served > 0)
+    .filter((v) => !v.blocked && !v.away && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && v.served > 0)
     .map((v) => ({ v, p: b.patrons[v.patron]!, pull: drawn(b.patrons[v.patron]!) }))
     .filter((x) => x.pull >= H.pullFrom)
     .sort((x, y) => y.pull - x.pull || x.p.id.localeCompare(y.p.id))[0];
@@ -526,7 +526,7 @@ export function runProposals(ctx: Ctx) {
   if (b.encounter || b.night || (sh.awayUntil ?? 0) > sh.tick) return;
   // a man speaks up once he has been here a moment; the keener ones go first
   const eligible = sh.visits
-    .filter((v) => !v.blocked && (v.served > 0 || v.waited > 0))
+    .filter((v) => !v.blocked && !v.away && (v.served > 0 || v.waited > 0))
     .sort((a, c) => b.patrons[c.patron]!.memory.interest - b.patrons[a.patron]!.memory.interest || a.patron.localeCompare(c.patron));
   herOwnMove(ctx);
   if (b.encounter) return;

@@ -77,9 +77,9 @@ upgrades:             # one-off, paid from the till (or on credit while the limi
   - { id: soundproof, cost: 500 }         # the staff room door: nothing is heard from the kitchen any more
 
 rhythm:               # the day around the clock: sleep, his own state, the bathroom, money on the mind
-  wake: [8, 10, 12]   # he may sleep till; the first is the default
-  herWake: 8
-  energyPerHour: { him: 9, her: 9 }
+  wake: [9, 10, 12]   # he may sleep till; the first is the default
+  herWake: 9
+  energyPerHour: { him: 10.5, her: 10.5 }
   energyCost: 0.55    # everything that tires either of them costs this share of its listed price (one knob for "energy runs out too fast")
   quiet: { minutes: 60, her: 22 } # at zero energy in the afternoon either of them lies down: for how long, and what it gives her (his is the nap)
   herBedtime: 60      # minutes after midnight she is asleep, if nothing keeps her up

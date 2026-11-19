@@ -11,7 +11,7 @@ const wait = (s: GameState, minutes: number) => engine.dispatch(s, { type: "base
 const evening = (seed: number, setup?: Parameters<typeof engine.init>[1]): GameState => {
   let s = engine.dispatch(engine.init(seed, setup), { type: CORE_ADVANCE });
   let guard = 0;
-  while (bs(s).shift!.visits.filter((v) => v.served > 0).length < 2 && guard++ < 30) s = wait(s, 10);
+  while (bs(s).shift!.visits.filter((v) => v.served > 0).length < 2 && guard++ < 50) s = wait(s, 10);
   return s;
 };
 

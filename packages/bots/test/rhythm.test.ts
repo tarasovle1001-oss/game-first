@@ -44,9 +44,9 @@ describe("the day around the clock", () => {
     expect(early.time.phase).toBe("prep");
     expect(late.time.phase).toBe("prep");
     expect(himOf(late).energy).toBeGreaterThan(himOf(early).energy);
-    expect(bs(late).day!.left).toBe(360);
-    expect(bs(early).day!.left).toBe(600);
-    expect(early.time.minute).toBe(8 * 60);
+    expect(bs(late).day!.left).toBe((content.balance.shift.opensAt - 12) * 60);
+    expect(bs(early).day!.left).toBe((content.balance.shift.opensAt - content.day.rhythm.wake[0]!) * 60);
+    expect(early.time.minute).toBe(content.day.rhythm.wake[0]! * 60);
   });
   it("work takes it out of him; with nothing left he cannot start, and a nap gives some back", () => {
     let s = structuredClone(engine.init(3));

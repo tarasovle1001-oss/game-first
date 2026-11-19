@@ -133,20 +133,21 @@ describe("what a guest pays, and when", () => {
     bs(s0).encounter!.hisRate = 5;
     const tips = bs(s0).today.tips;
     let s = s0;
-    for (let i = 0; i < 40 && bs(s).encounter; i++) s = wait(s, 1);
-    expect(bs(s).encounter).toBe(null);
-    const fresh = s.log.slice(s0.log.length);
-    expect(fresh.filter((e) => e.key.startsWith("log.enc.paid")).length).toBe(1);
+    // until he pays: he may want more after that, which is another story and another bill
+    const paid = (st: typeof s) => st.log.slice(s0.log.length).filter((e) => e.key.startsWith("log.enc.paid")).length;
+    for (let i = 0; i < 60 && paid(s) === 0; i++) s = wait(s, 1);
+    expect(paid(s)).toBe(1);
     expect(bs(s).today.tips).toBeGreaterThan(tips);
   });
   it("nobody new walks in during the last hour, and closing time is said", () => {
     let s = engine.dispatch(engine.init(2, { base: { preset: "ordinary" } }), { type: CORE_ADVANCE });
     let late = 0;
-    for (let i = 0; i < 80 && s.time.phase === "shift"; i++) {
+    const lastIn = content.balance.shift.hours * 60 - content.balance.shift.lastArrivalBefore + 6;
+    for (let i = 0; i < 200 && s.time.phase === "shift"; i++) {
       const before = s.log.length;
       const acts = engine.listActions(s);
       s = engine.dispatch(s, acts.find((a) => a.type === "base/wait" && a.payload?.minutes === 5) ?? acts.find((a) => a.type !== CORE_ADVANCE && a.type !== "core/move") ?? acts[0]!);
-      if (bs(s).shift && bs(s).shift!.tick > 306) late += s.log.slice(before).filter((e) => e.key === "log.patron.arrives" || e.key === "log.patron.returns").length;
+      if (bs(s).shift && bs(s).shift!.tick > lastIn) late += s.log.slice(before).filter((e) => e.key === "log.patron.arrives" || e.key === "log.patron.returns").length;
     }
     expect(late).toBe(0);
   });

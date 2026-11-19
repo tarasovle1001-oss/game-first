@@ -131,6 +131,9 @@ export function registerCouple(api: ModApi) {
     describe: (a) => ({ key: `action.talk.${a.payload!.do}` }),
     enumerate(state) {
       const b = bs(state);
+      // out together with his hands full of nothing but her: there is still talking about nothing
+      const outing = state.time.phase === "prep" && !!b.day?.busy && b.day.her?.task === "with_you" && state.where[HUSBAND] === state.where[WIFE] && !b.caught && !b.night?.sex;
+      if (outing) return T.options.filter((o) => o.lines).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
       if (!together(state)) return [];
       const out = T.options.filter((o) => (!o.room || state.where[HUSBAND] === o.room) && (!o.notRoom || state.where[HUSBAND] !== o.notRoom) && (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
       out.unshift({ type: TALK, payload: { do: "how_are_you", group: "chat" } });
@@ -214,7 +217,11 @@ export function registerCouple(api: ModApi) {
       // hands and hints again and again: that is pestering, and it adds up
       const forward = o.group === "touch" || o.needs !== undefined;
       if (again > 0 && forward && !o.stock) annoy(ctx, T.repeat.pester * again, "him");
-      const line = voiced(ctx.state, `log.talk.${o.id}${ok ? "" : ".no"}`);
+      // talk about nothing has many lines: any but the one she heard last
+      let n = o.lines ? ctx.rng.int(1, o.lines) : 0;
+      if (o.lines && o.lines > 1 && n === b.lastChatter) n = (n % o.lines) + 1;
+      if (o.lines) b.lastChatter = n;
+      const line = o.lines ? `log.talk.${o.id}.${n}` : voiced(ctx.state, `log.talk.${o.id}${ok ? "" : ".no"}`);
       ctx.log(line, undefined, slurTags(ctx.state, line));
       if (ok && again > 0 && worth < 1) ctx.log(forward ? (worth > 0 ? "log.talk.again.forward" : "log.talk.again.forward.much") : worth > 0 ? "log.talk.again" : "log.talk.again.much");
       setOutcome(ctx, !ok ? "away" : (o.effects.arousal ?? 0) >= 4 ? "wants" : "agrees", HUSBAND);

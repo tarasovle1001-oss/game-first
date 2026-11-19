@@ -60,6 +60,7 @@ export interface Husband {
   mood?: number; // 0..100
   arousal?: number; // 0..100
   washed?: string; // "day:phase" he last washed
+  caged?: { day: number; asked?: number }; // the cage is on since this day; the day he last asked to have it off
   confidence?: number; // 0..100, how sure of himself he is in bed; absent = the starting value
   dry?: number; // nights in a row without his own release
   spentDay?: number; // the day he came from a touch alone: nothing more from him that day
@@ -105,6 +106,7 @@ export interface Visit {
   drunk?: number; // 0..100, how much he has had tonight
   heat?: number; // 0..100, how worked up he is
   patron: string;
+  away?: { to: string; until: number }; // he has stepped out of the hall for a few minutes
   stay: number; // ticks left
   served: number;
   waited: number; // ticks he has been waiting for an order
@@ -193,6 +195,8 @@ export interface ProposalRecord {
 
 export interface Shift {
   tick: number;
+  doors?: boolean; // shut to new guests
+  closed?: boolean; // he called it a night before the hour
   visits: Visit[];
   income: number;
   tips: number;
@@ -303,6 +307,8 @@ export interface BaseState {
   ignoredSaid?: number;
   reachedDay?: number;
   weather?: string;
+  lastChatter?: number; // which line of small talk came last
+  nightStart?: number; // minute of the day tonight began at (closing time)
   wakeAt?: number; // hour he sleeps till tonight, when it is not the usual one
   slept?: { him: number; her: number }; // hours each of them got last night
   sentWash?: string;

@@ -1,6 +1,9 @@
 import { awayStrategy } from "../src";
 import { describe, expect, it } from "vitest";
-import { baseMod } from "@tc/base";
+import { baseMod, content } from "@tc/base";
+const OPENS = content.balance.shift.opensAt * 60; // the tests follow the clock in the content, not a fixed hour
+const SHIFT_MINUTES = content.balance.shift.hours * 60;
+const DAY1 = OPENS - 360; // the first afternoon is six hours long
 import { exampleMod, EXAMPLE_FORMULA } from "@tc/mod-example";
 import { CORE_ADVANCE, CORE_MOVE, createEngine, createTranslator, loadGame, saveGame, sceneKey } from "@tc/core";
 import type { GameState, Mod } from "@tc/core";
@@ -20,7 +23,7 @@ const nextPhase = (s: GameState) => {
 describe("day cycle", () => {
   it("walks phases and rolls the day over", () => {
     let s = engine.init(1);
-    expect(s.time).toEqual({ day: 1, phase: "prep", minute: 720 });
+    expect(s.time).toEqual({ day: 1, phase: "prep", minute: DAY1 });
     const seen = [];
     for (let i = 0; i < 4; i++) {
       s = nextPhase(s);
@@ -151,8 +154,8 @@ describe("shift and economy", () => {
     expect(engine.listActions(s).filter((a) => a.type === WAIT && a.payload?.minutes).map((a) => a.payload!.minutes)).toEqual([5, 15, 60]);
     const stopped = engine.dispatch(s, { type: WAIT, payload: { until: "event" } });
     expect(stopped.mods.base.shift.tick).toBeGreaterThan(0);
-    expect(stopped.mods.base.shift.interrupt || stopped.mods.base.shift.tick === 360).toBe(true);
-    expect(stopped.time.minute).toBe(18 * 60 + stopped.mods.base.shift.tick);
+    expect(stopped.mods.base.shift.interrupt || stopped.mods.base.shift.tick === SHIFT_MINUTES).toBe(true);
+    expect(stopped.time.minute).toBe(OPENS + stopped.mods.base.shift.tick);
   });
   it("answers proposals through the consent formula and remembers why", () => {
     let s = nextPhase(engine.init(5));
@@ -236,7 +239,7 @@ describe("the afternoon", () => {
     s = engine.dispatch(s, { type: "base/prep-wait", payload: { until: "done" } });
     expect(s.mods.base.money).toBeGreaterThan(money);
     expect(s.mods.base.day.busy).toBeUndefined();
-    expect(s.time.minute).toBe(720 + 250);
+    expect(s.time.minute).toBe(DAY1 + 250);
     expect(acts()).toContain("date"); // she comes along if he calls her
     s = go(s, "town.shops");
     expect(engine.listActions(s).some((a) => a.type === "base/buy" && a.payload!.kind === "outfit")).toBe(true);

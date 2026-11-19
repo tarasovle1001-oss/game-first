@@ -9,13 +9,15 @@ import { generatePatron, pickReturning } from "./patrons";
 import { HALL, husbandSees, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
 export { HALL };
 
-import { tired, wakeMinute } from "./rhythm";
+import { changeHim, tired, wakeMinute } from "./rhythm";
 export const WAIT = "base/wait";
 export const TIP_FORMULA = "base/tip";
 /** Fixed waits offered to the player, in minutes: ordinary work, and while something is going on in front of him. */
 export const WAIT_MINUTES = [5, 15, 60];
 export const WAIT_MINUTES_CLOSE = [1, 5, 15];
 export const SERVE = "base/serve";
+export const WORK = "base/work";
+export const DOORS = "base/doors";
 /** Something he is watching minute by minute: a guest with her in his sight, or a moment he has to answer. */
 export const watching = (state: GameState) => {
   const b = bs(state);
@@ -73,7 +75,7 @@ function seat(ctx: Ctx, patron: Patron, known: boolean) {
 function arrive(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
-  if (sh.tick >= bal.hours * 60 - bal.lastArrivalBefore) return; // too late in the evening to start one
+  if (sh.doors || sh.tick >= bal.hours * 60 - bal.lastArrivalBefore) return; // the door is shut, or it is too late in the evening to start one
   // how the place is run decides how many come: slowly up to "decent", fast from there to "the place to be"
   const [f0, f50, f100] = bal.flow;
   const share = b.reputation <= 50 ? f0 + ((f50 - f0) * b.reputation) / 50 : f50 + ((f100 - f50) * (b.reputation - 50)) / 50;
@@ -226,7 +228,7 @@ export function registerShift(api: ModApi) {
     const phase = e.payload!.phase as string;
     const b = bs(ctx.state);
     if (phase === "prep") ctx.state.time.minute = ctx.state.time.day > 1 ? wakeMinute(ctx.state) : clock.prep;
-    if (phase === "night") ctx.state.time.minute = 1440;
+    if (phase === "night") b.nightStart = Math.max(ctx.state.time.minute, (bal.opensAt + 1) * 60); // the clock simply goes on from closing time
     if (phase === "summary") ctx.state.time.minute = wakeMinute(ctx.state); // the sums are done over breakfast
     if (phase === "shift") {
       ctx.state.time.minute = bal.opensAt * 60;
@@ -318,6 +320,71 @@ export function registerShift(api: ModApi) {
       const v = sh.visits.find((x) => x.patron === action.payload!.patron)!;
       serveOne(ctx, v, "husband");
       for (let i = 0; i < bal.husbandServeMinutes && !ticksDone(sh); i++) tick(ctx);
+    },
+  });
+
+  // "Work the floor": one button for an evening of ordinary work. He takes the tables she cannot get to,
+  // tidies in between, and now and then does one of the small things a bar is made of.
+  const Wk = bal.work;
+  api.actions.register({
+    id: WORK,
+    labelKey: "action.work",
+    describe: (a) => (a.payload?.until ? { key: "action.work.until" } : { key: "action.work.minutes", params: { minutes: a.payload!.minutes as number } }),
+    enumerate(state) {
+      const b = bs(state);
+      const sh = b.shift;
+      const at = state.where[HUSBAND];
+      if (state.time.phase !== "shift" || !sh || ticksDone(sh) || b.caught || b.night?.sex || (at !== HALL && at !== "cafe.bar") || tired(state)) return [];
+      return [...Wk.minutes.map((m) => ({ type: WORK, payload: { minutes: m } as Record<string, string | number> })), { type: WORK, payload: { until: "event" } as Record<string, string | number> }];
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const sh = b.shift!;
+      const untilEvent = action.payload?.until === "event";
+      const max = untilEvent ? TICKS_PER_SHIFT : ticks(action.payload!.minutes as number);
+      sh.interrupt = false;
+      let busy = 0;
+      for (let i = 0; i < max && !ticksDone(sh) && !tired(ctx.state); i++) {
+        if (busy > 0) busy -= 1;
+        else {
+          const waiting = sh.visits.filter((v) => wantsOrder(v) && v.waited >= Wk.takeAfter).sort((a, c) => c.waited - a.waited || a.patron.localeCompare(c.patron))[0];
+          if (waiting && b.stock > 0) {
+            serveOne(ctx, waiting, "husband");
+            busy = bal.husbandServeMinutes;
+          } else {
+            b.clean = Math.min(100, b.clean + Wk.cleanPerMinute);
+            if ((sh.tick + 1) % Wk.choreEvery === 0) ctx.log(`log.work.chore.${ctx.rng.int(1, Wk.chores)}`);
+          }
+        }
+        changeHim(ctx, "energy", -Wk.energyPerHour / 60, "work");
+        tick(ctx);
+        if (untilEvent && sh.interrupt) break;
+      }
+    },
+  });
+
+  // The door: he can stop letting new people in, and with the hall empty he can call it a night.
+  api.actions.register({
+    id: DOORS,
+    labelKey: "action.doors",
+    describe: (a) => ({ key: `action.doors.${a.payload!.do}` }),
+    enumerate(state) {
+      const b = bs(state);
+      const sh = b.shift;
+      if (state.time.phase !== "shift" || !sh || ticksDone(sh) || b.caught || b.night?.sex) return [];
+      const empty = sh.visits.length === 0 && !sh.group && !b.encounter;
+      return [{ type: DOORS, payload: { do: sh.doors ? "open" : "shut" } }, ...(sh.doors && empty ? [{ type: DOORS, payload: { do: "close" } }] : [])];
+    },
+    apply(ctx, action) {
+      const sh = bs(ctx.state).shift!;
+      const what = action.payload!.do as string;
+      if (what === "close") {
+        sh.closed = true;
+        ctx.log("log.doors.close");
+        return;
+      }
+      sh.doors = what === "shut";
+      ctx.log(`log.doors.${what}`);
     },
   });
 

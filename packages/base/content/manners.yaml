@@ -50,6 +50,7 @@ talk: # small things between the two of them; each once a day
     - { id: kiss_her, group: touch, effects: { arousal: 4, desire: 1 }, needs: { stat: desire, min: 30, publicExtra: 10 }, fail: { resent: 0.5 } }
     - { id: grab_ass, group: touch, effects: { arousal: 5 }, needs: { stat: openness, min: 35, publicExtra: 20 }, fail: { mood: -3, resent: 1 } }
     - { id: praise, group: chat, effects: { mood: 3, desire: 0.5 } }
+    - { id: chatter, group: chat, effects: { mood: 1.5, resent: -0.3 }, lines: 16 } # talk about nothing: worth little, costs nothing, and can be had on a walk
     - { id: demean, group: chat, effects: {} }            # what it does depends on who she is: see terms
     - { id: stroke_hair, group: touch, effects: { mood: 2, desire: 0.5 } }
     - { id: fondle_breast, group: touch, effects: { arousal: 6 }, needs: { stat: desire, min: 40, publicExtra: 30 }, fail: { mood: -2, resent: 0.5 } }

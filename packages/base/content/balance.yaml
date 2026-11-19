@@ -55,12 +55,13 @@ hotel: # two rooms upstairs
   morningChance: 0.25   # she looks in on a lodger in the morning, alone
   nightVisitTier: 5     # how far it must have gone for her to go up to him at night
 shift:
-  opensAt: 18
-  hours: 6
+  opensAt: 17
+  hours: 9             # 17:00 to 02:00; he can shut the door to new guests and close early
   minutesPerTick: 1    # the evening is counted in minutes; slow things still run every 10 (event shift:tick)
   seats: 8
+  work: { minutes: [15, 60], takeAfter: 8, cleanPerMinute: 0.2, energyPerHour: 5, choreEvery: 25, chores: 5 } # "work the floor": he takes a table that has waited this long, tidies otherwise
   lastArrivalBefore: 60 # nobody new comes in during the last minutes before closing
-  arrivalsPerHour: 1.3 # expected new guests per hour, before the share below
+  arrivalsPerHour: 0.95 # expected new guests per hour, before the share below
   flow: [0.25, 0.6, 1.7] # share of that at service 0, 50 and 100: a quiet place at the start (4-5 guests an evening), a full hall only when it is run really well
   stayMinutes: [50, 130]
   billFactor: 2.15     # every bill is this much above what the guest type spends: few guests who sit long and order well

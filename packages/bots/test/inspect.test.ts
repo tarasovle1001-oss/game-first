@@ -17,7 +17,7 @@ const play = (traced: boolean, seed: number) => {
     state = next;
   };
   act((l) => l.find((a) => a.type === CORE_ADVANCE)); // into the shift
-  for (let i = 0; i < 12; i++) act((l) => l.find((a) => a.type === WAIT && !a.payload?.until) ?? l.find((a) => a.type === WAIT));
+  for (let i = 0; i < 60; i++) act((l) => l.find((a) => a.type === WAIT && !a.payload?.until) ?? l.find((a) => a.type === WAIT));
   return { state, steps };
 };
 const bare = (s: GameState) => {

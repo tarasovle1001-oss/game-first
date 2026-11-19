@@ -18,7 +18,8 @@ export const SEND_WASH = "base/send-wash";
 export const WASH_TOGETHER = "base/wash-together";
 const R = content.day.rhythm;
 const BATH = "home.bathroom";
-const MIDNIGHT = 1440;
+/** The minute the night starts at: when the doors closed, which is the usual hour unless he shut early. */
+export const nightStart = (state: GameState) => bs(state).nightStart ?? (content.balance.shift.opensAt + content.balance.shift.hours) * 60;
 
 type HimKey = "energy" | "mood" | "arousal";
 export const himOf = (state: GameState) => {
@@ -67,7 +68,7 @@ export function passNight(ctx: Ctx, minutes: number) {
   const n = b.night;
   if (!n || ctx.state.time.phase !== "night") return;
   n.minute = (n.minute ?? 0) + minutes;
-  ctx.state.time.minute = MIDNIGHT + n.minute;
+  ctx.state.time.minute = nightStart(ctx.state) + n.minute;
   if (!n.herAsleep && !n.sex && !n.wants && !b.complaint && !b.approach && n.minute >= R.herBedtime) {
     n.herAsleep = n.minute;
     if (n.scene === "night_awake") n.scene = "sleeping";
@@ -175,9 +176,11 @@ export function registerRhythm(api: ModApi) {
       const b = bs(ctx.state);
       const n = b.night;
       if (e.payload!.phase !== "night" || !n) return;
-      const bed = n.minute ?? 0;
+      // minutes after midnight they lay down at: closing early buys sleep, a long evening costs it
+      const late = nightStart(ctx.state) - 1440;
+      const bed = late + (n.minute ?? 0);
       const his = Math.max(0, wakeMinute(ctx.state) - bed) / 60;
-      const hers = Math.max(0, R.herWake * 60 - (n.herAsleep ?? bed)) / 60;
+      const hers = Math.max(0, R.herWake * 60 - (late + (n.herAsleep ?? n.minute ?? 0))) / 60;
       changeHim(ctx, "energy", Math.round(his * R.energyPerHour.him), "sleep");
       changeHeroine(ctx, "energy", Math.round(hers * R.energyPerHour.her), "sleep");
       // he lay down wanting and got nothing: it is still there in the morning

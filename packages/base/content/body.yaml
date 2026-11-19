@@ -129,3 +129,25 @@ nerve: # his own body: confidence in bed (0..100) and nights without release. No
     pity: 6
     power: 1
   react: { hardPower: 30, warmDesire: 55, warmMaxResent: 25, power: 2 }
+alone: # what he does by himself, at home, when she is not in the room
+  rooms: [home.bedroom, home.bathroom]
+  minutes: 15
+  mood: 1
+  caughtChance: 0.2      # she is in the house and awake: she opens the door
+  confidence: -2         # being walked in on by a wife who is not amused
+  hardPower: 30          # from this much power over him she takes it as hers to use
+  warmDesire: 55
+  warmMaxResent: 25
+  hand: { mood: -2, desire: 0.5, moodWarm: 1, arousal: 6 }
+  toy: { power: 2, powerJoin: 2, joinOpenness: 45, arousal: 8, mood: -3, pity: 4 }
+cage: # the cage as a state: on by day and by night until she takes it off
+  power: 3            # hers, when she locks it
+  powerPerDay: 1      # for every morning she decides to leave it on
+  keepPower: 30       # with this much power over him (or that streak in her) she likes holding the key...
+  keepChance: 0.85    # ...and leaves it on, each morning, with this chance
+  softDays: 2         # a wife who does not care for it takes it off within this many days
+  softKeepChance: 0.5
+  askDesire: 60       # a keeper still unlocks him when asked, if she wants him this much...
+  askFrustration: 15  # ...and is left wanting herself
+  prostateDesire: 55  # locked up, with a wife this fond of him: when she reaches for him at night it may be the other way
+  prostateChance: 0.5

@@ -54,6 +54,8 @@ export const SOFT_ACTS = IN_BED.soft;
 export const hisActOpen = (state: GameState, act: string) => {
   const b = bs(state);
   if (b.night?.sex?.soft && !SOFT_ACTS.includes(act)) return false;
+  // locked up, he has only what needs nothing of him; and it cannot be put on twice
+  if (b.husband.caged && (act === "chastity" || !SOFT_ACTS.includes(act))) return false;
   if (JOIN_ACTS.includes(act)) return !!b.night?.third;
   if (NEEDS_TOY.has(act) && toyForHim(state).toy === null) return false;
   // "after" needs something to be after: his or anyone's, still in her or on her
@@ -91,6 +93,11 @@ export function registerMarriage(api: ModApi) {
         b.night.wants = true;
         b.night.scene = "wants_him";
         ctx.log("log.night.wants");
+        // he is locked up and she is fond of him: her idea of tonight is about him, by the only way left
+        if (b.husband.caged && h.marriage.desire >= content.body.cage.prostateDesire && hisActOpen(ctx.state, "prostate") && ctx.rng.chance(content.body.cage.prostateChance)) {
+          b.night.counter = "prostate";
+          ctx.log("log.cage.prostate");
+        }
       }
     }
     if (phase === "prep" && ctx.state.time.day > 1) {
@@ -240,7 +247,7 @@ export function registerMarriage(api: ModApi) {
       if (state.where[HUSBAND] !== BEDROOM || state.where[WIFE] !== BEDROOM) return [];
       if (b.night.counter) return [{ type: NIGHT_ACT, payload: { act: b.night.counter } }]; // tonight it is this or nothing
       // spent for today, he has only what needs nothing of him
-      const spent = b.husband.spentDay === state.time.day;
+      const spent = b.husband.spentDay === state.time.day || !!b.husband.caged;
       return NIGHT_ACTS.filter((act) => hisActOpen(state, act) && (!spent || act === "kiss" || SOFT_ACTS.includes(act))).map((act) => ({ type: NIGHT_ACT, payload: { act } }));
     },
     apply(ctx, action) {
@@ -301,7 +308,7 @@ export function registerMarriage(api: ModApi) {
         out: false,
         byHand: false,
         looseSaid: false,
-        ...(b.husband.spentDay === ctx.state.time.day ? { soft: true } : {}),
+        ...(b.husband.spentDay === ctx.state.time.day || b.husband.caged ? { soft: true } : {}),
       };
       setAct(ctx, act.id);
       // a yes she had to talk herself into does not look like one she was waiting for
@@ -325,7 +332,7 @@ export function registerMarriage(api: ModApi) {
       const b = bs(state);
       const sh = b.shift;
       const phase = state.time.phase;
-      if (b.husband.spentDay === state.time.day || b.encounter || b.caught || b.reaction || b.night) return [];
+      if (b.husband.spentDay === state.time.day || b.husband.caged || b.encounter || b.caught || b.reaction || b.night) return [];
       if (phase === "shift" ? !sh || sh.tick >= TICKS_PER_SHIFT : phase !== "prep" || !b.day || !!b.day.busy || b.day.left < B.minutesPerTurn * 4) return [];
       if (state.where[HUSBAND] !== state.where[WIFE] || state.where[HUSBAND]?.startsWith("town.")) return [];
       const guests = phase === "shift" ? (state.where[HUSBAND] === HALL ? sh!.visits.length : 0) : 0;

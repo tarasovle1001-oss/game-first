@@ -1,4 +1,4 @@
-import { confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
+import { cagedDays, confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
 import type { Patron } from "@tc/base";
 import type { Lang, T } from "../game";
 import { Bar, Common } from "./common";
@@ -116,6 +116,7 @@ export function CoupleTab({ state, t, lang, open }: Common) {
       <Bar label={t("stat.arousal")} value={himOf(state).arousal} tone="pink" />
       <Bar label={t("stat.confidence")} value={confidenceOf(state)} tone="amber" />
       {dryOf(state) > 0 && <div className="small muted">{t("ui.him.dry", { n: dryOf(state) })}</div>}
+      {cagedDays(state) !== null && <div className="small bad">{cagedDays(state) === 0 ? t("ui.him.caged.today") : t("ui.him.caged", { n: cagedDays(state)! })}</div>}
       {himOf(state).energy < content.day.rhythm.him.tiredBelow && <div className="small bad">{t("ui.him.tired")}</div>}
       {worryOf(state) > 0 && <div className="muted small">{t(`ui.worry.${worryOf(state)}`)}</div>}
       {b.husband.stretch > 0 && <Bar label={t("ui.his.stretch")} value={b.husband.stretch} />}

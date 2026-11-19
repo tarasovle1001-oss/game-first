@@ -8,7 +8,7 @@ const sb = content.balance.shift;
 export const TICKS_PER_SHIFT = Math.round((sb.hours * 60) / sb.minutesPerTick);
 /** Minutes -> ticks, at least one. */
 export const ticks = (minutes: number) => Math.max(1, Math.round(minutes / sb.minutesPerTick));
-export const ticksDone = (shift: { tick: number } | null) => !shift || shift.tick >= TICKS_PER_SHIFT;
+export const ticksDone = (shift: { tick: number; closed?: boolean } | null) => !shift || shift.closed === true || shift.tick >= TICKS_PER_SHIFT;
 /** "18:40" from a minute of the day. */
 export const clockText = (minute: number) => {
   const m = ((minute % 1440) + 1440) % 1440;

@@ -70,6 +70,7 @@ export const balanceSchema = z
         seats: z.number().int().positive(),
         lastArrivalBefore: z.number().int().min(0),
         billFactorFull: z.number().min(0),
+        work: z.object({ minutes: z.array(z.number().int().positive()), takeAfter: z.number(), cleanPerMinute: z.number(), energyPerHour: z.number(), choreEvery: z.number().int().positive(), chores: z.number().int().positive() }).strict(),
         arrivalsPerHour: z.number().min(0), // expected new guests per hour, before the flow share
         flow: z.tuple([z.number(), z.number(), z.number()]), // share of it at service 0, 50, 100
         stayMinutes: range,
@@ -242,6 +243,14 @@ export const bodySchema = z
   .object({
     // the size (cm) a zone takes comfortably = base + stretch * perStretch
     fit: z.object({ vagina: zoneFit, anus: zoneFit, mouth: zoneFit }).strict(),
+    alone: z
+      .object({
+        rooms: z.array(z.string()), minutes: z.number().int().positive(), mood: z.number(), caughtChance: z.number(), confidence: z.number(), hardPower: z.number(), warmDesire: z.number(), warmMaxResent: z.number(),
+        hand: z.object({ mood: z.number(), desire: z.number(), moodWarm: z.number(), arousal: z.number() }).strict(),
+        toy: z.object({ power: z.number(), powerJoin: z.number(), joinOpenness: z.number(), arousal: z.number(), mood: z.number(), pity: z.number() }).strict(),
+      })
+      .strict(),
+    cage: z.object({ power: z.number(), powerPerDay: z.number(), keepPower: z.number(), keepChance: z.number(), softDays: z.number(), softKeepChance: z.number(), askDesire: z.number(), askFrustration: z.number(), prostateDesire: z.number(), prostateChance: z.number() }).strict(),
     nerve: z
       .object({
         confidence: z.object({ start: z.number(), floor: z.number(), good: z.number(), his: z.number(), soft: z.number(), early: z.number(), mocked: z.number(), comforted: z.number(), wet: z.number(), gym: z.number(), settle: z.number() }).strict(),
@@ -482,6 +491,7 @@ export const mannersSchema = z
               phases: z.array(z.string()).optional(),
               room: z.string().optional(), // only in this room
               notRoom: z.string().optional(), // anywhere but this room
+              lines: z.number().int().positive().optional(), // small talk: this many lines "log.talk.<id>.<n>", also offered during an outing together
               stock: z.number().optional(),
             })
             .strict(),
@@ -677,6 +687,7 @@ export const floorSchema = z
     groups: z.object({ fromDay: z.number(), chancePerDay: z.number(), arriveTick: z.tuple([z.number(), z.number()]), stay: z.number(), size: z.tuple([z.number().int(), z.number().int()]), kinds: z.array(id), saunaChance: z.number(), saunaHeat: z.number(), saunaTier: z.number(), trayEvery: z.number(), trayWait: z.number(), bill: z.tuple([z.number(), z.number()]), tipHer: z.number(), tipHusband: z.number(), heatPerRound: z.number(), heatHer: z.number(), restlessReputation: z.number(), inside: z.tuple([z.number(), z.number()]), longInside: z.tuple([z.number(), z.number()]), tierByHeat: z.array(z.tuple([z.number(), z.number()])), pressurePerMan: z.number(), manyBonus: z.number(), tipPerTier: z.number(), husbandEnergy: z.number(), refusedHeat: z.number() }).strict(),
     table: z.object({ minutes: z.number().int(), perEvening: z.number().int(), slipDrunk: z.number(), slipHonesty: z.number(), slipSuspicion: z.number(), cards: z.object({ bet: z.array(z.number().int()), winChance: z.number(), perDrunk: z.number(), stayTicks: z.number() }).strict(), rivalCools: z.number() }).strict(),
     join: z.object({ consentBonus: z.number(), hersRate: z.number(), power: z.number(), done: nums, refused: nums }).strict(),
+    roam: z.object({ chancePerMinute: z.number().min(0), places: z.array(z.object({ id: z.string(), to: z.string(), weight: z.number().positive(), minutes: z.tuple([z.number().int(), z.number().int()]) }).strict()).min(1) }).strict(),
     crowd: z.object({ fromTier: z.number(), max: z.number().int(), gatherPerMinute: z.number(), privateFollow: z.number(), heatPerMinute: z.number(), perWatcher: nums, boldOpenness: z.number(), watcherMinute: nums, joinAfter: z.number(), joinHeat: z.number(), joinPerMinute: z.number(), joinWatchBonus: z.number(), joinMax: z.number().int(), joinPressure: z.number(), invited: z.number(), joinerRate: z.number(), joinTip: z.number(), refusedHeat: z.number(), reactEvery: z.number().int(), leaveChance: z.number(), leaveReputation: z.number(), gossipPerWatcher: z.number(), afterInterest: z.number(), dispersed: nums, dispersedBold: nums, dispersedShy: nums }).strict(),
     finish: z.object({ wants: nums, likedAffinity: z.number(), drunk: z.number(), holdConfidence: z.number(), offendedAffinity: z.number(), offendedConfidence: z.number(), swallowOpenness: z.number(), held: nums, unwilling: nums, glad: nums, shows: z.number().int() }).strict(),
   })
