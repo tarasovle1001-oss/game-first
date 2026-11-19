@@ -60,6 +60,7 @@ function Item({ hot, title, sub, right, mark, onClick, tone, disabled }: { hot?:
 
 export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; lang: Lang; act(a: Action): void }) {
   const [path, setPath] = useState<Path>({ at: "root" });
+  const [moreOpen, setMoreOpen] = useState(false);
   // where the menu stood on each step: stepping back in time puts it back there too
   const trail = useRef(new Map<number, Path>());
   const lastTurn = useRef(state.turn);
@@ -71,6 +72,14 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
     }
     lastTurn.current = state.turn;
   }, [state.turn]);
+  // a new phase starts from the top of the menu: a section opened hours ago is not what he is doing now
+  // ...and so does walking somewhere else
+  const lastPhase = useRef(`${state.time.day}:${state.time.phase}:${state.where[HUSBAND]}`);
+  useEffect(() => {
+    const now = `${state.time.day}:${state.time.phase}:${state.where[HUSBAND]}`;
+    if (now !== lastPhase.current && state.turn >= lastTurn.current) setPath({ at: "root" });
+    lastPhase.current = now;
+  }, [state.time.day, state.time.phase, state.where[HUSBAND]]);
   trail.current.set(state.turn, path);
   const b = bs(state);
   const phase = state.time.phase;
@@ -79,13 +88,15 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   const waits = all.filter(isWait);
   const advance = all.find((a) => a.type === CORE_ADVANCE);
   const bed = all.filter((a) => a.type === BED);
-  const answers = all.filter((a) => SITUATION.has(a.type));
+  // a company at the door is answered before anything else, like any question put to him
+  const atDoor = (a: Action) => a.type === "base/group" && (a.payload?.do === "accept" || a.payload?.do === "decline");
+  const answers = all.filter((a) => SITUATION.has(a.type) || atDoor(a));
   const urgent = all.filter((a) => URGENT.has(a.type));
   const withHer = all.filter((a) => sectionOf(a) !== undefined);
   const herSecs = SECTIONS.filter((g) => withHer.some((a) => sectionOf(a) === g));
   const herName = b.heroine.name ?? t("role.wife");
   const herNear = state.where[WIFE] === state.where[HUSBAND];
-  const other = all.filter((a) => !isWait(a) && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && !SITUATION.has(a.type) && !URGENT.has(a.type) && sectionOf(a) === undefined);
+  const other = all.filter((a) => !isWait(a) && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && !SITUATION.has(a.type) && !atDoor(a) && !URGENT.has(a.type) && sectionOf(a) === undefined);
   const groups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
   const direct = groups.filter(([, list]) => list.length < 3).flatMap(([, list]) => list);
   const folders = groups.filter(([, list]) => list.length >= 3);
@@ -109,13 +120,18 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   const sceneActs = bed.filter((a) => !a.payload?.to && !CLOTHES.has(a.payload?.do as string));
   const sceneSwitch = bed.filter((a) => a.payload?.to);
   const sceneClothes = bed.filter((a) => !a.payload?.to && CLOTHES.has(a.payload?.do as string));
+  // "sex" is a long list: the plain things on top, the rest folded under "more"
+  const PLAIN = new Set(["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal"]);
+  const isMore = (a: Action) => a.type === "base/night-act" && !PLAIN.has(a.payload?.act as string);
+  const inSec = here.at === "her" && here.sec ? withHer.filter((a) => sectionOf(a) === here.sec && a.type !== TELL && a.type !== ALLOW) : [];
+  const folded = here.at === "her" && here.sec === "sex" ? inSec.filter(isMore) : [];
   const listed: Action[] =
     answers.length > 0
       ? answers
       : bed.length > 0
         ? [...sceneActs, ...sceneSwitch, ...sceneClothes]
         : here.at === "her" && here.sec
-          ? withHer.filter((a) => sectionOf(a) === here.sec && a.type !== TELL && a.type !== ALLOW)
+          ? [...inSec.filter((a) => !folded.includes(a)), ...(moreOpen ? folded : [])]
           : here.at === "group"
             ? (folders.find(([type]) => type === here.type)?.[1] ?? [])
             : [];
@@ -177,7 +193,11 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
 
   // --- she, a guest or the room wants an answer: nothing else until he gives one
   if (answers.length > 0) {
-    const lines = state.log.filter((e) => e.turn === state.turn && !e.tags?.includes("unseen")).slice(-2);
+    // the line that asks the question; other things that happened on the same move are in the log, not here
+    const turnLines = state.log.filter((e) => e.turn === state.turn && !e.tags?.includes("unseen"));
+    const kind = answers[0]!.type === ANSWER ? (answers[0]!.payload?.kind as string) : "";
+    const asked = kind ? turnLines.filter((e) => e.key.startsWith(`log.approach.${kind}`)) : [];
+    const lines = asked.length > 0 ? asked.slice(-1) : turnLines.slice(-2);
     return (
       <div className="menu2">
         <div className="m-title warn">{t("ui.situation")}</div>
@@ -282,7 +302,9 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
             ))}
           </div>
         )}
-        {listed.map((a, i) => item(a, i))}
+        {listed.filter((a) => !folded.includes(a)).map((a, i) => item(a, i))}
+        {folded.length > 0 && <Item title={`${t("ui.menu.more")} · ${folded.length}`} tone="quiet" right={moreOpen ? "▾" : "▸"} onClick={() => setMoreOpen(!moreOpen)} />}
+        {moreOpen && folded.map((a, i) => item(a, listed.length - folded.length + i))}
         {tail(true)}
       </div>
     );
@@ -316,7 +338,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
       {waits.length > 0 && (
         <div className="mwait">
           <div className="mi-title">{t("ui.wait")}</div>
-          <div className="mi-sub">{t("ui.wait.hint")}</div>
+          <div className="mi-sub">{t(phase === "shift" ? "ui.wait.hint" : phase === "night" ? "ui.wait.hint.night" : "ui.wait.hint.day")}</div>
           <div className="mwait-row">
             {waits.map((a, i) => (
               <button key={i} className={a.payload?.until ? "wide" : ""} onClick={() => act(a)}>

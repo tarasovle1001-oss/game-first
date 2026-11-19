@@ -55,6 +55,8 @@ export const hisActOpen = (state: GameState, act: string) => {
   if (b.night?.sex?.soft && !SOFT_ACTS.includes(act)) return false;
   if (JOIN_ACTS.includes(act)) return !!b.night?.third;
   if (NEEDS_TOY.has(act) && toyForHim(state).toy === null) return false;
+  // "after" needs something to be after: his or anyone's, still in her or on her
+  if (act === "cleanup") return Object.keys(b.heroine.cum ?? {}).length > 0;
   if (act === "fisting_him") return toyForHim(state).fit + content.body.his.tooBig >= content.body.his.fistSize;
   return true;
 };
@@ -221,21 +223,25 @@ export function registerMarriage(api: ModApi) {
     describe: (a) => ({ key: `action.night.${a.payload!.act}` }),
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase !== "night" || !b.night || b.night.asked || b.night.sex || b.husband.spentDay === state.time.day) return [];
+      // he can reach for her again after the first time or after a "no": each time counts against the next, and she does fall asleep
+      if (state.time.phase !== "night" || !b.night || b.night.asked || b.night.sex || b.night.herAsleep || (b.night.asks ?? 0) >= content.body.night.maxAsks) return [];
       if (state.where[HUSBAND] !== BEDROOM || state.where[WIFE] !== BEDROOM) return [];
       if (b.night.counter) return [{ type: NIGHT_ACT, payload: { act: b.night.counter } }]; // tonight it is this or nothing
-      return NIGHT_ACTS.filter((act) => hisActOpen(state, act)).map((act) => ({ type: NIGHT_ACT, payload: { act } }));
+      // spent for today, he has only what needs nothing of him
+      const spent = b.husband.spentDay === state.time.day;
+      return NIGHT_ACTS.filter((act) => hisActOpen(state, act) && (!spent || act === "kiss" || SOFT_ACTS.includes(act))).map((act) => ({ type: NIGHT_ACT, payload: { act } }));
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const act = actById(action.payload!.act as string);
-      b.night!.asked = true;
+      const before = b.night!.asks ?? 0;
+      b.night!.asks = before + 1;
       const wanted = b.night!.wants === true;
       b.night!.wants = false;
       const countered = b.night!.counter === act.id;
       b.night!.counter = undefined;
-      const verdict = countered ? "eager" : ask(ctx, act.id, wanted ? content.body.night.wants.consent : 0, "wants");
+      const verdict = countered ? "eager" : ask(ctx, act.id, wanted ? content.body.night.wants.consent : 0, "wants", BEDROOM, [["again", -before * content.body.night.againPenalty]]);
       if (verdict === "refuse") {
         // not what he asked for, but she has her own idea of what he is good for tonight
         const C = content.body.bed.counter;
@@ -246,7 +252,6 @@ export function registerMarriage(api: ModApi) {
           const options = [...IN_BED.counter, ...(hard ? IN_BED.counterHard.filter((a) => hisActOpen(ctx.state, a)) : [])];
           const offer = options[ctx.rng.int(0, options.length - 1)]!;
           b.night!.counter = offer;
-          b.night!.asked = false;
           b.night!.scene = "wants_him";
           ctx.log(`log.night.counter.${offer}`);
           ctx.emit("husband:countered", { asked: act.id, offer });
@@ -284,6 +289,7 @@ export function registerMarriage(api: ModApi) {
         out: false,
         byHand: false,
         looseSaid: false,
+        ...(b.husband.spentDay === ctx.state.time.day ? { soft: true } : {}),
       };
       setAct(ctx, act.id);
       // a yes she had to talk herself into does not look like one she was waiting for

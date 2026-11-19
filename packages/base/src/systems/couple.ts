@@ -132,7 +132,7 @@ export function registerCouple(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       if (!together(state)) return [];
-      const out = T.options.filter((o) => (!o.room || state.where[HUSBAND] === o.room) && (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
+      const out = T.options.filter((o) => (!o.room || state.where[HUSBAND] === o.room) && (!o.notRoom || state.where[HUSBAND] !== o.notRoom) && (!o.phases || o.phases.includes(state.time.phase)) && (!o.stock || b.stock >= o.stock)).map((o) => ({ type: TALK, payload: { do: o.id, group: o.group } }));
       out.unshift({ type: TALK, payload: { do: "how_are_you", group: "chat" } });
       out.push({ type: TALK, payload: { do: "where_we_stand", group: "chat" } });
       if (state.time.phase === "night") out.push({ type: TALK, payload: { do: "how_tonight", group: "chat" } });
@@ -142,6 +142,8 @@ export function registerCouple(api: ModApi) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const what = action.payload!.do as string;
+      // what was on in bed is over: the picture is the two of them talking, not the scene that ended
+      if (b.night && !b.night.sex && !b.night.scene.startsWith("fd_") && b.night.scene !== "sleeping") b.night.scene = "talk";
       // nothing is said only once, but the same thing again the same day is worth less, and then nothing
       const again = b.talked.filter((x) => x === what).length;
       b.talked.push(what);

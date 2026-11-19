@@ -218,6 +218,8 @@ export const consentSchema = z
 
 export const nightSchema = z
   .object({
+    maxAsks: z.number().int().min(1), // how many times a night he can reach for her
+    againPenalty: z.number().min(0), // taken off her answer for each time he already asked tonight
     withoutPerLibido: z.number().min(0), // frustration she gains per point of libido on a day that brought her no release
     restlessArousal: z.number(), // she cannot sleep above this arousal when the evening left her unsatisfied
     selfChance: z.number().min(0).max(1), // she takes care of herself in the bathroom
@@ -465,6 +467,7 @@ export const mannersSchema = z
               fail: z.record(z.enum(["mood", "arousal", "energy", "drunk", "desire", "resent"]), z.number()).optional(),
               phases: z.array(z.string()).optional(),
               room: z.string().optional(), // only in this room
+              notRoom: z.string().optional(), // anywhere but this room
               stock: z.number().optional(),
             })
             .strict(),

@@ -307,6 +307,7 @@ describe("the acts written from the questionnaires", () => {
       b.heroine.mood = 90;
       b.power = 80;
       b.approach = null;
+      if (act === "cleanup") b.heroine.cum = { ...(b.heroine.cum ?? {}), inside: 1 }; // "after" needs something to be after
       s.where.wife = s.where.husband!;
       const ask = engine.listActions(s).find((a) => a.type === "base/night-act" && a.payload?.act === act);
       expect(ask, act).toBeDefined();

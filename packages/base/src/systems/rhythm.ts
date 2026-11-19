@@ -277,7 +277,8 @@ export function registerRhythm(api: ModApi) {
     labelKey: "action.send_wash",
     enumerate(state) {
       const b = bs(state);
-      const here = state.where[HUSBAND] === state.where[WIFE] && b.day?.her?.task !== "away";
+      // at home only: there is no shower in the middle of the market
+      const here = state.where[HUSBAND] === state.where[WIFE] && b.day?.her?.task !== "away" && !(state.where[HUSBAND] ?? "").startsWith("town.");
       return quiet(state) && here && !b.night?.herAsleep && b.sentWash !== stamp(state) ? [{ type: SEND_WASH }] : [];
     },
     apply(ctx) {
@@ -318,6 +319,8 @@ export function registerRhythm(api: ModApi) {
       changeHeroine(ctx, "mood", 2, "bath");
       ctx.log(warm ? "log.bath.together.warm" : "log.bath.together");
       ctx.emit("couple:talk", { do: "cuddle", ok: true });
+      // they stay under the water a while longer: the scene is on screen now and for the next move, not one move late
+      if (b.day?.her?.task === "wash") b.day.her.left = R.bath.washMinutes + 10;
       passPrep(ctx, R.bath.washMinutes);
     },
   });

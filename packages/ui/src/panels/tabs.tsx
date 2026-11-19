@@ -258,14 +258,16 @@ export function GuestsTab({ state, t, lang, open }: Common) {
         ))}
       </ul>
       {regulars.length > 0 && (
-        <>
-          <div className="cap gap">{t("ui.regulars")}</div>
+        <details className="fold">
+          <summary className="cap gap">
+            {t("ui.regulars")} · {regulars.length}
+          </summary>
           <ul className="patrons">
             {regulars.map((p) => (
               <PatronRow key={p.id} p={p} t={t} lang={lang} />
             ))}
           </ul>
-        </>
+        </details>
       )}
     </div>
   );

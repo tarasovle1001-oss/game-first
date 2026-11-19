@@ -113,7 +113,8 @@ export function OutcomeCard({ state, t, lang, open }: Common) {
   const lines = state.log.filter((e) => e.turn === o.turn && e.day === o.day && e.minute === o.minute && (open || !e.tags?.includes("unseen")) && !e.tags?.includes("thought")).slice(-3);
   if (lines.length === 0) return null;
   const mins = (state.time.day - o.day) * 1440 + state.time.minute - o.minute;
-  if (mins > 180) return null; // it was hours ago: no longer how she is taking things
+  // it is how she took the last thing, not a record: a few moves or half an hour later it is no longer about now
+  if (mins > 30 || state.turn - o.turn > 3) return null;
   const age = mins <= 0 || o.turn === state.turn ? t("ui.outcome.now") : mins < 1440 ? t("ui.outcome.ago", { n: mins }) : t("ui.outcome.days", { n: Math.floor(mins / 1440) });
   return (
     <div className={`outcome o-${o.how}`}>

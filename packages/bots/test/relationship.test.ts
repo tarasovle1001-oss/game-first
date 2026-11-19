@@ -69,7 +69,7 @@ describe("body", () => {
 });
 
 describe("night with the husband", () => {
-  it("asks once per night through the same formula and leaves a record", () => {
+  it("asks through the same formula and leaves a record; asking again the same night is possible, costs more each time and runs out", () => {
     let s = toNight(engine.init(4));
     expect(s.where.husband).toBe("home.bedroom");
     expect(has(s, NIGHT_ACT)).toBe(true);
@@ -78,7 +78,14 @@ describe("night with the husband", () => {
     expect(record.patron).toBe("husband");
     expect(record.rows.map((r) => r.id)).toContain("consent.marital");
     expect(record.rows.map((r) => r.id)).not.toContain("consent.fidelity");
-    expect(has(s, NIGHT_ACT)).toBe(false);
+    if (record.verdict === "refuse" && !bs(s).night!.counter) {
+      // a "no" does not close the night, but the next ask starts from further back, and there are only so many
+      expect(has(s, NIGHT_ACT)).toBe(true);
+      let again = engine.dispatch(s, { type: NIGHT_ACT, payload: { act: "sex" } });
+      expect(bs(again).proposals.at(-1)!.rows.find((r) => r.id === "consent.again")!.value).toBeLessThan(0);
+      for (let i = 0; i < 6 && has(again, NIGHT_ACT) && !bs(again).night!.sex; i++) again = engine.dispatch(again, { type: NIGHT_ACT, payload: { act: "kiss" } });
+      expect(has(again, NIGHT_ACT) && !bs(again).night!.sex).toBe(false);
+    }
     if (record.verdict !== "refuse") {
       // it is a scene now: it has to be played, and the night cannot be skipped meanwhile
       expect(bs(s).night!.sex).not.toBeNull();

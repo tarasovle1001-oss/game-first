@@ -24,17 +24,20 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "13a";
+const BUILD = "19a";
 const RESUME_KEY = "test-city.resume";
-const RESUME_BUDGET = 2_500_000; // characters: the browser gives a page about twice that
+// Characters. The browser gives a page about five million for everything it keeps: the running game, the manual save,
+// the save of the morning and the notes have to fit together, so no single one may take half of it.
+const RESUME_BUDGET = 1_500_000;
+const SAVE_BUDGET = 1_000_000;
 /** A save with the steps back in it: the game as it is now, and as many earlier moments as fit. */
-const packSave = (state: GameState, past: GameState[]) => {
+const packSave = (state: GameState, past: GameState[], budget = RESUME_BUDGET) => {
   const now = saveGame(state, engine);
   const steps: string[] = [];
   let size = now.length;
   for (let i = past.length - 1; i >= 0; i--) {
     const s = saveGame(past[i]!, engine);
-    if (size + s.length > RESUME_BUDGET) break;
+    if (size + s.length > budget) break;
     size += s.length;
     steps.unshift(s);
   }
@@ -319,7 +322,19 @@ function App() {
         {menu && (
           <div className="menu" onClick={() => setMenu(false)}>
             <button onClick={() => setSetupOpen(true)}>{t("ui.new")}</button>
-            <button onClick={() => guard(() => localStorage.setItem(SAVE_KEY, packSave(state, past)))}>{t("ui.save")}</button>
+            <button
+              onClick={() =>
+                guard(() => {
+                  try {
+                    localStorage.setItem(SAVE_KEY, packSave(state, past, SAVE_BUDGET));
+                  } catch {
+                    localStorage.setItem(SAVE_KEY, packSave(state, [])); // no room for the steps back: the game itself still fits
+                  }
+                })
+              }
+            >
+              {t("ui.save")}
+            </button>
             <button onClick={() => load(localStorage.getItem(SAVE_KEY))}>{t("ui.load")}</button>
             <button onClick={() => load(localStorage.getItem(AUTOSAVE_KEY))}>{t("ui.load.auto")}</button>
             <button onClick={() => downloadText(`test-city-day${state.time.day}.json`, saveGame(state, engine))}>{t("ui.save.file")}</button>

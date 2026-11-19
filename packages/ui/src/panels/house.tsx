@@ -1,4 +1,4 @@
-import { HUSBAND, WIFE, husbandSees } from "@tc/base";
+import { HUSBAND, WIFE, bs, husbandSees } from "@tc/base";
 import { CORE_MOVE } from "@tc/core";
 import type { Action } from "@tc/core";
 import { engine } from "../game";
@@ -10,6 +10,7 @@ export function RoomGrid({ state, t, lang, onAct, open, guess }: Common & { onAc
   const knowsHer = open || state.where[WIFE] === here || husbandSees(state, state.where[WIFE] ?? "");
   const moves = engine.listActions(state).filter((a) => a.type === CORE_MOVE && a.actor === HUSBAND);
   const rooms = engine.locations().map((l) => ({ ...l, m: (l.meta as { map: { x: number; y: number } }).map }));
+  const group = bs(state).shift?.group;
   const floors = [...new Set(rooms.map((r) => r.m.y))].sort((a, c) => a - c);
   return (
     <div className="rgrid">
@@ -27,14 +28,17 @@ export function RoomGrid({ state, t, lang, onAct, open, guess }: Common & { onAc
                 const herHere = sees ? state.where[WIFE] === r.id : !knowsHer && guess === r.id;
                 const people = Object.keys(state.where).filter((id) => (id === WIFE ? herHere : state.where[id] === r.id && (sees || id === HUSBAND)));
                 const guests = people.filter((id) => id !== WIFE && id !== HUSBAND);
+                // a company that was let in sits in the small hall (or the sauna) as one party, not as separate guests
+                const party = group && group.pending === undefined && r.id === (group.sauna ? "cafe.sauna" : "cafe.lounge") ? group.size : 0;
                 return (
-                  <button key={r.id} className={`rg-room${r.id === here ? " here" : ""}${move ? " reachable" : ""}${people.length === 0 ? " empty" : ""}`} disabled={!move} onClick={() => move && onAct(move)} title={t(r.nameKey)}>
+                  <button key={r.id} className={`rg-room${r.id === here ? " here" : ""}${move ? " reachable" : ""}${people.length === 0 && !party ? " empty" : ""}`} disabled={!move} onClick={() => move && onAct(move)} title={t(r.nameKey)}>
                     <span className="rg-name">{t(r.nameKey)}</span>
                     <span className="rg-who">
                       {people.includes(HUSBAND) && <i className="husband">{t("ui.you")}</i>}
                       {people.includes(WIFE) && <i className={`wife${sees ? "" : " guess"}`} title={sees ? undefined : t("ui.guess.hint")}>{who(WIFE, state, t, lang)}{sees ? "" : "?"}</i>}
                       {guests.length === 1 && <i className="patron">{who(guests[0]!, state, t, lang)}</i>}
                       {guests.length > 1 && <i className="patron">×{guests.length}</i>}
+                      {party > 0 && <i className="patron">{t("ui.party", { n: party })}</i>}
                     </span>
                   </button>
                 );

@@ -78,8 +78,9 @@ function herNext(ctx: Ctx) {
     // out on her own until late in the afternoon. She says where she is going; it is not where she is
     day.her = { task: "away", left: Math.min(day.left, D.herDay.awayMinutes) };
     day.cover = ctx.rng.pick(D.herDay.trips);
+    const told = ctx.state.where[HUSBAND] === ctx.state.where[WIFE];
     ctx.state.where[WIFE] = "town.far";
-    ctx.log("log.her.trip", { where: `loc.${day.cover}` });
+    ctx.log(told ? "log.her.trip" : "log.her.trip.note", { where: `loc.${day.cover}` });
     return;
   }
   // once a day she may have an errand of her own in town: the shops, the market, the gym. This one is what it looks like
@@ -87,8 +88,10 @@ function herNext(ctx: Ctx) {
     day.tripped = true;
     const to = ctx.rng.pick(D.herDay.trips);
     day.her = { task: "away", left: ctx.rng.int(D.herDay.tripMinutes[0], D.herDay.tripMinutes[1]) };
+    // she says it to his face only if he is there to hear it; otherwise he finds a note
+    const told = ctx.state.where[HUSBAND] === ctx.state.where[WIFE];
     ctx.state.where[WIFE] = to;
-    ctx.log("log.her.trip", { where: `loc.${to}` });
+    ctx.log(told ? "log.her.trip" : "log.her.trip.note", { where: `loc.${to}` });
     return;
   }
   const options = D.herDay.tasks.filter((t) => t.id !== day.her?.task);
@@ -395,7 +398,9 @@ export function registerDay(api: ModApi) {
       const b = bs(ctx.state);
       const a = D.activities.find((x) => x.id === action.payload!.do)!;
       if (a.cost) addMoney(ctx, -a.cost, a.id);
-      b.day!.busy = { id: a.id, left: Math.min(a.minutes, b.day!.left) };
+      // cleaning takes as long as there is dirt: an almost clean hall is a few minutes, not the full hour
+      const need = a.gradual && a.clean ? Math.max(1, Math.ceil(((100 - b.clean) / a.clean) * a.minutes)) : a.minutes;
+      b.day!.busy = { id: a.id, left: Math.min(a.minutes, need, b.day!.left) };
       if (a.withHer) {
         // she comes along and stays with him for as long as it takes
         ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;

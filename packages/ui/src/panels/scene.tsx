@@ -80,8 +80,8 @@ export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { sc
         )
       : "";
   // the answer that led to what is on screen, if any
-  const subject = b.encounter?.patron ?? b.shift?.moment?.patron ?? (b.night?.asked ? HUSBAND : undefined);
-  const visible = scene && scene.type !== "idle" && scene.type !== "serving" && (scene.type !== "sleeping" || b.night?.asked);
+  const subject = b.encounter?.patron ?? b.shift?.moment?.patron ?? (b.night?.asked || b.night?.asks ? HUSBAND : undefined);
+  const visible = scene && scene.type !== "idle" && scene.type !== "serving" && (scene.type !== "sleeping" || b.night?.asked || !!b.night?.asks);
   const asked = visible && subject ? [...b.proposals].reverse().find((p) => p.patron === subject && (subject === HUSBAND || p.verdict !== "refuse")) : undefined;
   // something is going on that nobody asked her about in so many words (he pushed her to it, it grew out of the last thing): the reasons are worked out as they stand now
   const live = (): ProposalRecord | undefined => {
