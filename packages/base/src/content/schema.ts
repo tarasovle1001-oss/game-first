@@ -113,6 +113,8 @@ const propSchema = z.object({ len: z.number().optional(), angle: z.number().opti
 export const sceneSchema = z
   .object({
     id,
+    /** Never shown as one whole picture, even if the pack has it: always her portrait + a close-up per man (scenes that do not come out whole). */
+    split: z.boolean().optional(),
     figures: z
       .array(
         z

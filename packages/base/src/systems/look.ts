@@ -279,6 +279,8 @@ const SIZE_TAG: Record<string, string> = { patron: "size", patron2: "size2", pat
 export interface PictureFrames {
   /** The whole scene in one picture: what a pack shows when it has it. */
   full: SceneDesc;
+  /** This scene is never shown whole (scenes.yaml: split): the portrait and the close-ups even when the pack has a whole picture. */
+  splitOnly?: boolean;
   /** Her alone, face by her state: the main picture when the pack has no whole one. Null when she is not in the scene. */
   portrait: SceneDesc | null;
   /** Close-ups of contact without faces, one per man, at most three. A group is put together from the close-ups of pairs. */
@@ -400,9 +402,12 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
   const sceneOf = (act: string | undefined) => actOf(act)?.scene;
   const grouped = !!enc && desc.participants.some((p) => p.id === enc.patron) && ((enc.men?.length ?? 0) > 0 || desc.type.startsWith("join_"));
   const inserts: SceneDesc[] = [];
+  // a close-up of contact needs contact: nothing of the kind for standing at the bar, talking, pouring a drink
+  const layout = content.scenes.find((x) => x.id === desc.type);
+  const contact = !!layout?.figures.some((f) => f.penis) || content.acts.some((a) => a.scene === desc.type && a.tier >= 2) || !!layout?.split;
   if (wife)
     for (const p of desc.participants) {
-      if (inserts.length >= 3 || !(p.role in SIZE_TAG)) continue;
+      if (inserts.length >= 3 || !(p.role in SIZE_TAG) || !contact) continue;
       // in a group each man has his own part of her: his close-up is the one of a pair doing that
       const pair = !grouped ? desc.type : p.id === enc!.patron ? sceneOf(enc!.act) : (sceneOf(enc!.men?.find((m) => m.patron === p.id)?.act) ?? desc.type);
       const t: Record<string, string> = {};
@@ -413,7 +418,7 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
       inserts.push({ type: `insert_${pair ?? desc.type}`, location: desc.location, participants: [{ id: p.id, role: p.role === "husband" ? "husband" : "patron" }], tags: t });
     }
   const { men: _m, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, ...look } = tags;
-  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc) };
+  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc), ...(content.scenes.find((x) => x.id === desc.type)?.split ? { splitOnly: true } : {}) };
 }
 
 /**
@@ -424,7 +429,7 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
 export function resolveFrames<T>(frames: PictureFrames, find: (desc: SceneDesc, n: number) => T | null): { main: T; inserts: T[]; split: boolean } | null {
   const found = (list: SceneDesc[], from: number) => list.map((d, i) => find(d, from + i)).filter((x): x is T => x !== null);
   const details = found(frames.details ?? [], 4);
-  const full = find(frames.full, 0);
+  const full = frames.splitOnly && frames.portrait ? null : find(frames.full, 0);
   // free close-ups go beside a whole picture too: they say what the picture cannot
   if (full) return { main: full, inserts: details.slice(0, 3), split: false };
   const main = frames.portrait ? find(frames.portrait, 0) : null;
