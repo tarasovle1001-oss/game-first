@@ -129,7 +129,7 @@ function graph(positive: string, negative: string, seed: number, size: string, p
   g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `prompt-lab/${prefix}` } };
   return g;
 }
-type Job = { scene: string; take: string; i: number; status: "queued" | "drawing" | "done" | "error"; error?: string; promptId?: string };
+type Job = { scene: string; take: string; i: number; status: "queued" | "drawing" | "done" | "error"; error?: string; promptId?: string; batch?: boolean };
 const jobs: Job[] = [];
 let running = 0;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -138,7 +138,9 @@ async function pump() {
   if (running) return;
   running = 1;
   try {
-    for (let j = jobs.find((x) => x.status === "queued"); j; j = jobs.find((x) => x.status === "queued")) {
+    // your own clicks go first; the batch over the scenes waits behind them
+    const next = () => jobs.find((x) => x.status === "queued" && !x.batch) ?? jobs.find((x) => x.status === "queued");
+    for (let j = next(); j; j = next()) {
       j.status = "drawing";
       try { await draw(j); j.status = "done"; } catch (e) { j.status = "error"; j.error = (e as Error).message.slice(0, 300); }
     }
@@ -174,6 +176,32 @@ async function draw(j: Job) {
   throw Error("no picture after 15 min");
 }
 
+
+let takeN = 0;
+function newTake(it: Item, nIn: number, tagsIn: string | undefined, negative: string, room: string | undefined, sameSeeds: boolean, batch: boolean) {
+  const n = Math.max(1, Math.min(8, nIn));
+  const st = stateOf(it.id);
+  if (room) st.room = room;
+  const tags = tagsIn ?? tagsOf(it);
+  const p = promptWith(it, st, tags, negative);
+  // same seeds as the last take (to see what an edit changed) or fresh ones
+  const last = st.takes[st.takes.length - 1];
+  const seeds = sameSeeds && last ? Array.from({ length: n }, (_, i) => last.seeds[i] ?? Math.floor(Math.random() * 2 ** 31)) : Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
+  const id = `t${Date.now().toString(36)}${(takeN++ % 1000).toString(36)}`;
+  const { comfy: _c, ...used } = settings;
+  st.takes.push({ id, at: new Date().toISOString(), tags, negative, positive: p.positive, negativeFull: p.negative, seeds, files: seeds.map(() => null), marks: seeds.map(() => null), settings: used, room: st.room ?? it.room });
+  if (!st.status || st.status === "todo") st.status = "work";
+  saveState(it.id, st);
+  seeds.forEach((_, i) => jobs.push({ scene: it.id, take: id, i, status: "queued", batch }));
+  void pump();
+  return id;
+}
+// pictures still owed after a restart (a closed window, a crash): put them back in the queue
+for (const it of items) {
+  if (!existsSync(stateFile(it.id))) continue;
+  for (const t of stateOf(it.id).takes) t.files.forEach((f, i) => { if (!f) jobs.push({ scene: it.id, take: t.id, i, status: "queued", batch: true }); });
+}
+if (jobs.length) { console.log(`resuming ${jobs.length} pictures left from last time`); void pump(); }
 // ---------- HTTP ----------
 const json = (res: import("node:http").ServerResponse, code: number, v: unknown) => { res.writeHead(code, { "content-type": "application/json; charset=utf-8" }); res.end(JSON.stringify(v)); };
 const body = (req: import("node:http").IncomingMessage) => new Promise<Record<string, unknown>>((ok) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => ok(b ? JSON.parse(b) : {})); });
@@ -212,29 +240,36 @@ createServer(async (req, res) => {
       const b = await body(req);
       const it = items.find((x) => x.id === b.id);
       if (!it || !SAFE.test(it.id)) return json(res, 404, { error: "no such scene" });
-      const n = Math.max(1, Math.min(8, Number(b.n) || 1));
-      const st = stateOf(it.id);
-      if (b.room) st.room = String(b.room);
-      const tags = String(b.tags ?? tagsOf(it)), negative = String(b.negative ?? "");
-      const p = promptWith(it, st, tags, negative);
-      // same seeds as the last take (to see what an edit changed) or fresh ones
-      const last = st.takes[st.takes.length - 1];
-      const seeds = b.sameSeeds && last ? Array.from({ length: n }, (_, i) => last.seeds[i] ?? Math.floor(Math.random() * 2 ** 31)) : Array.from({ length: n }, () => Math.floor(Math.random() * 2 ** 31));
-      const id = `t${Date.now().toString(36)}`;
-      const { comfy: _c, ...used } = settings;
-      st.takes.push({ id, at: new Date().toISOString(), tags, negative, positive: p.positive, negativeFull: p.negative, seeds, files: seeds.map(() => null), marks: seeds.map(() => null), settings: used, room: st.room ?? it.room });
-      if (!st.status || st.status === "todo") st.status = "work";
-      saveState(it.id, st);
-      seeds.forEach((_, i) => jobs.push({ scene: it.id, take: id, i, status: "queued" }));
-      void pump();
+      const id = newTake(it, Number(b.n) || 1, b.tags === undefined ? undefined : String(b.tags), String(b.negative ?? P.negatives[it.id] ?? ""), b.room ? String(b.room) : undefined, !!b.sameSeeds, false);
       return json(res, 200, { take: id });
+    }
+    if (r === "/api/batch" && req.method === "POST") {
+      // N frames for every scene (or close-up) that has no takes yet, in list order, behind your own clicks
+      const b = await body(req);
+      const kind = b.kind === "detail" ? "detail" : b.kind === "all" ? null : "scene";
+      const todo = items.filter((it) => (!kind || it.kind === kind) && stateOf(it.id).takes.length === 0);
+      for (const it of todo) newTake(it, Number(b.n) || 4, undefined, P.negatives[it.id] ?? "", undefined, false, true);
+      return json(res, 200, { scenes: todo.length, pictures: todo.length * (Number(b.n) || 4) });
+    }
+    if (r === "/api/batch/cancel" && req.method === "POST") {
+      // drop the batch pictures not drawn yet; takes left without a single picture are removed, drawn ones stay
+      const dropped = jobs.filter((j) => j.status === "queued" && j.batch);
+      for (const j of dropped) j.status = "error", j.error = "cancelled";
+      for (const id of new Set(dropped.map((j) => j.scene))) {
+        const st = stateOf(id);
+        st.takes = st.takes.filter((t) => t.files.some(Boolean) || jobs.some((j) => j.take === t.id && (j.status === "queued" || j.status === "drawing")));
+        st.takes.forEach((t) => { const keep = t.files.map((f, i) => !!f || jobs.some((j) => j.take === t.id && j.i === i && j.status === "drawing")); t.seeds = t.seeds.filter((_, i) => keep[i]); t.files = t.files.filter((_, i) => keep[i]); t.marks = t.marks.filter((_, i) => keep[i]); });
+        if (!st.takes.length && st.status === "work") st.status = "todo";
+        saveState(id, st);
+      }
+      return json(res, 200, { cancelled: dropped.length });
     }
     if (r === "/api/jobs") {
       const live = jobs.filter((j) => j.status === "queued" || j.status === "drawing");
-      const errs = jobs.filter((j) => j.status === "error").slice(-3);
+      const errs = jobs.filter((j) => j.status === "error" && j.error !== "cancelled").slice(-3);
       let comfyOk = false;
       try { comfyOk = (await fetch(`${settings.comfy}/system_stats`, { signal: AbortSignal.timeout(1500) })).ok; } catch {}
-      return json(res, 200, { queued: live.filter((j) => j.status === "queued").length, drawing: live.find((j) => j.status === "drawing") ?? null, errors: errs, comfyOk, comfy: settings.comfy });
+      return json(res, 200, { batch: live.filter((j) => j.batch).length, queued: live.filter((j) => j.status === "queued").length, drawing: live.find((j) => j.status === "drawing") ?? null, errors: errs, comfyOk, comfy: settings.comfy });
     }
     if (r === "/api/mark" && req.method === "POST") {
       const b = await body(req);

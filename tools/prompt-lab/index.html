@@ -42,7 +42,9 @@ details summary{cursor:pointer;color:var(--dim);font-size:12px}details pre{white
     <select id="fs"><option value="">любой статус</option><option value="todo">не начато</option><option value="work">в работе</option><option value="done">готово</option></select>
   </header>
   <div id="list"></div>
-  <div style="padding:8px;border-top:1px solid var(--line)"><details><summary>Настройки генерации</summary><div id="set"></div></details></div>
+  <div style="padding:8px;border-top:1px solid var(--line)">
+    <div class="row" style="margin:0 0 6px"><button id="batch" title="по 4 кадра на каждую сцену без генераций, по порядку списка; твои клики идут вне очереди">4 кадра на все новые сцены</button><button id="bcancel">стоп</button></div>
+    <details><summary>Настройки генерации</summary><div id="set"></div></details></div>
 </aside>
 <main id="main"><p class="hint">Выбери сцену слева.</p></main>
 <div id="status">…</div>
@@ -152,7 +154,7 @@ async function poll() {
   clearTimeout(timer);
   const j = await api("/api/jobs");
   $("#status").innerHTML = (j.comfyOk ? "ComfyUI ✓" : `<span style="color:#e66">ComfyUI не отвечает (${esc(j.comfy)})</span>`) +
-    (j.drawing ? ` · рисую ${esc(j.drawing.scene)} · в очереди ${j.queued}` : " · свободно") + (j.errors.length ? ` · <span style="color:#e66">${esc(j.errors[j.errors.length - 1].error)}</span>` : "");
+    (j.drawing ? ` · рисую ${esc(j.drawing.scene)} · в очереди ${j.queued}${j.batch ? ` (пакет ${j.batch}, ~${Math.round(j.batch * 10 / 60)} мин)` : ""}` : " · свободно") + (j.errors.length ? ` · <span style="color:#e66">${esc(j.errors[j.errors.length - 1].error)}</span>` : "");
   if (scene && (j.drawing || j.queued)) {
     // refresh pictures of the open scene as they land
     const fresh = await api("/api/scene?id=" + scene.id);
@@ -161,6 +163,7 @@ async function poll() {
     if (changed) { scene.takes = fresh.takes; $("#takes").innerHTML = scene.takes.map(takeHtml).join(""); }
     if (keep.tags !== undefined) { scene.tags = keep.tags; }
   }
+  if ((j.drawing || j.queued) && Date.now() - (window.lastList || 0) > 15000) { window.lastList = Date.now(); loadList(); }
   timer = setTimeout(poll, j.drawing || j.queued ? 1500 : 5000);
 }
 async function settingsUi() {
@@ -171,6 +174,8 @@ async function settingsUi() {
     await api("/api/settings", o); poll();
   };
 }
+$("#batch").onclick = async () => { const r = await api("/api/batch", { n: 4, kind: "scene" }); alert(`В очереди ${r.scenes} сцен, ${r.pictures} кадров (~${Math.round(r.pictures * 10 / 60)} мин)`); poll(); loadList(); };
+$("#bcancel").onclick = async () => { const r = await api("/api/batch/cancel", {}); alert(`Снято ${r.cancelled} кадров. Нарисованное осталось.`); poll(); loadList(); };
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#zoom").style.display = "none"; });
 loadList(); poll(); settingsUi();
 </script>
