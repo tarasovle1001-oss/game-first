@@ -35,7 +35,10 @@ async function vast(route, init = {}) {
 async function offers(gpus = 1, disk = 100) {
   const q = { verified: { eq: true }, rentable: { eq: true }, num_gpus: { eq: gpus }, gpu_name: { in: ["RTX 5090"] }, disk_space: { gte: disk }, inet_down: { gte: 200 }, reliability2: { gte: 0.97 }, order: [["dph_total", "asc"]], type: "on-demand", limit: 16 };
   const r = await vast(`/v0/bundles/?q=${encodeURIComponent(JSON.stringify(q))}`);
-  return (r.offers ?? []).filter((o) => !/(^|,\s*)(CN|HK)$|China|Hong Kong/i.test(String(o.geolocation ?? "")));
+  // machines the Quick Run has already marked broken
+  let bad = [];
+  try { bad = JSON.parse(readFileSync(join(WAYWARD, ".tools", "server-batches", "quick-config.json"), "utf8")).badMachines ?? []; } catch {}
+  return (r.offers ?? []).filter((o) => !bad.includes(o.machine_id) && !/(^|,\s*)(CN|HK)$|China|Hong Kong/i.test(String(o.geolocation ?? "")));
 }
 
 // the bootstrap and status scripts of the Wayward cloud panel
