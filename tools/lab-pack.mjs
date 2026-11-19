@@ -19,7 +19,8 @@ const entries = {};
 for (const f of readdirSync(run).filter((x) => /\.(png|webp|jpe?g)$/i.test(x)).sort()) {
   const head = readFileSync(join(run, f)).subarray(0, 12);
   const ext = head.toString("latin1", 8, 12) === "WEBP" ? "webp" : "png";
-  const rel = `${f.replace(/\.(png|webp|jpe?g)$/i, "").replace(/[^\w.~-]/g, "_")}.${ext}`;
+  // the lab serves only [\w./-] paths: "~2" becomes "_v2", "+" becomes "_"
+  const rel = `${f.replace(/\.(png|webp|jpe?g)$/i, "").replace(/~(\d+)$/, "_v$1").replace(/[^\w.-]/g, "_")}.${ext}`;
   copyFileSync(join(run, f), join(dir, rel));
   entries[`tc__scene-${layoutOf(f).toLowerCase().replace(/[^a-z0-9_]/g, "_")}__${rel.replace(/\.\w+$/, "")}`] = rel;
 }
