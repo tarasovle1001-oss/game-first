@@ -8,7 +8,7 @@
 style:
   prefix: "masterpiece, best quality, sora \\(soraoraora\\)"
   detail: "extreme close-up, cropped, head out of frame, faceless, simple background, dark neutral background, blurred background, shallow depth of field" # every free close-up: no room, no faces
-  negative: "worst quality, low quality, blurry, bad anatomy, extra limbs, deformed, text, watermark, signature, ugly, duplicate, 3d, realistic, photorealistic, comic, multiple panels, 2koma, 4koma, panels, inset, (futanari:1.3), newhalf, (penis on female:1.2), child, loli, shota, aged down"
+  negative: "worst quality, low quality, blurry, bad anatomy, extra limbs, deformed, text, watermark, signature, ugly, duplicate, 3d, realistic, photorealistic, comic, multiple panels, 2koma, 4koma, panels, inset, multiple views, split screen, (2girls:1.3), multiple girls, censored, bar censor, mosaic censoring, speech bubble, clone, extra penis, penis outside, penis on stomach, (futanari:1.3), newhalf, (penis on female:1.2), child, loli, shota, aged down"
 # per scene layout: "scene" = shared words for the whole frame (composition, camera, what is going on between them),
 # one entry per role = that figure: pose, where the hands are, where the eyes look. Same ids as scenes.yaml.
 poses:
@@ -234,3 +234,98 @@ details:
   "xray_a": "x-ray view of penis inside anus, internal detail, stretched walls"
   "xray_toy": "x-ray view of toy inside, internal stretch, detailed"
   "xray_v": "x-ray view of penis inside pussy, internal detail, stretched walls"
+# Booru tags of each scene: who does what and the camera. Taken from the prompts of Alexey's Wayward packs (the source scene after #);
+# when a scene has tags they lead the prompt and its English pose slots are not used. Empty: the old pose slots stay.
+tags:
+  idle: "1girl, solo, standing, relaxed, hands together, cowboy shot" # idle
+  serving: "1girl, solo, walking, carrying tray, mugs of ale, cowboy shot" # serving
+  patron_chatting: "1girl, 1boy, talking, sitting at table, smile, mug of ale, cowboy shot" # patron_chatting
+  patron_drinking: "1girl, 1boy, talking, sitting at table, smile, mug of ale, cowboy shot" # patron_chatting
+  patron_flirting: "1girl, 1boy, flirting, whispering, leaning close, playful smile, blush, upper body" # patron_flirting
+  patron_touching: "1girl, 1boy, sitting together, hand on another's thigh, flustered, blush, looking away, cowboy shot" # patron_touching
+  patron_moment_sit_on_lap: "1girl, 1boy, sitting on lap, smile, man sitting in chair, cowboy shot" # patron_moment_sit_on_lap
+  kissing: "1girl, 1boy, hetero, kiss, hug, closed eyes, blush, upper body" # kissing
+  patron_groping: "1girl, 1boy, hetero, grabbing another's breast, from behind, blush, surprised, cowboy shot" # patron_groping
+  patron_lap_dance: "1girl, 1boy, hetero, lap dance, straddling, girl on top, seductive, from side" # patron_lap_dance
+  patron_handjob: "1girl, 1boy, hetero, (handjob:1.2), (stroking penis:1.2), hand on penis, penis, kneeling, man sitting in chair, from side" # patron_handjob
+  patron_blowjob: "1girl, 1boy, hetero, fellatio, penis in mouth, penis, kneeling, looking up, man standing, tall male, height difference, from side" # patron_blowjob
+  patron_cunnilingus: "1girl, 1boy, hetero, cunnilingus, sitting on table, spread legs, head back, from side" # patron_cunnilingus
+  patron_sex: "1girl, 1boy, hetero, sex from behind, doggystyle, all fours, vaginal, penis, penetration, insertion, moaning, stomach bulge, from side" # patron_sex
+  patron_riding: "1girl, 1boy, hetero, cowgirl position, girl on top, straddling, sex, vaginal, penis, penetration, insertion, stomach bulge, from side" # patron_riding
+  patron_anal: "1girl, 1boy, hetero, anal, (penis in ass:1.2), anal penetration, insertion, from behind, bent over, stomach bulge, from side" # patron_anal
+  sex: "1girl, 1boy, hetero, sex, vaginal, penis, penetration, insertion, missionary, lying on back, spread legs, man between legs, moaning, stomach bulge, from side" # sex
+  left_wanting: "1girl, solo, sitting on edge of bed, after sex, frustrated, aroused, flushed, biting lip, looking away, sweat, messy hair, thighs pressed together, full body" # left_wanting
+  cunnilingus: "1girl, 1boy, hetero, cunnilingus, spread legs, lying on back, head back, from above" # cunnilingus
+  cold_back: "1girl, solo, lying on side, on bed, facing away, back to viewer, under blanket, bare shoulders, night, dark room, from behind" # cold_back
+  sleeping: "1girl, solo, sleeping, lying in bed, closed eyes, head on pillow, blanket, from above" # sleeping
+  fd_tease: "1girl, 1boy, hetero, femdom, clothed, standing behind man, grabbing crotch, hand on another's crotch, smirk, whispering, man blushing, flustered, cowboy shot" # fd_tease
+  fd_facesit: "1girl, 1boy, hetero, femdom, facesitting, sitting on face, girl on top, thighs, man lying on back, hands-free ejaculation, cum, looking down, blush, bed, full body" # fd_facesit
+  fd_ignore: "1girl, 1boy, hetero, femdom, handjob, lying on bed, looking away, bored, expressionless, man lying on back, ejaculation, cum, bedroom, full body" # fd_ignore
+  patron_titfuck: "1girl, 1boy, hetero, paizuri, penis between breasts, (hands on own breasts:1.2), breasts squeezed together, kneeling, man standing, tall male, height difference, from side" # patron_titfuck
+  patron_thigh_job: "1girl, 1boy, hetero, thigh sex, penis between thighs, spooning, lying on side, from side" # patron_thigh_job
+  patron_deepthroat: "1girl, 1boy, hetero, deepthroat, penis in mouth, hand on another's head, kneeling, tears, man standing, tall male, height difference, from side" # patron_deepthroat
+  patron_standing_sex: "1girl, 1boy, hetero, standing sex, against wall, leg lift, vaginal, penis, penetration, insertion, stomach bulge, from side" # patron_standing_sex
+  came_too_soon_foreplay: "1girl, 1boy, hetero, (clothed:1.2), sitting on edge of bed, man sitting next to her, (wet cum stain on crotch of his pants:1.4), embarrassed man looking down, she covers her mouth with her hand, surprised, disappointed, looking at his crotch, flushed, cowboy shot, ejaculation, cum" # came_too_soon_foreplay
+  premature_finish: "1girl, 1boy, hetero, after sex, lying on back, spread legs, (creampie:1.2), (cum in pussy:1.2), cumdrip, man kneeling between her legs, (flaccid penis:1.2), sweat, flushed, frustrated, unsatisfied, disappointed, looking at him, from above" # premature_finish
+  finishing_herself: "1girl, 1boy, (adult man, 30s, stubble, broad shoulders:1.2), lying in bed, (sharing a bed:1.3), (man lying right beside her in the same bed:1.3), sleeping man, his back turned to her, female masturbation, her own hand between her legs, biting lip, flushed, eyes half closed, night, dim light, from above" # finishing_herself
+  faking_it: "1girl, 1boy, hetero, sex, vaginal, penis, penetration, insertion, missionary, lying on back, spread legs, man between legs, his face in the pillow beside her head, she looks away, (bored:1.2), (unimpressed:1.1), fake moaning, half-closed eyes, rolling eyes, from side" # faking_it
+  patron_grinding: "1girl, 1boy, hetero, straddling, grinding, girl on top, clothed sex, from side" # patron_grinding
+  patron_mutual_touching: "1girl, 1boy, hetero, mutual masturbation, handjob, hand on penis, penis, fingering, hand under skirt, sitting side by side, from side" # patron_mutual_touching
+  grinding: "1girl, 1boy, hetero, straddling, grinding, girl on top, clothed sex, man sitting, from side" # grinding
+  mutual_touching: "1girl, 1boy, hetero, (mutual masturbation:1.2), (handjob:1.2), (fingering:1.2), hand on penis, penis, hand under skirt, sitting side by side, close-up, man's face out of frame, upper body" # mutual_touching
+  handjob: "1girl, 1boy, hetero, handjob, penis, hand on penis, stroking, close-up, man's face out of frame, looking up, upper body" # handjob
+  blowjob: "1girl, 1boy, hetero, fellatio, penis in mouth, penis, close-up, man's face out of frame, looking up, upper body" # blowjob
+  riding: "1girl, 1boy, hetero, cowgirl position, girl on top, straddling, sex, vaginal, penis in pussy, penetration, insertion, man lying on back, man's face out of frame, bouncing breasts, from front" # riding
+  anal: "1girl, 1boy, hetero, anal, (penis in ass:1.2), anal penetration, insertion, from behind, bent over, on bed, gripping sheets, from side" # anal
+  prostate: "1girl, 1boy, hetero, femdom, prostate massage, fingering ass, finger in anus, man on all fours, girl behind man, precum, cum drip, smile, bed, full body" # fd_prostate
+  pegging: "1girl, 1boy, hetero, femdom, pegging, strap-on, dildo harness, girl penetrating man, man on all fours, from behind, hands on hips, hands-free ejaculation, cum on bed, full body" # fd_pegging
+  came_prostate: "1girl, 1boy, hetero, femdom, prostate massage, fingering ass, finger in anus, man on all fours, girl behind man, precum, cum drip, smile, bed, full body, ejaculation, cum" # fd_prostate
+  came_pegging: "1girl, 1boy, hetero, femdom, pegging, strap-on, dildo harness, girl penetrating man, man on all fours, from behind, hands on hips, hands-free ejaculation, cum on bed, full body" # fd_pegging
+  patron_breast_play: "1girl, 1boy, hetero, breast sucking, grabbing another's breast, head back, upper body" # patron_breast_worship
+  patron_fingering: "1girl, 1boy, hetero, sitting on lap, fingering, hand under skirt, blush, open mouth, cowboy shot" # patron_intimate_lap
+  breast_play: "1girl, 1boy, hetero, breast sucking, nipple sucking, face on breast, head back, closed eyes, upper body" # breast_worship
+  fingering: "1girl, 1boy, hetero, fingering, man's hand between her legs, sitting on couch, man sitting beside her, spread legs, open mouth, blush, from side" # fingered
+  sixty_nine: "1girl, 1boy, hetero, cunnilingus, spread legs, lying on back, head back, from above" # sixty_nine
+  by_hand: "1girl, 1boy, hetero, handjob, penis, hand on penis, stroking, close-up, man's face out of frame, looking up, upper body" # handjob
+  patron_fin_face: "1girl, 1boy, hetero, facial, penis, kneeling, closed eyes, ejaculation, man standing, tall male, height difference, from side" # patron_facial
+  patron_fin_mouth: "1girl, 1boy, hetero, swallowing, after fellatio, kneeling, open mouth, man standing, tall male, height difference, from side" # patron_blowjob_swallow
+  patron_fin_chest: "1girl, solo, lying on back, after sex, heavy breathing, blush, looking at viewer, from above" # finish_on_chest
+  patron_fin_body: "1girl, 1boy, hetero, lying on back, after sex, heavy breathing, penis, ejaculation, from above" # finish_on_stomach
+  patron_fin_hands: "1girl, 1boy, hetero, after handjob, penis, smile, ejaculation, from side" # patron_handjob_finish
+  patron_fin_inside: "1girl, 1boy, hetero, after sex, lying on back, spread legs, panting, exhausted, penis, from above" # patron_sex_finish
+  patron_fin_anus: "1girl, 1boy, hetero, after anal, lying on stomach, ass, from behind" # patron_anal_finish
+  fin_face: "1girl, 1boy, hetero, facial, penis, closed eyes, ejaculation, close-up, man's face out of frame, looking up, upper body" # facial
+  fin_mouth: "1girl, 1boy, hetero, fellatio, cum in mouth, ejaculation, close-up, man's face out of frame, looking up, upper body" # cum_in_mouth
+  fin_chest: "1girl, solo, lying on back, after sex, heavy breathing, blush, looking at viewer, from above" # finish_on_chest
+  fin_belly: "1girl, 1boy, hetero, lying on back, after sex, heavy breathing, penis, ejaculation, from above" # finish_on_stomach
+  fin_back: "1girl, solo, lying on stomach, after sex, looking back, heavy breathing, blush, from above" # finish_on_back
+  fin_inside: "1girl, 1boy, hetero, after sex, lying on back, spread legs, panting, exhausted, penis, from above" # patron_sex_finish
+  lead_ruined: "1girl, 1boy, hetero, femdom, ruined orgasm, hand away from penis, edging, penis twitching, dripping cum, smirk, looking at penis, bed, cowboy shot" # fd_ruined
+  lead_lick_clean: "1girl, 1boy, hetero, cleaning fellatio, licking penis, tongue out, holding penis, close-up, man's face out of frame, looking up, upper body" # clean_with_mouth
+  her_cook: "1girl, solo, stirring pot, steam, kitchen, cowboy shot" # cooking
+  her_tidy: "1girl, solo, wiping table, bending forward, cloth in hand, cowboy shot" # cleaning
+  bath_together: "1girl, 1boy, hetero, bathing together, wooden bathtub, water, steam, sitting, upper body" # bath_with_patron
+  flash: "1girl, solo, flashing, breasts out, lifting shirt, looking at viewer, blush, upper body" # patron_moment_flash_tits
+  ignore_handjob: "1girl, 1boy, hetero, femdom, handjob, lying on bed, looking away, bored, expressionless, man lying on back, ejaculation, cum, bedroom, full body" # fd_ignore
+  came_ignore_handjob: "1girl, 1boy, hetero, femdom, handjob, lying on bed, looking away, bored, expressionless, man lying on back, ejaculation, cum, bedroom, full body" # fd_ignore
+  facesitting: "1girl, 1boy, hetero, femdom, facesitting, sitting on face, girl on top, thighs, man lying on back, hands-free ejaculation, cum, looking down, blush, bed, full body" # fd_facesit
+  came_facesitting: "1girl, 1boy, hetero, femdom, facesitting, sitting on face, girl on top, thighs, man lying on back, hands-free ejaculation, cum, looking down, blush, bed, full body" # fd_facesit
+  edging: "1girl, 1boy, hetero, femdom, ruined orgasm, hand away from penis, edging, penis twitching, dripping cum, smirk, looking at penis, bed, cowboy shot" # fd_ruined
+  came_edging: "1girl, 1boy, hetero, femdom, ruined orgasm, hand away from penis, edging, penis twitching, dripping cum, smirk, looking at penis, bed, cowboy shot, ejaculation, cum" # fd_ruined
+  cleanup: "1girl, 1boy, hetero, cleaning fellatio, licking penis, tongue out, holding penis, close-up, man's face out of frame, looking up, upper body" # clean_with_mouth
+  came_cleanup: "1girl, 1boy, hetero, cleaning fellatio, licking penis, tongue out, holding penis, close-up, man's face out of frame, looking up, upper body, ejaculation, cum" # clean_with_mouth
+  chastity: "1girl, 1boy, hetero, femdom, chastity cage, chastity device, man kneeling, girl standing, holding key, key necklace, looking down, smirk, bedroom, full body" # fd_cage
+  came_chastity: "1girl, 1boy, hetero, femdom, chastity cage, chastity device, man kneeling, girl standing, holding key, key necklace, looking down, smirk, bedroom, full body, ejaculation, cum" # fd_cage
+  masturbate_show: "1girl, solo, lying on back, knees apart, fingering, hand on own breast, closed eyes, from above" # self_pleasure
+  came_masturbate_show: "1girl, solo, lying on back, knees apart, fingering, hand on own breast, closed eyes, from above, ejaculation, cum" # self_pleasure
+  tease_denial: "1girl, 1boy, hetero, femdom, hands-free ejaculation, no hands, whispering in ear, leaning close, smug, man trembling, cum, sitting on bed, cowboy shot" # fd_handsfree
+  came_tease_denial: "1girl, 1boy, hetero, femdom, hands-free ejaculation, no hands, whispering in ear, leaning close, smug, man trembling, cum, sitting on bed, cowboy shot" # fd_handsfree
+  thigh_ride: "1girl, 1boy, hetero, thigh sex, penis between thighs, lying on side, spooning, from side" # thigh_job
+  came_thigh_ride: "1girl, 1boy, hetero, femdom, lying on side, reading book, ignoring, man behind her, frottage, penis on thigh, ejaculation, cum on thigh, bored, bed, full body" # fd_rub
+  night_awake: "1girl, 1boy, (adult man, 30s, stubble, broad shoulders:1.2), lying in bed, (sharing a bed:1.3), (man lying right beside her in the same bed:1.3), sleeping man, his back turned to her, female masturbation, her own hand between her legs, biting lip, flushed, eyes half closed, night, dim light, from above" # finishing_herself
+  striptease: "1girl, solo, dancing, arms up, hips swaying, smile, full body" # patron_moment_pose_dance
+  sauna_massage: "1girl, 1boy, bathhouse, washing another, sponge, steam, man sitting in bathtub, cowboy shot" # bath_attendant
+  titfuck: "1girl, 1boy, hetero, paizuri, penis between breasts, (hands on own breasts:1.2), breasts squeezed together, kneeling, man standing, from side" # titfuck
+  him_kiss: "1girl, 1boy, hetero, kiss, hug, closed eyes, blush, upper body" # kissing
+  him_grope: "1girl, 1boy, hetero, grabbing another's breast, groping, hug from behind, man behind her, blush, upper body" # groped_tits
+  her_solo: "1girl, solo, lying on back, knees apart, fingering, hand on own breast, closed eyes, from above" # self_pleasure

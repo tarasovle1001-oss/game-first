@@ -85,7 +85,9 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   // a free close-up has no layout: its words are one line, plus a line for each tag it carries
   const isDetail = desc.type.startsWith("detail_");
   const detailWords = isDetail ? [P.details[desc.type.slice(7)] ?? "", ...Object.entries(t).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
-  const slots = isDetail ? { scene: detailWords } : (P.poses[desc.type] ?? {});
+  // booru tags of the scene (prompt.yaml: tags) lead the prompt; a scene that has them does not use its English pose slots
+  const booru = isDetail ? "" : (P.tags[desc.type] ?? "").trim();
+  const slots = isDetail ? { scene: detailWords } : booru ? {} : (P.poses[desc.type] ?? {});
   const empty: string[] = [];
   const slot = (name: string) => {
     const v = slots[name] ?? "";
@@ -101,22 +103,36 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const counts = [desc.participants.some((p) => p.role === "wife") ? "1girl" : "", men > 0 ? `${men}boy${men > 1 ? "s" : ""}` : ""];
   const act = sceneAct(desc.type);
   if (!P.style.prefix.trim()) empty.push("style.prefix");
-  const shared = join([
-    P.style.prefix,
-    counts,
-    act ? W.act[act.id] : undefined,
-    t.fin ? W.fin[t.fin] : undefined,
-    slot("scene"),
-    // a close-up has no room in it: a blank, out-of-focus background instead, so one picture fits anywhere
-    isDetail ? P.style.detail : (W.room[desc.location] ?? desc.location),
-    t.crowd ? "crowd, onlookers" : undefined,
-  ]);
+  // quality first, then who does what, then the style trigger (the order the Wayward packs were drawn with)
+  const prefix = P.style.prefix.split(",").map((w) => w.trim());
+  const trigger = prefix.filter((w) => /sora|\\\(/.test(w));
+  const quality = prefix.filter((w) => !trigger.includes(w));
+  const room = isDetail ? P.style.detail : `(${W.room[desc.location] ?? desc.location}:1.2)`;
+  const shared = booru
+    ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, t.fin ? W.fin[t.fin] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
+    : join([
+        P.style.prefix,
+        counts,
+        act ? W.act[act.id] : undefined,
+        t.fin ? W.fin[t.fin] : undefined,
+        slot("scene"),
+        // a close-up has no room in it: a blank, out-of-focus background instead, so one picture fits anywhere
+        isDetail ? P.style.detail : (W.room[desc.location] ?? desc.location),
+        t.crowd ? "crowd, onlookers" : undefined,
+      ]);
 
   const regions: Record<string, string> = {};
   for (const role of drawn) {
     const size = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? W.size[Number(t[SIZE_TAG[role]!])] : undefined;
-    regions[role] = join([...who(cast, role, isDetail), role === "wife" ? wifeWords(t) : [], size, isDetail ? "" : slot(role)]);
+    regions[role] = join([...who(cast, role, isDetail), role === "wife" ? wifeWords(t) : [], size, isDetail || booru ? "" : slot(role)]);
   }
-  const negative = join([P.style.negative, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
-  return { key, file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive: join([shared, ...Object.values(regions)]), negative, empty };
+  // one man in the scene: no second one, no crowd of copies
+  const negative = join([P.style.negative, men === 1 ? "(2boys:1.2), multiple boys" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
+  // her first, then the room, then the men (with tags the room sits between them, as in the old packs)
+  const others = Object.entries(regions).filter(([r]) => r !== "wife").map(([, v]) => v);
+  const positive = booru && !isDetail ? join([shared, regions.wife, room, ...others]) : join([shared, ...Object.values(regions)]);
+  // what one figure asks for (his pale skin) must not be forbidden by another figure's card
+  const asked = new Set(positive.split(",").map((w) => w.trim().replace(/^\((.*):[\d.]+\)$/, "$1").toLowerCase()));
+  const neg = negative.split(", ").filter((w) => !asked.has(w.trim().replace(/^\((.*):[\d.]+\)$/, "$1").toLowerCase())).join(", ");
+  return { key, file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive, negative: neg, empty };
 }

@@ -40,7 +40,9 @@ for (const l of content.scenes) {
   const rooms = [...(seen.get(l.id) ?? new Map()).entries()].sort((a, b) => b[1] - a[1]);
   const roles = [...new Set(l.figures.map((f) => f.role))];
   const room = rooms[0]?.[0] ?? (roles.includes("husband") && !roles.some((r) => r.startsWith("patron")) ? "home.bedroom" : "cafe.hall");
-  push({ type: l.id, location: room, participants: roles.map((r) => ({ id: r, role: r })), tags: {} }, "scene", rooms.reduce((a, r) => a + r[1], 0));
+  // what she has on, by place: the work dress at the cafe and in town, a nightgown at home (no outfit = the model picks)
+  const outfit = room.startsWith("home.") ? "nightgown" : "modest";
+  push({ type: l.id, location: room, participants: roles.map((r) => ({ id: r, role: r })), tags: roles.includes("wife") ? { outfit } : {} }, "scene", rooms.reduce((a, r) => a + r[1], 0));
 }
 
 // close-ups: the list and who is in each from docs/INSERTS.md

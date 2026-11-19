@@ -57,7 +57,9 @@ if (poses) rows = rows.filter((r) => {
 
 mkdirSync(outDir, { recursive: true });
 const stem = (r: Row) => r.file.replace(/\.png$/, "");
-const jobs = rows.flatMap((r) => Array.from({ length: per }, (_, i) => ({ row: r, i, seed: seed0 + i, name: `${stem(r)}~${i + 1}.png` }))).filter((j) => !existsSync(join(outDir, j.name)));
+// every picture key has its own seeds: the same seed for every key drew near-identical frames where prompts were alike
+const keySeed = (k: string) => [...k].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7) % 1_000_000;
+const jobs = rows.flatMap((r) => Array.from({ length: per }, (_, i) => ({ row: r, i, seed: seed0 + keySeed(r.key) * 16 + i, name: `${stem(r)}~${i + 1}.png` }))).filter((j) => !existsSync(join(outDir, j.name)));
 writeFileSync(join(outDir, "prompts.json"), JSON.stringify(rows, null, 1));
 console.log(`${rows.length} picture keys x ${per} = ${jobs.length} to draw (existing skipped) -> ${outDir}`);
 if (flag("dry")) process.exit(0);

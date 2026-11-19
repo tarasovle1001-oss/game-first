@@ -8,9 +8,9 @@
 # Taken from Alexey's own cards and V2 settings (cards/goth-card.json, regen/settings-v2.json).
 - id: default
   name: Goth (own heroine)
-  wife: { anchor: "", strength: 1.2, appearance: "black hair, long hair, blunt bangs, purple eyes, tsurime, thick eyebrows, mascara, long eyelashes, lips, thick lips, black lipstick, eyeliner, pale skin, black choker, ear piercing, goth fashion, mature woman", body: "slim, slender body, medium breasts, (narrow waist:1.3), (ass visible through thighs:1.3)", negative: "flat ass" }
+  wife: { anchor: "", strength: 1.2, appearance: "black hair, long hair, blunt bangs, purple eyes, tsurime, thick eyebrows, mascara, long eyelashes, lips, thick lips, black lipstick, eyeliner, (pale skin:1.2), black choker, ear piercing, goth fashion, mature woman", body: "slim, slender body, medium breasts, (narrow waist:1.3), (ass visible through thighs:1.3)", negative: "flat ass" }
   husband: { anchor: "", strength: 1.2, appearance: "30s, stubble, facial hair, tired eyes, very short hair, (pale-skinned male:1.35), pale skin", body: "slim male, average build, soft body, (belly:1.0)", negative: "(muscular male:1.4), (toned male:1.3), (abs:1.3), bara, broad shoulders, tall male, (dark-skinned male:1.3), tan, (teenage:1.3), (young:1.2), boy, youthful face" }
-  patron: { anchor: "", strength: 1.2, appearance: "faceless male, black hair, very short hair, (dark-skinned male:1.2), very dark skin", body: "tall male, broad shoulders", negative: "mannequin, statue, grey skin" }
+  patron: { anchor: "", strength: 1.2, appearance: "faceless male, black hair, very short hair, dark-skinned male", body: "tall male, lean muscular, large penis", negative: "mannequin, statue, grey skin, pale-skinned male, small penis, short male" }
   patron2: { anchor: "", strength: 1.2, appearance: "faceless male, brown hair, short hair, pale-skinned male", body: "tall male, broad shoulders", negative: "mannequin, statue, grey skin" }
   patron3: { anchor: "", strength: 1.2, appearance: "faceless male, bald, tan, tanned male", body: "tall male, broad shoulders", negative: "mannequin, statue, grey skin" }
   watcher: { anchor: "", strength: 1.2, appearance: "faceless male, background figure, clothed male", body: "", negative: "" }

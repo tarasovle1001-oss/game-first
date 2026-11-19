@@ -6,6 +6,7 @@ import { awayStrategy } from "../src";
 
 const engine = createEngine([baseMod]);
 const W = content.look.words;
+const P = content.prompt;
 
 describe("picture prompts", () => {
   it("has a slot for every figure of every layout", () => {
@@ -33,7 +34,8 @@ describe("picture prompts", () => {
     expect(p.regions.wife).not.toContain(W.size[4]);
     expect(p.shared).toContain("1girl");
     expect(p.shared).toContain("1boy");
-    expect(p.shared).toContain(W.act.sex);
+    // a scene with booru tags (prompt.yaml: tags) leads with them instead of the act words
+    expect(p.shared).toContain(P.tags.patron_sex ? "penetration" : W.act.sex);
     expect(p.positive).not.toMatch(/undefined|, ,/);
     // same key, same prompt
     expect(promptFor({ ...desc, participants: [...desc.participants].reverse() })).toEqual(p);
