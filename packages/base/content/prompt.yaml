@@ -473,6 +473,12 @@ tags:
   her_solo: "(female masturbation:1.2), fingering, spread legs, lying on back, on bed, hand on own breast, closed eyes, blush, from above"
 # Extra negative words of a scene, added to the shared negative (tools/prompt-lab).
 negatives: {}
+# A man's nude words (cast.yaml: nude - his penis) go in only when the scene's tags match this: otherwise a dressed man gets drawn exposed.
+penis_when: "\\b(penis|erection|sex|vaginal|anal|fellatio|handjob|paizuri|footjob|69|ejaculation|cum|facial|creampie|masturbation|precum|pegging|chastity cage|thigh sex|prostate|flaccid|premature ejaculation)\\b"
+# ...unless it says he is dressed (a bulge, an outline, a stain on his pants): there his size shows as the bulge
+penis_unless: "outline|bulge|stain on (his )?pants|through (his )?(pants|trousers|fabric)|wet fabric|clothed"
+# Her nude words (cast.yaml: nude) go in only when the scene shows her body: sex, or her own nudity
+her_nude_when: "\\b(penis|sex|vaginal|anal|fellatio|handjob|paizuri|footjob|69|cunnilingus|fingering|masturbation|facesitting|sitting on face|pegging|creampie|cum|nude|nudity|naked|breasts out|flashing|nipples|pussy|ass|panties|topless|bottomless|anilingus|thigh sex|after sex|undressing|showering)\\b"
 # Rules on top of a scene's tags (Alexey's Wayward filters, 19.11): when the scene's tags match `when` (a regex) and not `unless`,
 # with: the scene has that role (patron = any guest, husband), without: it has not. add -> after the scene tags, her -> her part,
 # negative -> the negative. Fixes for problem scenes that are not switched on yet: claude/gen-fixes.md in the project.
@@ -491,6 +497,7 @@ rules:
   - { note: "straddling / standing: not choking", when: "straddling|standing sex", negative: "choking, strangling, hand on another's neck" }
   - { note: "cooking needs things in hand", when: "cooking", add: "cooking pot, ladle, steam" }
   - { note: "a couple: no second girl", when: "hetero", negative: "(yuri:1.3)" }
+  - { note: "dressed men stay dressed", when: ".", unless: "\\b(penis|erection|sex|vaginal|anal|fellatio|handjob|paizuri|footjob|69|ejaculation|cum|facial|creampie|masturbation|precum|pegging|chastity cage|thigh sex|prostate|flaccid|premature ejaculation|nude|nudity)\\b", negative: "penis, testicles, erection, male nudity" }
   - { note: "x-ray has its own close-ups: never in a whole scene", when: ".", negative: "x-ray, cross-section, internal cumshot" }
   - { note: "a guest finishes in her: she comes too", when: "creampie|cum in pussy|cum in ass", with: patron, her: "female orgasm, trembling, arched back" }
   - { note: "after anal: gaping", when: "cum in ass|after anal", her: "gaping, anus" }

@@ -69,13 +69,15 @@ const SIZE_TAG: Record<string, string> = { patron: "size", patron2: "size2", pat
 
 type Role = "wife" | "husband" | "patron" | "patron2" | "patron3" | "watcher";
 /** Who a figure is: always an adult, then the card - the anchor, the look, the body. */
-function who(cast: Cast, role: string, closeUp = false): string[] {
+function who(cast: Cast, role: string, closeUp = false, exposed = false): string[] {
   const card = cast[role as Role];
   const adult = role === "wife" ? "adult woman, mature female" : "adult man, mature male";
   if (!card) return [adult];
+  // nude words (his penis, her "ass visible through thighs") only where the scene shows the body: alone they undress a dressed figure
+  const penis = exposed ? card.nude : "";
   // a faceless close-up keeps the body and the skin of the card, not the face, hair or jewellery that would pull a face in
-  if (closeUp) return [adult, card.appearance.split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), card.body];
-  return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body];
+  if (closeUp) return [adult, card.appearance.split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), card.body, penis];
+  return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body, penis];
 }
 
 /** `castId`: whose pack this is (cast.yaml); the key does not depend on it. */
@@ -131,9 +133,14 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
       ]);
 
   const regions: Record<string, string> = {};
+  const sceneWords = isDetail ? detailWords : booru || slot("scene");
+  const herNude = !!P.her_nude_when && new RegExp(P.her_nude_when, "i").test(`${sceneWords}, ${wifeWords(t).join(", ")}`);
+  const exposed = !!P.penis_when && new RegExp(P.penis_when, "i").test(sceneWords) && !(P.penis_unless && new RegExp(P.penis_unless, "i").test(sceneWords));
   for (const role of drawn) {
-    const size = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? W.size[Number(t[SIZE_TAG[role]!])] : undefined;
-    regions[role] = join([...who(cast, role, isDetail), role === "wife" ? wifeWords(t) : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
+    const cls = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? Number(t[SIZE_TAG[role]!]) : undefined;
+    // dressed, his size shows as how much the bulge stands out, not as a penis
+    const size = cls === undefined ? undefined : exposed ? W.size[cls] : `(bulge:${(0.9 + cls * 0.1).toFixed(1)})`;
+    regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed), role === "wife" ? wifeWords(t) : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
   const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.2), multiple boys" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);

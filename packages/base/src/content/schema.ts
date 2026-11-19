@@ -613,12 +613,15 @@ export const promptSchema = z
     tags: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
     tags_wayward: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
     negatives: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
+    penis_when: z.string().default(""),
+    penis_unless: z.string().default(""),
+    her_nude_when: z.string().default(""),
     rules: z.array(z.object({ note: z.string().default(""), when: z.string().default("."), unless: z.string().optional(), with: z.string().optional(), without: z.string().optional(), add: z.string().optional(), her: z.string().optional(), negative: z.string().optional() }).strict()).default([]),
   })
   .strict();
 export type PromptWords = z.infer<typeof promptSchema>;
 /** cast.yaml: a character card per role. One cast = one picture pack. */
-const cardSchema = z.object({ anchor: z.string().default(""), strength: z.number().min(0.4).max(1.4).default(1.2), appearance: z.string().default(""), body: z.string().default(""), negative: z.string().default("") }).strict();
+const cardSchema = z.object({ anchor: z.string().default(""), strength: z.number().min(0.4).max(1.4).default(1.2), appearance: z.string().default(""), body: z.string().default(""), nude: z.string().default(""), negative: z.string().default("") }).strict();
 export const castSchema = z.object({ id, name: z.string(), wife: cardSchema, husband: cardSchema, patron: cardSchema, patron2: cardSchema, patron3: cardSchema, watcher: cardSchema }).strict();
 export type Cast = z.infer<typeof castSchema>;
 
