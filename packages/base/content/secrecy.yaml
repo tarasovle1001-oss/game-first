@@ -26,6 +26,7 @@ lead:
   chancePerPower: 0.008 # chance per night = her power x this
 
 gossip: # what the town says about her, 0..100
+  aim: { base: 0.15, perGossip: 0.008, max: 0.85, avoidFrom: 30, avoidPerGossip: 0.006, herInterest: 15, foodInterest: -5 } # share of new guests who come "for that"; from avoidFrom up, some who only wanted supper stay away
   fromTier: 3        # things from this tier up, done on the floor with other guests there, get talked about
   perTier: 0.25       # per tier above that, per witness (up to three)
   braggart: 0.5        # a dishonest man who got far tells his friends

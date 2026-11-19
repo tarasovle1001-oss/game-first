@@ -12,7 +12,9 @@ const scene = (first: number, act: string, loc = "cafe.hall"): GameState => {
   // any evening with three men in the room will do: which seed gives one is not the point
   let s = engine.init(first, {});
   for (let seed = first; seed < first + 40; seed += 7) {
-    s = engine.dispatch(engine.init(seed, { base: { preset: "hungry", mode: "open", traits: { openness: 95, fidelity: 5, confidence: 60 } } }), { type: CORE_ADVANCE });
+    const fresh = structuredClone(engine.init(seed, { base: { preset: "hungry", mode: "open", traits: { openness: 95, fidelity: 5, confidence: 60 } } }));
+    bs(fresh).daysPlayed = 250; // a place everybody knows: the room fills up
+    s = engine.dispatch(fresh, { type: CORE_ADVANCE });
     let guard = 0;
     while (bs(s).shift!.visits.filter((v) => v.stay > 0).length < 3 && guard++ < 90) {
       if (bs(s).caught || bs(s).encounter || bs(s).reaction) s = structuredClone(s), (bs(s).caught = null), (bs(s).encounter = null), (bs(s).reaction = null);

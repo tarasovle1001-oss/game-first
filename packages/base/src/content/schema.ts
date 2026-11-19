@@ -64,7 +64,7 @@ export const balanceSchema = z
     hotel: z.object({ roomPrice: z.number(), takeChance: z.number().min(0).max(1), returningChance: z.number().min(0).max(1), nights: z.tuple([z.number().int().positive(), z.number().int().positive()]), comesDownAtTick: z.number().int(), nightVisitTier: z.number().int(), morningChance: z.number().min(0).max(1), towels: z.object({ bellAfter: z.tuple([z.number().int(), z.number().int()]), decideAfter: z.number().int(), heardSuspicion: z.number(), knockSuspicion: z.number(), interest: z.number(), chance: z.number().min(0).max(1), maxTier: z.number().int(), hoursAffinity: z.number(), hoursChance: z.number().min(0).max(1), hoursEnergy: z.number(), hoursSuspicion: z.number(), hoursPower: z.number() }).strict() }).strict(),
     shift: z
       .object({
-        opensAt: z.number().int().min(0).max(23), // hour
+        openEarly: z.array(z.number().int()), returnByService: z.tuple([z.number(), z.number()]), opensAt: z.number().int().min(0).max(23), // hour
         hours: z.number().positive(),
         minutesPerTick: z.number().int().positive(),
         seats: z.number().int().positive(),
@@ -250,7 +250,7 @@ export const bodySchema = z
         toy: z.object({ power: z.number(), powerJoin: z.number(), joinOpenness: z.number(), arousal: z.number(), mood: z.number(), pity: z.number() }).strict(),
       })
       .strict(),
-    cage: z.object({ power: z.number(), powerPerDay: z.number(), keepPower: z.number(), keepChance: z.number(), softDays: z.number(), softKeepChance: z.number(), askDesire: z.number(), askFrustration: z.number(), prostateDesire: z.number(), prostateChance: z.number() }).strict(),
+    cage: z.object({ power: z.number(), through: z.array(z.string()), throughRate: z.number(), demandTurns: z.number().int(), demand: z.string(), powerPerDay: z.number(), keepPower: z.number(), keepChance: z.number(), softDays: z.number(), softKeepChance: z.number(), askDesire: z.number(), askFrustration: z.number(), prostateDesire: z.number(), prostateChance: z.number() }).strict(),
     nerve: z
       .object({
         confidence: z.object({ start: z.number(), floor: z.number(), good: z.number(), his: z.number(), soft: z.number(), early: z.number(), mocked: z.number(), comforted: z.number(), wet: z.number(), gym: z.number(), settle: z.number() }).strict(),
@@ -349,7 +349,7 @@ export const secrecySchema = z
     powerDenies: z.number(), // how much her power makes her refuse her husband
     // nights when she takes the lead: power needed for each, and how often it happens
     lead: z.object({ tease: z.number(), facesit: z.number(), ignore: z.number(), chancePerPower: z.number().min(0) }).strict(),
-    gossip: z.object({ fromTier: z.number().int(), perTier: z.number(), braggart: z.number(), noticeFrom: z.number(), interest: z.number(), arrivals: z.number(), reachesHusband: z.number(), suspicion: z.number(), fadePerDay: z.number() }).strict(),
+    gossip: z.object({ aim: z.object({ base: z.number(), perGossip: z.number(), max: z.number(), avoidFrom: z.number(), avoidPerGossip: z.number(), herInterest: z.number(), foodInterest: z.number() }).strict(), fromTier: z.number().int(), perTier: z.number(), braggart: z.number(), noticeFrom: z.number(), interest: z.number(), arrivals: z.number(), reachesHusband: z.number(), suspicion: z.number(), fadePerDay: z.number() }).strict(),
   })
   .strict();
 

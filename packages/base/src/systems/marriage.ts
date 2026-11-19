@@ -56,7 +56,7 @@ export const hisActOpen = (state: GameState, act: string) => {
   const b = bs(state);
   if (b.night?.sex?.soft && !SOFT_ACTS.includes(act)) return false;
   // locked up, he has only what needs nothing of him; and it cannot be put on twice
-  if (b.husband.caged && (act === "chastity" || !SOFT_ACTS.includes(act))) return false;
+  if (b.husband.caged && (act === "chastity" || !(SOFT_ACTS.includes(act) || content.body.cage.through.includes(act)))) return false;
   if (JOIN_ACTS.includes(act)) return !!b.night?.third;
   if (NEEDS_TOY.has(act) && toyForHim(state).toy === null) return false;
   // "after" needs something to be after: his or anyone's, still in her or on her
@@ -143,6 +143,8 @@ export function registerMarriage(api: ModApi) {
     const sex = b.night!.sex!;
     sex.act = actId;
     sex.pleasure = useBody(ctx, actById(actId), b.husband.size);
+    // with the cage on it is done through the cage: her doing, next to nothing for him
+    if (b.husband.caged && content.body.cage.through.includes(actId)) ctx.log(`log.bed.cage.${actId}`);
     if (actById(actId).lines) {
       sex.pleasure = HER_PLEASURE[actId] ?? IN_BED.herPleasureDefault; // hers by what it is, not by his size
       ctx.log(`log.act.${actId}.start`);
@@ -492,6 +494,7 @@ export function registerMarriage(api: ModApi) {
     const tight = inside ? tightness(state, sex.act) : 1;
     const skill = h.skills[sex.act] ?? 0;
     let his = (inside ? B.hisRateSex : B.hisRate) * (12 / b.husband.minutes) * tight * (1 + skill / 150) * (act.id === "cunnilingus" ? 0.25 : 1);
+    if (b.husband.caged && content.body.cage.through.includes(sex.act)) his *= content.body.cage.throughRate;
     // she has checked out: what needs her hands or her moving simply stops, the rest goes on without her
     if (sex.out) his = NEEDS_HER.has(sex.act) ? 0 : his * 0.7;
     if (sex.byHand || (sex.out && his === 0)) return { his: B.handRate * (12 / b.husband.minutes), hers: 0 };
@@ -564,6 +567,12 @@ export function registerMarriage(api: ModApi) {
       if (carryOn(ctx, sex)) return true;
       if (ctx.state.time.phase !== "night") backToWork(ctx, sex.turns);
       return true;
+    }
+    // locked up and getting nothing done for her: she says what she wants instead
+    if (b.husband.caged && content.body.cage.through.includes(sex.act) && !sex.asks && sex.turns >= content.body.cage.demandTurns && !sex.demanded && hisActOpen(ctx.state, content.body.cage.demand)) {
+      sex.asks = content.body.cage.demand;
+      sex.demanded = true;
+      ctx.log("log.bed.cage.demand", { act: `act.${content.body.cage.demand}` });
     }
     // is she getting anything out of this?
     if (!sex.out) {

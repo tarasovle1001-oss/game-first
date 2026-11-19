@@ -1,3 +1,4 @@
+import { fameOf } from "./rhythm";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -18,6 +19,7 @@ export const WAIT_MINUTES_CLOSE = [1, 5, 15];
 export const SERVE = "base/serve";
 export const WORK = "base/work";
 export const DOORS = "base/doors";
+export const OPEN_EARLY = "base/open-early";
 /** Something he is watching minute by minute: a guest with her in his sight, or a moment he has to answer. */
 export const watching = (state: GameState) => {
   const b = bs(state);
@@ -75,10 +77,12 @@ function seat(ctx: Ctx, patron: Patron, known: boolean) {
 function arrive(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
-  if (sh.doors || sh.tick >= bal.hours * 60 - bal.lastArrivalBefore) return; // the door is shut, or it is too late in the evening to start one
+  if (sh.doors || sh.tick >= bal.hours * 60 + (sh.early ?? 0) - bal.lastArrivalBefore) return; // the door is shut, or it is too late in the evening to start one
   // how the place is run decides how many come: slowly up to "decent", fast from there to "the place to be"
   const [f0, f50, f100] = bal.flow;
-  const share = b.reputation <= 50 ? f0 + ((f50 - f0) * b.reputation) / 50 : f50 + ((f100 - f50) * (b.reputation - 50)) / 50;
+  // how many come is how well the place is known (regulars, time, a fifth of the service); the service itself decides tips and who comes back
+  const pop = fameOf(ctx.state);
+  const share = pop <= 50 ? f0 + ((f50 - f0) * pop) / 50 : f50 + ((f100 - f50) * (pop - 50)) / 50;
   const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * share * (1 + (b.day?.arrivals ?? 0) + b.gossip * content.secrecy.gossip.arrivals);
   const count = Math.floor(perTick) + (ctx.rng.chance(perTick % 1) ? 1 : 0);
   for (let i = 0; i < count; i++) {
@@ -88,8 +92,20 @@ function arrive(ctx: Ctx) {
       continue;
     }
     const present = sh.visits.map((v) => v.patron);
-    const known = ctx.rng.chance(bal.returnChance) ? pickReturning(ctx, present) : null;
+    // a well-run place is one people come back to
+    const known = ctx.rng.chance(bal.returnChance * (bal.returnByService[0] + (b.reputation / 100) * bal.returnByService[1])) ? pickReturning(ctx, present) : null;
     const patron = known ?? generatePatron(ctx);
+    if (!known) {
+      // why he came: for the food, or for what is said about the place. The talk of the town decides the share,
+      // and when there is enough of it some of those who only wanted supper stop coming.
+      const A = content.secrecy.gossip.aim;
+      patron.aim = ctx.rng.chance(Math.min(A.max, A.base + b.gossip * A.perGossip)) ? "her" : "food";
+      if (patron.aim === "food" && ctx.rng.chance(Math.max(0, b.gossip - A.avoidFrom) * A.avoidPerGossip)) {
+        delete b.patrons[patron.id];
+        continue;
+      }
+      patron.memory.interest = clamp(patron.memory.interest + (patron.aim === "her" ? A.herInterest : A.foodInterest));
+    }
     seat(ctx, patron, known !== null);
   }
 }
@@ -193,7 +209,7 @@ export function runUnattended(ctx: Ctx, minutes: number) {
 function tick(ctx: Ctx) {
   const sh = bs(ctx.state).shift!;
   sh.tick += 1;
-  ctx.state.time.minute = bal.opensAt * 60 + sh.tick * bal.minutesPerTick;
+  ctx.state.time.minute = bal.opensAt * 60 - (sh.early ?? 0) + sh.tick * bal.minutesPerTick;
   advanceEncounter(ctx);
   arrive(ctx);
   runProposals(ctx); // guests try their luck before she gets back to work
@@ -231,8 +247,9 @@ export function registerShift(api: ModApi) {
     if (phase === "night") b.nightStart = Math.max(ctx.state.time.minute, (bal.opensAt + 1) * 60); // the clock simply goes on from closing time
     if (phase === "summary") ctx.state.time.minute = wakeMinute(ctx.state); // the sums are done over breakfast
     if (phase === "shift") {
-      ctx.state.time.minute = bal.opensAt * 60;
-      b.shift = { tick: 0, visits: [], income: 0, tips: 0, served: 0, turnedAway: 0, moment: null, interrupt: false, stockWarned: false };
+      const early = b.openEarly?.day === ctx.state.time.day ? b.openEarly.minutes : 0;
+      ctx.state.time.minute = bal.opensAt * 60 - early;
+      b.shift = { ...(early ? { early } : {}), tick: 0, visits: [], income: 0, tips: 0, served: 0, turnedAway: 0, moment: null, interrupt: false, stockWarned: false };
       ctx.state.where[WIFE] = "cafe.bar";
       ctx.emit("shift:start");
     }
@@ -363,6 +380,24 @@ export function registerShift(api: ModApi) {
     },
   });
 
+  // Open before the usual hour: an hour or two of the afternoon goes to the evening instead.
+  api.actions.register({
+    id: OPEN_EARLY,
+    labelKey: "action.open_early",
+    describe: (a) => ({ key: "action.open_early.by", params: { hours: (a.payload!.minutes as number) / 60 } }),
+    enumerate(state) {
+      const b = bs(state);
+      if (state.time.phase !== "prep" || !b.day || b.day.busy || b.openEarly?.day === state.time.day) return [];
+      return bal.openEarly.filter((m) => b.day!.left >= m).map((m) => ({ type: OPEN_EARLY, payload: { minutes: m } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const minutes = action.payload!.minutes as number;
+      b.openEarly = { day: ctx.state.time.day, minutes };
+      b.day!.left -= minutes; // that much of the afternoon is gone
+      ctx.log("log.open_early", { hours: minutes / 60 });
+    },
+  });
   // The door: he can stop letting new people in, and with the hall empty he can call it a night.
   api.actions.register({
     id: DOORS,

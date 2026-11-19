@@ -178,6 +178,7 @@ export function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
       </div>
       <div className="muted small">
         {t("ui.patron.line", { age: p.age, build: t(`patron.build.${p.build}`), approach: t(`patron.approach.${p.approach}`) })}
+        {p.aim && ` · ${t(`patron.aim.${p.aim}`)}`}
       </div>
       <div className="muted small">
         {t("ui.patron.memory", { visits: p.memory.visits, interest: Math.round(p.memory.interest), affinity: Math.round(p.memory.affinity) })}

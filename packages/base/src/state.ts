@@ -93,6 +93,7 @@ export interface Patron {
   stamina: number;
   traits: { persistence: number; charm: number; honesty: number; jealousy: number; generosity: number };
   approach: "court" | "drink" | "pay" | "push";
+  aim?: "food" | "her"; // why he came the first time: supper, or what is said about the place
   regular: boolean;
   lender?: boolean; // the man the cafe owes money to
   likes?: string[]; // acts he steers toward when he gets the chance
@@ -137,6 +138,7 @@ export interface BedScene {
   asks: string | null; // what she has asked for instead: an act id, or "finish"
   ignored: number; // times he went on without answering her
   warned?: "soft" | "early"; // he feels it going wrong: one move to do something about it (base/bed-save)
+  demanded?: boolean; // with the cage on she has already said what she wants instead
   saved?: boolean; // he got through that moment: it does not come again this time
   out: boolean; // she has checked out: she lies there and waits for it to be over
   byHand: boolean; // he is finishing himself
@@ -197,6 +199,7 @@ export interface ProposalRecord {
 }
 
 export interface Shift {
+  early?: number; // minutes the doors opened before the usual hour
   tick: number;
   doors?: boolean; // shut to new guests
   closed?: boolean; // he called it a night before the hour
@@ -287,6 +290,7 @@ export interface BaseState {
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
   kissedAfter?: number; // the minute of the shift she last kissed him straight after another man
   retroDay?: number; // the day she last asked him about a guest
+  openEarly?: { day: number; minutes: number }; // today the doors open this much before the usual hour
   bathDone?: { day: number; list: string[] }; // what they have already done under the water today
   glance?: { type: string; loc: string; who: { id: string; role: string }[]; turn: number; tags?: Record<string, string> }; // the picture of a small thing that has just happened (see glance.ts)
   details?: { turn: number; list: { id: string; who?: string; tags?: Record<string, string>; secret?: boolean }[] }; // close-ups of what has just happened, for one move (see glance.ts)

@@ -148,6 +148,10 @@ alone: # what he does by himself, at home, when she is not in the room
   hand: { mood: -2, desire: 0.5, moodWarm: 1, arousal: 6 }
   toy: { power: 2, powerJoin: 2, joinOpenness: 45, arousal: 8, mood: -3, pity: 4 }
 cage: # the cage as a state: on by day and by night until she takes it off
+  through: [grinding, handjob, blowjob] # what she can still do to him with it on: through the cage
+  throughRate: 0.08   # how much of it he feels
+  demandTurns: 3      # this many moves of that with nothing for her, and she says what she wants instead
+  demand: cunnilingus
   power: 3            # hers, when she locks it
   powerPerDay: 1      # for every morning she decides to leave it on
   keepPower: 30       # with this much power over him (or that streak in her) she likes holding the key...
