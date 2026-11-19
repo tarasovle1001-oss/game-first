@@ -272,7 +272,7 @@ createServer(async (req, res) => {
     }
     if (r === "/api/compare" && req.method === "POST") {
       // the same scenes and seeds under several checkpoints / LoRA sets: one labelled take per variant
-      const b = (await body(req)) as { ids: string[]; n?: number; variants: { label: string; ckpt?: string; loras?: string; extra?: string }[] };
+      const b = (await body(req)) as { ids: string[]; n?: number; first?: boolean; variants: { label: string; ckpt?: string; loras?: string; extra?: string }[] };
       const n = Number(b.n) || 4;
       let takes = 0;
       for (const it of items.filter((x) => b.ids.includes(x.id))) {
@@ -281,7 +281,7 @@ createServer(async (req, res) => {
           const over: Partial<Settings> = {};
           if (v.ckpt) over.ckpt = v.ckpt;
           if (v.loras !== undefined) over.loras = v.loras;
-          newTake(it, n, undefined, P.negatives[it.id] ?? "", undefined, false, true, { label: v.label, settings: over, extra: v.extra ?? "", seeds });
+          newTake(it, n, undefined, P.negatives[it.id] ?? "", undefined, false, !b.first, { label: v.label, settings: over, extra: v.extra ?? "", seeds }); // first: ahead of the running batch
           takes++;
         }
       }
