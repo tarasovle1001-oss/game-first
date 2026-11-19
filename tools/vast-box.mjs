@@ -92,13 +92,14 @@ async function up() {
     Object.assign(st, { instance: r.new_contract, rentedAt: Date.now(), price: o.dph_total });
     save("rent", `instance ${st.instance}`);
   }
+  const waitFrom = Date.now(); // a resumed box counts from now, not from when it was rented
   for (;;) {
     const x = ((await vast("/v1/instances/")).instances ?? []).find((i) => i.id === st.instance);
     if (!x) throw Error(`instance ${st.instance} is gone`);
     const port = x.ports?.["22/tcp"]?.[0]?.HostPort;
     if (x.actual_status === "running" && port && x.public_ipaddr) { Object.assign(st, { host: x.public_ipaddr, port: Number(port) }); break; }
-    save("start", `${x.actual_status ?? "?"} ${String(x.status_msg ?? "").slice(0, 100)} (${((Date.now() - st.rentedAt) / 60000).toFixed(0)} min)`);
-    if (Date.now() - st.rentedAt > 40 * 60000) throw Error("not running after 40 min: run `down` and try again");
+    save("start", `${x.actual_status ?? "?"} ${String(x.status_msg ?? "").slice(0, 100)} (${((Date.now() - waitFrom) / 60000).toFixed(0)} min)`);
+    if (Date.now() - waitFrom > 40 * 60000) throw Error("not running after 40 min: run `down` and try again");
     await sleep(20000);
   }
   for (let i = 0; ; i++) {
@@ -106,7 +107,7 @@ async function up() {
     catch (e) {
       save("ssh", `waiting: ${e.message.slice(0, 80)}`);
       if (i === 6 && existsSync(`${sshKey()}.pub`)) await vast(`/v0/instances/${st.instance}/ssh/`, { method: "POST", body: JSON.stringify({ ssh_key: readFileSync(`${sshKey()}.pub`, "utf8").trim() }) }).catch(() => {});
-      if (i > 60) throw e;
+      if (i > 80) throw e;
       await sleep(15000);
     }
   }
