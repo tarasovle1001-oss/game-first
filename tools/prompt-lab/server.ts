@@ -198,7 +198,7 @@ createServer(async (req, res) => {
       const st = stateOf(id);
       const tags = tagsOf(it), negative = P.negatives[id] ?? "";
       const p = promptWith(it, st, tags, negative);
-      return json(res, 200, { ...it, name: RU[`scene.${it.id}`] ?? "", about: aboutOf(it.id), room: st.room ?? it.room, look: { ...it.tags, ...(st.look ?? {}) }, rooms: ROOMS, tags, negative, positive: p.positive, negativeFull: p.negative, wayward: P.tags_wayward[id] ?? "", grok: P.poses[id] ?? {}, note: st.note ?? "", status: st.status ?? "todo", takes: [...st.takes].reverse() });
+      return json(res, 200, { ...it, name: RU[`scene.${it.id}`] ?? "", about: aboutOf(it.id), room: st.room ?? it.room, look: { ...it.tags, ...(st.look ?? {}) }, rooms: ROOMS, tags, negative, positive: p.positive, negativeFull: p.negative, rules: p.rules ?? [], wayward: P.tags_wayward[id] ?? "", grok: P.poses[id] ?? {}, note: st.note ?? "", status: st.status ?? "todo", takes: [...st.takes].reverse() });
     }
     if (r === "/api/preview" && req.method === "POST") {
       const b = await body(req);
@@ -206,7 +206,7 @@ createServer(async (req, res) => {
       if (!it) return json(res, 404, { error: "no such scene" });
       const st = { ...stateOf(it.id), room: String(b.room ?? "") || undefined };
       const p = promptWith(it, st, String(b.tags ?? ""), String(b.negative ?? ""));
-      return json(res, 200, { positive: p.positive, negativeFull: p.negative });
+      return json(res, 200, { positive: p.positive, negativeFull: p.negative, rules: p.rules ?? [] });
     }
     if (r === "/api/generate" && req.method === "POST") {
       const b = await body(req);

@@ -94,6 +94,7 @@ function render() {
     <button class="pri" data-n="1">1 кадр</button><button class="pri" data-n="4">4 кадра</button>
     <button class="sv" id="save">Сохранить в игру</button><span id="saved" class="hint"></span>
   </div>
+  <div class="hint" id="rules">Правила: ${s.rules.length ? s.rules.map(esc).join(" · ") : "нет"}</div>
   <details><summary>Весь промпт, как его соберёт игра</summary><pre id="full">${esc(s.positive)}</pre><pre style="color:#c99">${esc(s.negativeFull)}</pre></details>
   ${s.wayward || Object.keys(s.grok).length ? `<details><summary>Старые варианты (Wayward, Грок)</summary>${s.wayward ? `<pre>Wayward: ${esc(s.wayward)}</pre>` : ""}${Object.entries(s.grok).map(([k, v]) => `<pre>Грок ${k}: ${esc(v)}</pre>`).join("")}</details>` : ""}
   <label>Заметка</label><textarea id="note" rows="2">${esc(s.note)}</textarea>
@@ -133,7 +134,7 @@ let pv = 0;
 async function preview() {
   const n = ++pv;
   const r = await api("/api/preview", { id: scene.id, tags: $("#tags").value, negative: $("#neg").value, room: $("#room")?.value });
-  if (n === pv && $("#full")) $("#full").textContent = r.positive;
+  if (n === pv && $("#full")) { $("#full").textContent = r.positive; $("#rules").textContent = "Правила: " + (r.rules.length ? r.rules.join(" · ") : "нет"); }
 }
 async function gen(n) {
   await api("/api/generate", { id: scene.id, n, tags: $("#tags").value, negative: $("#neg").value, room: $("#room")?.value, sameSeeds: $("#same").checked });

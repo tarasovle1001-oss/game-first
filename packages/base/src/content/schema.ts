@@ -613,6 +613,7 @@ export const promptSchema = z
     tags: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
     tags_wayward: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
     negatives: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
+    rules: z.array(z.object({ note: z.string().default(""), when: z.string().default("."), unless: z.string().optional(), with: z.string().optional(), without: z.string().optional(), add: z.string().optional(), her: z.string().optional(), negative: z.string().optional() }).strict()).default([]),
   })
   .strict();
 export type PromptWords = z.infer<typeof promptSchema>;

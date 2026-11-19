@@ -8,7 +8,7 @@
 style:
   prefix: "masterpiece, best quality, sora \\(soraoraora\\)"
   detail: "extreme close-up, cropped, head out of frame, faceless, simple background, dark neutral background, blurred background, shallow depth of field" # every free close-up: no room, no faces
-  negative: "worst quality, low quality, blurry, bad anatomy, extra limbs, deformed, text, watermark, signature, ugly, duplicate, 3d, realistic, photorealistic, comic, multiple panels, 2koma, 4koma, panels, inset, multiple views, split screen, (2girls:1.3), multiple girls, censored, bar censor, mosaic censoring, speech bubble, clone, extra penis, penis outside, penis on stomach, (futanari:1.3), newhalf, (penis on female:1.2), child, loli, shota, aged down"
+  negative: "worst quality, low quality, blurry, bad anatomy, extra limbs, deformed, text, watermark, signature, ugly, duplicate, 3d, realistic, photorealistic, comic, multiple panels, 2koma, 4koma, panels, inset, multiple views, split screen, (2girls:1.3), multiple girls, censored, bar censor, mosaic censoring, speech bubble, clone, extra penis, penis outside, penis on stomach, blur censor, english text, otoko no ko, androgynous, bishounen, uzumaki naruto, uchiha sasuke, whisker markings, domino mask, (futanari:1.3), newhalf, (penis on female:1.2), child, loli, shota, aged down"
 # per scene layout: "scene" = shared words for the whole frame (composition, camera, what is going on between them),
 # one entry per role = that figure: pose, where the hands are, where the eyes look. Same ids as scenes.yaml.
 poses:
@@ -473,3 +473,26 @@ tags:
   her_solo: "(female masturbation:1.2), fingering, spread legs, lying on back, on bed, hand on own breast, closed eyes, blush, from above"
 # Extra negative words of a scene, added to the shared negative (tools/prompt-lab).
 negatives: {}
+# Rules on top of a scene's tags (Alexey's Wayward filters, 19.11): when the scene's tags match `when` (a regex) and not `unless`,
+# with: the scene has that role (patron = any guest, husband), without: it has not. add -> after the scene tags, her -> her part,
+# negative -> the negative. Fixes for problem scenes that are not switched on yet: claude/gen-fixes.md in the project.
+rules:
+  - { note: "explicit: no censoring, her body shows", when: "\\b(penis|sex|vaginal|anal|fellatio|handjob|paizuri|cunnilingus|fingering|masturbation|69|pegging|anilingus|footjob|facesitting|sitting on face|creampie|cum)\\b", add: "uncensored", her: "(hip bones:1.2), groin, navel, skindentation" }
+  - { note: "oral: saliva", when: "fellatio|deepthroat|irrumatio|licking penis|kiss", add: "saliva, saliva trail" }
+  - { note: "a guest inside her: the bulge, wet", when: "\\b(vaginal|anal|double penetration|spitroast|triple penetration)\\b", with: patron, unless: "after sex", add: "stomach bulge, pussy juice, pussy juice trail, sweat, shiny skin, heavy breathing" }
+  - { note: "the husband is small: no bulge", with: husband, without: patron, negative: "stomach bulge, large penis, huge penis" }
+  - { note: "the husband inside her: wet, no more", when: "\\b(vaginal|anal)\\b", with: husband, without: patron, add: "pussy juice, sweat" }
+  - { note: "before he comes: precum, wet penis", when: "\\b(handjob|fellatio|paizuri|erection|teasing|thigh sex|deepthroat|footjob)\\b", unless: "ejaculation|\\bcum\\b|facial|creampie", add: "precum, precum drip, wet penis" }
+  - { note: "finishes: a lot of cum", when: "ejaculation|facial|cum in|cum on|creampie|excessive cum", add: "cum string, cum drip, sticky, cum on penis" }
+  - { note: "inside: it pools and runs out", when: "creampie|cum in pussy|cum in ass", add: "cum pool, cum overflow" }
+  - { note: "facial reaches the hair", when: "facial", add: "cum on hair" }
+  - { note: "deepthroat: the penis stays in", when: "deepthroat", add: "lips on penis", negative: "penis out of mouth, penis on face" }
+  - { note: "69 is not facesitting", when: "\\b69\\b", add: "lying on person", negative: "sitting on face" }
+  - { note: "straddling / standing: not choking", when: "straddling|standing sex", negative: "choking, strangling, hand on another's neck" }
+  - { note: "cooking needs things in hand", when: "cooking", add: "cooking pot, ladle, steam" }
+  - { note: "a couple: no second girl", when: "hetero", negative: "(yuri:1.3)" }
+  - { note: "x-ray has its own close-ups: never in a whole scene", when: ".", negative: "x-ray, cross-section, internal cumshot" }
+  - { note: "a guest finishes in her: she comes too", when: "creampie|cum in pussy|cum in ass", with: patron, her: "female orgasm, trembling, arched back" }
+  - { note: "after anal: gaping", when: "cum in ass|after anal", her: "gaping, anus" }
+  - { note: "blowjob face", when: "\\bfellatio\\b", unless: "deepthroat|cum in mouth|69", add: ":>=" }
+  - { note: "deepthroat: tears and drool", when: "deepthroat", add: "tears, drooling, rolling eyes" }

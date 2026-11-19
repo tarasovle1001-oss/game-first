@@ -12,6 +12,8 @@ const P = content.prompt;
 
 export interface ScenePrompt {
   key: string;
+  /** notes of the prompt.yaml rules that fired for this scene */
+  rules?: string[];
   file: string;
   /** the mannequin layout this picture is drawn over (depth, masks, skeleton) */
   layout: string;
@@ -87,6 +89,11 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const detailWords = isDetail ? [P.details[desc.type.slice(7)] ?? "", ...Object.entries(t).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
   // booru tags of the scene (prompt.yaml: tags) lead the prompt; a scene that has them does not use its English pose slots
   const booru = isDetail ? "" : (P.tags[desc.type] ?? "").trim();
+  // rules on top of the scene tags (prompt.yaml: rules): by what the tags say and who is in the scene
+  const has = (role: string) => desc.participants.some((p) => (role === "patron" ? p.role.startsWith("patron") : p.role === role));
+  const fired = booru
+    ? P.rules.filter((r) => new RegExp(r.when, "i").test(booru) && !(r.unless && new RegExp(r.unless, "i").test(booru)) && (!r.with || has(r.with)) && (!r.without || !has(r.without)))
+    : [];
   const slots = isDetail ? { scene: detailWords } : booru ? {} : (P.poses[desc.type] ?? {});
   const empty: string[] = [];
   const slot = (name: string) => {
@@ -111,7 +118,7 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const roomWords = (W.room[desc.location] ?? desc.location).split(",").map((w) => w.trim());
   const room = isDetail ? P.style.detail : [`(${roomWords[0]}:1.2)`, ...roomWords.slice(1)].join(", ");
   const shared = booru
-    ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, t.fin ? W.fin[t.fin] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
+    ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, ...fired.flatMap((r) => (r.add ? [r.add] : [])), t.fin ? W.fin[t.fin] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
     : join([
         P.style.prefix,
         counts,
@@ -126,15 +133,15 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const regions: Record<string, string> = {};
   for (const role of drawn) {
     const size = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? W.size[Number(t[SIZE_TAG[role]!])] : undefined;
-    regions[role] = join([...who(cast, role, isDetail), role === "wife" ? wifeWords(t) : [], size, isDetail || booru ? "" : slot(role)]);
+    regions[role] = join([...who(cast, role, isDetail), role === "wife" ? wifeWords(t) : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
-  const negative = join([P.style.negative, P.negatives[desc.type], men === 1 ? "(2boys:1.2), multiple boys" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
+  const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.2), multiple boys" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
   // her first, then the room, then the men (with tags the room sits between them, as in the old packs)
   const others = Object.entries(regions).filter(([r]) => r !== "wife").map(([, v]) => v);
   const positive = booru && !isDetail ? join([shared, regions.wife, room, ...others]) : join([shared, ...Object.values(regions)]);
   // what one figure asks for (his pale skin) must not be forbidden by another figure's card
   const asked = new Set(positive.split(",").map((w) => w.trim().replace(/^\((.*):[\d.]+\)$/, "$1").toLowerCase()));
   const neg = negative.split(", ").filter((w) => !asked.has(w.trim().replace(/^\((.*):[\d.]+\)$/, "$1").toLowerCase())).join(", ");
-  return { key, file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive, negative: neg, empty };
+  return { key, rules: fired.map((r) => r.note), file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive, negative: neg, empty };
 }
