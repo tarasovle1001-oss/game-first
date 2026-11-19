@@ -61,6 +61,23 @@ function remote(py, timeout = 60000) {
   return JSON.parse(r.stdout.trim().split("\n").pop());
 }
 
+const WAI = "/workspace/ComfyUI/models/checkpoints/waiIllustriousSDXL_v170.safetensors";
+const WAI_START = `import os,pathlib,subprocess,json
+env=os.environ.copy();env.update(dict(x.decode().split('=',1) for x in pathlib.Path('/proc/1/environ').read_bytes().split(b'\\0') if b'=' in x))
+if not pathlib.Path('/workspace/ComfyUI/models').exists():subprocess.run(['bash','/etc/vast_boot.d/36-sync-workspace.sh'],env=env,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=650)
+p=pathlib.Path('${WAI}');p.parent.mkdir(parents=True,exist_ok=True)
+if not (p.exists() and p.stat().st_size>6e9):
+ tok=env.get('CIVITAI_TOKEN','')
+ if not tok:raise SystemExit('no CIVITAI_TOKEN on the instance')
+ sh="curl -fL --retry 4 -s -o '%s.part' 'https://civitai.com/api/download/models/2883731?token=%s' && mv '%s.part' '%s' && echo DONE || echo FAILED"%(p,tok,p,p)
+ subprocess.Popen(['bash','-c',sh],stdin=subprocess.DEVNULL,stdout=open('/workspace/tc-wai.log','ab'),stderr=subprocess.STDOUT,start_new_session=True)
+print(json.dumps(dict(ok=True)))`;
+const WAI_STATUS = `import json,pathlib
+p=pathlib.Path('${WAI}');q=pathlib.Path(str(p)+'.part');l=pathlib.Path('/workspace/tc-wai.log')
+t=l.read_text()[-300:] if l.exists() else ''
+done=p.exists() and p.stat().st_size>6e9
+print(json.dumps(dict(done=done,failed='FAILED' in t and not done,bytes=(p if p.exists() else q).stat().st_size if (p.exists() or q.exists()) else 0,log=t)))`;
+
 async function up() {
   if (!st.instance) {
     const list = await offers(Number(opt("gpus", "1")));
@@ -91,8 +108,19 @@ async function up() {
       await sleep(15000);
     }
   }
-  save("prepare", `root@${st.host}:${st.port}, starting bootstrap (sync, models, ComfyUI)`);
+  // the template's cloud-start.sh looks WAI up on Civitai by name and that fails: fetch it by version id first, as the Quick Run does
+  save("models", "syncing the image workspace, then WAI from Civitai (version 2883731)");
+  remote(WAI_START, 700000);
+  for (;;) {
+    const w = remote(WAI_STATUS);
+    if (w.failed) throw Error(`WAI download failed: ${w.log}`);
+    save("models", `WAI ${(w.bytes / 1e9).toFixed(2)} / 6.94 GB`);
+    if (w.done) break;
+    await sleep(15000);
+  }
+  save("prepare", `root@${st.host}:${st.port}, starting bootstrap (LoRAs, ComfyUI)`);
   remote(script("remotePrepare"), 900000);
+  const prepAt = Date.now();
   for (;;) {
     const s = remote(script("remoteStatus"));
     const m = s.models.map((x) => `${x.name.split(/[_.]/)[0]} ${Math.round((100 * x.bytes) / x.expectedBytes)}%`).join(", ");
@@ -100,7 +128,7 @@ async function up() {
     save(ready ? "ready" : "prepare", `models: ${m}; ComfyUI ${s.workers.filter((w) => w.ready).length}/${s.workers.length}${s.proxy ? ", proxy up" : ""}`);
     if (ready) break;
     const log = s.logs.map((l) => l.text).join("\n");
-    if (!s.preparing && /Traceback|CHECK FAILED|ERROR:/.test(log)) throw Error(`bootstrap failed: ${log.slice(-400)}`);
+    if (!s.preparing && Date.now() - prepAt > 90000 && /Traceback|CHECK FAILED|ERROR:/.test(log.slice(-1500))) throw Error(`bootstrap failed: ${log.slice(-400)}`);
     await sleep(20000);
   }
   save("ready", `$${st.price.toFixed(2)}/h. Next: node tools/vast-box.mjs tunnel, then comfy-run with --comfy http://127.0.0.1:18188`);
