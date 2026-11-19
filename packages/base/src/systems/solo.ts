@@ -37,6 +37,7 @@ export function registerSolo(api: ModApi) {
     b.toys.push(next.id);
     b.herToys = [...(b.herToys ?? []), next.id];
     ctx.log("log.solo.bought", { toy: `toy.${next.id}`, price: next.price }, b.mode === "hidden" ? ["unseen"] : undefined);
+    detail(ctx, { id: "toy_drawer", who: WIFE, tags: { tsize: String(sizeClass(next.size)) }, secret: b.mode === "hidden" });
     ctx.emit("solo:bought", { toy: next.id, price: next.price });
   });
 
@@ -76,6 +77,7 @@ export function registerSolo(api: ModApi) {
     ctx.log(`log.solo.${zone}${heard ? ".heard" : ""}`, { toy: `toy.${toy.id}` }, tags);
     glance(ctx, "her_solo", BED, [{ id: WIFE, role: "wife" }], { toy: zone });
     detail(ctx, { id: anal ? "toy_a" : "toy_v", who: WIFE, tags: { tsize: String(sizeClass(toy.size)), gape: String(Math.min(3, Math.floor(h.body[anal ? "anus" : "vagina"].stretch / 25))) }, secret: !heard });
+    detail(ctx, { id: "xray_toy", who: WIFE, tags: { tsize: String(sizeClass(toy.size)), at: anal ? "a" : "v" }, secret: !heard });
     ctx.emit("solo:did", { zone, toy: toy.id, size: toy.size, heard });
   });
 }

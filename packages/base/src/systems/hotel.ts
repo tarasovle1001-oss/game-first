@@ -23,7 +23,7 @@ const caller = (state: GameState) => Object.entries(bs(state).lodgers).find(([, 
  * `staged`: it is being played by the clock of the night. Only what he cannot see is written down here (the truth lines);
  * what he does see - her leaving, her coming back - is said by the night as it happens. Returns how long she is gone.
  */
-function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { minutes: number; hours: number; far: boolean } | null {
+function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { minutes: number; hours: number; far: boolean; act?: string } | null {
     const b = bs(ctx.state);
     if (b.complaint) return null;
     const say: typeof ctx.log = (key, params, tags) => void ((!staged || tags?.includes("unseen")) && ctx.log(key, params, tags));
@@ -92,7 +92,7 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { mi
       if (!open) say(`log.${kind}.truth`, { name, act: `act.${act.id}` }, ["unseen"]);
     }
     ctx.emit("hotel:towels", { patron: p.id, act: act.id, hours, kind });
-    return { minutes: hours > 0 ? hours * 60 : 20, hours, far: isIntimate(act) };
+    return { minutes: hours > 0 ? hours * 60 : 20, hours, far: isIntimate(act), act: act.id };
 }
 
 /**
@@ -130,8 +130,26 @@ export function nightUp(ctx: Ctx, all = false) {
     const r = roomVisit(ctx, "towels", !all || !!up.seen);
     up.stage = 2;
     up.far = r?.far ?? false;
+    up.act = r?.act;
     up.hours = r?.hours ?? 0;
     up.backAt = (up.decideAt ?? 0) + (r?.minutes ?? 2);
+  }
+  if (up.stage === 2 && now >= (up.backAt ?? 0) && up.sent) {
+    // he sent her himself: she comes back and tells as much as she tells - or does not come back before morning
+    const act = actById(up.act ?? "chat");
+    if (up.sent.stays && !up.knocked) {
+      n.herAsleep = n.minute ?? 0;
+      b.stayedUp = { day: ctx.state.time.day, patron: up.patron, act: act.id, tells: up.sent.tells };
+      ctx.log("log.send_up.stays", { name }, ["unseen"]);
+      ctx.log("log.send_up.alone");
+      n.up = undefined; // she stays where she is
+      return;
+    }
+    const tells = up.sent.tells;
+    if (up.knocked) ctx.log("log.towels.back.knocked", { name });
+    else ctx.log(`log.send_up.back.${tells}`, { name, act: `act.${tells === "less" ? (act.tier >= 5 ? "kiss" : "chat") : act.id}` });
+    if (tells !== "full") ctx.log("log.send_up.truth", { name, act: `act.${act.id}` }, ["unseen"]);
+    return finish();
   }
   if (up.stage === 2 && now >= (up.backAt ?? 0)) {
     const gone = Math.max(5, Math.round(((up.backAt ?? 0) - up.leaveAt) / 5) * 5);
@@ -258,7 +276,6 @@ export function registerHotel(api: ModApi) {
       const stays = act.tier >= 7 && ctx.rng.chance(0.35); // sometimes she does not come back before morning
       b.proposals.push({ day: ctx.state.time.day, tick: -1, patron, act: done, loc: room, verdict: verdictOf(total), seen: false, total, rows });
       ctx.log(`log.send_up.go.${brief}`, { name });
-      passNight(ctx, 20 + act.tier * 8);
       changeHeroine(ctx, "arousal", act.tier * 4, done);
       changeHeroine(ctx, "energy", -act.tier * 1.5, done);
       h.traits.openness = Math.min(100, h.traits.openness + act.tier * 0.3);
@@ -269,16 +286,11 @@ export function registerHotel(api: ModApi) {
       const shame = 100 - h.traits.openness;
       const trust = h.marriage.trust ?? 50;
       const tells = act.tier <= 2 || (brief !== "her_call" && trust >= 45 && shame < 65) ? "full" : trust >= 30 ? "less" : "nothing";
-      if (stays) {
-        if (b.night) b.night.herAsleep = b.night.minute ?? 0;
-        ctx.state.where[WIFE] = room;
-        b.stayedUp = { day: ctx.state.time.day, patron, act: done, tells };
-        ctx.log("log.send_up.stays", { name }, ["unseen"]);
-        ctx.log("log.send_up.alone");
-      } else {
-        ctx.log(`log.send_up.back.${tells}`, { name, act: `act.${tells === "less" ? (act.tier >= 5 ? "kiss" : "chat") : done}` });
-        if (tells !== "full") ctx.log("log.send_up.truth", { name, act: `act.${done}` }, ["unseen"]);
-      }
+      // she is gone for as long as it takes: he can wait, go and listen at the door, knock - or fall asleep
+      const now = b.night!.minute ?? 0;
+      ctx.state.where[WIFE] = room;
+      b.night!.wants = false;
+      b.night!.up = { room, patron, leaveAt: now, stage: 2, far: isIntimate(act), act: done, backAt: now + 20 + act.tier * 8, seen: true, sent: { tells, stays } };
       ctx.emit("hotel:sent-up", { patron, act: done, brief, stays });
     },
   });

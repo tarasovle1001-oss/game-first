@@ -16,6 +16,7 @@ export const NIGHT_WAIT = "base/night-wait";
 export const WASH = "base/wash";
 export const SEND_WASH = "base/send-wash";
 export const WASH_TOGETHER = "base/wash-together";
+export const BATH_DO = "base/bath-do";
 const R = content.day.rhythm;
 const BATH = "home.bathroom";
 /** The minute the night starts at: when the doors closed, which is the usual hour unless he shut early. */
@@ -344,6 +345,41 @@ export function registerRhythm(api: ModApi) {
       // they stay under the water a while longer: the scene is on screen now and for the next move, not one move late
       if (b.day?.her?.task === "wash") b.day.her.left = R.bath.washMinutes + 10;
       passPrep(ctx, R.bath.washMinutes);
+    },
+  });
+  // Under the water together, move by move: his hands with the soap, then closer, if she lets him.
+  api.actions.register({
+    id: BATH_DO,
+    labelKey: "action.bath_do",
+    describe: (a) => ({ key: `action.bath_do.${a.payload!.do}` }),
+    enumerate(state) {
+      const b = bs(state);
+      if (state.time.phase !== "prep" || b.washedWith !== state.time.day || b.day?.her?.task !== "wash" || b.day.busy || state.where[HUSBAND] !== BATH || state.where[WIFE] !== BATH) return [];
+      const done = b.bathDone?.day === state.time.day ? b.bathDone.list : [];
+      return ["soap", "closer", "hers"].filter((d) => !done.includes(d) && (d !== "hers" || done.includes("closer"))).map((d) => ({ type: BATH_DO, payload: { do: d } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const what = action.payload!.do as string;
+      if (b.bathDone?.day !== ctx.state.time.day) b.bathDone = { day: ctx.state.time.day, list: [] };
+      b.bathDone.list.push(what);
+      const S = R.bath.steps;
+      // soap is always welcome; closer and further need her to want him
+      const ok = what === "soap" || h.marriage.desire >= (what === "closer" ? S.closerDesire : S.hersDesire);
+      if (ok) {
+        changeHeroine(ctx, "arousal", what === "soap" ? S.soap : what === "closer" ? S.closer : S.hers, "bath");
+        changeHeroine(ctx, "mood", 1, "bath");
+        changeHim(ctx, "arousal", what === "soap" ? S.soap : S.closer, "bath");
+        if (what === "hers") h.marriage.desire = clamp(h.marriage.desire + 1);
+      } else {
+        changeHeroine(ctx, "mood", -1, "bath");
+        b.bathDone.list.push("closer", "hers"); // she has turned the water off
+      }
+      ctx.log(`log.bath.do.${what}${ok ? "" : ".no"}`);
+      ctx.emit("couple:talk", { do: what === "soap" ? "shoulders" : "fondle_breast", ok });
+      if (b.day?.her?.task === "wash") b.day.her.left = Math.max(b.day.her.left, S.minutes + 5);
+      passPrep(ctx, S.minutes);
     },
   });
   // Walking in on her while she washes: welcome or not, by what she feels for him just now.

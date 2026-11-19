@@ -304,6 +304,8 @@ const HIS_END: Record<string, string> = { went_soft: "him_soft", premature_finis
 const FRONT = new Set(["sex", "riding", "standing_sex", "join_dp", "toy_on_her"]);
 const BACK = new Set(["anal", "join_dp"]);
 const THROAT = new Set(["deepthroat"]);
+const BY_HAND = new Set(["handjob", "ignore_handjob", "edging", "tease_denial"]);
+const TOY_HIM = new Set(["pegging", "dildo_him", "fisting_him"]);
 
 export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const b = bs(state);
@@ -347,6 +349,9 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
       add("xray_v", WIFE, { size: String(classOf(man)), ...(fin === "inside" ? { fin: "1" } : {}) });
     }
     if (man && BACK.has(id)) add("xray_a", WIFE, { size: String(classOf(man)), ...(fin === "anus" ? { fin: "1" } : {}) });
+    // her hand on him, bare: on a guest her ring is in the picture
+    if (man && BY_HAND.has(id)) add("touch_bare", man, { size: String(classOf(man)), ...(man !== HUSBAND ? { ring: "1" } : {}) });
+    if (TOY_HIM.has(id)) add("toy_him", HUSBAND, { who: "her" });
     if (has("husband") && b.husband.caged) add("him_cage", HUSBAND, aroused ? { leak: "1" } : {});
     return out;
   }
@@ -363,6 +368,13 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
     }
     if (wet > 0 || left) add("wet", WIFE, { wet: String(wet), ...(left ? { marks: left } : {}) });
     if (wet > 0 && top === "on") add("nipples", WIFE, { level: String(Math.min(2, wet)) });
+    if (desc.type === "kissing" || desc.type === "him_kiss") add("kiss_close", WIFE);
+    // what an evening has left on her, close up: only where it is not covered
+    if ((h.cum?.face ?? 0) > 0 || (h.cum?.mouth ?? 0) > 0) add("marks_face", WIFE, { marks: ["face", "mouth"].filter((k) => (h.cum?.[k] ?? 0) > 0).join("+") });
+    if (under === "bare" && Object.values(h.after ?? {}).some((v) => v > 0)) {
+      if (Number(gape("vagina")) > 0 || (h.cum?.inside ?? 0) > 0) add("gape_v", WIFE, { gape: gape("vagina"), ...((h.cum?.inside ?? 0) > 0 ? { marks: "inside" } : {}) });
+      if (Number(gape("anus")) > 0 || (h.cum?.anus ?? 0) > 0) add("gape_a", WIFE, { gape: gape("anus"), ...((h.cum?.anus ?? 0) > 0 ? { marks: "anus" } : {}) });
+    }
     if (h.panties === "off" && bare === "none") add("panties_off", WIFE);
     if (Object.values(h.after ?? {}).some((v) => v > 0)) add("hickey", WIFE);
   }

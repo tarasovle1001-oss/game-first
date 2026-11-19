@@ -298,6 +298,7 @@ export const bodySchema = z
           .strict(),
         after: z.object({ chance: z.number(), perDesire: z.number(), minHers: z.number(), maxResent: z.number(), maxTurns: z.number().int() }).strict(),
         soft: z.object({ whenOut: z.number(), whenLoose: z.number(), perResent: z.number(), belowHis: z.number() }).strict(),
+        save: z.object({ earlyAt: z.number(), earlyTurns: z.number().int(), focusBase: z.number(), focusPerConfidence: z.number(), focusHis: z.number(), herArousal: z.number(), slowHis: z.number(), slowHers: z.number(), toldHis: z.number() }).strict(),
         unluckyStart: z.number(),
         deniedStart: z.number(), // added to his start per night he has gone without
         switchBonus: z.number(), // consent bonus for changing what they do once it is going
@@ -461,7 +462,7 @@ export const daySchema = z
           })
           .strict(),
         worry: z.object({ cashBelow: z.number(), debtFrom: z.number(), mood: z.number(), hardDebt: z.number(), hardMood: z.number(), herShare: z.number() }).strict(),
-        bath: z.object({ washMinutes: z.number().int(), washMood: z.number(), sendMinutes: z.number().int(), sendAnnoy: z.number(), walkIn: z.object({ margin: z.number(), arousal: z.number(), annoy: z.number() }).strict() }).strict(),
+        bath: z.object({ washMinutes: z.number().int(), steps: z.object({ minutes: z.number().int(), soap: z.number(), closer: z.number(), hers: z.number(), closerDesire: z.number(), hersDesire: z.number() }).strict(), washMood: z.number(), sendMinutes: z.number().int(), sendAnnoy: z.number(), walkIn: z.object({ margin: z.number(), arousal: z.number(), annoy: z.number() }).strict() }).strict(),
       })
       .strict(),
   })
@@ -691,7 +692,7 @@ export const floorSchema = z
     table: z.object({ minutes: z.number().int(), perEvening: z.number().int(), slipDrunk: z.number(), slipHonesty: z.number(), slipSuspicion: z.number(), cards: z.object({ bet: z.array(z.number().int()), winChance: z.number(), perDrunk: z.number(), stayTicks: z.number() }).strict(), rivalCools: z.number() }).strict(),
     join: z.object({ consentBonus: z.number(), hersRate: z.number(), power: z.number(), done: nums, refused: nums, lazyPower: z.number(), downgrade: z.number(), ruinBase: z.number(), ruinPerPower: z.number(), ruinMax: z.number(), ruined: z.object({ mood: z.number(), power: z.number(), confidence: z.number() }).strict() }).strict(),
     details: z.object({ bulgeHeat: z.number(), himArousal: z.number(), wet: z.array(z.number()), accentClass: z.number().int() }).strict(),
-    roam: z.object({ chancePerMinute: z.number().min(0), places: z.array(z.object({ id: z.string(), to: z.string(), weight: z.number().positive(), minutes: z.tuple([z.number().int(), z.number().int()]) }).strict()).min(1) }).strict(),
+    roam: z.object({ meet: z.object({ chance: z.number(), interest: z.number(), affinity: z.number(), openness: z.number(), arousal: z.number(), extra: z.number().int(), ladder: z.array(z.string()) }).strict(), chancePerMinute: z.number().min(0), places: z.array(z.object({ id: z.string(), to: z.string(), weight: z.number().positive(), minutes: z.tuple([z.number().int(), z.number().int()]) }).strict()).min(1) }).strict(),
     crowd: z.object({ fromTier: z.number(), max: z.number().int(), gatherPerMinute: z.number(), privateFollow: z.number(), heatPerMinute: z.number(), perWatcher: nums, boldOpenness: z.number(), watcherMinute: nums, joinAfter: z.number(), joinHeat: z.number(), joinPerMinute: z.number(), joinWatchBonus: z.number(), joinMax: z.number().int(), joinPressure: z.number(), invited: z.number(), joinerRate: z.number(), joinTip: z.number(), refusedHeat: z.number(), reactEvery: z.number().int(), leaveChance: z.number(), leaveReputation: z.number(), gossipPerWatcher: z.number(), afterInterest: z.number(), dispersed: nums, dispersedBold: nums, dispersedShy: nums }).strict(),
     finish: z.object({ wants: nums, likedAffinity: z.number(), drunk: z.number(), holdConfidence: z.number(), offendedAffinity: z.number(), offendedConfidence: z.number(), swallowOpenness: z.number(), held: nums, unwilling: nums, glad: nums, shows: z.number().int() }).strict(),
   })

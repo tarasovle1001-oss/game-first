@@ -140,6 +140,7 @@ finish:               # where a guest finishes, and what she makes of it
   shows: 4                    # minutes the ending stays as the scene
 roam: # guests get up and walk about: nobody sits in plain view the whole evening
   chancePerMinute: 0.012   # per seated guest: about one trip per guest per evening
+  meet: { chance: 0.35, interest: 50, affinity: 30, openness: 45, arousal: 35, extra: 5, ladder: [kiss, grope, handjob, blowjob] } # he steps out to the toilet or the stairs and she goes after him: as far up the ladder as she says yes to
   places:
     - { id: toilet, to: cafe.toilet, weight: 5, minutes: [3, 6] }
     - { id: bar, to: cafe.bar, weight: 3, minutes: [2, 5] }

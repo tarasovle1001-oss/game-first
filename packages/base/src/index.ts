@@ -234,3 +234,5 @@ export { ROOM_DOOR } from "./systems/hotel";
 export { WET_TELL } from "./systems/nerve";
 export { detailsFor } from "./systems/look";
 export { shownCm } from "./systems/body";
+export { BED_SAVE } from "./systems/marriage";
+export { BATH_DO } from "./systems/rhythm";

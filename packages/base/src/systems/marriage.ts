@@ -2,7 +2,7 @@
 // and through the same body rules, so a husband who does little for her shows up in the numbers.
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { actOf, content } from "../content";
-import { earlyChance, softChance } from "./nerve";
+import { confidenceOf, earlyChance, softChance } from "./nerve";
 import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { fitOf, orgasm, pleasureFor, resolveBody, useBody } from "./body";
@@ -22,6 +22,7 @@ export const NIGHT_ACTS = IN_BED.ask;
 export const HIS_ACTS = IN_BED.his;
 const NEEDS_TOY = new Set(IN_BED.needsToy);
 export const BED = "base/bed";
+export const BED_SAVE = "base/bed-save";
 export const NIGHT_DECLINE = "base/night-decline";
 export const NIGHT_SELF = "base/night-self";
 export const AFTER = "base/after";
@@ -536,6 +537,11 @@ export function registerMarriage(api: ModApi) {
       }
       return false;
     }
+    // far too soon: he feels it coming and has one move to do something about it
+    if (!sex.warned && !sex.lead && sex.his >= B.save.earlyAt && sex.his < 100 && sex.turns <= B.save.earlyTurns && !GIVES_HER.has(sex.act)) {
+      sex.warned = "early";
+      ctx.log("log.bed.slipping.early");
+    }
     if (sex.his >= 100) {
       finish(ctx, "auto");
       return true;
@@ -543,7 +549,12 @@ export function registerMarriage(api: ModApi) {
     // he goes soft: she is not there, or there is nothing to feel, or there is too much between them
     const soft = softChance(ctx.state) + (sex.out ? B.soft.whenOut : 0) + (tightness(ctx.state, sex.act) < 0.3 ? B.soft.whenLoose : 0) + b.heroine.marriage.resent * B.soft.perResent + (tired(ctx.state) ? content.day.rhythm.him.softTired : 0);
     const hisTurn = !GIVES_HER.has(sex.act) && !SOFT_ACTS.includes(sex.act); // it does not matter while he is doing something for her, or she to him with nothing asked of him
-    if (hisTurn && sex.turns >= 2 && sex.his < B.soft.belowHis && !sex.byHand && soft > 0 && ctx.rng.chance(soft)) {
+    const slipping = hisTurn && sex.turns >= 2 && sex.his < B.soft.belowHis && !sex.byHand && !sex.saved && soft > 0 && ctx.rng.chance(soft);
+    // the first time he only feels it going: one move to do something about it
+    if (slipping && !sex.warned) {
+      sex.warned = "soft";
+      ctx.log("log.bed.slipping.soft");
+    } else if (slipping) {
       b.night!.sex = null;
       b.night!.scene = "went_soft";
       feel(ctx, -1.5, 1);
@@ -885,6 +896,39 @@ export function registerMarriage(api: ModApi) {
       return out;
     };
   // What he can do while it lasts.
+  // The moment before it goes wrong - he is going soft, or it is coming far too soon - and what he does about it.
+  api.actions.register({
+    id: BED_SAVE,
+    labelKey: "action.bed_save",
+    describe: (a) => ({ key: `action.bed_save.${a.payload!.do}` }),
+    enumerate(state) {
+      const sex = bs(state).night?.sex;
+      if (!sex || !sex.warned || sex.saved) return [];
+      return (sex.warned === "soft" ? ["focus", "ask_her"] : ["slow", "tell_her"]).map((d) => ({ type: BED_SAVE, payload: { do: d } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const sex = b.night!.sex!;
+      const what = action.payload!.do as string;
+      const warm = h.marriage.desire >= B.reward.lovingDesire || h.arousal >= B.save.herArousal;
+      let ok = false;
+      if (what === "focus") ok = ctx.rng.chance(Math.min(0.9, B.save.focusBase + confidenceOf(ctx.state) * B.save.focusPerConfidence));
+      else if (what === "slow") ok = true;
+      else ok = warm; // asking her, either way: it works when she wants him to get there
+      if (ok) {
+        sex.saved = true;
+        if (sex.warned === "soft") sex.his = clamp(sex.his + B.save.focusHis);
+        else {
+          sex.his = clamp(sex.his - (what === "slow" ? B.save.slowHis : B.save.toldHis));
+          if (what === "slow") sex.pleasure = clamp(sex.pleasure - B.save.slowHers);
+        }
+        if (what === "ask_her" || what === "tell_her") feel(ctx, 0.5, -0.3);
+      } else if (what !== "focus") h.marriage.resent = clamp(h.marriage.resent + 0.5);
+      ctx.log(`log.bed.save.${what}.${ok ? "ok" : "no"}`);
+      ctx.emit("bed:save", { do: what, ok, of: sex.warned ?? "" });
+    },
+  });
   api.actions.register({
     id: BED,
     labelKey: "action.bed",

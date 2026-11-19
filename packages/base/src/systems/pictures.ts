@@ -46,6 +46,26 @@ export function registerPictures(api: ModApi) {
       return { type: APPROACH[ap.kind] ?? "talk", location: at, participants: [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }] };
     },
   });
+  // She went after a guest who had stepped out: what the two of them are doing there.
+  api.scenes.register({
+    id: "base.meet",
+    priority: 59,
+    match(state) {
+      const m = bs(state).shift?.meet;
+      if (!m || bs(state).encounter || state.where[WIFE] !== m.to || !onScreen(state, m.to)) return null;
+      return { type: actById(m.act).scene, location: m.to, participants: [{ id: WIFE, role: "wife" }, { id: m.patron, role: "patron" }], tags: { outfit: dressOf(state) } };
+    },
+  });
+  // She is in a lodger's room at night: for eyes that may see it, the whole of what it came to.
+  api.scenes.register({
+    id: "base.upstairs",
+    priority: 58,
+    match(state) {
+      const up = bs(state).night?.up;
+      if (!up || up.stage !== 2 || !up.act || state.where[WIFE] !== up.room || !onScreen(state, up.room)) return null;
+      return { type: actById(up.act).scene, location: up.room, participants: [{ id: WIFE, role: "wife" }, { id: up.patron, role: "patron" }], tags: { outfit: dressOf(state) } };
+    },
+  });
   // She is in the back room with a company: the tray, the talk, and what it came to.
   api.scenes.register({
     id: "base.company",

@@ -136,6 +136,8 @@ export interface BedScene {
   bored: number; // grows while what they do gives her too little
   asks: string | null; // what she has asked for instead: an act id, or "finish"
   ignored: number; // times he went on without answering her
+  warned?: "soft" | "early"; // he feels it going wrong: one move to do something about it (base/bed-save)
+  saved?: boolean; // he got through that moment: it does not come again this time
   out: boolean; // she has checked out: she lies there and waits for it to be over
   byHand: boolean; // he is finishing himself
   looseSaid: boolean;
@@ -215,6 +217,7 @@ export interface Shift {
   lastCrowd?: { crowd: string[]; men: { patron: string; slot: string; act: string }[] }; // who was around the encounter that is running
   cleanUntil?: number; // minute she is done cleaning herself up
   marksSeen?: boolean;
+  meet?: { patron: string; to: string; until: number; act: string }; // she went after a guest who stepped out
   show?: { type: string; until: number; patron?: string }; // a short thing on the floor that is the picture for a few minutes
   marksGuests?: boolean;
   hisQuiet?: boolean; // he has gone up to lie down in the middle of the evening
@@ -261,7 +264,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; hours?: number; seen?: boolean; heard?: boolean; knocked?: boolean }; sex: BedScene | null; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
@@ -284,6 +287,7 @@ export interface BaseState {
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
   kissedAfter?: number; // the minute of the shift she last kissed him straight after another man
   retroDay?: number; // the day she last asked him about a guest
+  bathDone?: { day: number; list: string[] }; // what they have already done under the water today
   glance?: { type: string; loc: string; who: { id: string; role: string }[]; turn: number; tags?: Record<string, string> }; // the picture of a small thing that has just happened (see glance.ts)
   details?: { turn: number; list: { id: string; who?: string; tags?: Record<string, string>; secret?: boolean }[] }; // close-ups of what has just happened, for one move (see glance.ts)
   approach: { kind: string; patron?: string; public: boolean; at?: number; act?: string } | null; // she has come to him with something and waits for an answer

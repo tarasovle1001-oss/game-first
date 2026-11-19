@@ -1,5 +1,6 @@
 // The afternoon before opening: a budget of minutes, things to spend it on, the town with its shops,
 // one-off upgrades for the cafe, and what she does with her own money while he is not looking.
+import { glance } from "./glance";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -405,6 +406,8 @@ export function registerDay(api: ModApi) {
         // she comes along and stays with him for as long as it takes
         ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
         b.day!.her = { task: "with_you", left: a.minutes };
+        // out in town together: the picture is of the two of them, hand in hand
+        if ((ctx.state.where[HUSBAND] ?? "").startsWith("town.")) glance(ctx, "him_hug", ctx.state.where[HUSBAND], [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }]);
       }
       ctx.log("log.day.start", { what: `day.${a.id}`, minutes: a.minutes });
       ctx.emit("day:started", { do: a.id });
