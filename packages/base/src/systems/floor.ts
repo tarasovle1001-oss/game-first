@@ -281,8 +281,9 @@ export function registerFloor(api: ModApi) {
     }
     // a round nobody brought: they notice, and it costs the house
     if (g.wants !== undefined && sh.tick - g.wants >= 20) ignored(ctx, true);
+    if (g.round) roundBeat(ctx);
     // she comes back out
-    if (g.herOut !== undefined && sh.tick >= g.herOut) {
+    if (g.herOut !== undefined && !g.round && sh.tick >= g.herOut) {
       g.herOut = undefined;
       ctx.state.where[WIFE] = HALL;
       ctx.log(`log.group.her_back${g.sauna ? ".sauna" : ""}`);
@@ -303,18 +304,56 @@ export function registerFloor(api: ModApi) {
       ctx.log(`log.group.restless${g.sauna ? ".sauna" : ""}`);
     }
   });
-  /** She is in the back room with a tray and a company that has been drinking. What happens is counted in one go. */
+  /**
+   * She goes into the back room with a tray. It is played in beats: she sets the glasses down, they keep her talking,
+   * and only then does it come to whatever it comes to. Until that beat he can still walk in.
+   */
   const herRound = (ctx: Ctx) => {
+    const b = bs(ctx.state);
+    const sh = b.shift!;
+    const g = sh.group!;
+    const venue = g.sauna ? SAUNA : LOUNGE;
+    g.heat = clamp(g.heat + Gr.heatHer);
+    const minutes = ctx.rng.int(Gr.inside[0], Gr.inside[1]);
+    g.round = { start: sh.tick, at: sh.tick + Gr.beats.decide, beat: 0 };
+    g.herOut = sh.tick + Math.max(minutes, Gr.beats.decide + 2);
+    sh.awayUntil = g.herOut;
+    sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, g.herOut);
+    ctx.state.where[WIFE] = venue;
+  };
+  /** The beats before it is decided: what he hears or sees of it depends on where he stands. */
+  const roundBeat = (ctx: Ctx) => {
+    const b = bs(ctx.state);
+    const sh = b.shift!;
+    const g = sh.group!;
+    const r = g.round!;
+    const venue = g.sauna ? SAUNA : LOUNGE;
+    const seen = husbandSees(ctx.state, venue) || b.mode === "open";
+    const since = sh.tick - r.start;
+    if (r.beat === 0 && since >= Gr.beats.serve) {
+      r.beat = 1;
+      ctx.log(`log.group.beat.serve${g.sauna ? ".sauna" : ""}`, { n: g.size }, seen ? undefined : ["unseen"]);
+    } else if (r.beat === 1 && since >= Gr.beats.talk) {
+      r.beat = 2;
+      // how they talk to her is how warm they are by now
+      const warm = g.heat >= Gr.beats.rowdyHeat ? "rowdy" : g.heat >= Gr.beats.warmHeat ? "warm" : "polite";
+      ctx.log(`log.group.beat.talk.${warm}`, undefined, seen ? undefined : ["unseen"]);
+      if (seen) sh.interrupt = true; // he is standing there: he gets to decide before it goes further
+    } else if (sh.tick >= r.at) {
+      g.round = undefined;
+      roundResolve(ctx);
+    }
+  };
+  const roundResolve = (ctx: Ctx) => {
     const b = bs(ctx.state);
     const sh = b.shift!;
     const g = sh.group!;
     const h = b.heroine;
     const lead = b.patrons[g.lead]!;
     const venue = g.sauna ? SAUNA : LOUNGE;
-    g.heat = clamp(g.heat + Gr.heatHer);
     const seen = husbandSees(ctx.state, venue) || b.mode === "open";
     const tags = seen ? undefined : ["unseen"];
-    let minutes = ctx.rng.int(Gr.inside[0], Gr.inside[1]);
+    let minutes = Math.max(0, (g.herOut ?? sh.tick) - sh.tick);
     const tier = tierFor(g.heat + (g.sauna ? Gr.saunaTier : 0));
     const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
     const act = options.length > 0 ? ctx.rng.pick(options) : null;
@@ -367,7 +406,6 @@ export function registerFloor(api: ModApi) {
     g.herOut = sh.tick + minutes;
     sh.awayUntil = g.herOut;
     sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, g.herOut);
-    ctx.state.where[WIFE] = venue;
   };
   api.actions.register({
     id: GROUP,
@@ -378,6 +416,8 @@ export function registerFloor(api: ModApi) {
       const g = b.shift?.group;
       if (state.time.phase !== "shift" || !g || b.caught || b.night?.sex) return [];
       if (g.pending !== undefined) return ["accept", "decline"].map((d) => ({ type: GROUP, payload: { do: d } }));
+      // he has walked in while they still only have her talking: he can take her out with him
+      if (g.round && state.where[HUSBAND] === (g.sauna ? SAUNA : LOUNGE)) return [{ type: GROUP, payload: { do: "pull_out" } }];
       if (g.wants === undefined) return [];
       const dos: string[] = ["ignore"];
       if (!b.encounter && g.herOut === undefined && b.heroine.energy > 0) dos.push("send_her");
@@ -399,6 +439,14 @@ export function registerFloor(api: ModApi) {
         return;
       }
       if (what === "decline") return void turnAway(ctx, false);
+      if (what === "pull_out") {
+        g.round = undefined;
+        g.herOut = sh.tick;
+        g.heat = clamp(g.heat - Gr.beats.pullOutHeat);
+        ctx.log("log.group.pull_out");
+        ctx.emit("group:pulled_out", { heat: g.heat });
+        return;
+      }
       if (what === "ignore") return void ignored(ctx, false);
       const her = what === "send_her";
       g.wants = undefined;

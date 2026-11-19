@@ -63,6 +63,7 @@ groups:               # a company takes the back room
   heatPerRound: 12
   heatHer: 8                    # extra each time it is her
   restlessReputation: 1
+  beats: { serve: 1, talk: 3, decide: 6, warmHeat: 40, rowdyHeat: 70, pullOutHeat: 10 } # minutes after she walks in: the glasses go down, they keep her talking, it comes to something (until then he can still walk in)
   inside: [10, 20]              # minutes she is in there with a tray
   longInside: [30, 45]          # when it goes further
   tierByHeat: [[0, 1], [25, 2], [45, 4], [65, 6], [85, 7]]

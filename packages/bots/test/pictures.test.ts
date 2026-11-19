@@ -82,7 +82,6 @@ describe("main picture and close-ups", () => {
 });
 
 import { ALONE, CAGE, cagedDays, confidenceOf, DOORS, WORK } from "@tc/base";
-import { CORE_ADVANCE } from "@tc/core";
 
 describe("19c: the long evening, his own body, the cage", () => {
   const acts = (s: ReturnType<typeof engine.init>, type: string) => engine.listActions(s).filter((a) => a.type === type);

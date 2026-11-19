@@ -11,7 +11,7 @@ purse: # tips the men leave her for more than coffee: part goes into her purse, 
   start: 0.5
   moodAtNone: -3   # her mood per day when she keeps nothing of what she earned
   moodAtAll: 2
-  actTipScale: 1.0 # overall size of those tips
+  actTipScale: 0.8 # overall size of those tips
 trouble: # things break, and an unwatched till gets robbed
   breakdownChancePerDay: 0.07
   breakdownCost: [120, 420]
@@ -20,7 +20,7 @@ trouble: # things break, and an unwatched till gets robbed
 debtLimit: 20000 # supplies can be bought on credit until the debt reaches this
 debtInterestPerDay: 0.008 # fraction of the debt added every day
 service: # how the place is run, 0..100 ("reputation" in the code)
-  served: 0.36    # per guest who was served and left
+  served: 0.27    # per guest who was served and left
   ignored: 1      # lost per guest who walked out unserved
   taperFrom: 50   # above this a served guest adds less and less: nothing at 100
 supplies:
@@ -62,7 +62,7 @@ shift:
   work: { minutes: [15, 60], takeAfter: 8, cleanPerMinute: 0.2, energyPerHour: 5, choreEvery: 25, chores: 5 } # "work the floor": he takes a table that has waited this long, tidies otherwise
   lastArrivalBefore: 60 # nobody new comes in during the last minutes before closing
   arrivalsPerHour: 0.95 # expected new guests per hour, before the share below
-  flow: [0.25, 0.6, 1.7] # share of that at service 0, 50 and 100: a quiet place at the start (4-5 guests an evening), a full hall only when it is run really well
+  flow: [0.25, 0.6, 1.35] # share of that at service 0, 50 and 100: a quiet place at the start (4-5 guests an evening), a full hall only when it is run really well
   stayMinutes: [50, 130]
   billFactor: 2.15     # every bill is this much above what the guest type spends: few guests who sit long and order well
   billFactorFull: 1.5  # the same at service 100: a full hall orders smaller, turnover does the rest (in between it slides from 50 up)

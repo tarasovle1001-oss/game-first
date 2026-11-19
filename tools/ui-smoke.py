@@ -28,7 +28,8 @@ with sync_playwright() as p:
         # the first enabled wait of an hour if there is one, otherwise the next phase
         hour = page.locator("button:not([disabled])").filter(has_text="60").first
         nxt = page.locator("button:not([disabled])").filter(has_text="Следующая фаза").first
-        (hour if hour.count() and step % 3 else nxt if nxt.count() else hour).click()
+        anything = page.locator(".menu2 .mitem:not([disabled])").first  # a question that takes the whole column: answer it
+        (hour if hour.count() and step % 3 else nxt if nxt.count() else hour if hour.count() else anything).click()
         if step % 6 == 0:
             for tab in ["Она", "Гости", "Почему", "Счёт"]:
                 t = page.locator(".tabs button").filter(has_text=tab).first

@@ -225,11 +225,11 @@ describe("a lodger upstairs at night", () => {
 describe("a closed door", () => {
   it("with her behind it he can listen, knock or walk in, and each leaves the game sound", () => {
     let found: GameState | null = null;
-    for (let seed = 1; seed <= 12 && !found; seed++) {
+    for (let seed = 1; seed <= 24 && !found; seed++) {
       let s = engine.init(seed);
       let r = seed * 104729;
       const rnd = () => (r = (r * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
-      for (let i = 0; i < 3000 && s.time.day <= 12 && !found; i++) {
+      for (let i = 0; i < 12000 && s.time.day <= 12 && !found; i++) {
         const acts = engine.listActions(s);
         const enc = bs(s).encounter;
         if (enc && s.time.phase === "shift" && enc.loc !== "cafe.hall" && !bs(s).caught && !bs(s).reaction) {
