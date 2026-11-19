@@ -192,7 +192,7 @@ function newTake(it: Item, nIn: number, tagsIn: string | undefined, negative: st
   const id = `t${Date.now().toString(36)}${(takeN++ % 1000).toString(36)}`;
   const { comfy: _c, ...used } = settings;
   st.takes.push({ id, at: new Date().toISOString(), tags, negative, positive: p.positive, negativeFull: p.negative, seeds, files: seeds.map(() => null), marks: seeds.map(() => null), settings: used, room: st.room ?? it.room });
-  if (!st.status || st.status === "todo") st.status = "work";
+  st.status = "work"; // a new take means the scene is being looked at again, even if it was marked done
   saveState(it.id, st);
   seeds.forEach((_, i) => jobs.push({ scene: it.id, take: id, i, status: "queued", batch }));
   void pump();
