@@ -60,6 +60,8 @@ export interface Husband {
   mood?: number; // 0..100
   arousal?: number; // 0..100
   washed?: string; // "day:phase" he last washed
+  confidence?: number; // 0..100, how sure of himself he is in bed; absent = the starting value
+  dry?: number; // nights in a row without his own release
   spentDay?: number; // the day he came from a touch alone: nothing more from him that day
 }
 

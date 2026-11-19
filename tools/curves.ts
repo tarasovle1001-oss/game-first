@@ -20,14 +20,15 @@ const find = (actions: Action[], type: string, test: (p: Record<string, unknown>
 /** The husband's nights: he asks for sex once a night (the game takes one ask a night) and is attentive in bed. */
 function nights(day: Strategy): Strategy {
   return (actions, state, roll) =>
-    actions.some((a) => a.type === "base/bed") ? lovingStrategy(actions, state, roll) : (find(actions, "base/night-act", (p) => p.act === "sex") ?? day(actions, state, roll));
+    // one ask a night: a man who keeps asking after a "no" is a different husband, and not the one measured here
+    actions.some((a) => a.type === "base/bed") ? lovingStrategy(actions, state, roll) : (((bs(state).night?.asks ?? 0) === 0 ? find(actions, "base/night-act", (p) => p.act === "sex") : undefined) ?? day(actions, state, roll));
 }
 /** The same nights, but he hurries to his own end and does not wait for her. */
 function selfish(day: Strategy): Strategy {
   return (actions, state, roll) => {
     const bed = actions.filter((a) => a.type === "base/bed");
     const pick = (d: string) => bed.find((a) => a.payload?.do === d);
-    return bed.length ? (pick("finish") ?? pick("faster") ?? pick("keep") ?? bed[0]!) : (find(actions, "base/night-act", (p) => p.act === "sex") ?? day(actions, state, roll));
+    return bed.length ? (pick("finish") ?? pick("faster") ?? pick("keep") ?? bed[0]!) : (((bs(state).night?.asks ?? 0) === 0 ? find(actions, "base/night-act", (p) => p.act === "sex") : undefined) ?? day(actions, state, roll));
   };
 }
 const away: Strategy = (actions, state) => lovingStrategy(actions.filter((a) => a.type !== "base/night-act" && a.type !== "base/night-self"), state, () => 1);

@@ -20,7 +20,7 @@ trouble: # things break, and an unwatched till gets robbed
 debtLimit: 20000 # supplies can be bought on credit until the debt reaches this
 debtInterestPerDay: 0.008 # fraction of the debt added every day
 service: # how the place is run, 0..100 ("reputation" in the code)
-  served: 0.25    # per guest who was served and left
+  served: 0.36    # per guest who was served and left
   ignored: 1      # lost per guest who walked out unserved
   taperFrom: 50   # above this a served guest adds less and less: nothing at 100
 supplies:
@@ -60,9 +60,11 @@ shift:
   minutesPerTick: 1    # the evening is counted in minutes; slow things still run every 10 (event shift:tick)
   seats: 8
   lastArrivalBefore: 60 # nobody new comes in during the last minutes before closing
-  arrivalsPerHour: 1.3 # expected new guests per hour at reputation 50
+  arrivalsPerHour: 1.3 # expected new guests per hour, before the share below
+  flow: [0.25, 0.6, 1.7] # share of that at service 0, 50 and 100: a quiet place at the start (4-5 guests an evening), a full hall only when it is run really well
   stayMinutes: [50, 130]
-  billFactor: 1.55     # fewer, bigger orders: every bill is this much above what the guest type spends
+  billFactor: 2.15     # every bill is this much above what the guest type spends: few guests who sit long and order well
+  billFactorFull: 1.5  # the same at service 100: a full hall orders smaller, turnover does the rest (in between it slides from 50 up)
   orderEveryMinutes: 55 # a guest wants a new order this often
   maxWaitMinutes: 45 # he walks out after waiting this long
   energyPerServe: 2

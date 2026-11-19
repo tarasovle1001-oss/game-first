@@ -163,6 +163,7 @@ function collect(state: GameState, also: string[], beliefs: string[] = []): Map<
 
   put("him.energy", { group: "him", label: "inspect.him.energy", value: b.husband.energy ?? 0, sign: 1 });
   put("him.mood", { group: "him", label: "inspect.him.mood", value: b.husband.mood ?? 0, sign: 1 });
+  put("him.confidence", { group: "him", label: "inspect.him.confidence", value: b.husband.confidence ?? content.body.nerve.confidence.start, sign: 1 });
   put("him.arousal", { group: "him", label: "inspect.him.arousal", value: b.husband.arousal ?? 0, sign: 0 });
 
   put("house.money", { group: "house", label: "ui.money", value: b.money, main: true, sign: 1, min: 0.5 });

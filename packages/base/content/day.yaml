@@ -59,6 +59,8 @@ shop:                 # in town; she also buys for herself from her purse
   toySatisfied: 80
   solo: # her own drawer: what she buys and uses by herself
     at: 15          # frustration from which she shuts herself in before opening
+    idleBase: 0.04  # with a toy in the drawer: chance a day that she uses it without being driven to it...
+    idlePerLibido: 0.003 # ...plus this per point of her libido (a quiet wife about once a week, a hungry one every third day)
     buyAt: 20       # frustration from which she buys her first one; half of it is enough for the next size
     firstSize: 11   # nothing smaller is worth her money
     outgrown: 2     # she wants the next size once she takes comfortably within this many cm of her biggest
@@ -67,6 +69,7 @@ shop:                 # in town; she also buys for herself from her purse
   gigolo: { price: 250, size: 24, minutes: 40, fidelityBelow: 45, sizeTasteFrom: 45, chance: 0.5, suspicion: 4 }
   affair: { fidelityBelow: 50, affinity: 30, chance: 0.3, minutes: 120, suspicion: 3 } # an afternoon "with a friend" with a lover who has her number
   herOutfitMargin: 5  # she buys an outfit herself once her openness is this close to it
+leftHer: { mood: -4, resent: 1.5 } # he walks off in the middle of an outing with her
 upgrades:             # one-off, paid from the till (or on credit while the limit allows)
   - { id: coffee_machine, cost: 600, bill: 0.15 }
   - { id: interior, cost: 900, tip: 0.1, reputation: 5 }
@@ -81,7 +84,8 @@ rhythm:               # the day around the clock: sleep, his own state, the bath
   quiet: { minutes: 60, her: 22 } # at zero energy in the afternoon either of them lies down: for how long, and what it gives her (his is the nap)
   herBedtime: 60      # minutes after midnight she is asleep, if nothing keeps her up
   wakeHer: { consent: -15, annoy: 10, mood: -3 }
-  nightWaits: [15, 60]
+  nightWaits: [5, 15, 60]
+  nightUntilMax: 180  # "until something happens" at night gives up after this many minutes
   nightCosts: { ask: 5, turn: 2, self: 10, talk: 5 }
   him:
     start: { energy: 85, mood: 60, arousal: 10 }

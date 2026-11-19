@@ -451,8 +451,15 @@ export function registerDay(api: ModApi) {
     const day = bs(ctx.state).day;
     if (!day) return;
     if (day.busy) {
+      // walking off in the middle of something they were doing together is not the same as going to open up
+      const withHer = D.activities.find((x) => x.id === day.busy!.id)?.withHer && day.her?.task === "with_you";
       ctx.log("log.day.stop", { what: `day.${day.busy.id}` });
       day.busy = undefined;
+      if (withHer) {
+        changeHeroine(ctx, "mood", D.leftHer.mood, "left alone");
+        bs(ctx.state).heroine.marriage.resent = clamp(bs(ctx.state).heroine.marriage.resent + D.leftHer.resent);
+        ctx.log("log.day.left_her");
+      }
     }
     // she said she would be here, and she is not
     if (day.herOut && day.cover === e.payload!.to && !day.coverSeen && bs(ctx.state).mode === "hidden") {

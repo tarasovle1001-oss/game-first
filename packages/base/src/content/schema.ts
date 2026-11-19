@@ -69,7 +69,9 @@ export const balanceSchema = z
         minutesPerTick: z.number().int().positive(),
         seats: z.number().int().positive(),
         lastArrivalBefore: z.number().int().min(0),
-        arrivalsPerHour: z.number().min(0), // expected new guests per hour at reputation 50
+        billFactorFull: z.number().min(0),
+        arrivalsPerHour: z.number().min(0), // expected new guests per hour, before the flow share
+        flow: z.tuple([z.number(), z.number(), z.number()]), // share of it at service 0, 50, 100
         stayMinutes: range,
         billFactor: z.number().positive(),
         orderEveryMinutes: z.number().positive(), // a guest wants a new order this often
@@ -218,6 +220,7 @@ export const consentSchema = z
 
 export const nightSchema = z
   .object({
+    wantsChance: z.object({ base: z.number(), perLibido: z.number(), perDesireAbove: z.number(), perNightWithout: z.number(), max: z.number() }).strict(),
     maxAsks: z.number().int().min(1), // how many times a night he can reach for her
     againPenalty: z.number().min(0), // taken off her answer for each time he already asked tonight
     withoutPerLibido: z.number().min(0), // frustration she gains per point of libido on a day that brought her no release
@@ -239,6 +242,15 @@ export const bodySchema = z
   .object({
     // the size (cm) a zone takes comfortably = base + stretch * perStretch
     fit: z.object({ vagina: zoneFit, anus: zoneFit, mouth: zoneFit }).strict(),
+    nerve: z
+      .object({
+        confidence: z.object({ start: z.number(), floor: z.number(), good: z.number(), his: z.number(), soft: z.number(), early: z.number(), mocked: z.number(), comforted: z.number(), wet: z.number(), gym: z.number(), settle: z.number() }).strict(),
+        soft: z.object({ base: z.number().min(0), perLostConfidence: z.number().min(0) }).strict(),
+        early: z.object({ perDryNight: z.number().min(0), perLostConfidence: z.number().min(0) }).strict(),
+        wet: z.object({ base: z.number(), perDryNight: z.number(), max: z.number(), noticed: z.number(), mood: z.number(), moodNoticed: z.number(), herMood: z.number(), pity: z.number(), power: z.number() }).strict(),
+        react: z.object({ hardPower: z.number(), warmDesire: z.number(), warmMaxResent: z.number(), power: z.number() }).strict(),
+      })
+      .strict(),
     stretchPerCm: z.number().min(0), // stretch gained per cm above the comfortable size
     stretchZone: z.record(z.string(), z.number()), // share of that gain a zone takes; absent = all of it
     recoverPerDay: z.number().min(0),
@@ -390,7 +402,7 @@ export const daySchema = z
         toys: z.array(z.object({ id, size: z.number().positive(), price: z.number().positive() }).strict()),
         toyStretchAbove: z.number(),
         toySatisfied: z.number().min(0).max(100),
-        solo: z.object({ at: z.number(), buyAt: z.number(), firstSize: z.number(), outgrown: z.number(), relief: z.number(), analChance: z.number() }).strict(),
+        solo: z.object({ at: z.number(), idleBase: z.number().min(0), idlePerLibido: z.number().min(0), buyAt: z.number(), firstSize: z.number(), outgrown: z.number(), relief: z.number(), analChance: z.number() }).strict(),
         gigolo: z
           .object({ price: z.number(), size: z.number(), minutes: z.number(), fidelityBelow: z.number(), sizeTasteFrom: z.number(), chance: z.number().min(0).max(1), suspicion: z.number() })
           .strict(),
@@ -398,6 +410,7 @@ export const daySchema = z
         affair: z.object({ fidelityBelow: z.number(), affinity: z.number(), chance: z.number().min(0).max(1), minutes: z.number().int(), suspicion: z.number() }).strict(),
       })
       .strict(),
+    leftHer: z.object({ mood: z.number(), resent: z.number() }).strict(),
     upgrades: z.array(z.object({ id, cost: z.number().positive(), bill: z.number().optional(), tip: z.number().optional(), reputation: z.number().optional() }).strict()),
     world: z
       .object({
@@ -419,6 +432,7 @@ export const daySchema = z
         herBedtime: z.number().int(), // minutes after midnight she falls asleep if nothing keeps her up
         wakeHer: z.object({ consent: z.number(), annoy: z.number(), mood: z.number() }).strict(),
         nightWaits: z.array(z.number().int().positive()).min(1),
+        nightUntilMax: z.number().int().positive(),
         nightCosts: z.object({ ask: z.number().int(), turn: z.number().int(), self: z.number().int(), talk: z.number().int() }).strict(),
         him: z
           .object({

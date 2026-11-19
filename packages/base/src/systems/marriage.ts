@@ -2,6 +2,7 @@
 // and through the same body rules, so a husband who does little for her shows up in the numbers.
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { actOf, content } from "../content";
+import { earlyChance, softChance } from "./nerve";
 import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { fitOf, orgasm, pleasureFor, resolveBody, useBody } from "./body";
@@ -82,7 +83,11 @@ export function registerMarriage(api: ModApi) {
       const h = b.heroine;
       const W = content.body.night.wants;
       const promised = b.promised === ctx.state.time.day && h.energy >= W.energy / 2; // she started something earlier today
-      if (promised || (h.arousal >= W.arousal && h.marriage.desire >= W.desire && h.energy >= W.energy && h.satisfied < 50 && h.marriage.resent < content.manners.talk.complainAt)) {
+      const able = h.marriage.desire >= W.desire && h.energy >= W.energy && h.satisfied < 50 && h.marriage.resent < content.manners.talk.complainAt;
+      const C = content.body.night.wantsChance;
+      // worked up, she always does; otherwise it is a matter of how much she needs it, how much she wants him, and how long it has been
+      const luck = able && h.arousal < W.arousal && ctx.rng.chance(Math.min(C.max, C.base + h.traits.libido * C.perLibido + (h.marriage.desire - W.desire) * C.perDesireAbove + Math.max(0, b.denied) * C.perNightWithout));
+      if (promised || (able && h.arousal >= W.arousal) || luck) {
         b.night.wants = true;
         b.night.scene = "wants_him";
         ctx.log("log.night.wants");
@@ -116,6 +121,13 @@ export function registerMarriage(api: ModApi) {
     if (b.proposals.length > 12) b.proposals.shift();
     setOutcome(ctx, outcomeOf(verdict), HUSBAND);
     return verdict;
+  };
+  /** She takes over by pushing him onto his back: plain sex becomes her on top, so that she does not "switch" to where she already is. */
+  const onTop = (ctx: Ctx) => {
+    const sex = bs(ctx.state).night!.sex!;
+    if (sex.act !== "sex" || !hisActOpen(ctx.state, "riding")) return;
+    setAct(ctx, "riding");
+    sex.tried = [...(sex.tried ?? ["sex"]), "riding"];
   };
   /** Starts or changes what they are doing: her body takes it, the scene picture follows. */
   const setAct = (ctx: Ctx, actId: string) => {
@@ -273,7 +285,7 @@ export function registerMarriage(api: ModApi) {
       }
       // being wanted by the man she wants does part of the work
       changeHeroine(ctx, "arousal", h.marriage.desire * H.foreplay, "husband");
-      const unlucky = ctx.rng.chance(H.prematureChance + Math.max(0, b.denied) * H.prematureChancePerDeniedNight);
+      const unlucky = ctx.rng.chance(H.prematureChance + earlyChance(ctx.state));
       b.night!.sex = {
         act: act.id,
         his: clamp(B.startHis + Math.max(0, b.denied) * B.deniedStart + (unlucky ? B.unluckyStart : 0) + himOf(ctx.state).arousal * content.day.rhythm.him.arousal.startHis),
@@ -522,8 +534,8 @@ export function registerMarriage(api: ModApi) {
       return true;
     }
     // he goes soft: she is not there, or there is nothing to feel, or there is too much between them
-    const soft = (sex.out ? B.soft.whenOut : 0) + (tightness(ctx.state, sex.act) < 0.3 ? B.soft.whenLoose : 0) + b.heroine.marriage.resent * B.soft.perResent + (tired(ctx.state) ? content.day.rhythm.him.softTired : 0);
-    const hisTurn = !GIVES_HER.has(sex.act); // it does not matter while he is the one doing something for her
+    const soft = softChance(ctx.state) + (sex.out ? B.soft.whenOut : 0) + (tightness(ctx.state, sex.act) < 0.3 ? B.soft.whenLoose : 0) + b.heroine.marriage.resent * B.soft.perResent + (tired(ctx.state) ? content.day.rhythm.him.softTired : 0);
+    const hisTurn = !GIVES_HER.has(sex.act) && !SOFT_ACTS.includes(sex.act); // it does not matter while he is doing something for her, or she to him with nothing asked of him
     if (hisTurn && sex.turns >= 2 && sex.his < B.soft.belowHis && !sex.byHand && soft > 0 && ctx.rng.chance(soft)) {
       b.night!.sex = null;
       b.night!.scene = "went_soft";
@@ -802,6 +814,7 @@ export function registerMarriage(api: ModApi) {
     if (b.power < LEAD.takesAtPower && !cruel) return;
     if (!ctx.rng.chance(cruel ? LEAD.cruelTakes : LEAD.takesChance)) return;
     sex.lead = true;
+    onTop(ctx);
     ctx.log("log.bed.lead.takes");
     ctx.emit("bed:lead", { given: false });
   });
@@ -959,6 +972,7 @@ export function registerMarriage(api: ModApi) {
           break;
         case "give_lead":
           sex.lead = true;
+          onTop(ctx);
           ctx.log("log.bed.lead.given");
           ctx.emit("bed:lead", { given: true });
           herTurn(ctx);

@@ -25,7 +25,8 @@ night: # what she does when she lies awake wanting more
   work: 12 # consent she loses for being pulled away from a room full of guests
   elsewhere: 4 # anywhere but their own bedroom, with nobody around: a little harder
   public: { base: 25, perClosed: 0.5, exhibitionist: 30, gossip: 5, heat: 15, openness: 1.5 } # in front of guests: base plus per point of openness she lacks; what it does to the room
-  wants: { arousal: 50, desire: 45, energy: 25, consent: 20, declineDesire: 1.5, declineResent: 3 } # she reaches for him herself
+  wants: { arousal: 50, desire: 45, energy: 25, consent: 20, declineDesire: 1.5, declineResent: 3 } # she reaches for him herself: always when she is this worked up...
+  wantsChance: { base: 0.04, perLibido: 0.002, perDesireAbove: 0.004, perNightWithout: 0.04, max: 0.6 } # ...and by chance on any night: her libido, her desire for him above the level in "wants", nights since they last did
 
 sizeClasses: [11, 14, 17, 21] # cm: below the first is tiny, then small, average, big; from the last up is huge
 
@@ -98,3 +99,33 @@ husband:
   desire: 50        # her desire for him at the start
   desireGain: 0.3   # share of a good night with him that turns into wanting him more
   resent: 5
+nerve: # his own body: confidence in bed (0..100) and nights without release. None of it depends on her
+  confidence:
+    start: 60
+    floor: 20        # three bad nights cannot ruin a whole game: it does not fall lower than this
+    good: 3          # a night she came
+    his: 2           # a night that was about him and went as meant
+    soft: -12        # he went soft
+    early: -8        # he was over too soon
+    mocked: -4       # on top of that, from a wife who holds the reins
+    comforted: 3     # given back by a wife who is warm to him
+    wet: -3          # she saw the sheet in the morning
+    gym: 1
+    settle: 1        # per morning, back towards the start, from below and from above
+  soft:
+    base: 0.04               # chance per turn of a scene, always: it happens to anyone
+    perLostConfidence: 0.0012 # added per point of confidence below the start
+  early:
+    perDryNight: 0.04        # chance added per night without, to "any night he can finish too early"
+    perLostConfidence: 0.003
+  wet:               # it ends in his sleep
+    base: 0.03       # per morning after a night without: unlucky, it happens on day two
+    perDryNight: 0.04
+    max: 0.4
+    noticed: 0.55    # she saw
+    mood: -1         # his, when only he knows
+    moodNoticed: -3
+    herMood: -2
+    pity: 6
+    power: 1
+  react: { hardPower: 30, warmDesire: 55, warmMaxResent: 25, power: 2 }

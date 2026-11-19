@@ -43,7 +43,9 @@ export function registerSolo(api: ModApi) {
     if (e.payload!.phase !== "shift") return;
     const b = bs(ctx.state);
     const h = b.heroine;
-    if (h.frustration < So.at || b.soloDay === ctx.state.time.day) return;
+    if (b.soloDay === ctx.state.time.day) return;
+    // wanting drives her to it; with a toy in the drawer she also simply takes it out now and then, by how much she needs
+    if (h.frustration < So.at && !(owned(b).length > 0 && ctx.rng.chance(So.idleBase + h.traits.libido * So.idlePerLibido))) return;
     // the back way is for a woman who likes it, or whom a husband has taught to
     const anal = (h.tastes.acts.anal ?? 0) > 0 || h.body.anus.stretch >= 15 ? ctx.rng.chance(So.analChance) : false;
     const zone = anal ? "anus" : "vagina";

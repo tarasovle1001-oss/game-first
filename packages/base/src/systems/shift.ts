@@ -74,8 +74,10 @@ function arrive(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
   if (sh.tick >= bal.hours * 60 - bal.lastArrivalBefore) return; // too late in the evening to start one
-  // reputation 0 -> 40% of the base flow, 50 -> 100%, 100 -> 160%
-  const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * (0.4 + (b.reputation / 50) * 0.6) * (1 + (b.day?.arrivals ?? 0) + b.gossip * content.secrecy.gossip.arrivals);
+  // how the place is run decides how many come: slowly up to "decent", fast from there to "the place to be"
+  const [f0, f50, f100] = bal.flow;
+  const share = b.reputation <= 50 ? f0 + ((f50 - f0) * b.reputation) / 50 : f50 + ((f100 - f50) * (b.reputation - 50)) / 50;
+  const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * share * (1 + (b.day?.arrivals ?? 0) + b.gossip * content.secrecy.gossip.arrivals);
   const count = Math.floor(perTick) + (ctx.rng.chance(perTick % 1) ? 1 : 0);
   for (let i = 0; i < count; i++) {
     if (sh.visits.length >= bal.seats) {
@@ -104,7 +106,7 @@ function serveOne(ctx: Ctx, v: Visit, taker: "wife" | "husband"): boolean {
   }
   const p = b.patrons[v.patron]!;
   const type = content.patronTypes.find((t) => t.id === p.type)!;
-  const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (ctx.state.where[HUSBAND] === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus) * bal.billFactor);
+  const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (ctx.state.where[HUSBAND] === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus) * (bal.billFactor - ((bal.billFactor - bal.billFactorFull) * Math.max(0, b.reputation - 50)) / 50));
   const tip = taker === "husband" ? 0 : Math.max(0, Math.round(ctx.engine.evaluate<TipInput>(TIP_FORMULA, ctx.state, { patron: p.id, bill }).total));
   b.stock -= 1;
   b.clean = Math.max(0, b.clean - content.day.dirtPerServed);

@@ -950,3 +950,4 @@ header { min-width: 0; }
 .fold > summary { cursor: pointer; list-style: none; }
 .fold > summary::before { content: "▸ "; }
 .fold[open] > summary::before { content: "▾ "; }
+.rg-who i.booked { opacity: 0.7; font-style: italic; }

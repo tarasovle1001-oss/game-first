@@ -73,8 +73,8 @@ scene: # a thing with a guest runs minute by minute; every so often he tries to 
   fedUpMax: 12
   leaveSuspicion: 2         # an excuse to leave the floor, when her husband is looking
 proposalsPerTick: 3 # how many guests can speak up within one tick (only one of them can take her off the floor)
-askChancePerHour: 0.5 # base chance that a guest makes a move within an hour
-askChancePerInterest: 0.016 # added per point of his interest
+askChancePerHour: 0.8 # base chance that a guest makes a move within an hour
+askChancePerInterest: 0.024 # added per point of his interest
 
 # row weights
 arousal: 0.6    # per point of arousal, grows with the tier of the act

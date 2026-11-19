@@ -29,9 +29,11 @@ export function RoomGrid({ state, t, lang, onAct, open, guess }: Common & { onAc
                 const people = Object.keys(state.where).filter((id) => (id === WIFE ? herHere : state.where[id] === r.id && (sees || id === HUSBAND)));
                 const guests = people.filter((id) => id !== WIFE && id !== HUSBAND);
                 // a company that was let in sits in the small hall (or the sauna) as one party, not as separate guests
+                // a room that is let shows whose it is, whether he is in it right now or not
+                const lodger = bs(state).lodgers?.[r.id];
                 const party = group && group.pending === undefined && r.id === (group.sauna ? "cafe.sauna" : "cafe.lounge") ? group.size : 0;
                 return (
-                  <button key={r.id} className={`rg-room${r.id === here ? " here" : ""}${move ? " reachable" : ""}${people.length === 0 && !party ? " empty" : ""}`} disabled={!move} onClick={() => move && onAct(move)} title={t(r.nameKey)}>
+                  <button key={r.id} className={`rg-room${r.id === here ? " here" : ""}${move ? " reachable" : ""}${people.length === 0 && !party && !lodger ? " empty" : ""}`} disabled={!move} onClick={() => move && onAct(move)} title={t(r.nameKey)}>
                     <span className="rg-name">{t(r.nameKey)}</span>
                     <span className="rg-who">
                       {people.includes(HUSBAND) && <i className="husband">{t("ui.you")}</i>}
@@ -39,6 +41,7 @@ export function RoomGrid({ state, t, lang, onAct, open, guess }: Common & { onAc
                       {guests.length === 1 && <i className="patron">{who(guests[0]!, state, t, lang)}</i>}
                       {guests.length > 1 && <i className="patron">×{guests.length}</i>}
                       {party > 0 && <i className="patron">{t("ui.party", { n: party })}</i>}
+                      {lodger && !guests.includes(lodger.patron) && <i className="patron booked" title={t("ui.booked.hint", { n: lodger.nights })}>{t("ui.booked", { name: who(lodger.patron, state, t, lang) })}</i>}
                     </span>
                   </button>
                 );

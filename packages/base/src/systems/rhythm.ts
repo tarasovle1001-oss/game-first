@@ -120,9 +120,20 @@ export function registerRhythm(api: ModApi) {
   api.actions.register({
     id: NIGHT_WAIT,
     labelKey: "action.wait",
-    describe: (a) => ({ key: "action.wait.minutes", params: { minutes: a.payload!.minutes as number } }),
-    enumerate: (state) => (state.time.phase === "night" && bs(state).night && !bs(state).night!.sex && !bs(state).complaint ? R.nightWaits.map((m) => ({ type: NIGHT_WAIT, payload: { minutes: m } })) : []),
-    apply: (ctx, a) => passNight(ctx, a.payload!.minutes as number),
+    describe: (a) => (a.payload?.until ? { key: "action.wait.until" } : { key: "action.wait.minutes", params: { minutes: a.payload!.minutes as number } }),
+    enumerate: (state) => (state.time.phase === "night" && bs(state).night && !bs(state).night!.sex && !bs(state).complaint ? [...R.nightWaits.map((m) => ({ type: NIGHT_WAIT, payload: { minutes: m } as Record<string, string | number> })), { type: NIGHT_WAIT, payload: { until: "event" } as Record<string, string | number> }] : []),
+    apply(ctx, a) {
+      if (!a.payload?.until) return passNight(ctx, a.payload!.minutes as number);
+      // lying awake until something happens: a line he can see, her falling asleep, or the small hours
+      const before = ctx.state.log.length;
+      const wasAsleep = !!bs(ctx.state).night?.herAsleep;
+      for (let i = 0; i < R.nightUntilMax / 5; i++) {
+        passNight(ctx, 5);
+        const n = bs(ctx.state).night;
+        if (!n || n.sex || bs(ctx.state).complaint || bs(ctx.state).approach) break;
+        if ((!wasAsleep && n.herAsleep) || ctx.state.log.slice(before).some((e) => !e.tags?.includes("unseen") && !e.tags?.includes("thought"))) break;
+      }
+    },
   });
   api.events.on("entity:moved", (ctx, e) => {
     if (e.payload!.id === HUSBAND && ctx.state.time.phase === "night") passNight(ctx, 1);
