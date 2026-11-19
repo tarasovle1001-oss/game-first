@@ -292,37 +292,86 @@ const D = content.floor.details;
  * Free close-ups, keys `detail_<id>/<wife|patron|husband>/<room>/<tags>`: first what has just happened (a guest showed her,
  * her hand on him, the phone), then what simply shows - a guest's trousers, how wet she is, the cage. Two tags each at most.
  */
+/** His hands on her, by the picture it happens in: which parts get a close-up. */
+const GROPE: Record<string, string[]> = {
+  patron_touching: ["grope_thigh"], patron_moment_sit_on_lap: ["grope_butt"], patron_groping: ["grope_breast", "grope_under"], patron_lap_dance: ["grope_butt"],
+  him_grope: ["grope_breast", "grope_butt"], sauna_massage: ["grope_butt"],
+};
+/** She is showing herself: the parts in close-up. */
+const SHOWS = new Set(["flash", "walk_naked", "striptease", "body_shot", "masturbate_show"]);
+/** How a scene with him ended, when the ending is his body's doing. */
+const HIS_END: Record<string, string> = { went_soft: "him_soft", premature_finish: "him_cum_early", came_too_soon_foreplay: "him_cum_early", lead_ruined: "him_ruined" };
+const FRONT = new Set(["sex", "riding", "standing_sex", "join_dp", "toy_on_her"]);
+const BACK = new Set(["anal", "join_dp"]);
+const THROAT = new Set(["deepthroat"]);
+
 export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const b = bs(state);
+  const h = b.heroine;
   const out: SceneDesc[] = [];
   const openly = b.mode === "open" || b.viewAll === true;
   const sizeOf = (id: string | undefined) => (id === HUSBAND ? b.husband.size : id ? b.patrons[id]?.size : undefined);
+  const classOf = (id: string | undefined) => sizeClass(sizeOf(id) ?? 0);
   const roleOf = (id: string | undefined) => (id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron");
-  const add = (id: string, who: string, tags: Record<string, string> = {}) => out.push({ type: `detail_${id}`, location: desc.location, participants: [{ id: who, role: roleOf(who) }], tags });
-  const cage: Record<string, string> = b.husband.caged ? { cage: "1" } : {};
+  const add = (id: string, who: string, tags: Record<string, string> = {}) => void (out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: desc.location, participants: [{ id: who, role: roleOf(who) }], tags }));
+  const aroused = (b.husband.arousal ?? 0) >= D.himArousal;
+  // him in his trousers: plain, locked up, locked up and leaking - one close-up, three looks
+  const cage: Record<string, string> = b.husband.caged ? { cage: aroused ? "leak" : "1" } : {};
+  const has = (role: string) => desc.participants.find((p) => p.role === role)?.id;
+  const guest = has("patron");
+  const man = guest ?? has("husband");
+  // what she has on where it matters, and what is on her: the two things most close-ups of her turn on
+  const bare = bareOf(state);
+  const top = bare === "all" || bare === "top" ? "bare" : "on";
+  const under = bare === "all" || bare === "bottom" || h.panties === "off" ? "bare" : h.panties === "aside" ? "aside" : "on";
+  const left = ["inside", "anus", "thighs"].filter((k) => (h.cum?.[k] ?? 0) > 0).join("+");
+  const gape = (z: "vagina" | "anus") => String(level(W.stretch[z] ?? [], h.body[z].stretch));
+  const wet = level(D.wet.map((from) => [from, ""] as [number, string]), h.arousal);
+
   for (const d of freshDetails(state)) {
     if (d.secret && !openly) continue;
     const who = d.who ?? WIFE;
-    const cm = sizeOf(who);
-    add(d.id, who, { ...(who !== WIFE && cm !== undefined ? { size: String(sizeClass(cm)) } : {}), ...(who === HUSBAND ? cage : {}), ...(d.tags ?? {}) });
+    add(d.id, who, { ...(who !== WIFE && sizeOf(who) !== undefined ? { size: String(classOf(who)) } : {}), ...(who === HUSBAND ? cage : {}), ...(d.tags ?? {}) });
   }
-  const intimate = !!content.scenes.find((x) => x.id === desc.type)?.figures.some((f) => f.penis) || content.acts.find((a) => a.scene === desc.type)?.place === "private";
-  if (intimate) return out;
-  const has = (role: string) => desc.participants.find((p) => p.role === role)?.id;
-  // a guest who is worked up: it shows through his trousers, and how much of it there is shows too
-  const guest = has("patron");
-  const heat = guest ? (b.shift?.visits.find((v) => v.patron === guest)?.heat ?? 0) : 0;
-  if (guest && heat >= D.bulgeHeat) add("bulge", guest, { size: String(sizeClass(b.patrons[guest]?.size ?? 0)) });
+  const act = content.acts.find((a) => a.scene === desc.type);
+  const intimate = !!content.scenes.find((x) => x.id === desc.type)?.figures.some((f) => f.penis) || act?.place === "private";
+  if (HIS_END[desc.type]) add(HIS_END[desc.type]!, HUSBAND, cage);
+  if (intimate) {
+    // accents: a big man shows from the outside, and the inside is drawn in section
+    const big = classOf(man) >= D.accentClass;
+    const id = act?.id ?? desc.type.replace(/^patron_/, "");
+    const fin = desc.tags?.fin;
+    if (man && THROAT.has(id) && big) add("throat_bulge", WIFE, { size: String(classOf(man)) });
+    if (man && FRONT.has(id)) {
+      if (big) add("belly_bulge", WIFE, { size: String(classOf(man)) });
+      add("xray_v", WIFE, { size: String(classOf(man)), ...(fin === "inside" ? { fin: "1" } : {}) });
+    }
+    if (man && BACK.has(id)) add("xray_a", WIFE, { size: String(classOf(man)), ...(fin === "anus" ? { fin: "1" } : {}) });
+    if (has("husband") && b.husband.caged) add("him_cage", HUSBAND, aroused ? { leak: "1" } : {});
+    return out;
+  }
+  // his hands on her, part by part
+  if (man) for (const part of GROPE[desc.type] ?? []) add(part, man, part === "grope_breast" ? { wear: top } : part === "grope_under" ? { wear: under, wet: String(Math.max(1, wet)) } : { wear: part === "grope_thigh" ? "on" : under });
   if (has("wife")) {
-    const wet = level(D.wet.map((from) => [from, ""] as [number, string]), b.heroine.arousal);
-    // what was left in her runs down too: the close-up says so
-    const left = ["inside", "anus", "thighs"].filter((k) => (b.heroine.cum?.[k] ?? 0) > 0).join("+");
+    if (SHOWS.has(desc.type)) {
+      // shown on purpose she is always wet, and what was left in her runs down
+      add("show_breasts", WIFE, { wear: top, ...((h.cum?.chest ?? 0) > 0 ? { marks: "chest" } : {}) });
+      if (bare === "all" || bare === "bottom" || desc.type !== "flash") {
+        add("show_pussy", WIFE, { wear: under, gape: gape("vagina"), ...(left ? { marks: left } : {}) });
+        add("show_butt", WIFE, { wear: under, gape: gape("anus"), ...((h.cum?.anus ?? 0) > 0 ? { marks: "anus" } : {}) });
+      }
+    }
     if (wet > 0 || left) add("wet", WIFE, { wet: String(wet), ...(left ? { marks: left } : {}) });
+    if (wet > 0 && top === "on") add("nipples", WIFE, { level: String(Math.min(2, wet)) });
+    if (h.panties === "off" && bare === "none") add("panties_off", WIFE);
+    if (Object.values(h.after ?? {}).some((v) => v > 0)) add("hickey", WIFE);
   }
-  // him: watching her with another man, or simply locked up
+  // a guest who is worked up: it shows through his trousers (or, in the sauna, with nothing on), and how much of it there is shows too
+  const heat = guest ? (b.shift?.visits.find((v) => v.patron === guest)?.heat ?? 0) : 0;
+  if (guest && heat >= D.bulgeHeat) add("bulge", guest, { size: String(classOf(guest)), ...(desc.location === "cafe.sauna" ? { bare: "1" } : {}) });
+  // him: watching her with another man, or close to her and worked up
   const watching = !!b.encounter && !has("husband") && desc.participants.some((p) => p.id === b.encounter!.patron);
-  if (watching && (b.husband.arousal ?? 0) >= D.himArousal) add("him_bulge", HUSBAND, cage);
-  else if (has("husband") && b.husband.caged) add("him_cage", HUSBAND, (b.husband.arousal ?? 0) >= D.himArousal ? { leak: "1" } : {}); // locked up and worked up: it shows
+  if (aroused && (watching || has("husband"))) add("him_bulge", HUSBAND, cage);
   return out;
 }
 

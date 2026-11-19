@@ -209,10 +209,15 @@ describe("free close-ups", () => {
     bs(s).heroine.arousal = 80;
     const desc = { type: "serving", location: "cafe.hall", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }] };
     const d = detailsFor(s, desc);
-    expect(d.map((x) => x.type)).toEqual(["detail_bulge", "detail_wet"]);
-    expect(d[0]!.tags!.size).toBeDefined();
-    expect(d[1]!.tags!.wet).toBe("2");
-    expect(pictureFrames(s, desc).details.length).toBe(2);
+    const by = Object.fromEntries(d.map((x) => [x.type, x.tags ?? {}]));
+    expect(by.detail_bulge!.size).toBeDefined();
+    expect(by.detail_wet!.wet).toBe("2");
+    expect(Object.keys(by)).toContain("detail_nipples");
+    for (const x of d) expect(Object.keys(x.tags ?? {}).length).toBeLessThanOrEqual(3);
+    expect(pictureFrames(s, desc).details.length).toBe(d.length);
+    // in bed with a big man the accents come instead
+    const bed = detailsFor(s, { type: "patron_sex", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }] });
+    expect(bed.map((x) => x.type)).toContain("detail_xray_v");
   });
   it("what she does while the phone rings is only for eyes that may see it", () => {
     const s = atShift();
@@ -227,6 +232,6 @@ describe("free close-ups", () => {
     expect(detailsFor(called, desc).map((x) => x.type)).toEqual(["detail_phone_ear"]);
     const open = structuredClone(called);
     bs(open).viewAll = true;
-    expect(detailsFor(open, desc).map((x) => x.type)).toContain("detail_phone_hand");
+    expect(detailsFor(open, desc).map((x) => x.type)).toContain("detail_phone_busy");
   });
 });

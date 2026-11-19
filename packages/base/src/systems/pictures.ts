@@ -7,7 +7,7 @@ import { HALL, husbandSees } from "./places";
 const LOUNGE = "cafe.lounge";
 const SAUNA = "cafe.sauna";
 import { actById, onScreen } from "./encounters";
-import { freshGlance } from "./glance";
+import { detail, freshGlance } from "./glance";
 import { dressOf } from "./dress";
 
 /** What she has come to him with -> the picture of it. */
@@ -16,6 +16,14 @@ const APPROACH: Record<string, string> = { affection: "him_hug", comfort: "him_h
 const TASK: Record<string, string> = { cook: "her_cook", tidy: "her_tidy", rest: "her_rest", dress: "her_dress" };
 
 export function registerPictures(api: ModApi) {
+  // close-ups of things that happen to him and around her, for the move they happen on
+  api.events.on("husband:came_touch", (ctx) => detail(ctx, { id: "him_cum_pants", who: HUSBAND }));
+  api.events.on("husband:wet_dream", (ctx) => detail(ctx, { id: "wet_sheet", who: HUSBAND }));
+  api.events.on("floor:moment", (ctx, e) => {
+    const id = e.payload!.id as string;
+    if (id === "watches_bend") detail(ctx, { id: "upskirt", who: WIFE, tags: { wear: bs(ctx.state).heroine.panties === "off" ? "bare" : "on" } });
+    if (id === "big_tip" || id === "whispers_price") detail(ctx, { id: "tip_tuck", who: WIFE });
+  });
   // A small thing that has just happened: his hand on her, a guest's word at a table, her alone behind a door.
   api.scenes.register({
     id: "base.glance",

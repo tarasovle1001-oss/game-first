@@ -98,6 +98,7 @@ details:               # free close-ups beside the picture (see look.ts detailsF
   bulgeHeat: 55        # a guest this worked up: it shows through his trousers
   himArousal: 60       # the husband watching her with another man
   wet: [55, 72, 88]    # her arousal: three levels of how it shows on her
+  accentClass: 2       # size class (0 tiny .. 4 huge) from which a man shows from the outside: her throat, her belly
 crowd:                # when something goes on where others can see: some gather to watch, some want in
   fromTier: 3
   max: 4

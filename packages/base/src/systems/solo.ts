@@ -1,4 +1,5 @@
-import { glance } from "./glance";
+import { detail, glance } from "./glance";
+import { sizeClass } from "./body";
 import type { ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -74,6 +75,7 @@ export function registerSolo(api: ModApi) {
     ctx.state.where[WIFE] = ctx.state.where[WIFE] ?? BED;
     ctx.log(`log.solo.${zone}${heard ? ".heard" : ""}`, { toy: `toy.${toy.id}` }, tags);
     glance(ctx, "her_solo", BED, [{ id: WIFE, role: "wife" }], { toy: zone });
+    detail(ctx, { id: anal ? "toy_a" : "toy_v", who: WIFE, tags: { tsize: String(sizeClass(toy.size)), gape: String(Math.min(3, Math.floor(h.body[anal ? "anus" : "vagina"].stretch / 25))) }, secret: !heard });
     ctx.emit("solo:did", { zone, toy: toy.id, size: toy.size, heard });
   });
 }

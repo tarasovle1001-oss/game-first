@@ -155,7 +155,8 @@ export function registerPhone(api: ModApi) {
       const factor = content.secrecy.styleFactor[b.husband.style];
       // the picture of the call: the phone at her ear - or, for eyes that may see it, what she is doing while it rings
       const kind = !busy ? "" : actById(enc!.act).tier >= 7 ? "sex" : ["blowjob", "deepthroat", "sixty_nine"].includes(enc!.act) ? "mouth" : "hand";
-      if (busy) detail(ctx, { id: "phone_hand", who: WIFE, tags: { busy: kind }, secret: true });
+      // one picture for "busy": the phone in a wet hand and the act behind it, whether or not anyone has finished
+      if (busy) detail(ctx, { id: "phone_busy", who: WIFE, tags: { busy: kind }, secret: true });
       if (!busy || b.heroine.traits.honesty < 60 || b.mode === "open") detail(ctx, { id: "phone_ear", who: WIFE });
       if (!busy) {
         ctx.log("log.phone.call.normal");
