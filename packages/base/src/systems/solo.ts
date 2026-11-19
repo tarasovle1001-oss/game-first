@@ -1,3 +1,4 @@
+import { glance } from "./glance";
 import type { ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -58,6 +59,7 @@ export function registerSolo(api: ModApi) {
       h.frustration = clamp(h.frustration - So.relief / 2);
       changeHeroine(ctx, "arousal", -h.arousal * 0.5, "alone");
       ctx.log(heard ? "log.solo.fingers.heard" : "log.solo.fingers", undefined, tags);
+      glance(ctx, "her_solo", BED, [{ id: WIFE, role: "wife" }]);
       ctx.emit("solo:did", { zone });
       return;
     }
@@ -71,6 +73,7 @@ export function registerSolo(api: ModApi) {
     b.lastToy = { id: toy.id, size: toy.size, zone, day: ctx.state.time.day };
     ctx.state.where[WIFE] = ctx.state.where[WIFE] ?? BED;
     ctx.log(`log.solo.${zone}${heard ? ".heard" : ""}`, { toy: `toy.${toy.id}` }, tags);
+    glance(ctx, "her_solo", BED, [{ id: WIFE, role: "wife" }], { toy: zone });
     ctx.emit("solo:did", { zone, toy: toy.id, size: toy.size, heard });
   });
 }

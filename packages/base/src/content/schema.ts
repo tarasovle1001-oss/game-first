@@ -245,7 +245,7 @@ export const bodySchema = z
     fit: z.object({ vagina: zoneFit, anus: zoneFit, mouth: zoneFit }).strict(),
     alone: z
       .object({
-        rooms: z.array(z.string()), minutes: z.number().int().positive(), mood: z.number(), caughtChance: z.number(), confidence: z.number(), hardPower: z.number(), warmDesire: z.number(), warmMaxResent: z.number(),
+        rooms: z.array(z.string()), minutes: z.number().int().positive(), mood: z.number(), joinOpenness: z.number(), joinDesire: z.number(), joinMood: z.number(), caughtChance: z.number(), confidence: z.number(), hardPower: z.number(), warmDesire: z.number(), warmMaxResent: z.number(),
         hand: z.object({ mood: z.number(), desire: z.number(), moodWarm: z.number(), arousal: z.number() }).strict(),
         toy: z.object({ power: z.number(), powerJoin: z.number(), joinOpenness: z.number(), arousal: z.number(), mood: z.number(), pity: z.number() }).strict(),
       })
@@ -256,7 +256,7 @@ export const bodySchema = z
         confidence: z.object({ start: z.number(), floor: z.number(), good: z.number(), his: z.number(), soft: z.number(), early: z.number(), mocked: z.number(), comforted: z.number(), wet: z.number(), gym: z.number(), settle: z.number() }).strict(),
         soft: z.object({ base: z.number().min(0), perLostConfidence: z.number().min(0) }).strict(),
         early: z.object({ perDryNight: z.number().min(0), perLostConfidence: z.number().min(0) }).strict(),
-        wet: z.object({ base: z.number(), perDryNight: z.number(), max: z.number(), noticed: z.number(), mood: z.number(), moodNoticed: z.number(), herMood: z.number(), pity: z.number(), power: z.number() }).strict(),
+        wet: z.object({ base: z.number(), perDryNight: z.number(), max: z.number(), noticed: z.number(), mood: z.number(), moodNoticed: z.number(), herMood: z.number(), pity: z.number(), power: z.number(), tellTrust: z.number(), tellArousal: z.number() }).strict(),
         react: z.object({ hardPower: z.number(), warmDesire: z.number(), warmMaxResent: z.number(), power: z.number() }).strict(),
       })
       .strict(),
@@ -684,7 +684,7 @@ export const floorSchema = z
       })
       .strict(),
     deal: z.object({ fromTier: z.number(), chance: z.number(), drunkGenerous: z.tuple([z.number(), z.number()]), priceFactor: z.number(), hourFactor: z.number(), raise: z.array(z.number()), acceptPerGenerosity: z.number(), acceptPerInterest: z.number(), wantBonus: z.number(), expires: z.number(), soldTrust: z.number(), soldResent: z.number(), refusedAffinity: z.number(), refuseHerLiked: nums, refuseHerRelief: nums }).strict(),
-    groups: z.object({ fromDay: z.number(), chancePerDay: z.number(), arriveTick: z.tuple([z.number(), z.number()]), stay: z.number(), size: z.tuple([z.number().int(), z.number().int()]), kinds: z.array(id), saunaChance: z.number(), saunaHeat: z.number(), saunaTier: z.number(), trayEvery: z.number(), trayWait: z.number(), bill: z.tuple([z.number(), z.number()]), tipHer: z.number(), tipHusband: z.number(), heatPerRound: z.number(), heatHer: z.number(), restlessReputation: z.number(), beats: z.object({ serve: z.number().int(), talk: z.number().int(), decide: z.number().int(), warmHeat: z.number(), rowdyHeat: z.number(), pullOutHeat: z.number() }).strict(), inside: z.tuple([z.number(), z.number()]), longInside: z.tuple([z.number(), z.number()]), tierByHeat: z.array(z.tuple([z.number(), z.number()])), pressurePerMan: z.number(), manyBonus: z.number(), tipPerTier: z.number(), husbandEnergy: z.number(), refusedHeat: z.number() }).strict(),
+    groups: z.object({ fromDay: z.number(), chancePerDay: z.number(), arriveTick: z.tuple([z.number(), z.number()]), stay: z.number(), size: z.tuple([z.number().int(), z.number().int()]), kinds: z.array(id), saunaChance: z.number(), saunaHeat: z.number(), saunaTier: z.number(), trayEvery: z.number(), trayWait: z.number(), bill: z.tuple([z.number(), z.number()]), tipHer: z.number(), tipHusband: z.number(), heatPerRound: z.number(), heatHer: z.number(), restlessReputation: z.number(), beats: z.object({ step: z.number().int(), maxSteps: z.number().int(), stepHeat: z.number(), serve: z.number().int(), talk: z.number().int(), decide: z.number().int(), warmHeat: z.number(), rowdyHeat: z.number(), pullOutHeat: z.number() }).strict(), inside: z.tuple([z.number(), z.number()]), longInside: z.tuple([z.number(), z.number()]), tierByHeat: z.array(z.tuple([z.number(), z.number()])), pressurePerMan: z.number(), manyBonus: z.number(), tipPerTier: z.number(), husbandEnergy: z.number(), refusedHeat: z.number() }).strict(),
     table: z.object({ minutes: z.number().int(), perEvening: z.number().int(), slipDrunk: z.number(), slipHonesty: z.number(), slipSuspicion: z.number(), cards: z.object({ bet: z.array(z.number().int()), winChance: z.number(), perDrunk: z.number(), stayTicks: z.number() }).strict(), rivalCools: z.number() }).strict(),
     join: z.object({ consentBonus: z.number(), hersRate: z.number(), power: z.number(), done: nums, refused: nums }).strict(),
     roam: z.object({ chancePerMinute: z.number().min(0), places: z.array(z.object({ id: z.string(), to: z.string(), weight: z.number().positive(), minutes: z.tuple([z.number().int(), z.number().int()]) }).strict()).min(1) }).strict(),

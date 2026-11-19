@@ -11,7 +11,7 @@ export function registerGossip(api: ModApi) {
   api.events.on("encounter:started", (ctx, e) => {
     const b = bs(ctx.state);
     const { loc, tier, patron } = e.payload as { loc: string; tier: number; patron: string };
-    const others = (b.shift?.visits.filter((v) => v.patron !== patron).length ?? 0);
+    const others = (b.shift?.visits.filter((v) => v.patron !== patron && !v.away).length ?? 0);
     if (loc !== HALL || tier < G.fromTier || others === 0) return;
     b.gossip = clamp(b.gossip + (tier - G.fromTier + 1) * G.perTier * Math.min(3, others));
   });

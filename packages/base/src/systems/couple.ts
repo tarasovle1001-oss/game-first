@@ -12,7 +12,13 @@ import { changeHeroine } from "./heroine";
 import { annoy, annoyedLevel } from "./annoy";
 import { setOutcome, slurTags, voiced } from "./voice";
 import { HALL, husbandSees } from "./places";
+import { glance } from "./glance";
 
+/** His hands on her outside of bed: which picture each is. Words are the "talk" picture. */
+const TOUCH_SCENE: Record<string, string> = {
+  hug: "him_hug", hold_hand: "him_hug", shoulders: "him_hug", stroke_hair: "him_hug", cuddle: "him_hug", carry_bed: "him_hug",
+  kiss_her: "him_kiss", grab_ass: "him_grope", fondle_breast: "him_grope", under_skirt: "him_grope",
+};
 export const TALK = "base/talk";
 export const TELL = "base/tell";
 export const GUEST = "base/guest";
@@ -225,6 +231,7 @@ export function registerCouple(api: ModApi) {
       ctx.log(line, undefined, slurTags(ctx.state, line));
       if (ok && again > 0 && worth < 1) ctx.log(forward ? (worth > 0 ? "log.talk.again.forward" : "log.talk.again.forward.much") : worth > 0 ? "log.talk.again" : "log.talk.again.much");
       setOutcome(ctx, !ok ? "away" : (o.effects.arousal ?? 0) >= 4 ? "wants" : "agrees", HUSBAND);
+      glance(ctx, ok ? (TOUCH_SCENE[o.id] ?? "talk") : "talk", ctx.state.where[HUSBAND], [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }]);
       // a husband who has gone without long enough can lose it from a kiss
       const TC = T.touchCum;
       if (ok && o.group === "touch" && TC.from.includes(o.id) && b.denied >= TC.fromDenied && ctx.rng.chance(Math.min(TC.max, TC.base + b.denied * TC.perDenied))) {
@@ -246,7 +253,8 @@ export function registerCouple(api: ModApi) {
     labelKey: "action.tell",
     describe: (a) => ({ key: `action.tell.${a.payload!.say}`, params: { what: `tell.${a.payload!.group}` } }),
     enumerate(state) {
-      if (!together(state) || state.time.phase === "shift") return [];
+      // in the evening too: a word across the bar is enough to say what he will and will not have
+      if (!together(state)) return [];
       return T.groups.flatMap((g) => (["allow", "forbid"] as const).map((say) => ({ type: TELL, payload: { group: g.id, say } })));
     },
     apply(ctx, action) {

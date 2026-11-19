@@ -60,7 +60,8 @@ export interface Husband {
   mood?: number; // 0..100
   arousal?: number; // 0..100
   washed?: string; // "day:phase" he last washed
-  caged?: { day: number; asked?: number }; // the cage is on since this day; the day he last asked to have it off
+  caged?: { day: number; asked?: number };
+  wetSecret?: number; // the day of a wet dream she slept through: his to tell or to keep // the cage is on since this day; the day he last asked to have it off
   confidence?: number; // 0..100, how sure of himself he is in bed; absent = the starting value
   dry?: number; // nights in a row without his own release
   spentDay?: number; // the day he came from a touch alone: nothing more from him that day
@@ -221,7 +222,7 @@ export interface Shift {
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
   groupAt?: number; // minute a company walks in
-  group?: { pending?: number; ignored?: number; kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number; sauna?: boolean; round?: { start: number; at: number; beat: number } }; // the company in the back room; round = she is in there and it has not come to anything yet
+  group?: { pending?: number; ignored?: number; kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number; sauna?: boolean; did?: string; steps?: number; round?: { start: number; at: number; beat: number } }; // the company in the back room; round = she is in there and it has not come to anything yet
   tableSat?: number;
   tableWith?: string[];
 }
@@ -283,6 +284,7 @@ export interface BaseState {
   loan: { dueDay: number; paid: boolean; missed: number; visitsLeft: number; forgiven: number }; // the instalment schedule
   kissedAfter?: number; // the minute of the shift she last kissed him straight after another man
   retroDay?: number; // the day she last asked him about a guest
+  glance?: { type: string; loc: string; who: { id: string; role: string }[]; turn: number; tags?: Record<string, string> }; // the picture of a small thing that has just happened (see glance.ts)
   approach: { kind: string; patron?: string; public: boolean; at?: number; act?: string } | null; // she has come to him with something and waits for an answer
   approached: Record<string, number>; // kind -> last day she came with it
   pushedToday: Record<string, number>; // guest -> how hard he pushed her today

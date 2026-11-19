@@ -591,7 +591,7 @@ export function groupScene(actId: string, joined: string[]): string | null {
 }
 
 /** What the screen may show: what the husband can see from where he stands, or everything when the player has asked to watch it all. */
-const onScreen = (state: GameState, loc: string) => husbandSees(state, loc) || bs(state).viewAll === true;
+export const onScreen = (state: GameState, loc: string) => husbandSees(state, loc) || bs(state).viewAll === true || (bs(state).mode === "open" && loc.startsWith("hotel.room")); // in an open marriage what goes on in a let room is no secret to him
 
 export function registerEncounters(api: ModApi) {
   const c = content.consent;
@@ -680,7 +680,7 @@ export function registerEncounters(api: ModApi) {
   row("power_denies", 39, (s, _i, act, p) => (p || bs(s).mode !== "open" || act.tier < 5 ? null : -bs(s).power * sec.powerDenies));
   // the situation
   row("witnesses", 40, (s, i, act, p) => {
-    const others = (bs(s).shift?.visits.length ?? 0) - 1;
+    const others = (bs(s).shift?.visits.filter((v) => !v.away && v.patron !== i.partner).length ?? 0); // a man who has stepped out sees nothing
     return p && i.loc === HALL && act.tier >= 3 && others > 0 ? -(100 - her(s).traits.openness) * c.witnesses : null;
   });
   row("plain_sight", 40.5, (_s, i, act, p) => (p && isIntimate(act) && i.loc === HALL ? -c.inPlainSight : null));

@@ -27,7 +27,7 @@ export function richLine(e: { key: string; params?: Record<string, unknown>; tag
     let span: { text: string; cls: string; hue?: number } | null = null;
     if (typeof v === "string" && v.startsWith("@name:")) span = { text: patronName(Number(v.slice(6)), lang), cls: "who", hue: (Number(v.slice(6)) * 47) % 360 };
     else if (typeof v === "string" && v.startsWith("act.")) span = { text: t(v), cls: "pink" };
-    else if (typeof v === "number" && MONEY_KEYS.has(k)) span = { text: String(v), cls: "gold" };
+    else if (typeof v === "number" && MONEY_KEYS.has(k)) span = { text: `$${v}`, cls: "gold" };
     if (span) {
       params[k] = `\u0001${spans.length}\u0002`;
       spans.push(span);

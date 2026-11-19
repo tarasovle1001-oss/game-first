@@ -3,7 +3,7 @@
 // and sooner or later it ends in his sleep. None of it depends on her: it can happen with a wife who adores him.
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
-import { bs, clamp, HUSBAND } from "../state";
+import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { changeHeroine } from "./heroine";
 import { feel } from "./mind";
 import { changeHim } from "./rhythm";
@@ -31,7 +31,31 @@ export const softChance = (state: GameState) => {
 /** Chance that tonight he is over almost before it starts: nights without, and nerves. */
 export const earlyChance = (state: GameState) => dryOf(state) * N.early.perDryNight + Math.max(0, N.confidence.start - confidenceOf(state)) * N.early.perLostConfidence;
 
+export const WET_TELL = "base/wet-tell";
 export function registerNerve(api: ModApi) {
+  // A wet dream she slept through: he can tell her himself that morning, or say nothing.
+  api.actions.register({
+    id: WET_TELL,
+    labelKey: "action.wet_tell",
+    enumerate(state) {
+      const b = bs(state);
+      if (state.time.phase !== "prep" || b.husband.wetSecret !== state.time.day || !state.where[HUSBAND] || state.where[HUSBAND] !== state.where[WIFE] || b.day?.busy) return [];
+      return [{ type: WET_TELL }];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      b.husband.wetSecret = undefined;
+      // owning up costs him a little face and buys a little trust; how she takes it is how she feels about him
+      h.marriage.trust = clamp((h.marriage.trust ?? 50) + N.wet.tellTrust);
+      b.power = clamp(b.power + N.wet.power);
+      const kind = h.marriage.desire >= N.react.warmDesire;
+      feel(ctx, "pity", kind ? N.wet.pity / 2 : N.wet.pity, 1, "wet dream");
+      if (kind) changeHeroine(ctx, "arousal", N.wet.tellArousal, "husband");
+      ctx.log(kind ? "log.nerve.wet.told.kind" : "log.nerve.wet.told");
+      ctx.emit("husband:wet_dream", { noticed: true, who: HUSBAND, told: true });
+    },
+  });
   // what a night in bed does to him
   api.events.on("bed:ended", (ctx, e) => {
     const { outcome } = e.payload as { outcome: string };
@@ -84,6 +108,7 @@ export function registerNerve(api: ModApi) {
       if (!noticed) {
         changeHim(ctx, "mood", N.wet.mood, "wet dream");
         ctx.log("log.nerve.wet.alone");
+        b.husband.wetSecret = ctx.state.time.day; // his to tell or to keep
         return;
       }
       changeHim(ctx, "mood", N.wet.moodNoticed, "wet dream");

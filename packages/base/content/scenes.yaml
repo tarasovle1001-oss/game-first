@@ -588,3 +588,18 @@
   figures:
     - { role: husband, pose: sit, x: 12, y: 0, flip: true, torso: 102, penis: { to: wife.chest, dy: 2 }, armR: { to: wife.shoulderR }, armL: [-95, -70] }
     - { role: wife, pose: kneel, x: -12, y: 0, flip: false, torso: 74, head: 95, armR: { to: husband.penisTip, dx: 5, dy: -3 }, armL: { to: husband.penisTip, dx: 3, dy: 3 } }
+- id: him_hug
+  figures:
+    - { role: wife, pose: stand, x: -7, y: 0, flip: false, torso: 88, head: 92, armR: { to: husband.shoulderR }, armL: { to: husband.chest } }
+    - { role: husband, pose: stand, x: 8, y: 0, flip: true, torso: 86, head: 76, armR: { to: wife.shoulderR, dx: -2 }, armL: { to: wife.pelvis, dx: -3 } }
+- id: him_kiss
+  figures:
+    - { role: wife, pose: stand, x: -8, y: 0, flip: false, torso: 88, head: 98, armR: { to: husband.neck, dx: 2 }, armL: { to: husband.chest } }
+    - { role: husband, pose: stand, x: 9, y: 0, flip: true, torso: 84, head: 66, armR: { to: wife.pelvis, dx: -4, dy: 8 }, armL: { to: wife.butt, dy: 2 } }
+- id: him_grope
+  figures:
+    - { role: wife, pose: stand, x: 5, y: 0, flip: false, torso: 92, head: 96, armR: { to: husband.handR, dy: 3 }, armL: [-80, -70] }
+    - { role: husband, pose: stand, x: -8, y: 0, flip: false, torso: 86, head: 74, armR: { to: wife.chest, dx: 4 }, armL: { to: wife.butt, dx: 2 } }
+- id: her_solo
+  figures:
+    - { role: wife, pose: lie_back, x: 0, y: 0, flip: false, armR: { to: wife.groin }, armL: { to: wife.chest } }

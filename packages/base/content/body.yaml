@@ -119,6 +119,8 @@ nerve: # his own body: confidence in bed (0..100) and nights without release. No
     perDryNight: 0.04        # chance added per night without, to "any night he can finish too early"
     perLostConfidence: 0.003
   wet:               # it ends in his sleep
+    tellTrust: 2     # he tells her himself in the morning
+    tellArousal: 2
     base: 0.03       # per morning after a night without: unlucky, it happens on day two
     perDryNight: 0.04
     max: 0.4
@@ -133,6 +135,9 @@ alone: # what he does by himself, at home, when she is not in the room
   rooms: [home.bedroom, home.bathroom]
   minutes: 15
   mood: 1
+  joinOpenness: 45       # warm and this open, she does not stay in the door: she comes in
+  joinDesire: 2
+  joinMood: 4
   caughtChance: 0.2      # she is in the house and awake: she opens the door
   confidence: -2         # being walked in on by a wife who is not amused
   hardPower: 30          # from this much power over him she takes it as hers to use

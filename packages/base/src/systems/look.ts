@@ -128,7 +128,7 @@ export function describeScene(state: GameState, open = false): SceneWords {
  * Coarse on purpose - levels, not numbers - so one picture covers a stretch of play. Order = most important
  * first; a pack that lacks the exact picture drops tags from the end of this list (see sceneKeyFallbacks).
  */
-export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "crowd", "face", "marks", "size", "hsize", "size2", "size3", "under", "skirt", "gape", "sore", "after", "drunk"];
+export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "crowd", "face", "marks", "size", "hsize", "size2", "size3", "under", "skirt", "gape", "sore", "after", "drunk", "toy", "cage"];
 const HIDDEN = new Set(["inside", "anus", "thighs"]);
 const level = (table: [number, string][], value: number) => table.filter(([from]) => value >= from).length;
 
@@ -146,6 +146,7 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
       const cm = id === HUSBAND ? b.husband.size : id ? b.patrons[id]?.size : undefined;
       if (cm !== undefined) out[tag] = String(sizeClass(cm));
     }
+  if (roles.get("husband") === HUSBAND && b.husband.caged && intimate) out.cage = "1";
   if (!roles.has("wife")) return out;
   const bare = bareOf(state);
   out.outfit = bare === "none" ? wearOf(state) : dressOf(state);

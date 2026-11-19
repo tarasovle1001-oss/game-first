@@ -72,6 +72,10 @@ poses:
   breast_play: { scene: "medium close-up, focused on chest, intimate framing", wife: "sitting, one hand on his head, looking down at him", husband: "kneeling, both hands on her breasts and hip, face near chest" }
   fingering: { scene: "medium shot, close contact, intimate low angle", wife: "lying on back, legs open, one hand on his arm, looking at him", husband: "kneeling between legs, one hand between her legs, other on her knee" }
   sixty_nine: { scene: "medium shot, mutual oral framing, close contact", husband: "lying on back, hands on her butt and hips, receiving oral", wife: "on all fours over him, performing oral, one hand on his knee" }
+  him_hug: { scene: "medium shot, warm light, quiet moment", wife: "standing, leaning into him, eyes half closed", husband: "standing, arms around her, looking at her" }
+  him_kiss: { scene: "close-up, faces close, intimate framing", wife: "standing, arms around his neck, eyes closed", husband: "standing, hands on her hips, eyes closed" }
+  him_grope: { scene: "medium shot, close contact", wife: "standing, looking back at him, one hand on his wrist", husband: "standing behind her, one hand on her chest, other on her butt" }
+  her_solo: { scene: "medium shot, bedroom, alone, soft light", wife: "lying on the bed, one hand between her legs, other on her chest, eyes closed" }
   talk: { scene: "medium shot, calm conversation framing, soft light", wife: "sitting, looking at him, calm expression", husband: "sitting, looking at her, attentive posture" }
   night_awake: { scene: "medium shot, bedroom at night, lamp light, quiet", wife: "sitting on the edge of the bed, undressing for the night, relaxed", husband: "sitting on the bed beside her" }
   by_hand: { scene: "medium shot, solitary action framing", wife: "lying on side, watching him quietly", husband: "kneeling, one hand stroking himself, focused expression, penis shown" }

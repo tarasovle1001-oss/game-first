@@ -231,3 +231,4 @@ export { WORK, DOORS } from "./systems/shift";
 export { ALONE } from "./systems/alone";
 export { CAGE, cagedDays, isCaged } from "./systems/cage";
 export { ROOM_DOOR } from "./systems/hotel";
+export { WET_TELL } from "./systems/nerve";

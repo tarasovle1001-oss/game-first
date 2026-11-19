@@ -1,5 +1,6 @@
 // The floor during the evening: the small things that happen at the tables, a guest with money who goes to
 // the husband first, a company that takes the back room, sitting down with a guest, joining her.
+import { glance } from "./glance";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -54,6 +55,13 @@ function apply(ctx: Ctx, bag: Fx | undefined, p: Patron | null, v: Visit | null,
   return Math.round(tip);
 }
 
+/** The small things at a table have no act behind them: each borrows the picture closest to it. */
+const MOMENT_SCENE: Record<string, string> = {
+  leans_close: "patron_flirting", brushes_hand: "patron_flirting", whispers_price: "patron_flirting", asks_closing: "patron_flirting", leaves_number: "patron_flirting", small_gift: "patron_flirting",
+  hand_on_waist: "patron_touching", invites_drink: "patron_drinking", toasts_her: "patron_drinking", sings_along: "patron_drinking", drunk_loud: "patron_drinking",
+  stares: "serving", watches_bend: "serving", complains_slow: "serving", argues_bill: "serving", big_tip: "serving", helps_carry: "serving",
+};
+
 export function registerFloor(api: ModApi) {
   // === 1. small things at the tables ============================================================
   api.events.on("shift:tick", (ctx) => {
@@ -93,6 +101,7 @@ export function registerFloor(api: ModApi) {
     if (b.mode === "hidden" && b.secretActsToday > 0) apply(ctx, m.secret, p, v, m.id);
     const seen = husbandSees(ctx.state, HALL) || b.mode === "open";
     ctx.log(`log.moment.${m.id}${m.good && m.bad ? `.${side}` : ""}`, { name: `@name:${p.name}`, tip }, seen ? undefined : ["unseen"]);
+    glance(ctx, MOMENT_SCENE[m.id] ?? "patron_chatting", HALL, [{ id: WIFE, role: "wife" }, { id: p.id, role: "patron" }]);
     ctx.emit("floor:moment", { id: m.id, patron: p.id, side });
   });
   // how many times he would not take a no tonight: it is written on him
@@ -314,6 +323,8 @@ export function registerFloor(api: ModApi) {
     const g = sh.group!;
     const venue = g.sauna ? SAUNA : LOUNGE;
     g.heat = clamp(g.heat + Gr.heatHer);
+    g.did = undefined;
+    g.steps = 0;
     const minutes = ctx.rng.int(Gr.inside[0], Gr.inside[1]);
     g.round = { start: sh.tick, at: sh.tick + Gr.beats.decide, beat: 0 };
     g.herOut = sh.tick + Math.max(minutes, Gr.beats.decide + 2);
@@ -384,6 +395,7 @@ export function registerFloor(api: ModApi) {
           if (b.mode === "hidden") b.secretActsToday += 1;
           if (came > 0) feel(ctx, "delight", 8 + came * 3);
         }
+        g.did = act.id; // the picture while she is still in there
         lead.memory.tier = Math.max(lead.memory.tier, act.tier);
         lead.memory.acts[act.id] = (lead.memory.acts[act.id] ?? 0) + many;
         changeHeroine(ctx, "arousal", act.effects.arousal * (verdict === "eager" ? 1 : 0.5), act.id);
@@ -400,6 +412,19 @@ export function registerFloor(api: ModApi) {
         ctx.emit("encounter:started", { patron: lead.id, act: act.id, loc: venue, verdict, witnessed: seen, came: false, tier: act.tier, intimate: isIntimate(act), switched: false, group: g.size });
         ctx.emit("encounter:ended", { patron: lead.id, act: act.id, loc: venue, minutes, came: 0 });
       }
+    }
+    // it went well and stopped short of the bed: they do not let her go yet, and the next thing they ask is a step further
+    const last = g.did ? actById(g.did) : null;
+    if (last && !isIntimate(last) && (g.steps ?? 0) < Gr.beats.maxSteps && g.heat >= Gr.beats.warmHeat && h.energy > 0) {
+      g.steps = (g.steps ?? 0) + 1;
+      g.heat = clamp(g.heat + Gr.beats.stepHeat);
+      g.round = { start: sh.tick, at: sh.tick + Gr.beats.step, beat: 2 };
+      g.herOut = sh.tick + Gr.beats.step + 2;
+      sh.awayUntil = g.herOut;
+      sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, g.herOut);
+      ctx.log("log.group.beat.more", undefined, tags);
+      if (seen) sh.interrupt = true; // he is standing there: he can still take her out
+      return;
     }
     // from the hall he only sees how long the door stays shut
     if (!seen && minutes >= Gr.longInside[0]) ctx.log(`log.group.long${g.sauna ? ".sauna" : ""}`);

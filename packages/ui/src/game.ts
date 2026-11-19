@@ -5,6 +5,8 @@ import type { Dict, Engine, GameState, Mod, Params } from "@tc/core";
 import { cheatsLocales, cheatsMod } from "@tc/mod-cheats";
 
 export type Lang = "en" | "ru";
+/** Names a sum goes under in the texts. */
+export const MONEY_PARAMS = new Set(["tip", "money", "cost", "offer", "price", "income", "rent", "amount", "debt", "purse", "bill", "fee", "pay", "wage", "sum"]);
 export type T = (key: string, params?: Params) => string;
 
 /** A mod as the UI sees it: the mod itself plus its texts. */
@@ -31,7 +33,12 @@ export function makeGame(extra: ModPack[] = []): Game {
   const mods = packs.map((p) => p.mod);
   const dicts: Record<string, Dict[]> = { en: [], ru: [] };
   for (const p of packs) for (const [lang, d] of Object.entries(p.locales ?? {})) (dicts[lang] ??= []).push(d);
-  return { packs, mods, engine: core.createEngine(mods), translator: (lang) => core.createTranslator(dicts, lang) };
+  return { packs, mods, engine: core.createEngine(mods), translator: (lang) => {
+      const raw = core.createTranslator(dicts, lang);
+      // every sum on screen is in dollars: a number under a money name gets the sign here, once, for all texts
+      return (key, params) => raw(key, params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === "number" && MONEY_PARAMS.has(k) ? `$${v}` : v])));
+    },
+  };
 }
 
 /** The game the UI is showing right now. Replaced as a whole when the set of mods changes. */

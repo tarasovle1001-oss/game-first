@@ -18,12 +18,12 @@ export function TopBar({ state, t, onMoney }: Common & { onMoney?: () => void })
       </div>
       <div className="cell clickable" onClick={onMoney} title={t("ui.money.open")}>
         <span className="cap">{t("ui.money")} ▾</span>
-        <span className="big gold">{b.money}</span>
+        <span className="big gold">${b.money}</span>
         <span className="muted">{t("ui.purse", { purse: b.purse })}</span>
       </div>
       <div className="cell">
         <span className="cap">{t("ui.debt")}</span>
-        <span className="big bad">{b.debt}</span>
+        <span className="big bad">${b.debt}</span>
         {b.debt > 0 && <span className={b.loan.dueDay - state.time.day <= 1 ? "bad" : "muted"}>{t("ui.loan.next", { money: installment(state), day: b.loan.dueDay })}</span>}
       </div>
       <div className="cell">

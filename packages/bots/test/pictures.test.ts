@@ -169,3 +169,28 @@ describe("her trip to a lodger's room is played by the night's clock", () => {
     expect(s.where.wife).not.toBe("hotel.room1");
   });
 });
+
+describe("small things get a picture for one move", () => {
+  it("his hand on her by day, then back to what is going on", () => {
+    let s = structuredClone(engine.init(3, { base: { preset: "curious" } }));
+    s.where.wife = s.where.husband!;
+    bs(s).heroine.marriage.desire = 80;
+    if (bs(s).day) bs(s).day!.busy = undefined as never;
+    const hug = engine.listActions(s).find((a) => a.type === "base/talk" && a.payload?.do === "hug");
+    expect(hug).toBeDefined();
+    s = engine.dispatch(s, hug!);
+    expect(engine.currentScene(s)?.type).toBe("him_hug");
+    const kiss = engine.listActions(s).find((a) => a.type === "base/talk" && a.payload?.do === "kiss_her")!;
+    s = engine.dispatch(s, kiss);
+    expect(["him_kiss", "talk"]).toContain(engine.currentScene(s)?.type);
+    const other = engine.listActions(s).find((a) => a.type !== "base/talk")!;
+    s = engine.dispatch(s, other);
+    expect(engine.currentScene(s)?.type.startsWith("him_")).toBe(false);
+  });
+  it("she has come over to him: the picture is of the two of them", () => {
+    const s = structuredClone(engine.init(3, { base: { preset: "curious" } }));
+    s.where.wife = s.where.husband!;
+    bs(s).approach = { kind: "affection", public: false };
+    expect(engine.currentScene(s)?.type).toBe("him_hug");
+  });
+});
