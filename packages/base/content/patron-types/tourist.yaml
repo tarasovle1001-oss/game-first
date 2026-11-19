@@ -2,7 +2,7 @@ id: tourist
 weight: 6
 age: [24, 50]
 builds: ["slim", "average", "athletic"]
-size: [13, 21] # cm
+size: [12, 18] # cm
 stamina: [1, 3] # rounds in a row
 traits:
   persistence: [25, 55]

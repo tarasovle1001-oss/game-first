@@ -42,6 +42,8 @@ export function pleasureFor(state: GameState, act: Act, size: number): number {
 }
 
 /** 0..4: tiny, small, average, big, huge. */
+/** Centimetres as the screen says them: stretched above a point so that a big man reads as big. The mechanics never use this. */
+export const shownCm = (cm: number) => Math.round(cm <= B.shownCm.from ? cm : B.shownCm.from + (cm - B.shownCm.from) * B.shownCm.factor);
 export const sizeClass = (cm: number) => B.sizeClasses.filter((edge) => cm >= edge).length;
 
 /** Stretch and practice from one act with a partner of the given size. Returns how much it gives her, 0..100. */

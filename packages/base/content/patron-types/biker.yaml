@@ -2,7 +2,7 @@ id: biker
 weight: 4
 age: [28, 48]
 builds: ["athletic", "heavy"]
-size: [19, 30] # cm
+size: [15, 22] # cm
 stamina: [2, 4] # rounds in a row
 traits:
   persistence: [60, 95]

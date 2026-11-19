@@ -1,3 +1,4 @@
+import { shownCm } from "@tc/base";
 import { useState } from "react";
 import { ATTRS, content, TASTES, TASTE_LATENT } from "@tc/base";
 import type { BaseSetup } from "@tc/base";
@@ -32,11 +33,11 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
     setLatents(null);
     setTastes(tastesOf(p.latents));
   };
-  const slider = (label: string, value: number, set: (v: number) => void, min = 0, max = 100) => (
+  const slider = (label: string, value: number, set: (v: number) => void, min = 0, max = 100, show: (v: number) => number = (v) => v) => (
     <label className="slider" key={label}>
       <span>{label}</span>
       <input type="range" min={min} max={max} value={value} onChange={(e) => set(Number(e.target.value))} />
-      <b>{value}</b>
+      <b>{show(value)}</b>
     </label>
   );
   const about = content.presets.find((p) => p.id === preset);
@@ -99,7 +100,7 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
           </div>
           <div>
             <div className="cap">{t("ui.newgame.him")}</div>
-            {slider(t("ui.newgame.size"), husband.size, (v) => setHusband({ ...husband, size: v }), 6, 26)}
+            {slider(t("ui.newgame.size"), husband.size, (v) => setHusband({ ...husband, size: v }), 6, 26, shownCm)}
             {slider(t("ui.newgame.minutes"), husband.minutes, (v) => setHusband({ ...husband, minutes: v }), 1, 40)}
             <button className="link" onClick={() => setBodiesOpen(!bodiesOpen)}>
               {t("ui.newgame.bodies")} {bodiesOpen ? "▴" : "▾"}

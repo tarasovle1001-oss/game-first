@@ -268,6 +268,7 @@ export const bodySchema = z
     orgasmAt: z.number(), // climax meter needed for her to come
     satisfiedCoolPerTick: z.number().min(0),
     his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number(), practice: z.number(), fingerSize: z.number(), fistSize: z.number(), rimmingRate: z.number(), power: z.record(z.string(), z.number()), herShare: z.record(z.string(), z.number()), hisShare: z.record(z.string(), z.number()) }).strict(),
+    shownCm: z.object({ from: z.number(), factor: z.number() }).strict(),
     sizeClasses: z.tuple([z.number(), z.number(), z.number(), z.number()]),
     night: nightSchema,
     // the bedroom scene, turn by turn: both of them have a pleasure meter 0..100

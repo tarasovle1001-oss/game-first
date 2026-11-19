@@ -233,3 +233,4 @@ export { CAGE, cagedDays, isCaged } from "./systems/cage";
 export { ROOM_DOOR } from "./systems/hotel";
 export { WET_TELL } from "./systems/nerve";
 export { detailsFor } from "./systems/look";
+export { shownCm } from "./systems/body";

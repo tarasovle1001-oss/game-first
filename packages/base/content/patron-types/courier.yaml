@@ -2,7 +2,7 @@ id: courier
 weight: 8
 age: [21, 29]
 builds: ["slim", "athletic"]
-size: [15, 24] # cm
+size: [13, 19] # cm
 stamina: [2, 4] # rounds in a row
 traits:
   persistence: [30, 60]

@@ -1,3 +1,4 @@
+import { shownCm } from "@tc/base";
 import { cagedDays, confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
 import type { Patron } from "@tc/base";
 import type { Lang, T } from "../game";
@@ -95,7 +96,7 @@ export function CoupleTab({ state, t, lang, open }: Common) {
       <Bar label={t("stat.resent")} value={h.marriage.resent} tone="amber" />
       {b.mode === "open" && <Bar label={t("ui.power")} value={b.power} />}
       <div className="muted small">
-        {t("ui.husband.line", { size: b.husband.size, minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
+        {t("ui.husband.line", { size: shownCm(b.husband.size), minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
       </div>
       {(b.wishes?.length ?? 0) > 0 && (
         <div className="small">
@@ -152,7 +153,7 @@ export function CoupleTab({ state, t, lang, open }: Common) {
       {(["vagina", "anus", "mouth"] as const).map((z) => (
         <div key={z}>
           <Bar label={t(`zone.${z}`)} value={h.body[z].stretch} />
-          <div className="muted small indent">{t("ui.fit", { cm: Math.round(fitOf(state, z) * 10) / 10 })}</div>
+          <div className="muted small indent">{t("ui.fit", { cm: shownCm(fitOf(state, z)) })}</div>
         </div>
       ))}
       {skills.length > 0 && (
@@ -182,7 +183,7 @@ export function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
         {t("ui.patron.memory", { visits: p.memory.visits, interest: Math.round(p.memory.interest), affinity: Math.round(p.memory.affinity) })}
         {" · "}
         {far ? t("ui.patron.ladder", { act: t(`act.${far.id}`) }) : t("ui.patron.nothing")}
-        {p.memory.sizeKnown && ` · ${t("ui.patron.size", { size: p.size })} (${t(`size.${sizeClass(p.size)}`)})`}
+        {p.memory.sizeKnown && ` · ${t("ui.patron.size", { size: shownCm(p.size) })} (${t(`size.${sizeClass(p.size)}`)})`}
         {p.memory.orgasms > 0 && ` · ${t("ui.patron.came", { n: p.memory.orgasms })}`}
       </div>
     </li>
