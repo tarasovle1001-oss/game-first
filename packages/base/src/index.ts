@@ -230,3 +230,4 @@ export { confidenceOf, dryOf, softChance, earlyChance } from "./systems/nerve";
 export { WORK, DOORS } from "./systems/shift";
 export { ALONE } from "./systems/alone";
 export { CAGE, cagedDays, isCaged } from "./systems/cage";
+export { ROOM_DOOR } from "./systems/hotel";

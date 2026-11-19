@@ -62,14 +62,22 @@ export const worryOf = (state: GameState): 0 | 1 | 2 => {
   return over >= R.worry.debtFrom || b.money < R.worry.cashBelow ? 1 : 0;
 };
 
+const nightHooks: ((ctx: Ctx) => void)[] = [];
+/** Other systems hang things on the night's clock here: called once for every minute that passes. */
+export const onNightMinute = (hook: (ctx: Ctx) => void) => void nightHooks.push(hook);
 /** The night moves on: sooner or later she is asleep. */
 export function passNight(ctx: Ctx, minutes: number) {
   const b = bs(ctx.state);
   const n = b.night;
   if (!n || ctx.state.time.phase !== "night") return;
-  n.minute = (n.minute ?? 0) + minutes;
-  ctx.state.time.minute = nightStart(ctx.state) + n.minute;
-  if (!n.herAsleep && !n.sex && !n.wants && !b.complaint && !b.approach && n.minute >= R.herBedtime) {
+  // a minute at a time, so that what is timed by the night's clock (her trip upstairs) happens when it should
+  for (let i = 0; i < minutes; i++) {
+    n.minute = (n.minute ?? 0) + 1;
+    ctx.state.time.minute = nightStart(ctx.state) + n.minute;
+    for (const hook of nightHooks) hook(ctx);
+    if (!bs(ctx.state).night) return;
+  }
+  if (!n.herAsleep && !n.up && !n.sex && !n.wants && !b.complaint && !b.approach && (n.minute ?? 0) >= R.herBedtime) {
     n.herAsleep = n.minute;
     if (n.scene === "night_awake") n.scene = "sleeping";
     ctx.log("log.night.her_asleep");

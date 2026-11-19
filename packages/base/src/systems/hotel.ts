@@ -3,7 +3,7 @@
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { actById, actOf, content } from "../content";
 import { bs, HUSBAND, WIFE } from "../state";
-import { passNight } from "./rhythm";
+import { onNightMinute, passNight } from "./rhythm";
 import { resolveBody } from "./body";
 import { addHerTips, addMoney } from "./economy";
 import { CONSENT_FORMULA, isIntimate, verdictOf } from "./encounters";
@@ -17,16 +17,23 @@ export const HOTEL_ROOMS = content.rooms.filter((r) => r.zone === "hotel" && r.t
 export const roomOf = (state: GameState, patron: string): string | null => Object.entries(bs(state).lodgers).find(([, l]) => l.patron === patron)?.[0] ?? null;
 
 /** She goes up to a lodger's room alone: with towels after closing, with breakfast in the morning. How long she stays is up to her. */
-function roomVisit(ctx: Ctx, kind: "towels" | "breakfast") {
+/** The lodger who would ring for her tonight, if any does. */
+const caller = (state: GameState) => Object.entries(bs(state).lodgers).find(([, l]) => (bs(state).patrons[l.patron]?.memory.interest ?? 0) >= H.towels.interest);
+/**
+ * `staged`: it is being played by the clock of the night. Only what he cannot see is written down here (the truth lines);
+ * what he does see - her leaving, her coming back - is said by the night as it happens. Returns how long she is gone.
+ */
+function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { minutes: number; hours: number; far: boolean } | null {
     const b = bs(ctx.state);
-    if (b.complaint) return;
-    const entry = Object.entries(b.lodgers).find(([, l]) => (b.patrons[l.patron]?.memory.interest ?? 0) >= H.towels.interest);
-    if (!entry || !ctx.rng.chance(kind === "towels" ? H.towels.chance : H.morningChance)) return;
+    if (b.complaint) return null;
+    const say: typeof ctx.log = (key, params, tags) => void ((!staged || tags?.includes("unseen")) && ctx.log(key, params, tags));
+    const entry = caller(ctx.state);
+    if (!entry || (!staged && kind !== "towels" && !ctx.rng.chance(H.morningChance))) return null;
     const [room, l] = entry;
     const p = b.patrons[l.patron]!;
     const tier = Math.max(2, Math.min(p.memory.tier + 1, H.towels.maxTier));
     const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
-    if (options.length === 0) return;
+    if (options.length === 0) return null;
     const act = ctx.rng.pick(options);
     const input: ConsentInput = { act: act.id, partner: p.id, loc: room, offer: 0, pressure: 0 };
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
@@ -36,8 +43,8 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast") {
     if (b.proposals.length > 12) b.proposals.shift();
     const name = `@name:${p.name}`;
     if (verdict === "refuse") {
-      ctx.log(`log.${kind}.quick`, { room: `loc.${room}` });
-      return;
+      say(`log.${kind}.quick`, { room: `loc.${room}` });
+      return { minutes: 2, hours: 0, far: false };
     }
     p.memory.tier = Math.max(p.memory.tier, act.tier);
     p.memory.acts[act.id] = (p.memory.acts[act.id] ?? 0) + 1;
@@ -78,17 +85,110 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast") {
     if (tip > 0) addHerTips(ctx, tip);
     if (!open) b.secretActsToday += 1;
     if (hours > 0) {
-      ctx.log(open ? `log.${kind}.hours.open` : `log.${kind}.hours`, { room: `loc.${room}`, name, hours });
-      if (!open) ctx.log(`log.${kind}.hours.truth`, { name, hours }, ["unseen"]);
+      say(open ? `log.${kind}.hours.open` : `log.${kind}.hours`, { room: `loc.${room}`, name, hours });
+      if (!open) say(`log.${kind}.hours.truth`, { name, hours }, ["unseen"]);
     } else {
-      ctx.log(open ? `log.${kind}.open` : `log.${kind}.long`, { room: `loc.${room}`, name, act: `act.${act.id}` });
-      if (!open) ctx.log(`log.${kind}.truth`, { name, act: `act.${act.id}` }, ["unseen"]);
+      say(open ? `log.${kind}.open` : `log.${kind}.long`, { room: `loc.${room}`, name, act: `act.${act.id}` });
+      if (!open) say(`log.${kind}.truth`, { name, act: `act.${act.id}` }, ["unseen"]);
     }
     ctx.emit("hotel:towels", { patron: p.id, act: act.id, hours, kind });
+    return { minutes: hours > 0 ? hours * 60 : 20, hours, far: isIntimate(act) };
 }
 
+/**
+ * Her trip upstairs, by the clock: the bell, her leaving the bed, what happens behind the door, her coming back.
+ * `all`: he has gone to sleep - the rest of it runs to its end without him.
+ */
+export function nightUp(ctx: Ctx, all = false) {
+  const b = bs(ctx.state);
+  const n = b.night;
+  const up = n?.up;
+  if (!n || !up) return;
+  const now = all ? Infinity : (n.minute ?? 0);
+  const p = b.patrons[up.patron];
+  const name = `@name:${p?.name ?? ""}`;
+  const open = b.mode === "open";
+  const finish = () => {
+    ctx.state.where[WIFE] = "home.bedroom";
+    n.up = undefined;
+  };
+  if (up.stage === 0 && now >= up.leaveAt) {
+    if (!p || b.complaint || !b.lodgers[up.room]) return void (n.up = undefined);
+    if (n.sex) return; // not in the middle of that: the bell waits
+    up.stage = 1;
+    up.decideAt = (all ? up.leaveAt : (n.minute ?? 0)) + H.towels.decideAfter;
+    ctx.state.where[WIFE] = up.room;
+    n.wants = false;
+    n.herAsleep = undefined;
+    if (!all) {
+      up.seen = true;
+      ctx.log(open ? "log.towels.call.open" : "log.towels.call", { room: `loc.${up.room}`, name });
+    }
+  }
+  if (up.stage === 1 && now >= (up.decideAt ?? 0)) {
+    // asleep from the start, he gets the old one-line telling of the whole thing; otherwise only what he cannot see is noted
+    const r = roomVisit(ctx, "towels", !all || !!up.seen);
+    up.stage = 2;
+    up.far = r?.far ?? false;
+    up.hours = r?.hours ?? 0;
+    up.backAt = (up.decideAt ?? 0) + (r?.minutes ?? 2);
+  }
+  if (up.stage === 2 && now >= (up.backAt ?? 0)) {
+    const gone = Math.max(5, Math.round(((up.backAt ?? 0) - up.leaveAt) / 5) * 5);
+    if (!all) ctx.log(up.knocked ? "log.towels.back.knocked" : gone <= 15 ? "log.towels.back.quick" : open ? "log.towels.back.open" : "log.towels.back.long", { minutes: gone, name });
+    else if (up.seen) ctx.log("log.towels.asleep");
+    finish();
+  }
+}
+
+/** At her door on the landing while she is in a lodger's room. */
+export const ROOM_DOOR = "base/room-door";
 export const SEND_UP = "base/send-up";
 export function registerHotel(api: ModApi) {
+  // He has got up and stands outside the room she went into.
+  api.actions.register({
+    id: ROOM_DOOR,
+    labelKey: "action.room_door",
+    describe: (a) => ({ key: `action.room_door.${a.payload!.how}` }),
+    enumerate(state) {
+      const up = bs(state).night?.up;
+      if (state.time.phase !== "night" || !up || up.stage === 0 || state.where[HUSBAND] !== "hotel.landing") return [];
+      return [...(up.heard ? [] : [{ type: ROOM_DOOR, payload: { how: "listen" } }]), ...(up.knocked ? [] : [{ type: ROOM_DOOR, payload: { how: "knock" } }])];
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const n = b.night!;
+      const up = n.up!;
+      const hidden = b.mode === "hidden";
+      if (action.payload!.how === "listen") {
+        up.heard = true;
+        // before anything has come of it there is only talk to hear
+        const far = up.stage === 2 && !!up.far;
+        if (far && hidden) b.suspicion = Math.min(100, b.suspicion + H.towels.heardSuspicion * content.secrecy.styleFactor[b.husband.style]);
+        ctx.log(far ? "log.room_door.hear.far" : up.stage === 2 ? "log.room_door.hear.talk" : "log.room_door.hear.early");
+        passNight(ctx, 3);
+        return;
+      }
+      up.knocked = true;
+      if (up.stage === 1) {
+        // nothing has happened yet, and now it will not
+        up.stage = 2;
+        up.far = false;
+        up.backAt = (n.minute ?? 0) + 1;
+        changeHeroine(ctx, "mood", -2, "husband");
+        ctx.log("log.room_door.knock.early");
+      } else {
+        up.backAt = Math.min(up.backAt ?? 0, (n.minute ?? 0) + 3);
+        if (up.far && hidden) b.suspicion = Math.min(100, b.suspicion + H.towels.knockSuspicion * content.secrecy.styleFactor[b.husband.style]);
+        changeHeroine(ctx, "mood", -3, "husband");
+        ctx.log(up.far ? "log.room_door.knock.far" : "log.room_door.knock");
+      }
+      passNight(ctx, 2);
+    },
+  });
+  onNightMinute((ctx) => nightUp(ctx));
+  // if he sleeps through it, it still happens
+  api.events.on("phase:exit", (ctx, e) => void (e.payload!.phase === "night" && nightUp(ctx, true)), 50);
   api.events.on("shift:start", (ctx) => {
     const b = bs(ctx.state);
     const taken = Object.values(b.lodgers).map((l) => l.patron);
@@ -220,7 +320,12 @@ export function registerHotel(api: ModApi) {
     -20, // after the day's forgetting of one-time visitors
   );
   api.events.on("phase:enter", (ctx, e) => {
-    if (e.payload!.phase === "night") roomVisit(ctx, "towels");
+    if (e.payload!.phase === "night") {
+      // the bell rings some minutes after they have gone up: from then on it is played by the night's clock (see nightUp)
+      const b = bs(ctx.state);
+      const entry = caller(ctx.state);
+      if (b.night && !b.complaint && entry && ctx.rng.chance(H.towels.chance)) b.night.up = { room: entry[0], patron: entry[1].patron, leaveAt: ctx.rng.int(H.towels.bellAfter[0], H.towels.bellAfter[1]), stage: 0 };
+    }
     // in the morning she may look in on whoever is still upstairs
     else if (e.payload!.phase === "prep" && ctx.state.time.day > 1) roomVisit(ctx, "breakfast");
   }, -40);

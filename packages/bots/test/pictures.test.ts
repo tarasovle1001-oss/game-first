@@ -126,3 +126,46 @@ describe("19c: the long evening, his own body, the cage", () => {
     expect(engine.checkInvariants(asked)).toEqual([]);
   });
 });
+
+import { ROOM_DOOR } from "@tc/base";
+describe("her trip to a lodger's room is played by the night's clock", () => {
+  const toNightWithBell = () => {
+    let s = engine.init(5, { base: { preset: "curious" } });
+    while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === CORE_ADVANCE) ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.until) ?? engine.listActions(s)[0]!);
+    s = structuredClone(s);
+    const b = bs(s);
+    const guest = Object.values(b.patrons)[0]!;
+    guest.memory.interest = 90;
+    b.lodgers = { "hotel.room1": { patron: guest.id, nights: 2 } };
+    b.complaint = null;
+    b.night!.wants = false;
+    b.night!.up = { room: "hotel.room1", patron: guest.id, leaveAt: 5, stage: 0 };
+    return s;
+  };
+  const wait = (s: ReturnType<typeof engine.init>, minutes: number) => engine.dispatch(s, { type: "base/night-wait", payload: { minutes } });
+  it("the bell rings, she leaves, and comes back; he can stand at the door meanwhile", () => {
+    let s = wait(toNightWithBell(), 5);
+    expect(s.where.wife).toBe("hotel.room1");
+    expect(s.log.some((e) => e.key.startsWith("log.towels.call"))).toBe(true);
+    const at = structuredClone(s);
+    at.where.husband = "hotel.landing";
+    const door = engine.listActions(at).filter((a) => a.type === ROOM_DOOR).map((a) => a.payload?.how);
+    expect(door).toEqual(["listen", "knock"]);
+    const knocked = engine.dispatch(at, { type: ROOM_DOOR, payload: { how: "knock" } });
+    expect(knocked.log.some((e) => e.key === "log.room_door.knock.early")).toBe(true); // nothing had come of it yet
+    const back = wait(knocked, 5);
+    expect(back.where.wife).toBe("home.bedroom");
+    expect(bs(back).night!.up).toBeUndefined();
+    // left alone, it runs its course
+    for (let i = 0; i < 80 && bs(s).night?.up; i++) s = wait(s, 5);
+    expect(bs(s).night!.up).toBeUndefined();
+    expect(s.where.wife).toBe("home.bedroom");
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+  it("asleep, he gets it told in one line as before", () => {
+    const s = engine.dispatch(toNightWithBell(), { type: CORE_ADVANCE });
+    expect(s.time.phase).not.toBe("night");
+    expect(s.log.some((e) => e.key.startsWith("log.towels."))).toBe(true);
+    expect(s.where.wife).not.toBe("hotel.room1");
+  });
+});
