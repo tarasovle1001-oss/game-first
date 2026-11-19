@@ -141,7 +141,18 @@ async function pump() {
   running = 1;
   try {
     // your own clicks go first; the batch over the scenes waits behind them
-    const next = () => jobs.find((x) => x.status === "queued" && !x.batch) ?? jobs.find((x) => x.status === "queued");
+    // within the batch, stay on the checkpoint / LoRA set already loaded: switching reloads the model (tens of seconds)
+    const setOf = (j: Job) => { const t = stateOf(j.scene).takes.find((x) => x.id === j.take); return `${t?.settings.ckpt ?? ""}|${t?.settings.loras ?? ""}`; };
+    let loaded = "";
+    const next = () => {
+      const mine = jobs.find((x) => x.status === "queued" && !x.batch);
+      if (mine) return mine;
+      const queued = jobs.filter((x) => x.status === "queued");
+      const same = loaded ? queued.find((x) => setOf(x) === loaded) : undefined;
+      const j = same ?? queued[0];
+      if (j) loaded = setOf(j);
+      return j;
+    };
     for (let j = next(); j; j = next()) {
       j.status = "drawing";
       try { await draw(j); j.status = "done"; } catch (e) { j.status = "error"; j.error = (e as Error).message.slice(0, 300); }
