@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<title>Промпт-лаба</title>
+<style>
+:root{color-scheme:dark;--bg:#141418;--panel:#1c1c22;--line:#2c2c35;--text:#ddd;--dim:#888;--ok:#3a3;--bad:#c33;--acc:#7a6cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui;display:grid;grid-template-columns:300px 1fr;height:100vh}
+aside{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside header{padding:8px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+aside input,aside select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:4px;padding:4px 6px}
+#list{overflow:auto;flex:1}
+.it{padding:5px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:6px;border-bottom:1px solid #1f1f26}
+.it:hover{background:#1f1f27}.it.cur{background:#272040}
+.it .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.it .c{color:var(--dim);font-size:12px;white-space:nowrap}
+.st-todo{border-left:3px solid #444}.st-work{border-left:3px solid #c80}.st-done{border-left:3px solid var(--ok)}
+main{overflow:auto;padding:12px 16px;min-width:0}
+h2{margin:0 0 6px;font-size:18px}.sub{color:var(--dim);font-size:12px;margin-bottom:8px}
+textarea{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:8px;font:13px ui-monospace,monospace;resize:vertical}
+label{display:block;color:var(--dim);font-size:12px;margin:8px 0 3px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+button{background:#2a2a35;color:var(--text);border:1px solid #3a3a48;border-radius:5px;padding:6px 12px;cursor:pointer;font-size:13px}
+button:hover{background:#34344a}button.pri{background:var(--acc);border-color:var(--acc);color:#fff}button.sv{background:#245;border-color:#357}
+select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:4px;padding:5px}
+details{margin:6px 0;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+details summary{cursor:pointer;color:var(--dim);font-size:12px}details pre{white-space:pre-wrap;font:12px ui-monospace,monospace;margin:6px 0}
+.take{border-top:1px solid var(--line);padding:10px 0}
+.take .meta{color:var(--dim);font-size:12px;margin-bottom:6px}.take .meta b{color:var(--text);font-weight:500}
+.diff ins{color:#7d7;text-decoration:none}.diff del{color:#d77}
+.imgs{display:flex;gap:8px;flex-wrap:wrap}
+.im{position:relative;border:3px solid transparent;border-radius:6px;overflow:hidden;width:220px;background:#000}
+.im img{width:100%;display:block;cursor:zoom-in}.im .wait{height:300px;display:flex;align-items:center;justify-content:center;color:var(--dim)}
+.im.ok{border-color:var(--ok)}.im.bad{border-color:var(--bad)}
+.im .bt{position:absolute;bottom:4px;left:4px;display:flex;gap:4px}.im .bt button{padding:2px 8px;font-size:12px;background:#000a}
+#status{position:fixed;right:12px;top:8px;background:#000c;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px}
+#zoom{position:fixed;inset:0;background:#000e;display:none;align-items:center;justify-content:center;z-index:9;cursor:zoom-out}#zoom img{max-height:96vh;max-width:96vw}
+.hint{color:var(--dim);font-size:12px}
+</style>
+<aside>
+  <header>
+    <input id="q" placeholder="поиск" style="flex:1">
+    <select id="fk"><option value="">все</option><option value="scene">сцены</option><option value="detail">вставки</option></select>
+    <select id="fs"><option value="">любой статус</option><option value="todo">не начато</option><option value="work">в работе</option><option value="done">готово</option></select>
+  </header>
+  <div id="list"></div>
+  <div style="padding:8px;border-top:1px solid var(--line)"><details><summary>Настройки генерации</summary><div id="set"></div></details></div>
+</aside>
+<main id="main"><p class="hint">Выбери сцену слева.</p></main>
+<div id="status">…</div>
+<div id="zoom" onclick="this.style.display='none'"><img></div>
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const api = async (u, b) => { const r = await fetch(u, b ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) } : {}); return r.json(); };
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+let list = [], cur = null, scene = null, timer = null;
+const STATUS = { todo: "не начато", work: "в работе", done: "готово" };
+
+async function loadList() {
+  list = await api("/api/list");
+  const q = $("#q").value.toLowerCase(), fk = $("#fk").value, fs = $("#fs").value;
+  $("#list").innerHTML = list.filter((x) => (!q || x.id.includes(q)) && (!fk || x.kind === fk) && (!fs || x.status === fs))
+    .map((x) => `<div class="it st-${x.status} ${x.id === cur ? "cur" : ""}" data-id="${x.id}"><span class="n">${x.id}</span><span class="c">${x.takes ? `${x.takes}×` : ""} ${x.ok ? `✓${x.ok}` : ""} ${x.bad ? `✗${x.bad}` : ""}</span></div>`).join("");
+}
+$("#list").onclick = (e) => { const el = e.target.closest(".it"); if (el) open(el.dataset.id); };
+["q", "fk", "fs"].forEach((id) => ($("#" + id).oninput = loadList));
+
+// word diff between a take's tags and the current ones
+function diff(a, b) {
+  const A = a.split(",").map((s) => s.trim()).filter(Boolean), B = b.split(",").map((s) => s.trim()).filter(Boolean);
+  const add = B.filter((x) => !A.includes(x)), del = A.filter((x) => !B.includes(x));
+  return add.length || del.length ? `<span class="diff">${add.map((x) => `<ins>+${esc(x)}</ins>`).join(" ")} ${del.map((x) => `<del>-${esc(x)}</del>`).join(" ")}</span>` : "без изменений";
+}
+
+async function open(id) {
+  cur = id;
+  scene = await api("/api/scene?id=" + id);
+  render();
+  loadList();
+}
+function render() {
+  const s = scene;
+  const outfits = ["", "modest", "fitted", "revealing", "daring", "homewear", "nightgown", "lingerie", "towel", "topless", "bottomless", "naked"];
+  $("#main").innerHTML = `
+  <h2>${s.id}</h2>
+  <div class="sub">${s.kind === "scene" ? "сцена" : "вставка"} · в кадре: ${s.roles.join(", ")} · <select id="stt">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${s.status === k ? "selected" : ""}>${v}</option>`).join("")}</select></div>
+  <label>${s.kind === "scene" ? "Теги сцены (Danbooru) - идут сразу после качества" : "Слова вставки (prompt.yaml: details)"}</label>
+  <textarea id="tags" rows="3">${esc(s.tags)}</textarea>
+  <label>Негатив сцены (добавится к общему)</label>
+  <textarea id="neg" rows="1">${esc(s.negative)}</textarea>
+  <div class="row">
+    ${s.kind === "scene" ? `<span class="hint">комната</span><select id="room">${s.rooms.map((r) => `<option ${r === s.room ? "selected" : ""}>${r}</option>`).join("")}</select>
+    <span class="hint">одежда</span><select id="outfit">${outfits.map((o) => `<option value="${o}" ${o === (s.look.outfit ?? "") ? "selected" : ""}>${o || "-"}</option>`).join("")}</select>` : ""}
+    <label style="display:inline;margin:0 0 0 8px"><input type="checkbox" id="same"> те же сиды</label>
+    <button class="pri" data-n="1">1 кадр</button><button class="pri" data-n="4">4 кадра</button>
+    <button class="sv" id="save">Сохранить в игру</button><span id="saved" class="hint"></span>
+  </div>
+  <details><summary>Весь промпт, как его соберёт игра</summary><pre id="full">${esc(s.positive)}</pre><pre style="color:#c99">${esc(s.negativeFull)}</pre></details>
+  ${s.wayward || Object.keys(s.grok).length ? `<details><summary>Старые варианты (Wayward, Грок)</summary>${s.wayward ? `<pre>Wayward: ${esc(s.wayward)}</pre>` : ""}${Object.entries(s.grok).map(([k, v]) => `<pre>Грок ${k}: ${esc(v)}</pre>`).join("")}</details>` : ""}
+  <label>Заметка</label><textarea id="note" rows="2">${esc(s.note)}</textarea>
+  <div id="takes">${s.takes.map(takeHtml).join("") || '<p class="hint">Генераций ещё не было.</p>'}</div>`;
+  $("#main").querySelectorAll("button[data-n]").forEach((b) => (b.onclick = () => gen(Number(b.dataset.n))));
+  $("#save").onclick = save;
+  $("#stt").onchange = () => api("/api/note", { id: s.id, status: $("#stt").value }).then(loadList);
+  $("#note").onchange = () => api("/api/note", { id: s.id, note: $("#note").value });
+  if ($("#outfit")) $("#outfit").onchange = () => api("/api/note", { id: s.id, look: { ...s.look, outfit: $("#outfit").value || undefined } }).then(() => open(s.id));
+  ["tags", "neg"].forEach((id) => ($("#" + id).oninput = preview));
+  if ($("#room")) $("#room").onchange = preview;
+}
+function takeHtml(t) {
+  return `<div class="take" data-take="${t.id}"><div class="meta"><b>${new Date(t.at).toLocaleTimeString()}</b> · ${t.room} · ${t.settings.ckpt?.replace(".safetensors", "")} ${t.settings.steps} шагов cfg ${t.settings.cfg} · правка к текущим: ${diff(t.tags, scene.tags)}
+    <a href="#" class="use" title="вернуть эти теги в поле">↺ взять эти теги</a></div>
+    <div class="imgs">${t.seeds.map((sd, i) => `<div class="im ${t.marks[i] ?? ""}">${t.files[i] ? `<img src="/img?id=${scene.id}&f=${t.files[i]}" loading="lazy">` : `<div class="wait">рисую…</div>`}
+      <div class="bt"><button data-m="ok" data-i="${i}">✓</button><button data-m="bad" data-i="${i}">✗</button><button data-m="" data-i="${i}" title="сид">${sd % 10000}</button></div></div>`).join("")}</div></div>`;
+}
+$("#main").addEventListener("click", async (e) => {
+  const img = e.target.closest(".im img");
+  if (img) { $("#zoom img").src = img.src; $("#zoom").style.display = "flex"; return; }
+  const b = e.target.closest(".bt button");
+  if (b && b.dataset.m !== undefined) {
+    const take = b.closest(".take").dataset.take;
+    const t = scene.takes.find((x) => x.id === take);
+    const m = t.marks[b.dataset.i] === b.dataset.m ? "" : b.dataset.m;
+    t.marks[b.dataset.i] = m || null;
+    b.closest(".im").className = "im " + (m || "");
+    await api("/api/mark", { id: scene.id, take, i: Number(b.dataset.i), mark: m });
+    loadList();
+    return;
+  }
+  const use = e.target.closest(".use");
+  if (use) { e.preventDefault(); const t = scene.takes.find((x) => x.id === use.closest(".take").dataset.take); $("#tags").value = t.tags; $("#neg").value = t.negative; preview(); }
+});
+let pv = 0;
+async function preview() {
+  const n = ++pv;
+  const r = await api("/api/preview", { id: scene.id, tags: $("#tags").value, negative: $("#neg").value, room: $("#room")?.value });
+  if (n === pv && $("#full")) $("#full").textContent = r.positive;
+}
+async function gen(n) {
+  await api("/api/generate", { id: scene.id, n, tags: $("#tags").value, negative: $("#neg").value, room: $("#room")?.value, sameSeeds: $("#same").checked });
+  const keep = { tags: $("#tags").value, neg: $("#neg").value };
+  scene = await api("/api/scene?id=" + scene.id);
+  scene.tags = keep.tags; scene.negative = keep.neg;
+  render(); poll();
+}
+async function save() {
+  $("#saved").textContent = "сохраняю…";
+  const r = await api("/api/save", { id: scene.id, tags: $("#tags").value, negative: $("#neg").value });
+  $("#saved").textContent = r.ok ? "сохранено в prompt.yaml" : "ошибка сборки: " + (r.out || r.error);
+}
+async function poll() {
+  clearTimeout(timer);
+  const j = await api("/api/jobs");
+  $("#status").innerHTML = (j.comfyOk ? "ComfyUI ✓" : `<span style="color:#e66">ComfyUI не отвечает (${esc(j.comfy)})</span>`) +
+    (j.drawing ? ` · рисую ${esc(j.drawing.scene)} · в очереди ${j.queued}` : " · свободно") + (j.errors.length ? ` · <span style="color:#e66">${esc(j.errors[j.errors.length - 1].error)}</span>` : "");
+  if (scene && (j.drawing || j.queued)) {
+    // refresh pictures of the open scene as they land
+    const fresh = await api("/api/scene?id=" + scene.id);
+    const keep = { tags: $("#tags")?.value, neg: $("#neg")?.value };
+    const changed = JSON.stringify(fresh.takes.map((t) => t.files)) !== JSON.stringify(scene.takes.map((t) => t.files));
+    if (changed) { scene.takes = fresh.takes; $("#takes").innerHTML = scene.takes.map(takeHtml).join(""); }
+    if (keep.tags !== undefined) { scene.tags = keep.tags; }
+  }
+  timer = setTimeout(poll, j.drawing || j.queued ? 1500 : 5000);
+}
+async function settingsUi() {
+  const s = await api("/api/settings");
+  $("#set").innerHTML = Object.entries(s).map(([k, v]) => `<label>${k}</label><input data-k="${k}" value="${esc(v)}" style="width:100%">`).join("") + `<div class="row"><button id="sset">Сохранить</button></div>`;
+  $("#sset").onclick = async () => {
+    const o = {}; $("#set").querySelectorAll("input").forEach((i) => (o[i.dataset.k] = ["steps", "cfg"].includes(i.dataset.k) ? Number(i.value) : i.value));
+    await api("/api/settings", o); poll();
+  };
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#zoom").style.display = "none"; });
+loadList(); poll(); settingsUi();
+</script>

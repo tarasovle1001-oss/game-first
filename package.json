@@ -11,7 +11,8 @@
     "bot": "pnpm content && tsx packages/bots/src/run.ts",
     "dev": "pnpm content && pnpm --filter @tc/ui dev",
     "build": "pnpm content && pnpm --filter @tc/ui build",
-    "check": "pnpm content && tsc -p tsconfig.json --noEmit && vitest run && tsx packages/bots/src/run.ts"
+    "check": "pnpm content && tsc -p tsconfig.json --noEmit && vitest run && tsx packages/bots/src/run.ts",
+    "lab": "tsx tools/prompt-lab/server.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

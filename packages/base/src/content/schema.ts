@@ -611,6 +611,8 @@ export const promptSchema = z
     /** Words for the free close-ups (detail_<id>) and for their tags (`<tag>.<value>`): filled from the questionnaire. */
     details: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
     tags: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
+    tags_wayward: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
+    negatives: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
   })
   .strict();
 export type PromptWords = z.infer<typeof promptSchema>;

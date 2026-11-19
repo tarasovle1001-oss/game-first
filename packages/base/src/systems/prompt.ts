@@ -127,7 +127,7 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
     regions[role] = join([...who(cast, role, isDetail), role === "wife" ? wifeWords(t) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
-  const negative = join([P.style.negative, men === 1 ? "(2boys:1.2), multiple boys" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
+  const negative = join([P.style.negative, P.negatives[desc.type], men === 1 ? "(2boys:1.2), multiple boys" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
   // her first, then the room, then the men (with tags the room sits between them, as in the old packs)
   const others = Object.entries(regions).filter(([r]) => r !== "wife").map(([, v]) => v);
   const positive = booru && !isDetail ? join([shared, regions.wife, room, ...others]) : join([shared, ...Object.values(regions)]);
