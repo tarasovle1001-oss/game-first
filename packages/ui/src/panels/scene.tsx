@@ -17,14 +17,14 @@ export const WATCHERS = [
 ];
 
 /** A pack picture: alone, or her portrait with up to three close-ups beside it. A click on a close-up brings it to the middle. */
-export function Photo({ main, inserts, alt, veiled, children }: { main: Shot; inserts: Shot[]; alt: string; veiled?: boolean; children?: React.ReactNode }) {
+export function Photo({ main, inserts, alt, veiled, wide, children }: { main: Shot; inserts: Shot[]; alt: string; veiled?: boolean; wide?: boolean; children?: React.ReactNode }) {
   const [front, setFront] = useState<string | null>(null);
   const shots = [main, ...inserts];
   const big = shots.find((x) => x.key === front) ?? main;
   const side = shots.filter((x) => x !== big);
   return (
     <div className={`picture photo${veiled ? " veiled" : ""}`}>
-      <div className={`frames n${side.length}`}>
+      <div className={`frames n${side.length}${wide ? " wide" : ""}`}>
         <img className="main" src={big.url} alt={alt} />
         {side.length > 0 && (
           <div className="inserts">
@@ -94,7 +94,10 @@ export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { sc
     <div className="scene">
       {away ? (
         awayPicture ? (
-          <Photo main={awayPicture.main} inserts={awayPicture.inserts} alt="" veiled={!clear} />
+          <Photo main={awayPicture.main} inserts={awayPicture.inserts} alt="" veiled={!clear} wide>
+            {/* two rooms: she is the picture, he is only the close-up beside it, drawn larger */}
+            <div className="photo-cap">{t("ui.scene.split", { her: clear ? t(`loc.${away.location}`) : t("ui.scene.unseen"), him: t(`loc.${state.where[HUSBAND] ?? ""}`) })}</div>
+          </Photo>
         ) : (
           <div className={`picture${clear ? "" : " veiled"}`} dangerouslySetInnerHTML={{ __html: awaySvg }} />
         )

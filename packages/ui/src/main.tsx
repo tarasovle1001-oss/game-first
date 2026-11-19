@@ -24,7 +24,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "19d";
+const BUILD = "19e";
 const RESUME_KEY = "test-city.resume";
 // Characters. The browser gives a page about five million for everything it keeps: the running game, the manual save,
 // the save of the morning and the notes have to fit together, so no single one may take half of it.

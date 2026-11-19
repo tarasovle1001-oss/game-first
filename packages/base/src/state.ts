@@ -285,6 +285,7 @@ export interface BaseState {
   kissedAfter?: number; // the minute of the shift she last kissed him straight after another man
   retroDay?: number; // the day she last asked him about a guest
   glance?: { type: string; loc: string; who: { id: string; role: string }[]; turn: number; tags?: Record<string, string> }; // the picture of a small thing that has just happened (see glance.ts)
+  details?: { turn: number; list: { id: string; who?: string; tags?: Record<string, string>; secret?: boolean }[] }; // close-ups of what has just happened, for one move (see glance.ts)
   approach: { kind: string; patron?: string; public: boolean; at?: number; act?: string } | null; // she has come to him with something and waits for an answer
   approached: Record<string, number>; // kind -> last day she came with it
   pushedToday: Record<string, number>; // guest -> how hard he pushed her today

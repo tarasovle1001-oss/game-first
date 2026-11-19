@@ -12,12 +12,12 @@ import { changeHeroine } from "./heroine";
 import { annoy, annoyedLevel } from "./annoy";
 import { setOutcome, slurTags, voiced } from "./voice";
 import { HALL, husbandSees } from "./places";
-import { glance } from "./glance";
+import { detail, glance } from "./glance";
 
 /** His hands on her outside of bed: which picture each is. Words are the "talk" picture. */
 const TOUCH_SCENE: Record<string, string> = {
   hug: "him_hug", hold_hand: "him_hug", shoulders: "him_hug", stroke_hair: "him_hug", cuddle: "him_hug", carry_bed: "him_hug",
-  kiss_her: "him_kiss", grab_ass: "him_grope", fondle_breast: "him_grope", under_skirt: "him_grope",
+  kiss_her: "him_kiss", guide_hand: "him_kiss", grab_ass: "him_grope", fondle_breast: "him_grope", under_skirt: "him_grope",
 };
 export const TALK = "base/talk";
 export const TELL = "base/tell";
@@ -231,6 +231,7 @@ export function registerCouple(api: ModApi) {
       ctx.log(line, undefined, slurTags(ctx.state, line));
       if (ok && again > 0 && worth < 1) ctx.log(forward ? (worth > 0 ? "log.talk.again.forward" : "log.talk.again.forward.much") : worth > 0 ? "log.talk.again" : "log.talk.again.much");
       setOutcome(ctx, !ok ? "away" : (o.effects.arousal ?? 0) >= 4 ? "wants" : "agrees", HUSBAND);
+      if (ok && o.id === "guide_hand") detail(ctx, { id: "touch_bulge", who: HUSBAND });
       glance(ctx, ok ? (TOUCH_SCENE[o.id] ?? "talk") : "talk", ctx.state.where[HUSBAND], [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }]);
       // a husband who has gone without long enough can lose it from a kiss
       const TC = T.touchCum;

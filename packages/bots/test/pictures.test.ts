@@ -194,3 +194,39 @@ describe("small things get a picture for one move", () => {
     expect(engine.currentScene(s)?.type).toBe("him_hug");
   });
 });
+
+import { detailsFor } from "@tc/base";
+describe("free close-ups", () => {
+  const atShift = () => {
+    let s = engine.init(4, { base: { preset: "curious" } });
+    for (let i = 0; i < 400 && (s.time.phase !== "shift" || (bs(s).shift?.visits.length ?? 0) === 0); i++) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/wait") ?? engine.listActions(s).find((a) => a.type === CORE_ADVANCE)!);
+    return structuredClone(s);
+  };
+  it("a worked-up guest shows through his trousers, by size; how wet she is shows on her", () => {
+    const s = atShift();
+    const v = bs(s).shift!.visits[0]!;
+    v.heat = 90;
+    bs(s).heroine.arousal = 80;
+    const desc = { type: "serving", location: "cafe.hall", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }] };
+    const d = detailsFor(s, desc);
+    expect(d.map((x) => x.type)).toEqual(["detail_bulge", "detail_wet"]);
+    expect(d[0]!.tags!.size).toBeDefined();
+    expect(d[1]!.tags!.wet).toBe("2");
+    expect(pictureFrames(s, desc).details.length).toBe(2);
+  });
+  it("what she does while the phone rings is only for eyes that may see it", () => {
+    const s = atShift();
+    const b = bs(s);
+    const v = b.shift!.visits[0]!;
+    b.encounter = { patron: v.patron, act: "blowjob", loc: "cafe.staff", pleasure: 0, hers: 0, minutes: 0 } as never;
+    s.where.wife = "cafe.staff";
+    b.phone.calledTick = -100;
+    b.heroine.traits.honesty = 20;
+    const called = engine.dispatch(s, { type: "base/call-wife" });
+    const desc = { type: "idle", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }] };
+    expect(detailsFor(called, desc).map((x) => x.type)).toEqual(["detail_phone_ear"]);
+    const open = structuredClone(called);
+    bs(open).viewAll = true;
+    expect(detailsFor(open, desc).map((x) => x.type)).toContain("detail_phone_hand");
+  });
+});

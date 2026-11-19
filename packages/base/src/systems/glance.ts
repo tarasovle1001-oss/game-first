@@ -13,3 +13,15 @@ export const freshGlance = (state: GameState): Glance | null => {
   const g = bs(state).glance;
   return g && g.turn === state.turn ? g : null;
 };
+
+export type Detail = { id: string; who?: string; tags?: Record<string, string>; secret?: boolean };
+/** A close-up of something that has just happened: goes beside whatever picture is on screen, for one move. `secret`: only what he may see. */
+export const detail = (ctx: Ctx, d: Detail) => {
+  const b = bs(ctx.state);
+  if (!b.details || b.details.turn !== ctx.state.turn) b.details = { turn: ctx.state.turn, list: [] };
+  if (!b.details.list.some((x) => x.id === d.id)) b.details.list.push(d);
+};
+export const freshDetails = (state: GameState): Detail[] => {
+  const d = bs(state).details;
+  return d && d.turn === state.turn ? d.list : [];
+};

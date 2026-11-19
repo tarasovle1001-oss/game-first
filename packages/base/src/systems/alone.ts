@@ -6,7 +6,7 @@ import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { passPrep } from "./day";
 import { changeHeroine } from "./heroine";
 import { feel } from "./mind";
-import { glance } from "./glance";
+import { detail, glance } from "./glance";
 import { changeConfidence } from "./nerve";
 import { changeHim, passNight } from "./rhythm";
 
@@ -86,6 +86,7 @@ export function registerAlone(api: ModApi) {
           changeConfidence(ctx, A.confidence, "caught");
           ctx.log(hard ? "log.alone.caught.hand.hard" : "log.alone.caught.hand");
         }
+        detail(ctx, { id: "him_alone", who: HUSBAND, tags: toy ? { toy: "1" } : {} });
         ctx.emit("husband:caught_alone", { toy: !!toy });
       }
       if (ctx.state.time.phase === "prep") passPrep(ctx, A.minutes);

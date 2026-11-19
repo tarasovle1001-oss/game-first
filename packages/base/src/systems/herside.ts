@@ -1,6 +1,7 @@
 // Her side of the marriage: she comes to him. To complain about a guest, for a hug, to tease him, for comfort.
 // He answers, or lets the moment pass. And she notices things: what her body has become, how other men
 // compare with him, what his body has learned. Some of it she says, some of it she only thinks.
+import { detail } from "./glance";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -64,6 +65,7 @@ const approach = (ctx: Ctx) => {
   if (b.shift) b.shift.interrupt = true;
   const name = what.patron && b.patrons[what.patron] ? `@name:${b.patrons[what.patron]!.name}` : "";
   ctx.log(`log.approach.${what.kind}${pub && what.kind !== "harassed" ? ".public" : ""}`, { name });
+  if (what.kind === "tease") detail(ctx, { id: "touch_bulge", who: HUSBAND });
   ctx.emit("her:approached", { kind: what.kind });
 };
 

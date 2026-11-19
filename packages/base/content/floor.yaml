@@ -28,6 +28,8 @@ moments:              # small things at a table; none of them is an "act"
     - { id: argues_bill, when: { maxGenerosity: 30 }, likeAffinity: 200, bad: { mood: -3, annoy: 2 } }
     - { id: toasts_her, when: { minDrunk: 20 }, likeAffinity: -100, good: { mood: 2, pride: 2 } }
     - { id: asks_closing, when: { minInterest: 50 }, good: { arousal: 2, affinity: 1, longing: 2 }, bad: { annoy: 2 } }
+    - { id: shows_her, when: { minInterest: 45 }, needOpen: 40, likeAffinity: 10, reveals: true, good: { arousal: 3, heat: 5 }, bad: { annoy: 4, shame: 3 } } # under the table, for her eyes only: now she knows what he has
+    - { id: touches_him, when: { minInterest: 30 }, needOpen: 55, likeAffinity: 30, hers: true, good: { arousal: 2, heat: 12, affinity: 1 } } # her hand brushes his lap in passing: her move, so only when she is up for it
     - { id: sings_along, when: { minDrunk: 35 }, likeAffinity: -100, good: { mood: 2 } }
 deal:                 # a guest with money goes to the husband first
   fromTier: 3
@@ -86,6 +88,16 @@ join:                 # the husband joins her and a guest (only once it is in th
   power: 3
   done: { delight: 6, shame: 4, arousal: 6 }
   refused: { annoy: 5 }
+  lazyPower: 40        # from this much power over him she does not stop for him: a hand without looking, whatever he asked for
+  downgrade: 0.6       # chance at that power that mouth or more turns into a hand
+  ruinBase: 0.1        # second roll, once it is a hand: she lets go at the last moment
+  ruinPerPower: 0.006  # per point of her power over him
+  ruinMax: 0.7
+  ruined: { mood: -4, power: 2, confidence: -1 }
+details:               # free close-ups beside the picture (see look.ts detailsFor)
+  bulgeHeat: 55        # a guest this worked up: it shows through his trousers
+  himArousal: 60       # the husband watching her with another man
+  wet: [55, 72, 88]    # her arousal: three levels of how it shows on her
 crowd:                # when something goes on where others can see: some gather to watch, some want in
   fromTier: 3
   max: 4

@@ -15,6 +15,7 @@ const INSIDE = new Set(["inside", "anus"]);
 
 import { cumPlaces } from "./terms";
 import { wearOf } from "./bodystate";
+import { freshDetails } from "./glance";
 export interface SceneWords {
   /** The same blocks an image pipeline works with: who she is right now, who is with her, where, what is going on. */
   heroine: string[];
@@ -282,6 +283,47 @@ export interface PictureFrames {
   portrait: SceneDesc | null;
   /** Close-ups of contact without faces, one per man, at most three. A group is put together from the close-ups of pairs. */
   inserts: SceneDesc[];
+  /** Close-ups that do not belong to an act: what has just happened and what shows on them right now (see detailsFor). */
+  details: SceneDesc[];
+}
+
+const D = content.floor.details;
+/**
+ * Free close-ups, keys `detail_<id>/<wife|patron|husband>/<room>/<tags>`: first what has just happened (a guest showed her,
+ * her hand on him, the phone), then what simply shows - a guest's trousers, how wet she is, the cage. Two tags each at most.
+ */
+export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
+  const b = bs(state);
+  const out: SceneDesc[] = [];
+  const openly = b.mode === "open" || b.viewAll === true;
+  const sizeOf = (id: string | undefined) => (id === HUSBAND ? b.husband.size : id ? b.patrons[id]?.size : undefined);
+  const roleOf = (id: string | undefined) => (id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron");
+  const add = (id: string, who: string, tags: Record<string, string> = {}) => out.push({ type: `detail_${id}`, location: desc.location, participants: [{ id: who, role: roleOf(who) }], tags });
+  const cage: Record<string, string> = b.husband.caged ? { cage: "1" } : {};
+  for (const d of freshDetails(state)) {
+    if (d.secret && !openly) continue;
+    const who = d.who ?? WIFE;
+    const cm = sizeOf(who);
+    add(d.id, who, { ...(who !== WIFE && cm !== undefined ? { size: String(sizeClass(cm)) } : {}), ...(who === HUSBAND ? cage : {}), ...(d.tags ?? {}) });
+  }
+  const intimate = !!content.scenes.find((x) => x.id === desc.type)?.figures.some((f) => f.penis) || content.acts.find((a) => a.scene === desc.type)?.place === "private";
+  if (intimate) return out;
+  const has = (role: string) => desc.participants.find((p) => p.role === role)?.id;
+  // a guest who is worked up: it shows through his trousers, and how much of it there is shows too
+  const guest = has("patron");
+  const heat = guest ? (b.shift?.visits.find((v) => v.patron === guest)?.heat ?? 0) : 0;
+  if (guest && heat >= D.bulgeHeat) add("bulge", guest, { size: String(sizeClass(b.patrons[guest]?.size ?? 0)) });
+  if (has("wife")) {
+    const wet = level(D.wet.map((from) => [from, ""] as [number, string]), b.heroine.arousal);
+    // what was left in her runs down too: the close-up says so
+    const left = ["inside", "anus", "thighs"].filter((k) => (b.heroine.cum?.[k] ?? 0) > 0).join("+");
+    if (wet > 0 || left) add("wet", WIFE, { wet: String(wet), ...(left ? { marks: left } : {}) });
+  }
+  // him: watching her with another man, or simply locked up
+  const watching = !!b.encounter && !has("husband") && desc.participants.some((p) => p.id === b.encounter!.patron);
+  if (watching && (b.husband.arousal ?? 0) >= D.himArousal) add("him_bulge", HUSBAND, cage);
+  else if (has("husband") && b.husband.caged) add("him_cage", HUSBAND, (b.husband.arousal ?? 0) >= D.himArousal ? { leak: "1" } : {}); // locked up and worked up: it shows
+  return out;
 }
 
 /**
@@ -310,7 +352,7 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
       inserts.push({ type: `insert_${pair ?? desc.type}`, location: desc.location, participants: [{ id: p.id, role: p.role === "husband" ? "husband" : "patron" }], tags: t });
     }
   const { men: _m, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, ...look } = tags;
-  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts };
+  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc) };
 }
 
 /**
@@ -319,9 +361,13 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
  * `find` looks a picture up (the number tells the close-ups apart so they do not pick the same variant).
  */
 export function resolveFrames<T>(frames: PictureFrames, find: (desc: SceneDesc, n: number) => T | null): { main: T; inserts: T[]; split: boolean } | null {
+  const found = (list: SceneDesc[], from: number) => list.map((d, i) => find(d, from + i)).filter((x): x is T => x !== null);
+  const details = found(frames.details ?? [], 4);
   const full = find(frames.full, 0);
-  if (full) return { main: full, inserts: [], split: false };
+  // free close-ups go beside a whole picture too: they say what the picture cannot
+  if (full) return { main: full, inserts: details.slice(0, 3), split: false };
   const main = frames.portrait ? find(frames.portrait, 0) : null;
   if (!main) return null;
-  return { main, inserts: frames.inserts.map((d, i) => find(d, i + 1)).filter((x): x is T => x !== null), split: true };
+  // what has just happened comes before the close-ups of the act when there is no room for all
+  return { main, inserts: [...details.slice(0, 1), ...found(frames.inserts, 1), ...details.slice(1)].slice(0, 3), split: true };
 }

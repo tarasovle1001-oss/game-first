@@ -1,5 +1,6 @@
 // Phones: numbers exchanged with guests, texts during the day, calls, and the accidental call.
 // Messages are data in state (keys, not text). Mods add their own with sendMessage() and listen to phone:* events.
+import { detail } from "./glance";
 import type { Ctx, ModApi, Params } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -152,6 +153,10 @@ export function registerPhone(api: ModApi) {
       b.phone.calledTick = b.shift!.tick;
       const busy = enc && isIntimate(actById(enc.act));
       const factor = content.secrecy.styleFactor[b.husband.style];
+      // the picture of the call: the phone at her ear - or, for eyes that may see it, what she is doing while it rings
+      const kind = !busy ? "" : actById(enc!.act).tier >= 7 ? "sex" : ["blowjob", "deepthroat", "sixty_nine"].includes(enc!.act) ? "mouth" : "hand";
+      if (busy) detail(ctx, { id: "phone_hand", who: WIFE, tags: { busy: kind }, secret: true });
+      if (!busy || b.heroine.traits.honesty < 60 || b.mode === "open") detail(ctx, { id: "phone_ear", who: WIFE });
       if (!busy) {
         ctx.log("log.phone.call.normal");
       } else if (b.mode === "open") {

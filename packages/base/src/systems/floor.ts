@@ -1,6 +1,7 @@
 // The floor during the evening: the small things that happen at the tables, a guest with money who goes to
 // the husband first, a company that takes the back room, sitting down with a guest, joining her.
-import { glance } from "./glance";
+import { detail, glance } from "./glance";
+import { changeConfidence } from "./nerve";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -78,6 +79,8 @@ export function registerFloor(api: ModApi) {
     const fits = F.moments.list.filter((m) => {
       const w = m.when;
       if (sh.momentsSeen?.includes(`${p.id}:${m.id}`)) return false;
+      if (m.hers && !(p.memory.affinity >= (m.likeAffinity ?? F.moments.likeAffinity) && h.traits.openness >= (m.needOpen ?? 0))) return false; // her own move: only when she is up for it
+      if (m.reveals && p.memory.sizeKnown) return false;
       if (w.regular !== undefined && w.regular !== p.regular) return false;
       if (w.newcomer && p.memory.visits > 1) return false;
       if (w.approach && w.approach !== p.approach) return false;
@@ -101,6 +104,12 @@ export function registerFloor(api: ModApi) {
     if (b.mode === "hidden" && b.secretActsToday > 0) apply(ctx, m.secret, p, v, m.id);
     const seen = husbandSees(ctx.state, HALL) || b.mode === "open";
     ctx.log(`log.moment.${m.id}${m.good && m.bad ? `.${side}` : ""}`, { name: `@name:${p.name}`, tip }, seen ? undefined : ["unseen"]);
+    // he showed her: from now on his size counts in what she agrees to (the "size" row of consent)
+    if (m.reveals) {
+      p.memory.sizeKnown = true;
+      detail(ctx, { id: "guest_flash", who: p.id, secret: !seen });
+    }
+    if (m.hers) detail(ctx, { id: "touch_bulge", who: p.id, secret: !seen });
     glance(ctx, MOMENT_SCENE[m.id] ?? "patron_chatting", HALL, [{ id: WIFE, role: "wife" }, { id: p.id, role: "patron" }]);
     ctx.emit("floor:moment", { id: m.id, patron: p.id, side });
   });
@@ -567,7 +576,10 @@ export function registerFloor(api: ModApi) {
       const b = bs(ctx.state);
       const h = b.heroine;
       const enc = b.encounter!;
-      const how = action.payload!.how as string;
+      const asked = action.payload!.how as string;
+      // a wife who has him under her thumb does not stop for him: he gets a hand, and she does not look round
+      const lazy = b.power >= F.join.lazyPower;
+      const how = lazy && asked !== "hand" && ctx.rng.chance(F.join.downgrade) ? "hand" : asked;
       const actId = how === "hand" ? "handjob" : how === "mouth" ? "blowjob" : "sex";
       const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { act: actId, partner: HUSBAND, loc: enc.loc, offer: 0, pressure: 0 });
       const total = res.total + F.join.consentBonus + h.arousal * 0.15;
@@ -583,13 +595,31 @@ export function registerFloor(api: ModApi) {
       enc.pleasure = clamp(enc.pleasure * F.join.hersRate);
       apply(ctx, F.join.done, null, null, "joined");
       b.power = clamp(b.power + F.join.power);
+      const name = `@name:${b.patrons[enc.patron]?.name ?? 0}`;
+      if (how === "hand" && lazy) {
+        if (how !== asked) ctx.log("log.join.downgrade", { name });
+        // the second roll: she lets go at the last moment
+        if (ctx.rng.chance(Math.min(F.join.ruinMax, F.join.ruinBase + b.power * F.join.ruinPerPower))) {
+          changeHim(ctx, "arousal", -60, "ruined");
+          changeHim(ctx, "mood", F.join.ruined.mood, "ruined");
+          changeConfidence(ctx, F.join.ruined.confidence, "ruined");
+          b.power = clamp(b.power + F.join.ruined.power);
+          b.denied = 0;
+          detail(ctx, { id: "join_ruined", who: HUSBAND });
+          ctx.emit("husband:act", { act: actId, came: false, pleasure: enc.pleasure, outcome: "ruined", turns: 1 });
+          ctx.log("log.join.hand.ruined", { name });
+          ctx.emit("floor:join", { how, ok: true, ruined: true });
+          return;
+        }
+        detail(ctx, { id: "join_hand_lazy", who: HUSBAND });
+      }
       // he does not last long like this
       changeHim(ctx, "arousal", -100, "came");
       changeHim(ctx, "mood", 4, "came");
       b.denied = 0;
       ctx.emit("cum:landed", { by: HUSBAND, act: actId, where: how === "mouth" ? "mouth" : how === "hand" ? "on_her" : "inside" });
       ctx.emit("husband:act", { act: actId, came: false, pleasure: enc.pleasure, outcome: "joined", turns: 1 });
-      ctx.log(`log.join.${how}`, { name: `@name:${b.patrons[enc.patron]?.name ?? 0}` });
+      ctx.log(`log.join.${how}${how === "hand" && lazy ? ".lazy" : ""}`, { name });
       ctx.emit("floor:join", { how, ok: true });
     },
   });

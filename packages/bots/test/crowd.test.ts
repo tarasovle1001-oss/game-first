@@ -8,17 +8,24 @@ const C = content.floor.crowd;
 const wait = (s: GameState, minutes: number) => engine.dispatch(s, { type: "base/wait", payload: { minutes } });
 const has = (s: GameState, type: string, where?: (p: Record<string, unknown>) => boolean) => engine.listActions(s).some((a) => a.type === type && (!where || where(a.payload ?? {})));
 /** An open marriage, a very willing wife, a full room, and something already going on in the middle of it. */
-const scene = (seed: number, act: string, loc = "cafe.hall"): GameState => {
-  let s = engine.dispatch(engine.init(seed, { base: { preset: "hungry", mode: "open", traits: { openness: 95, fidelity: 5, confidence: 60 } } }), { type: CORE_ADVANCE });
-  let guard = 0;
-  while (bs(s).shift!.visits.filter((v) => v.stay > 0).length < 3 && guard++ < 60) {
-    if (bs(s).caught) s = structuredClone(s), (bs(s).caught = null);
-    s = wait(s, 5);
+const scene = (first: number, act: string, loc = "cafe.hall"): GameState => {
+  // any evening with three men in the room will do: which seed gives one is not the point
+  let s = engine.init(first, {});
+  for (let seed = first; seed < first + 40; seed += 7) {
+    s = engine.dispatch(engine.init(seed, { base: { preset: "hungry", mode: "open", traits: { openness: 95, fidelity: 5, confidence: 60 } } }), { type: CORE_ADVANCE });
+    let guard = 0;
+    while (bs(s).shift!.visits.filter((v) => v.stay > 0).length < 3 && guard++ < 90) {
+      if (bs(s).caught || bs(s).encounter || bs(s).reaction) s = structuredClone(s), (bs(s).caught = null), (bs(s).encounter = null), (bs(s).reaction = null);
+      s = wait(s, 5);
+    }
+    if (bs(s).shift!.visits.filter((v) => v.stay > 0).length >= 3) break;
   }
   const c = structuredClone(s);
   const b = bs(c);
   const v = b.shift!.visits[0]!;
   for (const x of b.shift!.visits) {
+    x.away = undefined;
+    c.where[x.patron] = "cafe.hall";
     x.stay = 400;
     x.heat = 80;
     b.patrons[x.patron]!.memory.interest = 80;
