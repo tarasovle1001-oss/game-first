@@ -9,6 +9,7 @@
 //   node tools/vast-box.mjs status                    instance, GPUs, models, ComfyUI copies, logs tail
 //   node tools/vast-box.mjs tunnel [--port 18188]     ssh -L 127.0.0.1:<port> -> proxy 18999 (stays in foreground)
 //   node tools/vast-box.mjs stop | resume             let the GPU go and keep the disk / take it back (then up + tunnel)
+//   node tools/vast-box.mjs fetch --civitai <ver> --name <f>  another checkpoint onto the box
 //   node tools/vast-box.mjs down                      destroy the rented instance
 // Progress of `up`: .vast-box.json (step, message, at) and console lines.
 import { spawn, spawnSync } from "node:child_process";
@@ -139,6 +140,29 @@ if (cmd === "offers") for (const o of (await offers(Number(opt("gpus", "1")))).s
 else if (cmd === "up") await up().catch((e) => { save("error", e.message); process.exit(1); });
 else if (cmd === "status") { if (st.host) console.log(JSON.stringify(remote(script("remoteStatus")), null, 1)); else console.log(st); }
 else if (cmd === "tunnel") { const p = opt("port", "18188"); console.log(`tunnel 127.0.0.1:${p} -> box proxy 18999 (Ctrl+C to close)`); spawn("ssh", ["-N", "-o", "ExitOnForwardFailure=yes", "-L", `127.0.0.1:${p}:127.0.0.1:18999`, ...sshArgs()], { stdio: "inherit" }); }
+else if (cmd === "fetch") {
+  // another checkpoint from Civitai onto the box, by version id: fetch --civitai 1887507 --name illumiyume_v35_vpred.safetensors
+  const ver = opt("civitai"), name = opt("name");
+  if (!ver || !name || !/^[\w.-]+\.safetensors$/.test(name)) { console.log("fetch --civitai <version id> --name <file>.safetensors"); process.exit(1); }
+  const dst = `/workspace/ComfyUI/models/checkpoints/${name}`;
+  remote(`import os,pathlib,subprocess,json
+env=dict(x.decode().split('=',1) for x in pathlib.Path('/proc/1/environ').read_bytes().split(b'\\0') if b'=' in x)
+p=pathlib.Path('${dst}')
+if not (p.exists() and p.stat().st_size>1e9):
+ sh="curl -fL --retry 4 -s -o '%s.part' 'https://civitai.com/api/download/models/${ver}?token=%s' && mv '%s.part' '%s' && echo DONE || echo FAILED"%(p,env.get('CIVITAI_TOKEN',''),p,p)
+ subprocess.Popen(['bash','-c',sh],stdin=subprocess.DEVNULL,stdout=open('/workspace/tc-fetch.log','ab'),stderr=subprocess.STDOUT,start_new_session=True)
+print(json.dumps(dict(ok=True)))`);
+  for (;;) {
+    const r = remote(`import json,pathlib
+p=pathlib.Path('${dst}');q=pathlib.Path(str(p)+'.part');l=pathlib.Path('/workspace/tc-fetch.log')
+t=l.read_text()[-200:] if l.exists() else ''
+print(json.dumps(dict(done=p.exists(),bytes=(p if p.exists() else q).stat().st_size if (p.exists() or q.exists()) else 0,failed='FAILED' in t and not p.exists())))`);
+    if (r.failed) { save("fetch", `failed: ${name}`); process.exit(1); }
+    save("fetch", `${name} ${(r.bytes / 1e9).toFixed(2)} GB${r.done ? " - done" : ""}`);
+    if (r.done) break;
+    await sleep(10000);
+  }
+}
 else if (cmd === "stop" || cmd === "resume") {
   // stopped: the GPU is let go, the disk with models stays (storage is billed, cents a day); resume needs the same GPU free again
   if (!st.instance) console.log("nothing rented");

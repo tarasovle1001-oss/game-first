@@ -6,7 +6,7 @@
 //     [--comfy http://127.0.0.1:8188[,http://127.0.0.1:8189,...]] [--layouts a,b,c | --top 200 | --all] [--per 8] [--seed 1000]
 //     [--size 832x1216] [--steps 9] [--cfg 1.5] [--sampler euler_ancestral] [--scheduler simple]
 //     [--ckpt waiIllustriousSDXL_v170.safetensors] [--loras sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7]
-//     [--cn noob_depth_fp16.safetensors] [--cn-strength 0.6] [--cn-end 0.6] [--inflight 3] [--dry]
+//     [--vpred] [--cn noob_depth_fp16.safetensors] [--cn-strength 0.6] [--cn-end 0.6] [--inflight 3] [--dry]
 //
 // No --poses: plain text-to-image, no ControlNet (mannequin depth was dropped 12.11). A row's own `size` (probe-plan:
 // close-ups 1024x1024) wins over --size. Several --comfy addresses share one queue (e.g. two ComfyUI copies per GPU).
@@ -33,7 +33,7 @@ const [W, H] = opt("size", "832x1216")!.split("x").map(Number) as [number, numbe
 const per = Number(opt("per", "8"));
 const seed0 = Number(opt("seed", "1000"));
 const inflight = Number(opt("inflight", "3"));
-const loras = opt("loras", "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7")!
+const loras = opt("loras", "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7")!.replace(/^none$/, "")
   .split(",")
   .filter(Boolean)
   .map((s) => ({ name: s.split(":")[0]!, w: Number(s.split(":")[1] ?? 1) }));
@@ -84,6 +84,11 @@ function graph(job: (typeof jobs)[number], depth: string | undefined) {
     model = [`lora${i}`, 0];
     clip = [`lora${i}`, 1];
   });
+  // v-prediction checkpoints (Illustrious 3.x vpred and its tunes): tell the sampler how to read the model
+  if (flag("vpred")) {
+    g.vpred = { class_type: "ModelSamplingDiscrete", inputs: { model, sampling: "v_prediction", zsnr: true } };
+    model = ["vpred", 0];
+  }
   g.skip = { class_type: "CLIPSetLastLayer", inputs: { clip, stop_at_clip_layer: -2 } };
   g.pos = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: job.row.positive } };
   g.neg = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: job.row.negative } };
