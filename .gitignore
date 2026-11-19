@@ -5,3 +5,6 @@ dist/
 packages/*/src/generated/
 pack-plan.json
 tsconfig.tsbuildinfo
+.vast-box.json
+probe-*/
+probe-plan.json

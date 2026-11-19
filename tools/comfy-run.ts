@@ -2,12 +2,14 @@
 // packs (WAI + Lightning + Sora, 9 steps). Keeps a few prompts in flight, never touches what else is queued,
 // resumes where it stopped (skips files that exist), times every picture.
 //
-//   pnpm exec tsx tools/comfy-run.ts --plan pack-plan.json --poses <dir with LAYOUT.depth.png> --out <dir>
-//     [--comfy http://127.0.0.1:8188] [--layouts a,b,c | --top 200] [--per 8] [--seed 1000]
+//   pnpm exec tsx tools/comfy-run.ts --plan pack-plan.json [--poses <dir with LAYOUT.depth.png>] --out <dir>
+//     [--comfy http://127.0.0.1:8188[,http://127.0.0.1:8189,...]] [--layouts a,b,c | --top 200 | --all] [--per 8] [--seed 1000]
 //     [--size 832x1216] [--steps 9] [--cfg 1.5] [--sampler euler_ancestral] [--scheduler simple]
 //     [--ckpt waiIllustriousSDXL_v170.safetensors] [--loras sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7]
 //     [--cn noob_depth_fp16.safetensors] [--cn-strength 0.6] [--cn-end 0.6] [--inflight 3] [--dry]
 //
+// No --poses: plain text-to-image, no ControlNet (mannequin depth was dropped 12.11). A row's own `size` (probe-plan:
+// close-ups 1024x1024) wins over --size. Several --comfy addresses share one queue (e.g. two ComfyUI copies per GPU).
 // Progress: <out>/progress.json (done, total, per minute, eta) and one console line. Timings: <out>/timings.csv.
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { basename, join } from "node:path";
@@ -19,12 +21,12 @@ const opt = (name: string, def?: string) => {
 };
 const flag = (name: string) => argv.includes(`--${name}`);
 
-const comfy = opt("comfy", "http://127.0.0.1:8188")!.replace(/\/$/, "");
+const comfys = opt("comfy", "http://127.0.0.1:8188")!.split(",").map((u) => u.trim().replace(/\/$/, "")).filter(Boolean);
 const planFile = opt("plan");
 const poses = opt("poses");
 const outDir = opt("out", "comfy-out")!;
-if (!planFile || !poses) {
-  console.log("need --plan and --poses (see the head of this file)");
+if (!planFile) {
+  console.log("need --plan (see the head of this file)");
   process.exit(1);
 }
 const [W, H] = opt("size", "832x1216")!.split("x").map(Number) as [number, number];
@@ -37,7 +39,7 @@ const loras = opt("loras", "sdxl_lightning_8step_lora.safetensors:1,sora_v2-0000
   .map((s) => ({ name: s.split(":")[0]!, w: Number(s.split(":")[1] ?? 1) }));
 const cn = opt("cn", "noob_depth_fp16.safetensors")!;
 
-type Row = { key: string; file: string; layout: string; positive: string; negative: string; empty: string[] };
+type Row = { key: string; file: string; layout: string; positive: string; negative: string; empty: string[]; size?: string };
 const plan = JSON.parse(readFileSync(planFile, "utf8")) as { plan: Row[]; base: Row[] };
 let rows: Row[] = plan.plan;
 const layouts = opt("layouts")?.split(",");
@@ -46,8 +48,8 @@ if (layouts) {
   rows = layouts.map((l) => plan.plan.find((r) => r.layout === l) ?? plan.base.find((r) => r.layout === l)).filter((r): r is Row => !!r);
   const missing = layouts.filter((l) => !rows.some((r) => r.layout === l));
   if (missing.length) console.log(`no picture in the plan for: ${missing.join(", ")}`);
-} else rows = rows.slice(0, Number(opt("top", "50")));
-rows = rows.filter((r) => {
+} else if (!flag("all")) rows = rows.slice(0, Number(opt("top", "50")));
+if (poses) rows = rows.filter((r) => {
   const ok = existsSync(join(poses, `${r.layout}.depth.png`));
   if (!ok) console.log(`skip ${r.key}: no ${r.layout}.depth.png in ${poses}`);
   return ok;
@@ -60,7 +62,7 @@ writeFileSync(join(outDir, "prompts.json"), JSON.stringify(rows, null, 1));
 console.log(`${rows.length} picture keys x ${per} = ${jobs.length} to draw (existing skipped) -> ${outDir}`);
 if (flag("dry")) process.exit(0);
 
-async function upload(path: string): Promise<string> {
+async function upload(comfy: string, path: string): Promise<string> {
   const form = new FormData();
   form.append("image", new Blob([readFileSync(path)], { type: "image/png" }), `tc_${basename(path)}`);
   form.append("overwrite", "true");
@@ -69,7 +71,8 @@ async function upload(path: string): Promise<string> {
   return ((await r.json()) as { name: string }).name;
 }
 
-function graph(job: (typeof jobs)[number], depth: string) {
+function graph(job: (typeof jobs)[number], depth: string | undefined) {
+  const [w, h] = job.row.size ? (job.row.size.split("x").map(Number) as [number, number]) : [W, H];
   const g: Record<string, { class_type: string; inputs: Record<string, unknown> }> = {};
   g.ckpt = { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: opt("ckpt", "waiIllustriousSDXL_v170.safetensors") } };
   let model: [string, number] = ["ckpt", 0];
@@ -82,16 +85,20 @@ function graph(job: (typeof jobs)[number], depth: string) {
   g.skip = { class_type: "CLIPSetLastLayer", inputs: { clip, stop_at_clip_layer: -2 } };
   g.pos = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: job.row.positive } };
   g.neg = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: job.row.negative } };
-  g.depth = { class_type: "LoadImage", inputs: { image: depth } };
-  g.cn = { class_type: "ControlNetLoader", inputs: { control_net_name: cn } };
-  g.apply = {
-    class_type: "ControlNetApplyAdvanced",
-    inputs: { positive: ["pos", 0], negative: ["neg", 0], control_net: ["cn", 0], image: ["depth", 0], strength: Number(opt("cn-strength", "0.6")), start_percent: 0, end_percent: Number(opt("cn-end", "0.6")) },
-  };
-  g.latent = { class_type: "EmptyLatentImage", inputs: { width: W, height: H, batch_size: 1 } };
+  let cond: [[string, number], [string, number]] = [["pos", 0], ["neg", 0]];
+  if (depth) {
+    g.depth = { class_type: "LoadImage", inputs: { image: depth } };
+    g.cn = { class_type: "ControlNetLoader", inputs: { control_net_name: cn } };
+    g.apply = {
+      class_type: "ControlNetApplyAdvanced",
+      inputs: { positive: ["pos", 0], negative: ["neg", 0], control_net: ["cn", 0], image: ["depth", 0], strength: Number(opt("cn-strength", "0.6")), start_percent: 0, end_percent: Number(opt("cn-end", "0.6")) },
+    };
+    cond = [["apply", 0], ["apply", 1]];
+  }
+  g.latent = { class_type: "EmptyLatentImage", inputs: { width: w, height: h, batch_size: 1 } };
   g.sample = {
     class_type: "KSampler",
-    inputs: { model, positive: ["apply", 0], negative: ["apply", 1], latent_image: ["latent", 0], seed: job.seed, steps: Number(opt("steps", "9")), cfg: Number(opt("cfg", "1.5")), sampler_name: opt("sampler", "euler_ancestral"), scheduler: opt("scheduler", "simple"), denoise: 1 },
+    inputs: { model, positive: cond[0], negative: cond[1], latent_image: ["latent", 0], seed: job.seed, steps: Number(opt("steps", "9")), cfg: Number(opt("cfg", "1.5")), sampler_name: opt("sampler", "euler_ancestral"), scheduler: opt("scheduler", "simple"), denoise: 1 },
   };
   g.decode = { class_type: "VAEDecode", inputs: { samples: ["sample", 0], vae: ["ckpt", 2] } };
   g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `test-city/${stem(job.row)}` } };
@@ -113,8 +120,8 @@ const report = () => {
   process.stdout.write(`\r${done}/${jobs.length} done, ${failed} failed, ${p.perMinute}/min, eta ${p.etaMinutes ?? "?"} min   `);
 };
 
-async function run(job: (typeof jobs)[number], depths: Map<string, string>) {
-  const r = await fetch(`${comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(job, depths.get(job.row.layout)!), client_id: "test-city" }) });
+async function run(comfy: string, job: (typeof jobs)[number], depths: Map<string, string>) {
+  const r = await fetch(`${comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(job, depths.get(`${comfy} ${job.row.layout}`)), client_id: "test-city" }) });
   if (!r.ok) throw Error(`queue: ${r.status} ${await r.text()}`);
   const { prompt_id } = (await r.json()) as { prompt_id: string };
   for (;;) {
@@ -135,13 +142,13 @@ async function run(job: (typeof jobs)[number], depths: Map<string, string>) {
 }
 
 const depths = new Map<string, string>();
-for (const l of new Set(jobs.map((j) => j.row.layout))) depths.set(l, await upload(join(poses, `${l}.depth.png`)));
+if (poses) for (const c of comfys) for (const l of new Set(jobs.map((j) => j.row.layout))) depths.set(`${c} ${l}`, await upload(c, join(poses, `${l}.depth.png`)));
 const queue = [...jobs];
 await Promise.all(
-  Array.from({ length: inflight }, async () => {
+  comfys.flatMap((comfy) => Array.from({ length: inflight }, async () => {
     for (let job = queue.shift(); job; job = queue.shift()) {
       try {
-        await run(job, depths);
+        await run(comfy, job, depths);
         done++;
       } catch (e) {
         failed++;
@@ -149,7 +156,7 @@ await Promise.all(
       }
       report();
     }
-  }),
+  })),
 );
 report();
 console.log(`\nfinished: ${done} drawn, ${failed} failed in ${((Date.now() - t0) / 60000).toFixed(1)} min. Rate them: pnpm exec tsx tools/review.ts sheet ${outDir}`);

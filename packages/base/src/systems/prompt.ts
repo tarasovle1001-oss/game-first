@@ -67,10 +67,12 @@ const SIZE_TAG: Record<string, string> = { patron: "size", patron2: "size2", pat
 
 type Role = "wife" | "husband" | "patron" | "patron2" | "patron3" | "watcher";
 /** Who a figure is: always an adult, then the card - the anchor, the look, the body. */
-function who(cast: Cast, role: string): string[] {
+function who(cast: Cast, role: string, closeUp = false): string[] {
   const card = cast[role as Role];
   const adult = role === "wife" ? "adult woman, mature female" : "adult man, mature male";
   if (!card) return [adult];
+  // a faceless close-up keeps the body and the skin of the card, not the face, hair or jewellery that would pull a face in
+  if (closeUp) return [adult, card.appearance.split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), card.body];
   return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body];
 }
 
@@ -91,7 +93,8 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
     return v;
   };
   const inDesc = new Set(desc.participants.map((p) => p.role));
-  const drawn = [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
+  // a close-up has no layout: whoever is in it is drawn, so his skin and size (or her body) still come from the card
+  const drawn = isDetail ? [...inDesc] : [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
 
   // counts: one girl, the men in the scene (several of one role still count each)
   const men = Math.max(desc.participants.filter((p) => MEN.has(p.role)).length, Number(t.men ?? 0));
@@ -112,7 +115,7 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const regions: Record<string, string> = {};
   for (const role of drawn) {
     const size = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? W.size[Number(t[SIZE_TAG[role]!])] : undefined;
-    regions[role] = join([...who(cast, role), role === "wife" ? wifeWords(t) : [], size, slot(role)]);
+    regions[role] = join([...who(cast, role, isDetail), role === "wife" ? wifeWords(t) : [], size, isDetail ? "" : slot(role)]);
   }
   const negative = join([P.style.negative, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
   return { key, file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive: join([shared, ...Object.values(regions)]), negative, empty };
