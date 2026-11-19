@@ -8,6 +8,7 @@
 //   node tools/vast-box.mjs up [--gpus 1] [--max 0.8] rent, wait, bootstrap, wait for ComfyUI (prints one line per step)
 //   node tools/vast-box.mjs status                    instance, GPUs, models, ComfyUI copies, logs tail
 //   node tools/vast-box.mjs tunnel [--port 18188]     ssh -L 127.0.0.1:<port> -> proxy 18999 (stays in foreground)
+//   node tools/vast-box.mjs stop | resume             let the GPU go and keep the disk / take it back (then up + tunnel)
 //   node tools/vast-box.mjs down                      destroy the rented instance
 // Progress of `up`: .vast-box.json (step, message, at) and console lines.
 import { spawn, spawnSync } from "node:child_process";
@@ -138,5 +139,10 @@ if (cmd === "offers") for (const o of (await offers(Number(opt("gpus", "1")))).s
 else if (cmd === "up") await up().catch((e) => { save("error", e.message); process.exit(1); });
 else if (cmd === "status") { if (st.host) console.log(JSON.stringify(remote(script("remoteStatus")), null, 1)); else console.log(st); }
 else if (cmd === "tunnel") { const p = opt("port", "18188"); console.log(`tunnel 127.0.0.1:${p} -> box proxy 18999 (Ctrl+C to close)`); spawn("ssh", ["-N", "-o", "ExitOnForwardFailure=yes", "-L", `127.0.0.1:${p}:127.0.0.1:18999`, ...sshArgs()], { stdio: "inherit" }); }
+else if (cmd === "stop" || cmd === "resume") {
+  // stopped: the GPU is let go, the disk with models stays (storage is billed, cents a day); resume needs the same GPU free again
+  if (!st.instance) console.log("nothing rented");
+  else { await vast(`/v0/instances/${st.instance}/`, { method: "PUT", body: JSON.stringify({ state: cmd === "stop" ? "stopped" : "running" }) }); save(cmd === "stop" ? "stopped" : "resuming", `instance ${st.instance}${cmd === "resume" ? ": then run up (it skips renting) and tunnel" : ""}`); }
+}
 else if (cmd === "down") { if (!st.instance) console.log("nothing rented"); else { await vast(`/v0/instances/${st.instance}/`, { method: "DELETE" }); save("destroyed", `instance ${st.instance}, ${((Date.now() - st.rentedAt) / 3600000 * st.price).toFixed(2)}$ approx`); writeFileSync(STATE, JSON.stringify({ last: st.instance }, null, 1)); } }
 else console.log("offers | up | status | tunnel | down (see the head of this file)");
