@@ -107,7 +107,9 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   const prefix = P.style.prefix.split(",").map((w) => w.trim());
   const trigger = prefix.filter((w) => /sora|\\\(/.test(w));
   const quality = prefix.filter((w) => !trigger.includes(w));
-  const room = isDetail ? P.style.detail : `(${W.room[desc.location] ?? desc.location}:1.2)`;
+  // the room's first word carries the weight (a room line has several words now)
+  const roomWords = (W.room[desc.location] ?? desc.location).split(",").map((w) => w.trim());
+  const room = isDetail ? P.style.detail : [`(${roomWords[0]}:1.2)`, ...roomWords.slice(1)].join(", ");
   const shared = booru
     ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, t.fin ? W.fin[t.fin] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
     : join([

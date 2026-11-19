@@ -10,6 +10,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from "
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { parse } from "yaml";
 import { content, promptFor } from "../../packages/base/src";
 import type { SceneDesc } from "../../packages/core/src";
 
@@ -50,6 +51,10 @@ for (const line of readFileSync(join(root, "docs", "INSERTS.md"), "utf8").split(
   const role = who!.split(/[ /]/)[0]!;
   items.push({ id: `detail_${id}`, kind: "detail", roles: [role], room: "any", tags: { ...(/\bsize\b/.test(tags!) ? { size: "2" } : {}), ...(/\btsize\b/.test(tags!) ? { tsize: "2" } : {}) } });
 }
+// what happens in each scene, in Russian (about.yaml), plus the game's own short name of the scene
+const ABOUT = parse(readFileSync(join(here, "about.yaml"), "utf8")) as { scenes: Record<string, string>; details: Record<string, string> };
+const RU = (content.locales as unknown as Record<string, Record<string, string>>).ru ?? {};
+const aboutOf = (id: string) => (id.startsWith("detail_") ? ABOUT.details[id.slice(7)] : ABOUT.scenes[id]) ?? "";
 const ROOMS = Object.keys((content.look as unknown as { words: { room: Record<string, string> } }).words.room);
 
 // per scene state: room / look overrides, marks, note, takes
@@ -183,7 +188,7 @@ createServer(async (req, res) => {
       return json(res, 200, items.map((it) => {
         const st = stateOf(it.id);
         const marks = st.takes.flatMap((t) => t.marks);
-        return { id: it.id, kind: it.kind, roles: it.roles, status: st.status ?? (st.takes.length ? "work" : "todo"), takes: st.takes.length, ok: marks.filter((m) => m === "ok").length, bad: marks.filter((m) => m === "bad").length, note: !!st.note };
+        return { id: it.id, name: RU[`scene.${it.id}`] ?? "", about: aboutOf(it.id), kind: it.kind, roles: it.roles, status: st.status ?? (st.takes.length ? "work" : "todo"), takes: st.takes.length, ok: marks.filter((m) => m === "ok").length, bad: marks.filter((m) => m === "bad").length, note: !!st.note };
       }));
     }
     if (r === "/api/scene") {
@@ -193,7 +198,7 @@ createServer(async (req, res) => {
       const st = stateOf(id);
       const tags = tagsOf(it), negative = P.negatives[id] ?? "";
       const p = promptWith(it, st, tags, negative);
-      return json(res, 200, { ...it, room: st.room ?? it.room, look: { ...it.tags, ...(st.look ?? {}) }, rooms: ROOMS, tags, negative, positive: p.positive, negativeFull: p.negative, wayward: P.tags_wayward[id] ?? "", grok: P.poses[id] ?? {}, note: st.note ?? "", status: st.status ?? "todo", takes: [...st.takes].reverse() });
+      return json(res, 200, { ...it, name: RU[`scene.${it.id}`] ?? "", about: aboutOf(it.id), room: st.room ?? it.room, look: { ...it.tags, ...(st.look ?? {}) }, rooms: ROOMS, tags, negative, positive: p.positive, negativeFull: p.negative, wayward: P.tags_wayward[id] ?? "", grok: P.poses[id] ?? {}, note: st.note ?? "", status: st.status ?? "todo", takes: [...st.takes].reverse() });
     }
     if (r === "/api/preview" && req.method === "POST") {
       const b = await body(req);

@@ -57,8 +57,8 @@ const STATUS = { todo: "не начато", work: "в работе", done: "го
 async function loadList() {
   list = await api("/api/list");
   const q = $("#q").value.toLowerCase(), fk = $("#fk").value, fs = $("#fs").value;
-  $("#list").innerHTML = list.filter((x) => (!q || x.id.includes(q)) && (!fk || x.kind === fk) && (!fs || x.status === fs))
-    .map((x) => `<div class="it st-${x.status} ${x.id === cur ? "cur" : ""}" data-id="${x.id}"><span class="n">${x.id}</span><span class="c">${x.takes ? `${x.takes}×` : ""} ${x.ok ? `✓${x.ok}` : ""} ${x.bad ? `✗${x.bad}` : ""}</span></div>`).join("");
+  $("#list").innerHTML = list.filter((x) => (!q || x.id.includes(q) || (x.about || "").toLowerCase().includes(q) || (x.name || "").toLowerCase().includes(q)) && (!fk || x.kind === fk) && (!fs || x.status === fs))
+    .map((x) => `<div class="it st-${x.status} ${x.id === cur ? "cur" : ""}" data-id="${x.id}"><span class="n" title="${esc(x.about)}">${x.id}</span><span class="c">${x.takes ? `${x.takes}×` : ""} ${x.ok ? `✓${x.ok}` : ""} ${x.bad ? `✗${x.bad}` : ""}</span></div>`).join("");
 }
 $("#list").onclick = (e) => { const el = e.target.closest(".it"); if (el) open(el.dataset.id); };
 ["q", "fk", "fs"].forEach((id) => ($("#" + id).oninput = loadList));
@@ -80,7 +80,8 @@ function render() {
   const s = scene;
   const outfits = ["", "modest", "fitted", "revealing", "daring", "homewear", "nightgown", "lingerie", "towel", "topless", "bottomless", "naked"];
   $("#main").innerHTML = `
-  <h2>${s.id}</h2>
+  <h2>${s.id}${s.name ? ` <span style="color:var(--dim);font-weight:400">· ${esc(s.name)}</span>` : ""}</h2>
+  <div style="margin:2px 0 6px;font-size:15px">${esc(s.about)}</div>
   <div class="sub">${s.kind === "scene" ? "сцена" : "вставка"} · в кадре: ${s.roles.join(", ")} · <select id="stt">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${s.status === k ? "selected" : ""}>${v}</option>`).join("")}</select></div>
   <label>${s.kind === "scene" ? "Теги сцены (Danbooru) - идут сразу после качества" : "Слова вставки (prompt.yaml: details)"}</label>
   <textarea id="tags" rows="3">${esc(s.tags)}</textarea>
