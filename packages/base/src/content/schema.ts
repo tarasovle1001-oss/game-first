@@ -639,6 +639,18 @@ export type PromptWords = z.infer<typeof promptSchema>;
 const cardSchema = z.object({ anchor: z.string().default(""), strength: z.number().min(0.4).max(1.4).default(1.2), appearance: z.string().default(""), body: z.string().default(""), nude: z.string().default(""), clothes: z.string().default(""), closeup: z.string().default(""), negative: z.string().default("") }).strict();
 export const castSchema = z.object({ id, name: z.string(), wife: cardSchema, husband: cardSchema, patron: cardSchema, patron2: cardSchema, patron3: cardSchema, watcher: cardSchema }).strict();
 export type Cast = z.infer<typeof castSchema>;
+export type CastCard = z.infer<typeof cardSchema>;
+/** heroine.yaml: what the heroine builder offers for her look, and the four preview pictures. */
+export const heroineSchema = z
+  .object({
+    slots: z.array(z.object({ id, part: z.enum(["appearance", "body"]), options: z.record(z.string(), z.string()) }).strict()),
+    marks: z.record(z.string(), z.string()),
+    maxMarks: z.number().int().min(0),
+    defaults: z.object({ nude: z.string().default(""), negative: z.string().default("") }).strict(),
+    previews: z.array(z.object({ id, type: z.string(), location: z.string(), roles: z.array(z.string()), tags: z.record(z.string(), z.string()).default({}) }).strict()),
+  })
+  .strict();
+export type HeroineOptions = z.infer<typeof heroineSchema>;
 
 export const EMOTIONS = ["anger", "contempt", "guilt", "shame", "longing", "disgust", "fear", "pride", "tenderness", "delight", "pity"] as const;
 export type Emotion = (typeof EMOTIONS)[number];
@@ -745,6 +757,7 @@ export interface Content {
   look: Look;
   prompt: PromptWords;
   casts: Cast[];
+  heroine: HeroineOptions;
   mind: Mind;
   terms: Terms;
   floor: Floor;

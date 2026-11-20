@@ -2,12 +2,15 @@ import type { PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { tracer, resetTracer, bs, husbandSees } from "@tc/base";
+import type { HeroineCard } from "@tc/base";
 import { loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
 import type { Bookmark } from "./cheats";
 import { runScenario, SCENARIOS } from "@tc/mod-cheats";
 import { NewGame } from "./newgame";
+import { HeroinePicker, GenSwitch } from "./heroine";
+import { loadHeroines, saveHeroines } from "./heroines";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
 import { loadPack, packInfo } from "./pack";
@@ -26,7 +29,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "20a";
+const BUILD = "21";
 const RESUME_KEY = "test-city.resume";
 const JOURNAL_KEY = "test-city.journal";
 /**
@@ -157,7 +160,9 @@ function App() {
   const [menu, setMenu] = useState(false);
   const [packCount, setPackCount] = useState(0);
   const packInput = useRef<HTMLInputElement | null>(null);
-  const [setupOpen, setSetupOpen] = useState(!resumed); // the first thing a player sees, unless there is a game to come back to
+  const [setupOpen, setSetupOpen] = useState(!resumed);
+  // the heroine picked on the first new-game screen: undefined = not yet, null = the default one
+  const [chosen, setChosen] = useState<HeroineCard | null | undefined>(undefined); // the first thing a player sees, unless there is a game to come back to
   const [tab, setTab] = useState<Tab>("none");
   // playtest notes: one keypress, and the moment is written down with everything needed to find it again
   const [notes, setNotes] = useState<string[]>(() => {
@@ -412,6 +417,7 @@ function App() {
             <button onClick={() => saveInput.current?.click()}>{t("ui.load.file")}</button>
             <button onClick={() => modInput.current?.click()}>{t("ui.mod.add")}</button>
             <button onClick={() => packInput.current?.click()}>{t("ui.pack.add")}</button>
+            <GenSwitch t={t} />
             {packCount > 0 && <div className="muted small">{t("ui.pack.loaded", { name: packInfo().name, n: packInfo().keys })}</div>}
             <div className="muted small">
               {t("ui.mods")}: {game.packs.map((p) => `${p.mod.id} v${p.mod.version}`).join(", ")}
@@ -432,11 +438,18 @@ function App() {
         />
       </header>
 
-      {setupOpen && (
+      {setupOpen && chosen === undefined && <HeroinePicker t={t} onPick={setChosen} onCancel={state.turn > 0 ? () => setSetupOpen(false) : undefined} />}
+      {setupOpen && chosen !== undefined && (
         <NewGame
           t={t}
           seed={newSeed()}
-          onCancel={state.turn > 0 ? () => setSetupOpen(false) : undefined}
+          card={chosen}
+          onKeep={(setup) => {
+            if (!chosen) return;
+            const list = loadHeroines().map((c) => (c.id === chosen.id ? { ...c, setup: Object.keys(setup).length ? setup : undefined } : c));
+            saveHeroines(list);
+          }}
+          onCancel={() => setChosen(undefined)}
           onStart={(seed, setup) => {
             guard(() => {
               setPast([]);
@@ -444,6 +457,7 @@ function App() {
               setJournal({ build: BUILD, base: { seed, setup }, actions: [] });
             });
             setSetupOpen(false);
+            setChosen(undefined);
           }}
         />
       )}

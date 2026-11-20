@@ -1,28 +1,31 @@
 import { shownCm } from "@tc/base";
 import { useState } from "react";
 import { ATTRS, content, TASTES, TASTE_LATENT } from "@tc/base";
-import type { BaseSetup } from "@tc/base";
+import type { BaseSetup, HeroineCard } from "@tc/base";
 import type { T } from "./game";
 
 const TRAITS = ["openness", "confidence", "fidelity", "honesty", "libido"] as const;
 
 /** New-game screen: a preset to start from, then sliders. How the story goes depends mostly on these. */
-export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; onStart(seed: number, setup: BaseSetup): void; onCancel?(): void }) {
-  const first = content.presets.find((p) => p.id === "ordinary") ?? content.presets[0]!;
+/** `card`: the heroine picked before (her look and name); a set personality on her card fills the sliders. */
+export function NewGame({ t, seed, card, onStart, onCancel, onKeep }: { t: T; seed: number; card?: HeroineCard | null; onStart(seed: number, setup: BaseSetup): void; onCancel?(): void; onKeep?(setup: BaseSetup): void }) {
+  const kept = card?.setup;
+  const first = content.presets.find((p) => p.id === (kept?.preset ?? "ordinary")) ?? content.presets[0]!;
   const [preset, setPreset] = useState(first.id);
-  const [traits, setTraits] = useState({ ...first.traits });
-  const [attrs, setAttrs] = useState<Record<(typeof ATTRS)[number], number>>({ charm: 50, wit: 50, stamina: 50, composure: 50 });
-  const [sizeTaste, setSizeTaste] = useState(first.sizeTaste);
-  const [latents, setLatents] = useState<string[] | null>(null); // null = leave to the preset and chance
-  const [husband, setHusband] = useState({ size: content.body.husband.size, minutes: content.body.husband.minutes, style: content.body.husband.style, stretch: 0 });
-  const [body, setBody] = useState({ vagina: 0, anus: 0, mouth: 0 });
-  const [bodiesOpen, setBodiesOpen] = useState(false);
-  const [desire, setDesire] = useState(content.body.husband.desire);
-  const [open, setOpen] = useState(false);
+  const [traits, setTraits] = useState({ ...first.traits, ...(kept?.traits ?? {}) });
+  const [attrs, setAttrs] = useState<Record<(typeof ATTRS)[number], number>>({ charm: 50, wit: 50, stamina: 50, composure: 50, ...(kept?.attrs ?? {}) });
+  const [sizeTaste, setSizeTaste] = useState(kept?.sizeTaste ?? first.sizeTaste);
+  const [latents, setLatents] = useState<string[] | null>(kept?.latents ?? null); // null = leave to the preset and chance
+  const [husband, setHusband] = useState({ size: content.body.husband.size, minutes: content.body.husband.minutes, style: content.body.husband.style, stretch: 0, ...(kept?.husband ?? {}) });
+  const [body, setBody] = useState({ vagina: 0, anus: 0, mouth: 0, ...(kept?.body ?? {}) });
+  const [bodiesOpen, setBodiesOpen] = useState(!!kept?.body);
+  const [desire, setDesire] = useState(kept?.desire ?? content.body.husband.desire);
+  const [open, setOpen] = useState(kept?.mode === "open");
   const [seedText, setSeedText] = useState(String(seed));
-  const [name, setName] = useState(t("ui.newgame.name.default"));
+  const [name, setName] = useState(card?.name || t("ui.newgame.name.default"));
+  const [keep, setKeep] = useState(!!kept);
   const tastesOf = (ls: string[]) => Object.fromEntries(TASTES.map((id) => [id, ls.includes(TASTE_LATENT[id]) ? 85 : 50])) as Record<(typeof TASTES)[number], number>;
-  const [tastes, setTastes] = useState(tastesOf(first.latents));
+  const [tastes, setTastes] = useState({ ...tastesOf(first.latents), ...(kept?.tastes ?? {}) } as Record<(typeof TASTES)[number], number>);
   const tasteLatents = new Set<string>(Object.values(TASTE_LATENT));
 
   const pick = (id: string) => {
@@ -139,10 +142,16 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
 
         <div className="dialog-actions">
           {onCancel && <button onClick={onCancel}>{t("ui.newgame.cancel")}</button>}
+          {card && onKeep && (
+            <label className="check" title={t("ui.hero.keep.about")}>
+              <input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} />
+              {t("ui.hero.keep")}
+            </label>
+          )}
           <button
             className="primary"
-            onClick={() =>
-              onStart(Number(seedText) || seed, {
+            onClick={() => {
+              const setup: BaseSetup = {
                 preset,
                 traits,
                 sizeTaste,
@@ -154,8 +163,10 @@ export function NewGame({ t, seed, onStart, onCancel }: { t: T; seed: number; on
                 attrs,
                 ...(latents === null ? {} : { latents }),
                 ...(open ? { mode: "open" as const } : {}),
-              })
-            }
+              };
+              if (card && onKeep) onKeep(keep ? setup : {});
+              onStart(Number(seedText) || seed, card ? { ...setup, card: { ...card, name: name.trim() || card.name } } : setup);
+            }}
           >
             {t("ui.newgame.start")}
           </button>

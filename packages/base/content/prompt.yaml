@@ -381,6 +381,10 @@ tags_wayward:
 # Danbooru tags of each scene (written 19.11, checked against Danbooru tag counts): who does what, the pose, the camera.
 # They lead the prompt; a scene with tags does not use its English pose slots (poses:, kept). Edited in tools/prompt-lab.
 tags:
+  # heroine builder previews (heroine.yaml: previews): who she is, clearly, without a story around her
+  preview_full: "solo, standing, full body, looking at viewer, light smile, hands together, simple pose"
+  preview_face: "solo, portrait, close-up, face focus, looking at viewer, light smile, upper body"
+  preview_nude: "solo, completely nude, standing, full body, looking at viewer, blush, arms at sides, nipples, pussy"
   idle: "standing, waitress, hands together, light smile, looking at viewer, cowboy shot"
   serving: "waitress, holding tray, beer mug, leaning forward, man sitting at table, chair, smile, cowboy shot"
   patron_chatting: "conversation, talking, standing, man sitting at table, chair, smile, eye contact, cowboy shot"

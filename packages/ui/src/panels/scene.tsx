@@ -1,11 +1,12 @@
 import { shownCm } from "@tc/base";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CONSENT_FORMULA, verdictOf, describeScene, bs, clockText, content, fitOf, HUSBAND, patronName, pleasureFor, WIFE, husbandSees, sizeClass, pictureFrames, actById, actOf } from "@tc/base";
 import type { ConsentInput, ProposalRecord } from "@tc/base";
 import type { SceneDesc } from "@tc/core";
 import { renderSchematic } from "@tc/schematics";
 import { engine } from "../game";
 import { layoutFor } from "../pack";
+import { fileOf, genAlive, syncFolder, useGen, wantFrames } from "../gen";
 import type { Shot } from "../pack";
 import { Bar, Common } from "./common";
 
@@ -43,7 +44,10 @@ export function Photo({ main, inserts, alt, veiled, wide, children }: { main: Sh
 export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { scene: SceneDesc | null; watch?: boolean }) {
   const clear = !!open || !!watch; // the picture is not blurred; numbers still need `open`
   const pick = state.time.day * 7 + state.turn;
-  const picture = scene ? layoutFor(pictureFrames(state, scene), pick) : null;
+  useGen();
+  const card = bs(state).heroine.card;
+  const frames = scene ? pictureFrames(state, scene) : null;
+  const picture = frames ? layoutFor(frames, pick) : null;
   const b = bs(state);
   const layout = scene ? (content.scenes.find((s) => s.id === scene.type) ?? content.scenes.find((s) => s.id === "idle")!) : null;
   const wifeHere = state.where[WIFE] === state.where[HUSBAND];
@@ -57,7 +61,14 @@ export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { sc
         : { type: "idle", location: state.where[WIFE] ?? "", participants: [{ id: WIFE, role: "wife" }], tags: {} }
       : null;
   const awayLayout = away ? content.scenes.find((x) => x.id === away.type) : null;
-  const awayPicture = away ? layoutFor(pictureFrames(state, away), pick) : null;
+  const awayFrames = away ? pictureFrames(state, away) : null;
+  const awayPicture = awayFrames ? layoutFor(awayFrames, pick) : null;
+  // the generator draws what is on screen and missing: the scene with her, or where she is now
+  const shown = wifeShown ? frames : awayFrames;
+  useEffect(() => {
+    void syncFolder(card).then(() => shown && wantFrames(shown, card));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shown ? fileOf(shown.full) : "", card?.id, genAlive()]);
   const awaySvg = away
     ? renderSchematic(away.type === "idle" || !awayLayout ? [{ role: "wife", pose: "stand" as const, x: 0 }] : awayLayout.figures, {
         title: clear ? t(`scene.${awayLayout?.id ?? "idle"}`) : t("ui.scene.unseen"),

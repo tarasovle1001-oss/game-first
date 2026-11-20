@@ -1,0 +1,50 @@
+# Heroine builder: what the player can pick for her look. Every option is a Danbooru tag the image model knows.
+# Labels live in the locales (card.<slot>, card.<slot>.<option>, card.mark.<id>). "" = unspecified: the model decides.
+# A made card becomes the wife entry of the cast (cast.yaml format): appearance = hair, eyes, skin, marks, own tags;
+# body = build, bust, figure; nude and negative start from `defaults` and the player can edit them.
+slots:
+  - id: hair_color
+    part: appearance
+    options: { brown: brown hair, light_brown: light brown hair, black: black hair, blonde: blonde hair, red: red hair, ginger: orange hair, grey: grey hair, white: white hair, silver: silver hair, pink: pink hair, purple: purple hair, blue: blue hair, green: green hair }
+  - id: hair_length
+    part: appearance
+    options: { very_short: very short hair, short: short hair, bob: bob cut, medium: medium hair, long: long hair, very_long: very long hair }
+  - id: hair_style
+    part: appearance
+    options: { straight: straight hair, wavy: wavy hair, curly: curly hair, messy: messy hair, ponytail: ponytail, side_ponytail: side ponytail, braid: single braid, twin_braids: twin braids, bun: hair bun, twintails: twintails, half_updo: half updo, bangs: blunt bangs, swept: swept bangs }
+  - id: eye_color
+    part: appearance
+    options: { brown: brown eyes, blue: blue eyes, green: green eyes, grey: grey eyes, black: black eyes, amber: yellow eyes, red: red eyes, purple: purple eyes, pink: pink eyes, aqua: aqua eyes }
+  - id: eyes
+    part: appearance
+    options: { tsurime: tsurime, tareme: tareme, long_lashes: long eyelashes }
+  - id: skin
+    part: appearance
+    options: { pale: pale skin, fair: fair skin, tan: tan, dark: dark-skinned female, very_dark: "very dark skin, dark-skinned female" }
+  - id: makeup
+    part: appearance
+    options: { none: no makeup, light: light makeup, lipstick: "lipstick, red lips", goth: "black lipstick, eyeliner, mascara", eyeliner: eyeliner }
+  - id: build
+    part: body
+    options: { petite: petite, slim: "slim, slender body", toned: toned, curvy: curvy, plump: plump, muscular: muscular female, mature: mature female }
+  - id: bust
+    part: body
+    options: { small: small breasts, medium: medium breasts, large: large breasts, huge: huge breasts }
+  - id: figure
+    part: body
+    options: { long_legs: long legs, slender: "long legs, (narrow waist:1.3)", narrow_waist: (narrow waist:1.3), wide_hips: wide hips, hourglass: "wide hips, (narrow waist:1.3)", thick_thighs: thick thighs, thighs_hips: "thick thighs, wide hips" }
+  - id: height
+    part: body
+    options: { short: short, tall: tall female, very_tall: "very tall female, long legs" }
+marks: { freckles: freckles, mole_eye: mole under eye, mole_mouth: mole under mouth, mole_breast: mole on breast, thick_brows: thick eyebrows, piercing: ear piercing, choker: black choker, glasses: glasses, tattoo: tattoo, scar: scar on face }
+maxMarks: 3
+# added to every new card; the player sees and can edit them in the builder
+defaults:
+  nude: "(ass visible through thighs:1.3)"
+  negative: "flat ass"
+# the four pictures of the builder; built through the game's own prompts (promptFor), so they look like the game
+previews:
+  - { id: full, type: preview_full, location: cafe.hall, roles: [wife], tags: { outfit: fitted } }
+  - { id: face, type: preview_face, location: cafe.hall, roles: [wife], tags: { outfit: fitted } }
+  - { id: nude, type: preview_nude, location: home.bedroom, roles: [wife], tags: { outfit: naked } }
+  - { id: sex, type: patron_sex, location: hotel.room1, roles: [wife, patron], tags: { outfit: naked, size: "3" } }

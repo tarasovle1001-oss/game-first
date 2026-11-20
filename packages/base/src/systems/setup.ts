@@ -3,6 +3,7 @@ import type { ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp } from "../state";
 import type { Husband, Mode } from "../state";
+import { readCard } from "./card";
 
 /** What the new-game screen can pass to engine.init(seed, { base: setup }). Every field is optional. */
 export interface BaseSetup {
@@ -21,6 +22,8 @@ export interface BaseSetup {
   name?: string;
   /** What she has a taste for, 0..100 each (50 = neither way): oral, anal, show, romance, rough, drink. From 80 it is a side of her. */
   tastes?: Partial<Record<TasteId, number>>;
+  /** The heroine card from the builder: her look in every picture, her name, age and story. */
+  card?: unknown;
 }
 export const TASTES = ["oral", "anal", "show", "romance", "rough", "drink"] as const;
 export type TasteId = (typeof TASTES)[number];
@@ -49,6 +52,11 @@ export function registerSetup(api: ModApi) {
         for (const id of setup.latents) if (content.latents.some((l) => l.id === id)) h.latents[id] = true;
       }
       if (typeof setup.desire === "number") h.marriage.desire = clamp(setup.desire);
+      const card = setup.card === undefined ? null : readCard(setup.card);
+      if (card) {
+        h.card = { ...card, setup: undefined };
+        h.name = card.name || h.name;
+      }
       if (typeof setup.name === "string" && setup.name.trim()) h.name = setup.name.trim().slice(0, 24);
       for (const id of TASTES) {
         const v = setup.tastes?.[id];

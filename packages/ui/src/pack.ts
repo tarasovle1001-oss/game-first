@@ -24,13 +24,31 @@ export function loadPack(files: FileList | File[]): number {
 
 export const packInfo = () => ({ name: packName, keys: pictures.size });
 
+// Pictures the generator on this computer has drawn for her (gen.ts): looked up after the pack, key by key.
+const drawn = new Map<string, string>();
+let drawnFolder = "";
+/** Her folder on the generator: what it already has becomes part of what the game can show. */
+export function setDrawn(folder: string, files: string[], url: (file: string) => string) {
+  if (folder !== drawnFolder) drawn.clear();
+  drawnFolder = folder;
+  for (const f of files) if (!drawn.has(f)) drawn.set(f, url(f));
+}
+export const addDrawn = (folder: string, file: string, url: string) => {
+  if (folder === drawnFolder) drawn.set(file, url);
+};
+export const drawnFolderNow = () => drawnFolder;
+/** Is the exact picture there already (pack or drawn). */
+export const hasExact = (file: string) => !!pictures.get(file)?.length || drawn.has(file);
+
 /** The picture for a scene, most specific first; `pick` chooses between variants of the same key. */
 export function pictureFor(desc: SceneDesc, pick: number): { url: string; key: string; exact: boolean } | null {
-  if (pictures.size === 0) return null;
+  if (pictures.size === 0 && drawn.size === 0) return null;
   const keys = sceneKeyFallbacks(desc, PICTURE_TAGS);
   for (const [i, key] of keys.entries()) {
     const urls = pictures.get(sceneFileName(key));
     if (urls?.length) return { url: urls[Math.abs(pick) % urls.length]!, key, exact: i === 0 };
+    const own = drawn.get(sceneFileName(key));
+    if (own) return { url: own, key, exact: i === 0 };
   }
   return null;
 }

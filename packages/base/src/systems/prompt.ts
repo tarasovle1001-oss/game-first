@@ -5,7 +5,7 @@
 import type { SceneDesc } from "@tc/core";
 import { sceneFileName, sceneKey } from "@tc/core";
 import { actOf, content } from "../content";
-import type { Act, Cast } from "../content/schema";
+import type { Act, Cast, CastCard } from "../content/schema";
 
 const W = content.look.words;
 const P = content.prompt;
@@ -82,9 +82,10 @@ function who(cast: Cast, role: string, closeUp = false, exposed = false): string
   return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body, penis];
 }
 
-/** `castId`: whose pack this is (cast.yaml); the key does not depend on it. */
-export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
-  const cast = content.casts.find((c) => c.id === castId) ?? content.casts[0]!;
+/** `castId`: whose pack this is (cast.yaml); the key does not depend on it. `wife`: her own card (the heroine builder) instead of the cast's. */
+export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard): ScenePrompt {
+  const base = content.casts.find((c) => c.id === castId) ?? content.casts[0]!;
+  const cast: Cast = wife ? { ...base, wife } : base;
   const key = sceneKey(desc);
   const t = desc.tags ?? {};
   const layout = content.scenes.find((l) => l.id === desc.type);
@@ -117,7 +118,7 @@ export function promptFor(desc: SceneDesc, castId = "default"): ScenePrompt {
   // a close-up draws its keyed figure and whoever else it shows (his hand on her: her body is the subject)
   const inDesc = new Set(nobody ? [] : [...desc.participants.map((p) => p.role), ...(isDetail ? (P.detail_with[detailId] ?? []) : [])].filter((r) => !onlyRoles || onlyRoles.includes(r)));
   // a close-up has no layout: whoever is in it is drawn, so his skin and size (or her body) still come from the card
-  const drawn = isDetail ? [...inDesc] : [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
+  const drawn = isDetail || !layout ? [...inDesc] : [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
 
   // counts: one girl, the men in the scene (several of one role still count each)
   const men = isDetail ? [...inDesc].filter((r) => MEN.has(r)).length : Math.max(desc.participants.filter((p) => MEN.has(p.role) && inDesc.has(p.role)).length, onlyRoles ? 0 : Number(t.men ?? 0));

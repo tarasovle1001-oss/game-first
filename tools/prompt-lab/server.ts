@@ -16,6 +16,7 @@ import { parse } from "yaml";
 import { content, promptFor } from "../../packages/base/src";
 import type { SceneDesc } from "../../packages/core/src";
 import { mountSynth } from "./synth";
+import { comfyRender } from "../gen/comfy";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const here = join(root, "tools", "prompt-lab");
@@ -148,27 +149,6 @@ function rebuild() {
 }
 
 // ---------- ComfyUI ----------
-function graph(positive: string, negative: string, seed: number, size: string, prefix: string, use: Settings = settings) {
-  const [w, h] = size.split("x").map(Number) as [number, number];
-  const g: Record<string, { class_type: string; inputs: Record<string, unknown> }> = {};
-  g.ckpt = { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: use.ckpt } };
-  let model: [string, number] = ["ckpt", 0];
-  let clip: [string, number] = ["ckpt", 1];
-  use.loras.split(",").map((s) => s.trim()).filter(Boolean).forEach((s, i) => {
-    const [name, wt] = s.split(":");
-    g[`lora${i}`] = { class_type: "LoraLoader", inputs: { model, clip, lora_name: name, strength_model: Number(wt ?? 1), strength_clip: Number(wt ?? 1) } };
-    model = [`lora${i}`, 0];
-    clip = [`lora${i}`, 1];
-  });
-  g.skip = { class_type: "CLIPSetLastLayer", inputs: { clip, stop_at_clip_layer: -2 } };
-  g.pos = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: positive } };
-  g.neg = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: negative } };
-  g.latent = { class_type: "EmptyLatentImage", inputs: { width: w, height: h, batch_size: 1 } };
-  g.sample = { class_type: "KSampler", inputs: { model, positive: ["pos", 0], negative: ["neg", 0], latent_image: ["latent", 0], seed, steps: use.steps, cfg: use.cfg, sampler_name: use.sampler, scheduler: use.scheduler, denoise: 1 } };
-  g.decode = { class_type: "VAEDecode", inputs: { samples: ["sample", 0], vae: ["ckpt", 2] } };
-  g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: `prompt-lab/${prefix}` } };
-  return g;
-}
 type Job = { scene: string; take: string; i: number; status: "queued" | "drawing" | "done" | "error"; error?: string; promptId?: string; batch?: boolean; tries?: number };
 const jobs: Job[] = [];
 let running = 0;
@@ -206,23 +186,8 @@ async function pump() {
 }
 const kick = () => { for (let i = running; i < INFLIGHT; i++) void pump(); };
 // one picture: send the graph, wait, bring the PNG back
-async function render(positive: string, negative: string, seed: number, size: string, prefix: string, use: Settings, onId?: (id: string) => void): Promise<Buffer> {
-  const r = await fetch(`${settings.comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(positive, negative, seed, size, prefix, use), client_id: "prompt-lab" }) });
-  if (!r.ok) throw Error(`ComfyUI ${r.status}: ${(await r.text()).slice(0, 200)}`);
-  const { prompt_id } = (await r.json()) as { prompt_id: string };
-  onId?.(prompt_id);
-  for (let waited = 0; waited < 15 * 60000; waited += 700) {
-    await sleep(700);
-    const h = (await (await fetch(`${settings.comfy}/history/${prompt_id}`)).json()) as Record<string, { status?: { status_str?: string }; outputs?: Record<string, { images?: { filename: string; subfolder: string; type: string }[] }> }>;
-    const e = h[prompt_id];
-    if (!e) continue;
-    if (e.status?.status_str === "error") throw Error("ComfyUI error (see its console)");
-    const img = Object.values(e.outputs ?? {}).flatMap((o) => o.images ?? [])[0];
-    if (!img) continue;
-    const qs = new URLSearchParams({ filename: img.filename, subfolder: img.subfolder, type: img.type });
-    return Buffer.from(await (await fetch(`${settings.comfy}/view?${qs}`)).arrayBuffer());
-  }
-  throw Error("no picture after 15 min");
+function render(positive: string, negative: string, seed: number, size: string, prefix: string, use: Settings, onId?: (id: string) => void): Promise<Buffer> {
+  return comfyRender(settings.comfy, positive, negative, seed, size, `prompt-lab/${prefix}`, use, onId, "prompt-lab");
 }
 async function draw(j: Job) {
   const st = stateOf(j.scene);

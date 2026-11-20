@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import type { ZodTypeAny, z } from "zod";
-import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, castSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, castSchema, heroineSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -93,6 +93,7 @@ const look = load(join(base, "content/look.yaml"), lookSchema);
 const prompt = load(join(base, "content/prompt.yaml"), promptSchema);
 const casts = load(join(base, "content/cast.yaml"), castSchema.array().min(1)) ?? [];
 unique(casts, "cast");
+const heroine = load(join(base, "content/heroine.yaml"), heroineSchema);
 if (!casts.some((c) => c.id === "default")) errors.push('cast.yaml: no cast with id "default"');
 const mind = load(join(base, "content/mind.yaml"), mindSchema);
 const terms = load(join(base, "content/terms.yaml"), termsSchema);
@@ -191,13 +192,13 @@ if (intimacy) {
   for (const id of new Set([...B.ownEnd, ...B.his])) if (!sceneIds.has(`came_${id}`)) errors.push(`intimacy.yaml: bedroom act "${id}" ends in its own picture, but there is no layout "came_${id}"`);
   for (const id of B.needsToy) if (!B.his.includes(id)) errors.push(`intimacy.yaml: bedroom.needsToy "${id}" is not in bedroom.his`);
 }
-if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !prompt || !mind || !terms || !floor || !intimacy) {
+if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !prompt || !mind || !terms || !floor || !intimacy || !heroine) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { look, prompt, casts, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
+const content: Content = { look, prompt, casts, heroine, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

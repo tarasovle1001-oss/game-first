@@ -3,14 +3,19 @@
 // The result is the manifest of an image pack: key, file name, how often it is seen, cumulative coverage,
 // the layout to draw it over and the prompt (shared + one per figure). Generate from the top, stop where coverage is enough.
 // Also lists the general keys the game falls back to (scene/roles/room without tags, scene/*), so every scene has something.
-// pnpm exec tsx tools/pack-plan.ts [days=30] [seeds=6] [out=pack-plan.json] [cast=default]
-import { writeFileSync } from "node:fs";
+// pnpm exec tsx tools/pack-plan.ts [days=30] [seeds=6] [out=pack-plan.json] [cast=default | her-card.json]
+import { readFileSync, writeFileSync } from "node:fs";
 import { actOf, baseMod, bs, content, pictureFrames, pictureScene, promptFor, withLook } from "../packages/base/src";
+import { cardFolder, cardToCast, readCard } from "../packages/base/src";
 import { createEngine, sceneKey } from "../packages/core/src";
 import type { GameState, SceneDesc } from "../packages/core/src";
 import { awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy } from "../packages/bots/src";
 
 const [days = "30", seeds = "6", out = "pack-plan.json", cast = "default"] = process.argv.slice(2);
+// cast: a cast.yaml id, or her card from the builder (a .heroine.json, or wife.json of her generator folder)
+const card = cast.endsWith(".json") ? readCard(JSON.parse(readFileSync(cast, "utf8"))) : null;
+if (cast.endsWith(".json") && !card) throw Error(`${cast}: not a heroine card`);
+const wife = card ? cardToCast(card) : undefined;
 const engine = createEngine([baseMod]);
 type Kind = "full" | "portrait" | "insert" | "detail";
 const counts = new Map<string, { n: number; desc: SceneDesc; kind: Kind }>();
@@ -68,7 +73,7 @@ for (const { n, desc, kind } of counts.values()) {
 }
 
 const row = (desc: SceneDesc, n: number, kind: Kind = "full") => {
-  const p = promptFor(desc, cast);
+  const p = promptFor(desc, card ? "default" : cast, wife);
   return { kind, key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, shared: p.shared, regions: p.regions, positive: p.positive, negative: p.negative, empty: p.empty };
 };
 const every = [...counts.values()].map((v) => row(v.desc, v.n, v.kind)).sort((a, b) => b.n - a.n);
@@ -87,7 +92,7 @@ let run = 0;
 const plan = rows.map((r) => ({ ...r, share: +(r.n / total).toFixed(5), coverage: +((run += r.n) / total).toFixed(5) }));
 const base = [...general.values()].map((v) => row(v.desc, v.n)).sort((a, b) => b.n - a.n);
 const emptySlots = [...new Set(plan.flatMap((r) => r.empty))].sort();
-writeFileSync(out, JSON.stringify({ cast, days: Number(days), seeds: Number(seeds), keys: plan.length, total, emptySlots, base, plan, ...pieces }, null, 1));
+writeFileSync(out, JSON.stringify({ cast: card ? cardFolder(card) : cast, days: Number(days), seeds: Number(seeds), keys: plan.length, total, emptySlots, base, plan, ...pieces }, null, 1));
 
 const at = (c: number) => plan.findIndex((r) => r.coverage >= c) + 1;
 console.log(`${plan.length} exact pictures over ${total} views. For 80% of views: ${at(0.8)}, 95%: ${at(0.95)}, 99%: ${at(0.99)}, 100%: ${plan.length}.`);

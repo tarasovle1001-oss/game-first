@@ -242,3 +242,6 @@ export { toyForHim } from "./systems/marriage";
 export { ALONE_DO, aloneNow } from "./systems/alone";
 export { generatePatron } from "./systems/patrons";
 export { seat, attendTo } from "./systems/shift";
+export { newCard, randomLook, cardToCast, lookSummary, lookHash, cardFolder, previewScenes, readCard } from "./systems/card";
+export type { HeroineCard } from "./systems/card";
+export type { CastCard, HeroineOptions } from "./content/schema";

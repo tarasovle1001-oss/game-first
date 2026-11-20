@@ -1,14 +1,19 @@
 // Probe plan: every scene layout and every free close-up once, in one neutral state, to see what the flow draws well
 // before any variants are made. Scenes go in the room bots see them in most (or a default room), close-ups in the
 // neutral middle of their tags (size 2 where a man's size shows, nothing else). Same row format as pack-plan, plus `size`.
-// pnpm exec tsx tools/probe-plan.ts [out=probe-plan.json] [cast=default] [days=30] [seeds=4]
+// pnpm exec tsx tools/probe-plan.ts [out=probe-plan.json] [cast=default | her-card.json] [days=30] [seeds=4]
 import { readFileSync, writeFileSync } from "node:fs";
 import { baseMod, content, pictureScene, promptFor } from "../packages/base/src";
+import { cardFolder, cardToCast, readCard } from "../packages/base/src";
 import { createEngine } from "../packages/core/src";
 import type { SceneDesc } from "../packages/core/src";
 import { awayStrategy, lovingStrategy, ownerStrategy, snoopStrategy } from "../packages/bots/src";
 
 const [out = "probe-plan.json", cast = "default", days = "30", seeds = "4"] = process.argv.slice(2);
+// cast: a cast.yaml id, or her card from the builder (a .heroine.json, or wife.json of her generator folder)
+const card = cast.endsWith(".json") ? readCard(JSON.parse(readFileSync(cast, "utf8"))) : null;
+if (cast.endsWith(".json") && !card) throw Error(`${cast}: not a heroine card`);
+const wife = card ? cardToCast(card) : undefined;
 const SCENE = "832x1216";
 const DETAIL = "1024x1024";
 
@@ -32,7 +37,7 @@ for (const preset of content.presets.map((p) => p.id))
 
 const rows: Record<string, unknown>[] = [];
 const push = (desc: SceneDesc, kind: "scene" | "detail", n: number) => {
-  const p = promptFor(desc, cast);
+  const p = promptFor(desc, card ? "default" : cast, wife);
   rows.push({ kind, key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, size: kind === "detail" ? DETAIL : SCENE, positive: p.positive, negative: p.negative, empty: p.empty });
 };
 
@@ -54,7 +59,7 @@ for (const line of table) {
   push({ type: `detail_${id}`, location: "any", participants: [{ id: role, role }], tags: t }, "detail", 0);
 }
 
-writeFileSync(out, JSON.stringify({ cast, kind: "probe", keys: rows.length, plan: rows, base: [] }, null, 1));
+writeFileSync(out, JSON.stringify({ cast: card ? cardFolder(card) : cast, kind: "probe", keys: rows.length, plan: rows, base: [] }, null, 1));
 const sc = rows.filter((r) => r.kind === "scene");
 const noWords = rows.filter((r) => (r.empty as string[]).length);
 console.log(`${sc.length} scenes (${sc.filter((r) => (r.n as number) > 0).length} seen by bots) + ${rows.length - sc.length} close-ups -> ${out}`);

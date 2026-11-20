@@ -5,6 +5,8 @@ export const WIFE = "wife";
 export const HUSBAND = "husband";
 
 export interface Heroine {
+  /** the heroine card she was made from (builder): her look in the pictures; none = the default cast */
+  card?: import("./systems/card").HeroineCard;
   // fast state, 0..100
   energy: number;
   mood: number;
