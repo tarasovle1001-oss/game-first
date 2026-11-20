@@ -696,7 +696,8 @@ export function registerEncounters(api: ModApi) {
     if (i.offer <= 0) return null;
     const b = bs(s);
     const need = clamp((b.debt - b.money) / 4000, 0, 1); // 0 = comfortable, 1 = drowning
-    return i.offer * c.money * (0.5 + need);
+    // money talks, but it does not shout: past a point more of it changes nothing (a rich man's offer is a reason, not a switch)
+    return Math.min(c.moneyCap, i.offer * c.money * (0.5 + need));
   });
   row("pressure", 35, (s, i, _a, p) => (p && i.pressure > 0 ? (p.traits.persistence - her(s).traits.confidence) * c.pressure : null));
   // size: once she knows what he has, it counts for or against him, as much as size matters to her

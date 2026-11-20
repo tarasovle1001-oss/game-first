@@ -203,6 +203,7 @@ export const consentSchema = z
     witnesses: z.number(),
     husbandWatching: z.number(),
     companyPerMan: z.number(),
+    moneyCap: z.number(),
     alcohol: z.object({ selfFrom: z.number(), selfPer: z.number(), buyerUpTo: z.number(), othersFrom: z.number(), othersUpTo: z.number(), othersChance: z.number() }).strict(),
     away: z.object({ base: z.number(), perHour: z.number(), max: z.number(), honesty: z.number() }).strict(),
     money: z.number(),

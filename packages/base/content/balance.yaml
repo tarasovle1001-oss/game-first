@@ -46,7 +46,7 @@ loan: # the debt is paid in instalments; miss one and the lender starts dropping
   consent: 10         # how much the debt argues for him, at the starting debt
   suspicion: 7        # the book shows less than it should
   lender: { size: 18, persistence: 85, generosity: 45, interest: 55, arrivesAtTick: 8 }
-rich: { fromDay: 3, chance: 0.025, generosity: 90, interest: 40, offer: 3, bill: 2.5 } # a rare guest with a fat wallet: orders big, puts money on the table from a kiss on, three times what others would
+rich: { fromDay: 3, chance: 0.025, generosity: 90, interest: 40, offer: 2, bill: 2.5 } # a rare guest with a fat wallet: orders big, puts money on the table from a kiss on, three times what others would
 hotel: # two rooms upstairs
   roomPrice: 55
   takeChance: 0.35      # per free room per evening, at reputation 50
