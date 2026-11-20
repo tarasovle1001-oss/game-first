@@ -13,7 +13,7 @@ import { join, dirname } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { parse } from "yaml";
 
-type Target = { id: string; title: string; count: number; size?: string; prompt: string; axes?: Record<string, string[]>; negative?: string; loras?: string };
+type Target = { id: string; title: string; count: number; size?: string; prompt: string; acts?: string[]; axes?: Record<string, string[]>; negative?: string; loras?: string };
 type Concept = { id: string; title: string; trigger: string; negative?: string; targets: Target[] };
 type Book = { looks: { id: string; look: string; hand: string }[]; rooms: string[]; words: Record<string, string>; neg?: Record<string, string>; concepts: Concept[] };
 type Frame = { i: number; target: string; picks: Record<string, number>; look: string; room: string; positive: string; negative: string; caption: string; seed: number; size: string; loras?: string; file?: string; mark?: "keep" | "drop"; pre?: "drop"; error?: string };
@@ -27,7 +27,8 @@ type Deps = {
 export function mountSynth(d: Deps) {
   const dir = join(d.dataDir, "synth");
   const SAFE = /^[a-z0-9_]+$/;
-  const book = (): Book => parse(readFileSync(join(d.here, "synth.yaml"), "utf8")) as Book;
+  // acts: the wordings of the act are one more axis, named "act"
+  const book = (): Book => { const b = parse(readFileSync(join(d.here, "synth.yaml"), "utf8")) as Book; for (const c of b.concepts) for (const x of c.targets) if (x.acts) x.axes = { act: x.acts, ...(x.axes ?? {}) }; return b; };
   const saveJson = (f: string, v: unknown) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f + ".part", JSON.stringify(v)); renameSync(f + ".part", f); };
   const roundFile = (c: string, n: number) => join(dir, c, `k${n}.json`);
   const imgFile = (c: string, n: number, i: number) => join(dir, c, `k${n}`, `${i}.png`);

@@ -1,6 +1,7 @@
 # Synthetic frames for concept LoRAs (see synth.ts). A concept = one LoRA; a target = one thing inside it.
 #   prompt: what is constant (the thing to learn) with {placeholders} for what varies.
 #   axes:   named lists; each frame takes one value of every axis. Values may use placeholders too.
+#   acts:   the act itself said in several ways ({act} in the prompt): if the model misses one wording, another may hit.
 #   Built-in placeholders: {look} a woman's full look, {hand} her hand only, {room}; plus every key of words:.
 #   neg: words added to the negative when that key was used.
 # Rule of thumb: vary what the LoRA must not learn (the woman, the room, the angle), keep the act itself constant.
@@ -34,7 +35,8 @@ concepts:
       - id: prostate
         title: "Простата: её пальцы в нём, второй рукой дрочит ему"
         count: 120
-        prompt: "{who}, femdom, hetero, (prostate milking:1.2), (anal fingering:1.2), finger in ass, handjob, {view}, {state}, {husband}, {hpenis}, {room}"
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {husband}, {hpenis}, {room}"
+        acts: ["(prostate milking:1.2), (anal fingering:1.2), finger in ass, handjob", "(anal fingering:1.3), fingering, finger in ass, reach-around, handjob", "(prostate milking:1.3), milking handjob, finger in ass", "(anal fingering:1.2), two fingers, finger in ass, penis grab"]
         axes:
           who: ["1boy, solo focus, male focus, {hand}", "1boy, solo focus, male focus, {hand}", "1girl, 1boy, {look}, nude, smirk, looking down, kneeling"]
           view: ["close-up, lower body, head out of frame, lying on back, legs up, spread legs", "from above, lying on back, legs up, spread legs", "from side, all fours, male focus", "from behind, all fours, ass focus, testicles", "pov, lying on back, spread legs, lower body"]
@@ -42,7 +44,8 @@ concepts:
       - id: dildo_him
         title: "Дилдо в нём: она держит игрушку"
         count: 120
-        prompt: "{who}, femdom, hetero, (anal object insertion:1.3), (dildo:1.2), holding dildo, {view}, {state}, {husband}, {hpenis}, {room}"
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {husband}, {hpenis}, {room}"
+        acts: ["(anal object insertion:1.3), (dildo:1.2), holding dildo", "(anal object insertion:1.3), object insertion, sex toy, (dildo:1.2)", "(anal object insertion:1.3), (butt plug:1.2)", "(anal object insertion:1.3), (anal beads:1.2)", "(anal object insertion:1.2), (prostate massager:1.2), vibrator"]
         axes:
           who: ["1boy, solo focus, male focus, {hand}", "1boy, solo focus, male focus, {hand}", "1girl, 1boy, {look}, nude, smirk, kneeling"]
           view: ["close-up, from behind, all fours, ass focus, testicles", "from side, all fours, male focus", "from above, lying on back, legs up, spread legs", "close-up, lower body, head out of frame, lying on back, legs up", "top-down bottom-up, from behind, ass focus"]
@@ -50,14 +53,16 @@ concepts:
       - id: pegging
         title: "Страпон: она сзади него"
         count: 120
-        prompt: "1girl, 1boy, {look}, nude, femdom, hetero, (pegging:1.3), (strap-on:1.2), {view}, {state}, {husband}, {hpenis}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, femdom, hetero, {act}, {view}, {state}, {husband}, {hpenis}, {room}"
+        acts: ["(pegging:1.3), (strap-on:1.2)", "(pegging:1.3), strap-on, anal, sex from behind, male penetrated", "(strap-on:1.3), anal, male penetrated, harness", "(pegging:1.2), (strap-on:1.2), dildo, harness"]
         axes:
           view: ["from side, man on all fours, girl kneeling behind, hands on another's hips", "from behind, girl standing behind, man bent over, ass", "from above, man lying on back, legs up, girl between legs", "from front, man on all fours, girl behind, looking at viewer, smirk", "close-up, lower body, strap-on, ass focus, head out of frame"]
           state: ["erection, precum", "handsfree ejaculation, cum", "ejaculation, cum on bed, trembling", "open mouth, blush, sweat"]
       - id: fisting_him
         title: "Кулак в нём"
         count: 80
-        prompt: "{who}, femdom, hetero, (anal fisting:1.3), fisting, {view}, {state}, {husband}, {hpenis}, {room}"
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {husband}, {hpenis}, {room}"
+        acts: ["(anal fisting:1.3), fisting", "(anal fisting:1.3), fisting, large insertion, fist", "(anal fisting:1.2), (anal fingering:1.2), deep insertion", "(fisting:1.3), anal, extreme insertion, gaping"]
         axes:
           who: ["1boy, solo focus, male focus, {hand}, forearm", "1girl, 1boy, {look}, nude, smirk, kneeling"]
           view: ["close-up, lower body, head out of frame, lying on back, legs up, spread legs", "close-up, from behind, all fours, ass focus", "from above, lying on back, legs up", "from side, all fours"]
@@ -65,7 +70,8 @@ concepts:
       - id: spank_him
         title: "Шлепает его: красный зад"
         count: 80
-        prompt: "{who}, femdom, hetero, (spanking:1.3), (red ass:1.2), spanked, {view}, {state}, {husband}, {room}"
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {husband}, {room}"
+        acts: ["(spanking:1.3), (red ass:1.2), spanked", "(spanking:1.3), slap mark, hand on another's ass", "(spanking:1.2), spanked, motion lines, red ass", "(red ass:1.3), slap mark, grabbing another's ass, bdsm"]
         axes:
           who: ["1boy, solo focus, male focus, {hand}", "1girl, 1boy, {look}, smirk, sitting"]
           view: ["over the knee, lying on lap, from side", "close-up, from behind, ass focus, bent over", "all fours, from behind, ass focus", "close-up, ass focus, hand on another's ass, slap mark"]
@@ -88,28 +94,32 @@ concepts:
       - id: ruined
         title: "Убрала руку - он кончает впустую"
         count: 100
-        prompt: "1boy, solo focus, male focus, close-up, hetero, femdom, (ruined orgasm:1.3), (handsfree ejaculation:1.2), ejaculation, cum, twitching penis, {hand}, {gesture}, {view}, {husband}, {hpenis}, {room}"
+        prompt: "1boy, solo focus, male focus, close-up, hetero, femdom, {act}, {hand}, {gesture}, {view}, {husband}, {hpenis}, {room}"
+        acts: ["(ruined orgasm:1.3), (handsfree ejaculation:1.2), ejaculation, cum, twitching penis", "(handsfree ejaculation:1.3), ejaculation, projectile cum, cum", "(ruined orgasm:1.3), cumdrip, cum, trembling", "(orgasm denial:1.2), (premature ejaculation:1.2), ejaculation, cum on self"]
         axes:
           gesture: ["open hand, hand up", "hand on another's thigh", "pointing, finger", "hand on own hip"]
           view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "pov, lower body, lying on back", "from side, lower body, kneeling"]
       - id: cage
         title: "Клетка на нём"
         count: 80
-        prompt: "1boy, solo focus, male focus, close-up, (chastity cage:1.3), {extra}, {view}, {husband}, nude male, {room}"
+        prompt: "1boy, solo focus, male focus, close-up, {act}, {extra}, {view}, {husband}, nude male, {room}"
+        acts: ["(chastity cage:1.3)", "(chastity cage:1.3), padlock, locked", "(chastity cage:1.2), flat chastity cage", "(chastity cage:1.2), penis cage, chastity belt"]
         axes:
           extra: ["{hand}, hand on another's thigh", "{hand}, holding key, key", "precum, dripping", "testicles"]
           view: ["lower body, head out of frame, standing, facing viewer", "lower body, sitting, spread legs", "lower body, lying on back, from above", "from side, lower body, standing"]
       - id: soft
         title: "Обмякший после (или не встал)"
         count: 80
-        prompt: "1boy, solo focus, male focus, close-up, (flaccid:1.3), {extra}, {view}, {husband}, {hpenis}, nude male, {room}"
+        prompt: "1boy, solo focus, male focus, close-up, {act}, {extra}, {view}, {husband}, {hpenis}, nude male, {room}"
+        acts: ["(flaccid:1.3)", "(flaccid:1.3), penis, foreskin, phimosis", "(flaccid:1.2), after sex, penis"]
         axes:
           extra: ["after ejaculation, cum, cumdrip", "{hand}, penis grab", "{hand}, pointing", "sweat"]
           view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "lower body, standing, facing viewer", "from side, lower body, lying"]
       - id: cum_pants
         title: "Кончил в штаны: мокрое пятно, члена не видно"
         count: 100
-        prompt: "1boy, solo focus, male focus, close-up, clothed male, {pants}, (cum stain:1.3), (wet spot:1.2), wet clothes, crotch focus, {extra}, {view}, {husband}, {room}"
+        prompt: "1boy, solo focus, male focus, close-up, clothed male, {pants}, {act}, crotch focus, {extra}, {view}, {husband}, {room}"
+        acts: ["(cum stain:1.3), (wet spot:1.2), wet clothes", "(cum in clothes:1.3), wet spot, stained clothes", "(cum through clothes:1.3), wet pants, cum stain", "(wet pants:1.2), (cum stain:1.3), premature ejaculation"]
         negative: "(penis:1.3), penis out, erection, nude male, open fly, testicles"
         axes:
           pants: ["(baggy pants:1.1)", "jeans", "sweatpants", "pants, belt"]
@@ -118,7 +128,8 @@ concepts:
       - id: bulge
         title: "Бугор в штанах (с мокрым следом и без)"
         count: 100
-        prompt: "1boy, solo focus, male focus, close-up, clothed male, {pants}, (bulge:1.2), erection under clothes, crotch focus, {extra}, {view}, {husband}, {room}"
+        prompt: "1boy, solo focus, male focus, close-up, clothed male, {pants}, {act}, crotch focus, {extra}, {view}, {husband}, {room}"
+        acts: ["(bulge:1.2), erection under clothes", "(erection under clothes:1.3), tenting", "(bulge:1.3), crotch"]
         negative: "(penis:1.3), penis out, nude male, open fly, testicles, huge bulge"
         axes:
           pants: ["(baggy pants:1.1)", "jeans", "sweatpants", "pants, belt"]
@@ -127,7 +138,8 @@ concepts:
       - id: mouth
         title: "Его член у неё во рту: лицо крупно"
         count: 100
-        prompt: "1girl, 1boy, {look}, close-up, hetero, (fellatio:1.3), penis in mouth, {act}, {view}, {state}, {husband}, {hpenis}"
+        prompt: "1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {husband}, {hpenis}"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
         negative: "yaoi, (2boys:1.3), penis on female, breasts out"
         axes:
           act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
@@ -159,20 +171,23 @@ concepts:
       - id: thru_vag
         title: "Сквозь тело: вагинально, без спермы"
         count: 140
-        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (see-through body:1.3), (x-ray:1.2), penis visible through skin, (stomach bulge:1.1), deep penetration, {pose}, {patron}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, {act}, (stomach bulge:1.1), deep penetration, {pose}, {patron}, {room}"
+        acts: ["(see-through body:1.3), (x-ray:1.2), penis visible through skin", "(x-ray:1.4), internal, penis visible through skin, see-through body", "(see-through body:1.4), translucent skin, penis shadow", "(see-through body:1.2), (x-ray:1.2), uterus, womb"]
         negative: "cross-section, inset, multiple views, cum, internal cumshot, anal"
         axes: &tpose
           pose: ["cowgirl position, girl on top, facing viewer, lower body, navel", "missionary, lying on back, spread legs, from above, stomach", "standing sex, from side, stomach", "reverse cowgirl position, facing viewer, lower body, navel", "lying on back, legs up, from side, lower body"]
       - id: thru_vag_cum
         title: "Сквозь тело: вагинально, со спермой внутри"
         count: 140
-        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (see-through body:1.3), (x-ray:1.2), penis visible through skin, (internal cumshot:1.3), cum in pussy, cum overflow, deep penetration, {pose}, {patron}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, {act}, (internal cumshot:1.3), cum in pussy, cum overflow, deep penetration, {pose}, {patron}, {room}"
+        acts: ["(see-through body:1.3), (x-ray:1.2), penis visible through skin", "(x-ray:1.4), internal, penis visible through skin, see-through body", "(see-through body:1.4), translucent skin, penis shadow", "(see-through body:1.2), (x-ray:1.2), uterus, womb"]
         negative: "cross-section, inset, multiple views, anal"
         axes: *tpose
       - id: thru_anal
         title: "Сквозь тело: анально"
         count: 100
-        prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, (see-through body:1.3), (x-ray:1.2), penis visible through skin, deep penetration, {fin}, {pose}, {patron}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, {act}, deep penetration, {fin}, {pose}, {patron}, {room}"
+        acts: ["(see-through body:1.3), (x-ray:1.2), penis visible through skin", "(x-ray:1.4), internal, penis visible through skin, see-through body", "(see-through body:1.4), translucent skin, penis shadow", "(see-through body:1.2), (x-ray:1.2)"]
         negative: "cross-section, inset, multiple views, vaginal, penis in pussy"
         axes:
           pose: ["doggystyle, from side, all fours, stomach", "reverse cowgirl position, facing viewer, lower body, navel", "lying on side, spooning, facing viewer, stomach", "standing sex, sex from behind, from side"]
@@ -180,7 +195,8 @@ concepts:
       - id: thru_toy
         title: "Сквозь тело: игрушка внутри"
         count: 80
-        prompt: "1girl, solo, {look}, nude, (see-through body:1.3), (x-ray:1.2), (dildo:1.2), {where}, {pose}, pussy juice, {room}"
+        prompt: "1girl, solo, {look}, nude, {act}, (dildo:1.2), {where}, {pose}, pussy juice, {room}"
+        acts: ["(see-through body:1.3), (x-ray:1.2)", "(x-ray:1.4), internal, see-through body", "(see-through body:1.4), translucent skin"]
         negative: "cross-section, inset, multiple views, 1boy, penis, male"
         axes:
           where: ["vaginal object insertion, stomach bulge", "anal object insertion"]
@@ -188,20 +204,23 @@ concepts:
       - id: inset_vag
         title: "Окошко: вагинально, без спермы"
         count: 70
-        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (cross-section:1.3), (inset:1.2), x-ray, uterus, cervix, deep penetration, {pose}, {patron}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, {act}, uterus, cervix, deep penetration, {pose}, {patron}, {room}"
+        acts: ["(cross-section:1.3), (inset:1.2), x-ray", "(cross-section:1.4), internal view, x-ray", "(x-ray:1.3), (inset:1.3), cross-section"]
         negative: "cum, internal cumshot, anal"
         axes: &xpose
           pose: ["cowgirl position, girl on top, facing viewer, lower body", "missionary, lying on back, spread legs, from above", "doggystyle, from side, all fours", "standing sex, from side, leg lift", "reverse cowgirl position, facing viewer, lower body"]
       - id: inset_vag_cum
         title: "Окошко: вагинально, со спермой"
         count: 70
-        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (cross-section:1.3), (inset:1.2), x-ray, uterus, cervix, (internal cumshot:1.3), cum in uterus, cum overflow, deep penetration, {pose}, {patron}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, {act}, uterus, cervix, (internal cumshot:1.3), cum in uterus, cum overflow, deep penetration, {pose}, {patron}, {room}"
+        acts: ["(cross-section:1.3), (inset:1.2), x-ray", "(cross-section:1.4), internal view, x-ray", "(x-ray:1.3), (inset:1.3), cross-section"]
         negative: "anal"
         axes: *xpose
       - id: inset_anal
         title: "Окошко: анально"
         count: 50
-        prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, (cross-section:1.3), (inset:1.2), x-ray, deep penetration, {fin}, {pose}, {patron}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, {act}, deep penetration, {fin}, {pose}, {patron}, {room}"
+        acts: ["(cross-section:1.3), (inset:1.2), x-ray", "(cross-section:1.4), internal view, x-ray", "(x-ray:1.3), (inset:1.3), cross-section"]
         negative: "vaginal, uterus, cervix, penis in pussy"
         axes:
           pose: ["doggystyle, from side, all fours", "from behind, bent over, ass focus", "reverse cowgirl position, facing viewer, lower body", "lying on side, spooning, facing viewer", "top-down bottom-up, from behind"]
@@ -209,7 +228,8 @@ concepts:
       - id: inset_toy
         title: "Окошко: игрушка внутри"
         count: 50
-        prompt: "1girl, solo, {look}, nude, (cross-section:1.3), (inset:1.2), x-ray, (dildo:1.2), {where}, {pose}, pussy juice, {room}"
+        prompt: "1girl, solo, {look}, nude, {act}, (dildo:1.2), {where}, {pose}, pussy juice, {room}"
+        acts: ["(cross-section:1.3), (inset:1.2), x-ray", "(cross-section:1.4), internal view, x-ray", "(x-ray:1.3), (inset:1.3), cross-section"]
         negative: "1boy, penis, male"
         axes:
           where: ["vaginal object insertion, uterus, cervix", "anal object insertion"]
@@ -225,7 +245,8 @@ concepts:
         title: "Airtight: заняты все три отверстия, трое мужчин"
         count: 200
         size: 832x1216
-        prompt: "1girl, {look}, nude, hetero, group sex, gangbang, {men3}, (triple penetration:1.3), double penetration, fellatio, vaginal, anal, {pose}, {view}, {face}, {room}"
+        prompt: "1girl, {look}, nude, hetero, group sex, gangbang, {men3}, {act}, {pose}, {view}, {face}, {room}"
+        acts: ["(triple penetration:1.3), double penetration, fellatio, vaginal, anal", "(triple penetration:1.3), (spitroast:1.1), double penetration, oral", "(double penetration:1.3), (fellatio:1.3), vaginal, anal, penis in mouth", "(triple penetration:1.4), sandwiched, irrumatio"]
         axes:
           pose: ["girl on top, man lying on back, man behind her, man standing in front", "sandwiched, lying on person, man standing in front", "reverse cowgirl position, man lying on back, man kneeling in front, man standing beside", "suspended congress, standing, carried, man in front, man behind", "all fours, man lying under her, man behind her, man kneeling in front"]
           view: ["from side", "from above", "facing viewer", "from below", "dutch angle, from side"]
@@ -234,7 +255,8 @@ concepts:
         title: "Двойное: один снизу, второй сзади"
         count: 120
         size: 832x1216
-        prompt: "1girl, {look}, nude, hetero, mmf threesome, {men2}, (double penetration:1.3), vaginal, anal, sandwiched, {pose}, {view}, {face}, {room}"
+        prompt: "1girl, {look}, nude, hetero, mmf threesome, {men2}, {act}, {pose}, {view}, {face}, {room}"
+        acts: ["(double penetration:1.3), vaginal, anal, sandwiched", "(double penetration:1.4), penis in pussy, penis in ass", "(double penetration:1.3), threesome, vaginal, anal, sex from behind"]
         negative: "fellatio, 3boys"
         axes:
           pose: ["girl on top, man lying on back, man behind her", "reverse cowgirl position, man lying on back, man in front", "standing, carried, man in front, man behind", "lying on side, man in front, man behind"]
@@ -244,7 +266,8 @@ concepts:
         title: "Спереди и сзади: один в рот, второй сзади"
         count: 120
         size: 832x1216
-        prompt: "1girl, {look}, nude, hetero, mmf threesome, {men2}, (spitroast:1.3), fellatio, sex from behind, {pose}, {view}, {face}, {room}"
+        prompt: "1girl, {look}, nude, hetero, mmf threesome, {men2}, {act}, {pose}, {view}, {face}, {room}"
+        acts: ["(spitroast:1.3), fellatio, sex from behind", "(spitroast:1.4), oral, vaginal, penis in mouth", "(fellatio:1.3), (sex from behind:1.2), threesome, irrumatio, vaginal"]
         negative: "double penetration, 3boys"
         axes:
           pose: ["all fours, man kneeling behind, man kneeling in front", "bent over, standing, man standing behind, man standing in front", "lying on back, on table, man between legs, man at her head, upside-down", "lying on stomach, man behind her, man in front"]
@@ -261,7 +284,8 @@ concepts:
         title: "69 с мужем"
         count: 150
         size: 832x1216
-        prompt: "1girl, 1boy, {look}, nude, hetero, (69:1.4), fellatio, cunnilingus, {pose}, {view}, {state}, {husband}, {hpenis}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, {act}, {pose}, {view}, {state}, {husband}, {hpenis}, {room}"
+        acts: ["(69:1.4), fellatio, cunnilingus", "(69:1.4), mutual oral, oral", "(69:1.3), (fellatio:1.2), (cunnilingus:1.2), licking pussy, penis in mouth"]
         axes: &p69
           pose: ["girl on top, lying on person, upside-down, head between thighs", "girl on top, all fours, man lying on back, head between thighs", "lying on side, side-by-side, head between thighs", "girl on top, straddling, ass up, man lying on back"]
           view: ["from side", "from side, full body", "from above", "from behind, ass focus"]
@@ -270,5 +294,6 @@ concepts:
         title: "69 с гостем"
         count: 150
         size: 832x1216
-        prompt: "1girl, 1boy, {look}, nude, hetero, (69:1.4), fellatio, cunnilingus, {pose}, {view}, {state}, {patron}, {room}"
+        prompt: "1girl, 1boy, {look}, nude, hetero, {act}, {pose}, {view}, {state}, {patron}, {room}"
+        acts: ["(69:1.4), fellatio, cunnilingus", "(69:1.4), mutual oral, oral", "(69:1.3), (fellatio:1.2), (cunnilingus:1.2), licking pussy, penis in mouth"]
         axes: *p69
