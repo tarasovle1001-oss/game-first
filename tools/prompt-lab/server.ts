@@ -277,6 +277,21 @@ createServer(async (req, res) => {
     if (r === "/") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(readFileSync(join(here, "index.html"))); return; }
     // the morning page of a night run (night-report.mjs writes it into the data folder)
     if (r === "/report") { const f = join(dataDir, "report.html"); res.writeHead(existsSync(f) ? 200 : 404, { "content-type": "text/html; charset=utf-8" }); res.end(existsSync(f) ? readFileSync(f) : "no report yet: node tools/prompt-lab/night-report.mjs"); return; }
+    // Alexey's own verdicts on the morning page: his pick and a comment per key (<data>/review.json); nothing goes into the game
+    if (r === "/api/review") {
+      const f = join(dataDir, "review.json");
+      const all = existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {};
+      if (req.method === "POST") {
+        const b = (await body(req)) as { key: string; best?: string | null; comment?: string };
+        if (!SAFE.test(b.key)) return json(res, 400, { error: "bad key" });
+        const cur = { ...(all[b.key] ?? {}) };
+        if (b.best !== undefined) { if (b.best) cur.best = b.best; else delete cur.best; }
+        if (b.comment !== undefined) { if (b.comment.trim()) cur.comment = b.comment; else delete cur.comment; }
+        if (Object.keys(cur).length) all[b.key] = { ...cur, at: new Date().toISOString() }; else delete all[b.key];
+        saveJson(f, all);
+      }
+      return json(res, 200, all);
+    }
     if (r === "/sheet") { const f = join(dataDir, "_sheets", (url.searchParams.get("f") ?? "").replace(/[^\w.-]/g, "")); if (!existsSync(f)) return json(res, 404, { error: "no sheet" }); res.writeHead(200, { "content-type": "image/jpeg" }); res.end(readFileSync(f)); return; }
     if (r === "/api/list") {
       return json(res, 200, items.map((it) => {
