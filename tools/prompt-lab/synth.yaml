@@ -133,6 +133,14 @@ concepts:
           act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
           view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
           state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: body
+        title: "Его тело без неё: бледный, обычный, взрослый (без лица)"
+        count: 120
+        prompt: "1boy, solo, male focus, head out of frame, {dress}, {view}, {husband}, {room}"
+        negative: "1girl, female, feminine, androgynous, otoko no ko, curvy, narrow waist, hands on own penis, male masturbation, erection"
+        axes:
+          dress: ["nude male, {hpenis}, flaccid", "nude male, {hpenis}, flaccid, navel", "clothed male, t-shirt, (baggy pants:1.1)", "topless male, boxers", "clothed male, t-shirt, jeans"]
+          view: ["cowboy shot, standing, facing viewer, arms at sides", "lower body, standing, from side", "sitting, spread legs, lower body, facing viewer", "lying on back, from above, upper body, stomach", "standing, from behind, back, male ass"]
       - id: foot
         title: "Её нога на его члене"
         count: 60
@@ -142,35 +150,65 @@ concepts:
           state: ["erection, precum", "ejaculation, cum on feet", "two-footed footjob, erection", "stepping on penis, erection"]
 
   # ---------------------------------------------------------------- 3
-  - id: xray_inset
-    title: "Рентген окошком: врезка сбоку, где видно внутри"
-    trigger: xrinset
+  # two ways to show the inside: through the skin (Alexey's favourite) and as a side window; one LoRA, told apart by their own tags
+  - id: xray
+    title: "Рентген: член виден сквозь тело (основной вариант) и окошком сбоку"
+    trigger: xrview
     negative: "(2boys:1.3), multiple boys, 2girls, comic, speech bubble, text"
     targets:
-      - id: vag
-        title: "Вагинально, окошко без спермы"
+      - id: thru_vag
+        title: "Сквозь тело: вагинально, без спермы"
+        count: 140
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (see-through body:1.3), (x-ray:1.2), penis visible through skin, (stomach bulge:1.1), deep penetration, {pose}, {patron}, {room}"
+        negative: "cross-section, inset, multiple views, cum, internal cumshot, anal"
+        axes: &tpose
+          pose: ["cowgirl position, girl on top, facing viewer, lower body, navel", "missionary, lying on back, spread legs, from above, stomach", "standing sex, from side, stomach", "reverse cowgirl position, facing viewer, lower body, navel", "lying on back, legs up, from side, lower body"]
+      - id: thru_vag_cum
+        title: "Сквозь тело: вагинально, со спермой внутри"
+        count: 140
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (see-through body:1.3), (x-ray:1.2), penis visible through skin, (internal cumshot:1.3), cum in pussy, cum overflow, deep penetration, {pose}, {patron}, {room}"
+        negative: "cross-section, inset, multiple views, anal"
+        axes: *tpose
+      - id: thru_anal
+        title: "Сквозь тело: анально"
         count: 100
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, (see-through body:1.3), (x-ray:1.2), penis visible through skin, deep penetration, {fin}, {pose}, {patron}, {room}"
+        negative: "cross-section, inset, multiple views, vaginal, penis in pussy"
+        axes:
+          pose: ["doggystyle, from side, all fours, stomach", "reverse cowgirl position, facing viewer, lower body, navel", "lying on side, spooning, facing viewer, stomach", "standing sex, sex from behind, from side"]
+          fin: ["sweat", "internal cumshot, cum in ass, cum overflow"]
+      - id: thru_toy
+        title: "Сквозь тело: игрушка внутри"
+        count: 80
+        prompt: "1girl, solo, {look}, nude, (see-through body:1.3), (x-ray:1.2), (dildo:1.2), {where}, {pose}, pussy juice, {room}"
+        negative: "cross-section, inset, multiple views, 1boy, penis, male"
+        axes:
+          where: ["vaginal object insertion, stomach bulge", "anal object insertion"]
+          pose: ["lying on back, spread legs, from above, lower body", "squatting, facing viewer, lower body", "lying on side, facing viewer", "standing, lower body, navel"]
+      - id: inset_vag
+        title: "Окошко: вагинально, без спермы"
+        count: 70
         prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (cross-section:1.3), (inset:1.2), x-ray, uterus, cervix, deep penetration, {pose}, {patron}, {room}"
         negative: "cum, internal cumshot, anal"
         axes: &xpose
           pose: ["cowgirl position, girl on top, facing viewer, lower body", "missionary, lying on back, spread legs, from above", "doggystyle, from side, all fours", "standing sex, from side, leg lift", "reverse cowgirl position, facing viewer, lower body"]
-      - id: vag_cum
-        title: "Вагинально, окошко со спермой"
-        count: 100
+      - id: inset_vag_cum
+        title: "Окошко: вагинально, со спермой"
+        count: 70
         prompt: "1girl, 1boy, {look}, nude, hetero, sex, vaginal, (cross-section:1.3), (inset:1.2), x-ray, uterus, cervix, (internal cumshot:1.3), cum in uterus, cum overflow, deep penetration, {pose}, {patron}, {room}"
         negative: "anal"
         axes: *xpose
-      - id: anal
-        title: "Анально, окошко"
-        count: 80
+      - id: inset_anal
+        title: "Окошко: анально"
+        count: 50
         prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, (cross-section:1.3), (inset:1.2), x-ray, deep penetration, {fin}, {pose}, {patron}, {room}"
         negative: "vaginal, uterus, cervix, penis in pussy"
         axes:
           pose: ["doggystyle, from side, all fours", "from behind, bent over, ass focus", "reverse cowgirl position, facing viewer, lower body", "lying on side, spooning, facing viewer", "top-down bottom-up, from behind"]
           fin: ["sweat", "internal cumshot, cum in ass, cum overflow"]
-      - id: toy
-        title: "Игрушка внутри, окошко"
-        count: 80
+      - id: inset_toy
+        title: "Окошко: игрушка внутри"
+        count: 50
         prompt: "1girl, solo, {look}, nude, (cross-section:1.3), (inset:1.2), x-ray, (dildo:1.2), {where}, {pose}, pussy juice, {room}"
         negative: "1boy, penis, male"
         axes:
