@@ -24,8 +24,15 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "19k";
+const BUILD = "20a";
 const RESUME_KEY = "test-city.resume";
+const JOURNAL_KEY = "test-city.journal";
+/**
+ * Every move since the game started (or since a save was loaded): with it a playtest note can be played again
+ * move for move by tools/replay.ts. It goes at the end of the notes file.
+ */
+type Journal = { build: string; base: { seed: number; setup?: unknown } | { save: string }; actions: Action[]; mods?: string[] };
+const JOURNAL_MARK = "=== replay ===";
 // Characters. The browser gives a page about five million for everything it keeps: the running game, the manual save,
 // the save of the morning and the notes have to fit together, so no single one may take half of it.
 const RESUME_BUDGET = 1_500_000;
@@ -70,6 +77,24 @@ const resumed = (() => {
 // The UI only reads state and dispatches actions. No game rules live here.
 function App() {
   const [state, setState] = useState<GameState>(() => resumed?.state ?? engine.init(newSeed()));
+  const [journal, setJournalState] = useState<Journal | null>(() => {
+    try {
+      const j = JSON.parse(localStorage.getItem(JOURNAL_KEY) ?? "null") as Journal | null;
+      // only the journal of the game being resumed: same number of moves on top of its base
+      return resumed && j && Array.isArray(j.actions) ? j : null;
+    } catch {
+      return null;
+    }
+  });
+  const setJournal = (j: Journal | null) => {
+    setJournalState(j);
+    try {
+      if (j) localStorage.setItem(JOURNAL_KEY, JSON.stringify(j));
+      else localStorage.removeItem(JOURNAL_KEY);
+    } catch {
+      /* no room: the notes go without it */
+    }
+  };
   const [extra, setExtra] = useState<ModPack[]>([]);
   const [lang, setLang] = useState<Lang>("ru");
   const [debug, setDebug] = useState(false);
@@ -143,7 +168,7 @@ function App() {
     if (!text) return;
     const b = bs(state);
     const h = b.heroine;
-    const line = `[${BUILD}] день ${state.time.day}, ${clockOf(state)}, ${t(`base.phase.${state.time.phase}`)} | после: ${lastWhat || "-"} | она: энергия ${Math.round(h.energy)}, настроение ${Math.round(h.mood)}, возбуждение ${Math.round(h.arousal)}, открытость ${Math.round(h.traits.openness)}, верность ${Math.round(h.traits.fidelity)}, неудовл. ${Math.round(h.frustration)} | деньги ${b.money}, долг ${b.debt}, репутация ${Math.round(b.reputation)} | seed ${state.seed}, ход ${state.turn}\n  ${text}`;
+    const line = `[${BUILD}] день ${state.time.day}, ${clockOf(state)}, ${t(`base.phase.${state.time.phase}`)} | после: ${lastWhat || "-"} | она: энергия ${Math.round(h.energy)}, настроение ${Math.round(h.mood)}, возбуждение ${Math.round(h.arousal)}, открытость ${Math.round(h.traits.openness)}, верность ${Math.round(h.traits.fidelity)}, неудовл. ${Math.round(h.frustration)} | деньги ${b.money}, долг ${b.debt}, репутация ${Math.round(b.reputation)} | seed ${state.seed}, ход ${state.turn}${journal ? `, запись ${journal.actions.length}` : ""}\n  ${text}`;
     const next = [...notes, line];
     setNotes(next);
     try {
@@ -154,7 +179,9 @@ function App() {
   };
   const saveNotes = () => {
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([notes.join("\n\n")], { type: "text/plain;charset=utf-8" }));
+    // the moves go after the notes, on one line: tools/replay.ts reads them, a person can stop reading at the marker
+    const tail = journal ? `\n\n${JOURNAL_MARK}\n${JSON.stringify(journal)}\n` : "";
+    a.href = URL.createObjectURL(new Blob([notes.join("\n\n") + tail], { type: "text/plain;charset=utf-8" }));
     a.download = `playtest-notes-${BUILD}.txt`;
     a.click();
   };
@@ -179,6 +206,7 @@ function App() {
     if (!prev) return;
     setPast(past.slice(0, -1));
     setState(prev);
+    if (journal) setJournal({ ...journal, actions: journal.actions.slice(0, Math.max(0, journal.actions.length - 1)) });
     setLastWhat(t("ui.undo"));
   };
   // every step is kept: close the tab at any moment and come back to the same one, steps back included
@@ -222,6 +250,7 @@ function App() {
       }
       setPast([...past, state].slice(-UNDO_DEPTH));
       setState(next);
+      if (journal) setJournal({ ...journal, actions: [...journal.actions, a] });
       setLastWhat(actionLabel(a, t, lang));
     });
   const load = (json: string | null) =>
@@ -230,6 +259,8 @@ function App() {
       const got = unpackSave(json, game.mods);
       setPast(got.past.slice(-UNDO_DEPTH));
       setState(got.state);
+      // from here the moves are counted on top of the loaded game (big saves are left out: the notes would not fit)
+      setJournal(json.length < 400_000 ? { build: BUILD, base: { save: saveGame(got.state, engine) }, actions: [] } : null);
     });
   const addMod = (source: string) =>
     guard(() => {
@@ -240,6 +271,7 @@ function App() {
       setGame(next);
       setExtra(packs);
       setState(moved);
+      if (journal) setJournal({ ...journal, mods: [...new Set([...(journal.mods ?? []), pack.mod.id])] });
     });
   const readFile = (input: HTMLInputElement | null, use: (text: string) => void) => {
     const file = input?.files?.[0];
@@ -370,6 +402,7 @@ function App() {
             guard(() => {
               setPast([]);
               setState(engine.init(seed, { base: setup as never }));
+              setJournal({ build: BUILD, base: { seed, setup }, actions: [] });
             });
             setSetupOpen(false);
           }}
