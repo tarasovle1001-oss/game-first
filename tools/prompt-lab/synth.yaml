@@ -16,13 +16,14 @@ looks: # the women: ours and three others, so a concept does not get tied to her
 rooms: ["bedroom, on bed", "hotel room, on bed", "living room, couch", "bathroom", "indoors"]
 
 words:
-  husband: "mature male, (pale-skinned male:1.3), pale skin, slim male, soft body"
+  # an adult man in his thirties, plainly: "slim + pale + small" alone drifts to a boyish look (round 1, 20.11) - such frames are dropped
+  husband: "(mature male:1.3), 30s, (stubble:1.2), facial hair, very short hair, tired eyes, (pale-skinned male:1.3), pale skin, average build, soft body, (belly:1.0)"
   hpenis: "(small penis:1.3), foreskin"
   patron: "mature male, dark-skinned male, muscular male, (huge penis:1.2), veiny penis"
   men2: "(2boys:1.2), faceless male, mature male, multiple penises"
   men3: "(3boys:1.2), faceless male, mature male, multiple penises"
 neg:
-  husband: "(muscular male:1.3), abs, dark-skinned male, dark skin, large penis, huge penis, child, shota, teenage, young, boy, youthful face, wide hips, large ass, breasts, pussy"
+  husband: "(child:1.4), (shota:1.4), (teenage:1.4), (young:1.3), (boy:1.3), (youthful face:1.3), (short male:1.2), bishounen, (muscular male:1.3), abs, dark-skinned male, dark skin, large penis, huge penis, wide hips, large ass, breasts, pussy"
   patron: "pale-skinned male, small penis"
 
 concepts:
