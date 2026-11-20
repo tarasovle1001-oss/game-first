@@ -5,6 +5,8 @@ import { tracer, resetTracer, bs, husbandSees } from "@tc/base";
 import { loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
+import type { Bookmark } from "./cheats";
+import { runScenario, SCENARIOS } from "@tc/mod-cheats";
 import { NewGame } from "./newgame";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
@@ -33,6 +35,8 @@ const JOURNAL_KEY = "test-city.journal";
  */
 type Journal = { build: string; base: { seed: number; setup?: unknown } | { save: string }; actions: Action[]; mods?: string[] };
 const JOURNAL_MARK = "=== replay ===";
+const BOOKMARKS_KEY = "test-city.bookmarks";
+const BOOKMARKS_MAX = 4; // each is a whole save: the browser's room for the game is not endless
 // Characters. The browser gives a page about five million for everything it keeps: the running game, the manual save,
 // the save of the morning and the notes have to fit together, so no single one may take half of it.
 const RESUME_BUDGET = 1_500_000;
@@ -222,6 +226,41 @@ function App() {
       }
     }
   }, [state, past, setupOpen]);
+  // test starts: a new game, played up to the moment by the scenario's own moves (cheats panel)
+  const startScenario = (id: string, own: { preset?: string; mode?: string }) =>
+    guard(() => {
+      const sc = SCENARIOS.find((x) => x.id === id)!;
+      const run = runScenario(engine, sc, own);
+      setPast([]);
+      setState(run.state);
+      setJournal({ build: BUILD, base: { seed: run.seed, setup: run.setup }, actions: run.actions });
+      setSetupOpen(false);
+      setLastWhat(t(`cheats.scenario.${id}`));
+      if (!run.ok) throw new Error(t("cheats.scenario.failed", { why: run.problem ?? "?" }));
+    });
+  // bookmarks: this exact moment, to come back to as many times as needed
+  const [bookmarks, setBookmarksState] = useState<Bookmark[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) ?? "[]") as Bookmark[];
+    } catch {
+      return [];
+    }
+  });
+  const setBookmarks = (list: Bookmark[]) =>
+    guard(() => {
+      localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(list)); // throws when there is no room: said on screen, nothing is lost
+      setBookmarksState(list);
+    });
+  const addBookmark = () =>
+    setBookmarks([...bookmarks, { id: Date.now(), label: `${t("ui.day.short", { day: state.time.day })} ${clockOf(state)} · ${t(`base.phase.${state.time.phase}`)}${lastWhat ? ` · ${lastWhat}` : ""}`, save: saveGame(state, engine), journal }].slice(-BOOKMARKS_MAX));
+  const goBookmark = (bm: Bookmark) =>
+    guard(() => {
+      setPast([]);
+      setState(loadGame(bm.save, game.mods).state);
+      setJournal((bm.journal as Journal | null) ?? null);
+      setLastWhat(bm.label);
+    });
+  const delBookmark = (id: number) => setBookmarks(bookmarks.filter((x) => x.id !== id));
   const saveInput = useRef<HTMLInputElement>(null);
   const modInput = useRef<HTMLInputElement>(null);
   const t = useMemo(() => game.translator(lang), [lang, extra]);
@@ -471,7 +510,7 @@ function App() {
           <ActionMenu state={state} t={t} lang={lang} act={act} />
         </aside>
       </div>
-      {debug && <CheatPanel {...common} onAct={act} onClose={() => setDebug(false)} />}
+      {debug && <CheatPanel {...common} onAct={act} onClose={() => setDebug(false)} onScenario={startScenario} bookmarks={bookmarks} onBookmarkAdd={addBookmark} onBookmarkGo={goBookmark} onBookmarkDel={delBookmark} />}
       {moneyOpen && (
         <div className="overlay" onClick={() => setMoneyOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>

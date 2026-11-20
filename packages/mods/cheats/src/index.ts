@@ -1,6 +1,9 @@
 // Cheats for testing, written as a mod. Nothing here is offered to the player or to bots:
 // the actions are never enumerated, the debug panel dispatches them directly and `accepts` validates them.
-import { bs } from "@tc/base";
+import { attendTo, bs, clamp, content, generatePatron, HOTEL_ROOMS, seat } from "@tc/base";
+import { CHEAT_STAGE } from "./scenarios";
+export { CHEAT_STAGE, SCENARIOS, runScenario } from "./scenarios";
+export type { Scenario } from "./scenarios";
 import type { Dict, GameState, Mod } from "@tc/core";
 
 export const CHEAT_SET = "cheats/set";
@@ -81,7 +84,7 @@ export const cheatsMod: Mod = {
         const last = path.pop()!;
         const target = path.reduce((o: any, k) => o[k], bs(ctx.state) as any);
         target[last] = last === "money" || last === "debt" || last === "stock" ? Math.round(value) : value;
-        if (last === "stretch") target.peak = Math.max(target.peak, value); // keep the body rule: peak >= stretch
+        if (last === "stretch" && typeof target.peak === "number") target.peak = Math.max(target.peak, value); // her body keeps peak >= stretch; his has no peak
       },
     });
 
@@ -130,6 +133,129 @@ export const cheatsMod: Mod = {
       },
     });
 
+    // "Stage": what a test start cannot simply wait for. Only scenarios use it (see scenarios.ts).
+    const STAGES = ["group", "tray_now", "guest_hot", "ask_reluctant", "lodger_up", "her_to_lodger", "sauna", "sauna_guest", "rich", "drinker", "toys", "solo_soon", "her_wants", "restless"];
+    api.actions.register({
+      id: CHEAT_STAGE,
+      labelKey: "cheats.stage",
+      enumerate: () => [],
+      accepts: (state, action) => {
+        const what = String(action.payload?.what);
+        if (!STAGES.includes(what)) return false;
+        const sh = bs(state).shift;
+        if (["group", "tray_now", "guest_hot", "ask_reluctant", "lodger_up", "her_to_lodger", "sauna_guest", "rich"].includes(what)) return state.time.phase === "shift" && !!sh;
+        if (what === "solo_soon") return state.time.phase === "prep" && !!bs(state).day;
+        if (what === "her_wants" || what === "restless") return state.time.phase === "night" && !!bs(state).night;
+        return true;
+      },
+      apply(ctx, action) {
+        const b = bs(ctx.state);
+        const h = b.heroine;
+        const sh = b.shift;
+        const what = String(action.payload!.what);
+        const guest = (tune: (p: ReturnType<typeof generatePatron>) => void, at?: string) => {
+          const p = generatePatron(ctx);
+          p.memory.visits = 2;
+          p.memory.lastDay = ctx.state.time.day;
+          tune(p);
+          seat(ctx, p, false, { ...(at ? { at } : {}), stay: 240 });
+          const v = sh!.visits.find((x) => x.patron === p.id)!;
+          v.served = 1;
+          v.sinceOrder = 0;
+          return { p, v };
+        };
+        switch (what) {
+          case "group":
+            if (action.payload!.sauna && !b.upgrades.includes("sauna")) b.upgrades.push("sauna");
+            sh!.groupAt = sh!.tick + 1;
+            break;
+          case "tray_now":
+            if (sh!.group) sh!.group.nextTray = sh!.tick;
+            break;
+          case "guest_hot": {
+            const { v } = guest((p) => {
+              p.memory.interest = 85;
+              p.memory.affinity = 40;
+              p.memory.tier = Math.max(p.memory.tier, 2);
+            });
+            v.heat = 50;
+            v.tier = 2;
+            break;
+          }
+          case "ask_reluctant": {
+            const v = sh!.visits.find((x) => !x.group) ?? guest((p) => void (p.memory.interest = 80)).v;
+            b.ask = { patron: v.patron, act: "grope", tick: sh!.tick, tone: "reluctant" };
+            ctx.state.where.wife = ctx.state.where.husband!;
+            ctx.log("log.ask.her.reluctant", { name: `@name:${b.patrons[v.patron]!.name}`, act: "act.grope" });
+            break;
+          }
+          case "lodger_up": {
+            const room = HOTEL_ROOMS.find((r) => !b.lodgers[r]) ?? HOTEL_ROOMS[0]!;
+            const { p, v } = guest((x) => {
+              x.memory.interest = 70;
+              x.memory.affinity = 35;
+            }, room);
+            b.lodgers[room] = { patron: p.id, nights: 2 };
+            v.atUntil = sh!.tick + 90;
+            break;
+          }
+          case "her_to_lodger": {
+            const entry = Object.entries(b.lodgers).find(([room, l]) => ctx.state.where[l.patron] === room);
+            if (entry) attendTo(ctx, entry[0], 10, "room", entry[1].patron);
+            break;
+          }
+          case "sauna":
+            if (!b.upgrades.includes("sauna")) b.upgrades.push("sauna");
+            break;
+          case "sauna_guest": {
+            if (!b.upgrades.includes("sauna")) b.upgrades.push("sauna");
+            const { v } = guest((p) => {
+              p.memory.interest = 75;
+              p.memory.affinity = 30;
+            }, "cafe.sauna");
+            v.atUntil = sh!.tick + 60;
+            v.heat = 60;
+            v.drunk = 45;
+            v.sinceOrder = content.balance.shift.orderEveryMinutes; // he wants his next one now
+            break;
+          }
+          case "rich":
+            guest((p) => {
+              p.rich = true;
+              p.approach = "pay";
+              p.traits.generosity = 95;
+              p.memory.interest = 70;
+            });
+            break;
+          case "drinker":
+            h.latents.likes_drink = true;
+            break;
+          case "toys":
+            for (const t of content.day.shop.toys) if (!b.toys.includes(t.id)) b.toys.push(t.id);
+            break;
+          case "solo_soon":
+            b.soloDay = undefined;
+            b.solo = { at: b.day!.left - 1, zone: "vagina" };
+            h.frustration = Math.max(h.frustration, 40);
+            break;
+          case "her_wants":
+            b.night!.wants = true;
+            b.night!.scene = "wants_him";
+            b.night!.herAsleep = undefined;
+            h.arousal = Math.max(h.arousal, 60);
+            h.marriage.desire = Math.max(h.marriage.desire, 70);
+            h.energy = Math.max(h.energy, 60);
+            break;
+          case "restless":
+            h.arousal = clamp(Math.max(h.arousal, 70));
+            h.satisfied = 0;
+            h.frustration = Math.max(h.frustration, 50);
+            b.night!.smallAt = (b.night!.minute ?? 0) + 70;
+            break;
+        }
+      },
+    });
+
     // Jumps to closing time: the rest of the evening simply does not happen.
     api.actions.register({
       id: CHEAT_END_SHIFT,
@@ -164,6 +290,33 @@ export const cheatsLocales: Record<string, Dict> = {
     "cheats.preset.calm": "Annoyance 0",
     "cheats.preset.nofeel": "Clear bad feelings",
     "cheats.hint": "F9 closes · Backspace undoes",
+    "cheats.stage": "Stage a moment",
+    "cheats.scenarios": "Test starts",
+    "cheats.scenarios.hint": "A new game, played up to the moment. Wife and mode: as in the scenario, or your pick",
+    "cheats.scenario.wife": "Wife",
+    "cheats.scenario.mode": "Mode",
+    "cheats.scenario.own": "as in the scenario",
+    "cheats.scenario.failed": "Did not get there: {why}",
+    "cheats.bookmarks": "Bookmarks",
+    "cheats.bookmark.add": "Bookmark this moment",
+    "cheats.bookmark.go": "Back to it",
+    "cheats.bookmark.del": "Delete",
+    "cheats.bookmark.none": "None yet",
+    "cheats.scenario.company_lounge": "Company at the door (back room)",
+    "cheats.scenario.company_sauna": "Company at the door (sauna)",
+    "cheats.scenario.company_tray": "Company calls for a tray",
+    "cheats.scenario.hot_guest": "A worked-up guest in the hall",
+    "cheats.scenario.reluctant_ask": "\"I don't like it, what do I do?\"",
+    "cheats.scenario.lodger_up": "Lodger upstairs, she goes to him",
+    "cheats.scenario.sauna_guest": "A guest in the sauna, she brings a drink",
+    "cheats.scenario.husband_away": "You are in town, the evening started without you",
+    "cheats.scenario.rich_guest": "A rich guest",
+    "cheats.scenario.drunk_evening": "A drinking evening",
+    "cheats.scenario.her_solo": "Her alone in the afternoon",
+    "cheats.scenario.his_solo": "You alone, toys in the drawer",
+    "cheats.scenario.night_wants": "Night: she wants you",
+    "cheats.scenario.femdom": "Night: femdom",
+    "cheats.scenario.small_hours": "Night: the small hours (sleep by steps)",
   },
   ru: {
     "cheats.set": "Задать значение",
@@ -185,5 +338,32 @@ export const cheatsLocales: Record<string, Dict> = {
     "cheats.preset.calm": "Раздражение 0",
     "cheats.preset.nofeel": "Убрать плохие чувства",
     "cheats.hint": "F9 закрыть · Backspace отменить",
+    "cheats.stage": "Подстроить момент",
+    "cheats.scenarios": "Тест-старты",
+    "cheats.scenarios.hint": "Новая игра, сразу доигранная до момента. Жена и режим: как в сценарии или свои",
+    "cheats.scenario.wife": "Жена",
+    "cheats.scenario.mode": "Режим",
+    "cheats.scenario.own": "как в сценарии",
+    "cheats.scenario.failed": "Не дошло до момента: {why}",
+    "cheats.bookmarks": "Закладки",
+    "cheats.bookmark.add": "Запомнить этот момент",
+    "cheats.bookmark.go": "Вернуться",
+    "cheats.bookmark.del": "Удалить",
+    "cheats.bookmark.none": "Пока нет",
+    "cheats.scenario.company_lounge": "Компания у двери (малый зал)",
+    "cheats.scenario.company_sauna": "Компания у двери (сауна)",
+    "cheats.scenario.company_tray": "Компания зовёт с подносом",
+    "cheats.scenario.hot_guest": "Заведённый гость в зале",
+    "cheats.scenario.reluctant_ask": "\"Мне не нравится, что делать?\"",
+    "cheats.scenario.lodger_up": "Постоялец наверху, она идёт к нему",
+    "cheats.scenario.sauna_guest": "Гость в сауне, она несёт напиток",
+    "cheats.scenario.husband_away": "Ты в городе, смена началась без тебя",
+    "cheats.scenario.rich_guest": "Богатый гость",
+    "cheats.scenario.drunk_evening": "Пьяный вечер",
+    "cheats.scenario.her_solo": "Её сольное днём",
+    "cheats.scenario.his_solo": "Твоё сольное, игрушки в ящике",
+    "cheats.scenario.night_wants": "Ночь: она хочет тебя",
+    "cheats.scenario.femdom": "Ночь: фемдом",
+    "cheats.scenario.small_hours": "Ночь: мелкие часы (сон по шагам)",
   },
 };
