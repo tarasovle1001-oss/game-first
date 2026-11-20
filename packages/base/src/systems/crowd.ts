@@ -116,7 +116,8 @@ export function registerCrowd(api: ModApi) {
     // 1. one more comes over
     if (crowd.length + (enc.men?.length ?? 0) < C.max) {
       const others = sh.visits
-        .filter((v) => v.stay > 0 && v.patron !== enc.patron && !crowd.includes(v.patron) && !(enc.men ?? []).some((m) => m.patron === v.patron) && b.patrons[v.patron])
+        // only men in that room: the other tables in the hall, the rest of his company in the back room
+        .filter((v) => v.stay > 0 && v.patron !== enc.patron && !crowd.includes(v.patron) && !(enc.men ?? []).some((m) => m.patron === v.patron) && b.patrons[v.patron] && (ctx.state.where[v.patron] === enc.loc || (ctx.state.where[v.patron] === HALL && (enc.loc === HALL || !PUBLIC.has(enc.loc)))))
         .sort((x, y) => b.patrons[y.patron]!.memory.interest + (y.heat ?? 0) - (b.patrons[x.patron]!.memory.interest + (x.heat ?? 0)) || x.patron.localeCompare(y.patron));
       const next = others[0];
       if (next) {

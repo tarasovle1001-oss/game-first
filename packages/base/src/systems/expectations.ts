@@ -55,7 +55,8 @@ export function registerExpectations(api: ModApi) {
   api.events.on("encounter:started", (ctx, e) => {
     const b = bs(ctx.state);
     const { patron, act, witnessed, tier } = e.payload as { patron: string; act: string; witnessed: boolean; tier: number };
-    if (!witnessed || tier < 2 || b.caught) return;
+    // from flirting up: he sees it, and whatever he does - including nothing - is an answer (a drink is just a drink)
+    if (!witnessed || tier < 1 || act === "drink" || b.caught) return;
     settle(ctx); // an earlier moment he let pass
     b.reaction = { patron, act, reacted: false };
     if (b.shift) b.shift.interrupt = true;
@@ -65,7 +66,11 @@ export function registerExpectations(api: ModApi) {
     const b = bs(ctx.state);
     const r = b.reaction;
     if (!r) return;
-    if (!r.reacted) nudge(ctx, r.act, E.ignoreGain, E.ignoreCap);
+    if (!r.reacted) {
+      // he saw it and said nothing: to her that is a quiet yes
+      nudge(ctx, r.act, E.ignoreGain, E.ignoreCap);
+      ctx.log("log.react.silent", { act: `act.${r.act}` }, ["unseen"]);
+    }
     b.reaction = null;
   };
   api.events.on("encounter:ended", (ctx) => settle(ctx));

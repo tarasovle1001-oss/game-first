@@ -4,12 +4,13 @@ wishes:               # "what I want from you today". needs = openness she needs
   sexier:     { read: 3, consent: 5, upTo: 4, tip: 0.08, needs: 35 }
   dress_bold: { outfit: 8, needs: 40 }
   friendlier: { read: 2, consent: 9, upTo: 4, tip: 0.12, needs: 0 }
+  polite:     { read: 1, byCharacter: 8, upTo: 9, tip: 0.04, needs: 0 } # "be polite to the guests, do what is needed": neutral words, she reads them by who she is - a modest wife as "keep it proper", a curious one as leave to go along
   more_coin:  { read: 3, offer: 0.35, tip: 0.05, needs: 45 }        # what a guest's money is worth to her grows by this share
   watch_you:  { read: 4, consent: 8, upTo: 6, seen: true, expect: 25, needs: 55 }   # only counts where he can see
   your_call:  { read: 5, expectAll: 40, needs: 50 }
   tone_down:  { consent: -14, tip: -0.1, needs: 0 }
   cover_up:   { needs: 0 }
-against: { tone_down: [sexier, friendlier, watch_you, your_call, more_coin], cover_up: [dress_bold] }
+against: { tone_down: [sexier, friendlier, watch_you, your_call, more_coin, polite], cover_up: [dress_bold] }
 wishRead: # a wish is not an order with a list attached: what it means is hers to decide, and she decides by who she is
   say: 60            # how fresh a wish is once said; said again it is topped up to 100
   full: 60           # from this freshness it counts in full; below, by share
@@ -52,6 +53,7 @@ ask:                  # she asks him before she does it
   explain: { resent: -1.5, trust: 2 }
   because: { resent: 2, anger: 8, trust: -3 }
   relent: { trust: 1, delight: 3 }
+  reluctant: { fidelity: 55, upToTier: 4, chance: 0.5, yes: { resent: 1, trust: -1 }, yesTakes: { trust: 1 }, no: { tenderness: 4, trust: 2 }, later: { trust: 1 } } # a decent wife who does not want it also comes to him: what is she to do about this man
 stance:               # where he stands on one man, said after something happened
   free: { consent: 12 }
   polite: { consent: -25, fromTier: 2 }

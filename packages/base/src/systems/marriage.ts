@@ -118,13 +118,22 @@ export function registerMarriage(api: ModApi) {
     m.desire = clamp(m.desire + (desire > 0 ? (desire * H.desireGain * (100 - m.desire)) / 50 : desire));
     m.resent = clamp(m.resent + resent);
   };
+  /** The words of her "no": by its reason; right after they were at it, it is "not again already", whatever the rows say. */
+  const refuseLine = (state: GameState) => {
+    const b = bs(state);
+    const key = refusalKey("log.husband.refuse", b.proposals.at(-1)?.rows ?? []);
+    const plain = key === "log.husband.refuse" || key.endsWith(".cold") || key.endsWith(".mood") || key.endsWith(".plain");
+    return plain && (b.night?.had ?? 0) > 0 ? "log.husband.refuse.again" : key;
+  };
   const ask = (ctx: Ctx, actId: string, bonus = 0, why = "going", loc: string = BEDROOM, more: [string, number][] = []) => {
     const b = bs(ctx.state);
     const input: ConsentInput = { act: actId, partner: HUSBAND, loc, offer: 0, pressure: 0 };
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
     const extra = [...(bonus ? [[why, bonus] as [string, number]] : []), ...more.filter(([, v]) => v !== 0)];
     const total = res.total + extra.reduce((s, [, v]) => s + v, 0);
-    const verdict = verdictOf(total);
+    // she came to him wanting it tonight: no hanging back over the ordinary things
+    const raw = verdictOf(total);
+    const verdict = raw === "hesitant" && b.night?.wants && !HIS_ACTS.includes(actId) ? "eager" : raw;
     b.proposals.push({ day: ctx.state.time.day, tick: -1, patron: HUSBAND, act: actId, loc, verdict, seen: true, total, rows: [...res.rows, ...extra.map(([k, value]) => ({ id: `consent.${k}`, labelKey: `factor.consent.${k}`, value }))] });
     if (b.proposals.length > 12) b.proposals.shift();
     setOutcome(ctx, outcomeOf(verdict), HUSBAND);
@@ -282,7 +291,7 @@ export function registerMarriage(api: ModApi) {
         b.night!.scene = "cold_back";
         feel(ctx, 0, 1);
         // the "no" says why: whatever pulled hardest against it
-        const why = refusalKey("log.husband.refuse", b.proposals.at(-1)?.rows ?? []);
+        const why = refuseLine(ctx.state);
         ctx.log(why, { act: `action.night.${act.id}` }, slurTags(ctx.state, why));
         ctx.emit("husband:refused", { act: act.id });
         return;
@@ -354,7 +363,7 @@ export function registerMarriage(api: ModApi) {
       // their own bed is the easy place; an empty room is nearly as good; a room full of guests is another matter
       const more: [string, number][] = [];
       if (pub) more.push(["plain_sight", -Math.max(0, N.public.base + (100 - h.traits.openness) * N.public.perClosed - (h.latents.exhibitionist !== undefined ? N.public.exhibitionist : 0))]);
-      else if (here && loc !== BEDROOM) more.push(["elsewhere", -N.elsewhere]);
+      else if (here && !loc.startsWith("home.")) more.push(["elsewhere", -N.elsewhere]); // their own rooms upstairs (the bathroom too) are as private as the bed
       else if (!here) more.push(["work", -N.work]); // leaving a full room to itself is not nothing for her
       const verdict = ask(ctx, act.id, 0, "going", loc, more);
       if (verdict === "refuse") {
@@ -362,7 +371,7 @@ export function registerMarriage(api: ModApi) {
         if (pub) ctx.log("log.upstairs.no.public");
         else if (!here) ctx.log("log.upstairs.no");
         else {
-          const why = refusalKey("log.husband.refuse", b.proposals.at(-1)?.rows ?? []);
+          const why = refuseLine(ctx.state);
           ctx.log(why, { act: `action.night.${act.id}` }, slurTags(ctx.state, why));
         }
         ctx.emit("husband:refused", { act: act.id });
@@ -524,12 +533,22 @@ export function registerMarriage(api: ModApi) {
     if (actById(sex.act).lines && sex.turns % 2 === 0) ctx.log(`log.act.${sex.act}.turn.${ctx.rng.int(1, 3)}`);
     sex.his = clamp(sex.his + his);
     sex.hers = clamp(sex.hers + hers);
+    // he goes over in the first moves: it is over before she gets there, never both at once
+    if (sex.his >= 100 && sex.turns <= 2 && !sex.lead) sex.hers = Math.min(sex.hers, 99);
     if (sex.hers >= 100) {
       sex.came += 1;
       sex.hers = B.afterOrgasm;
       orgasm(ctx);
       ctx.log(sex.act === "rimming_her" ? "log.bed.her.rimming_her" : "log.bed.she_comes");
       if (sex.act === "rimming_her") b.night!.scene = "came_rimming_her";
+    }
+    if (sex.soft && HIS_ACTS.includes(sex.act)) {
+      // soft or not, what is done to him from behind still gets him there: no erection needed for that
+      if (sex.his >= 100) {
+        finish(ctx, "auto");
+        return true;
+      }
+      return false;
     }
     if (sex.soft) {
       // nothing of his to wait for: it lasts until she is there, or until she has had enough of trying
@@ -552,7 +571,9 @@ export function registerMarriage(api: ModApi) {
     // he goes soft: she is not there, or there is nothing to feel, or there is too much between them
     const soft = softChance(ctx.state) + (sex.out ? B.soft.whenOut : 0) + (tightness(ctx.state, sex.act) < 0.3 ? B.soft.whenLoose : 0) + b.heroine.marriage.resent * B.soft.perResent + (tired(ctx.state) ? content.day.rhythm.him.softTired : 0);
     const hisTurn = !GIVES_HER.has(sex.act) && !SOFT_ACTS.includes(sex.act); // it does not matter while he is doing something for her, or she to him with nothing asked of him
-    const slipping = hisTurn && sex.turns >= 2 && sex.his < B.soft.belowHis && !sex.byHand && !sex.saved && soft > 0 && ctx.rng.chance(soft);
+    // once he has felt it going and did not catch it, it goes: the warning is the only chance he gets
+    const doomed = sex.warned === "soft" && !sex.saved && hisTurn && !sex.byHand;
+    const slipping = doomed || (hisTurn && sex.turns >= 2 && sex.his < B.soft.belowHis && !sex.byHand && !sex.saved && soft > 0 && ctx.rng.chance(soft));
     // the first time he only feels it going: one move to do something about it
     if (slipping && !sex.warned) {
       sex.warned = "soft";
@@ -673,7 +694,8 @@ export function registerMarriage(api: ModApi) {
     }
     // close enough when he finishes: it tips her over
     const earlier = sex.came > 0; // she already came while it lasted: the ending is his
-    if (sex.came === 0 && sex.hers >= B.herCloseAt && sex.pleasure >= 30) { // not from a man she cannot feel
+    // not from a man she cannot feel, and not when he was gone in a moment: a too-early end leaves her where she was
+    if (sex.came === 0 && sex.hers >= B.herCloseAt && sex.pleasure >= 30 && sex.turns > 2 && sex.warned !== "early") {
       sex.came = 1;
       orgasm(ctx);
     }
@@ -759,6 +781,7 @@ export function registerMarriage(api: ModApi) {
     if (how === "ruined") {
       // she lets go of him at the last moment: it happens, and it is worth nothing to him
       b.husband.cumOn = content.look.marks.onHim;
+      b.husband.ruinedTurn = ctx.state.turn; // it takes almost nothing off how much he wants (rhythm, bed:ended)
       ctx.emit("bed:her_ending", { how });
       ctx.log("log.bed.lead.end.ruined");
     } else {
@@ -813,6 +836,8 @@ export function registerMarriage(api: ModApi) {
     const r = rates(ctx.state);
     // done: she has had hers, or it has gone on long enough
     if ((sex.came > 0 && (sex.his >= B.cumAt || sex.turns >= LEAD.minTurns)) || sex.turns >= LEAD.maxTurns) return void herFinish(ctx);
+    // he is close and what they are doing is all for him: nothing in it for her to wait for, she lets him have it
+    if (sex.his >= LEAD.holdAt && sex.came === 0 && r.hers <= 0) return void herFinish(ctx);
     // he is close and she is not there yet: she holds him back, and sometimes he cannot be held
     if (sex.his >= LEAD.holdAt && sex.came === 0) {
       if (ctx.rng.chance(LEAD.slipPerTurn * Math.min(2, 12 / b.husband.minutes))) {
@@ -854,7 +879,11 @@ export function registerMarriage(api: ModApi) {
     enumerate(state) {
       const n = bs(state).night;
       if (state.time.phase !== "night" || !n || n.sex || !n.after || bs(state).complaint) return [];
-      const dos = [...(PULL_OUT.has(n.after) || n.after === "face" ? ["lick_it"] : []), "clean_me"];
+      // "clean me with your mouth" is for a wife who would do it: not one who has been saying no to him all night
+      const h = bs(state).heroine;
+      const A = content.intimacy.after;
+      const willing = h.traits.openness >= A.willingOpenness || h.latents.oral_fixation !== undefined || h.latents.submissive !== undefined || (bs(state).mode === "open" && bs(state).power >= A.reversePower);
+      const dos = [...(PULL_OUT.has(n.after) || n.after === "face" ? ["lick_it"] : []), ...(willing && (n.noes ?? 0) === 0 ? ["clean_me"] : [])];
       return dos.map((d) => ({ type: AFTER, payload: { do: d } }));
     },
     apply(ctx, action) {

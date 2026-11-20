@@ -44,19 +44,19 @@ talk: # small things between the two of them; each once a day
     - { id: joke, group: chat, effects: { mood: 4 }, needs: { stat: mood, min: 35 }, fail: { mood: -1 } }
     - { id: flirt_her, group: chat, effects: { arousal: 4, desire: 1 }, needs: { stat: desire, min: 40 }, fail: { mood: -1 } }
     - { id: dirty, group: chat, effects: { arousal: 8 }, needs: { stat: openness, min: 40, publicExtra: 20 }, fail: { mood: -3, resent: 0.5 } }
-    - { id: hug, group: touch, effects: { mood: 2, desire: 0.5, resent: -0.5 } }
-    - { id: hold_hand, group: touch, effects: { mood: 1, desire: 0.5 } }
-    - { id: shoulders, group: touch, effects: { energy: 6, mood: 2 } }
+    - { id: hug, group: touch, effects: { mood: 2, desire: 0.5, resent: -0.5 }, light: true }
+    - { id: hold_hand, group: touch, effects: { mood: 1, desire: 0.5 }, light: true }
+    - { id: shoulders, group: touch, effects: { energy: 6, mood: 2 }, light: true }
     - { id: kiss_her, group: touch, effects: { arousal: 4, desire: 1 }, needs: { stat: desire, min: 30, publicExtra: 10 }, fail: { resent: 0.5 } }
-    - { id: grab_ass, group: touch, effects: { arousal: 5 }, needs: { stat: openness, min: 35, publicExtra: 20 }, fail: { mood: -3, resent: 1 } }
+    - { id: grab_ass, group: touch, effects: { arousal: 5 }, needs: { stat: desire, min: 15, publicExtra: 15 }, fail: { mood: -1, resent: 0.3 }, light: true } # a slap on the behind from her own husband: hardly worth a fuss
     - { id: praise, group: chat, effects: { mood: 3, desire: 0.5 } }
     - { id: chatter, group: chat, effects: { mood: 1.5, resent: -0.3 }, lines: 16 } # talk about nothing: worth little, costs nothing, and can be had on a walk
     - { id: demean, group: chat, effects: {} }            # what it does depends on who she is: see terms
-    - { id: stroke_hair, group: touch, effects: { mood: 2, desire: 0.5 } }
+    - { id: stroke_hair, group: touch, effects: { mood: 2, desire: 0.5 }, light: true }
     - { id: fondle_breast, group: touch, effects: { arousal: 6 }, needs: { stat: desire, min: 40, publicExtra: 30 }, fail: { mood: -2, resent: 0.5 } }
     - { id: under_skirt, group: touch, effects: { arousal: 9 }, needs: { stat: desire, min: 50, publicExtra: 35 }, fail: { mood: -3, resent: 1 } }
     - { id: guide_hand, group: touch, effects: { arousal: 3, desire: 0.5 }, needs: { stat: desire, min: 45, publicExtra: 30 }, fail: { mood: -2, resent: 0.5 } } # he puts her hand on himself, through the clothes
-    - { id: cuddle, group: touch, effects: { mood: 3, desire: 1, resent: -0.5 }, phases: [prep, night], room: home.bedroom }
+    - { id: cuddle, group: touch, effects: { mood: 3, desire: 1, resent: -0.5 }, phases: [prep, night], room: home.bedroom, light: true }
     - { id: carry_bed, group: touch, effects: { mood: 3, arousal: 4, desire: 1 }, needs: { stat: desire, min: 35 }, fail: { mood: -1 }, phases: [night], notRoom: home.bedroom }
     - { id: pour_drink, group: touch, effects: { drunk: 10, mood: 2 }, stock: 1, phases: [shift, night] }
   groups: # what he can say "go on" or "don't" about
@@ -119,7 +119,9 @@ talk: # small things between the two of them; each once a day
     guestEager: 1        # ...she was glad to; even that adds up
     guestPushed: 4       # he would not take the no
     guestPushedFar: 8
-    husbandTouch: 2      # each hug, kiss, squeeze from him
+    husbandTouch: 2      # each hug, kiss, squeeze from him (light ones - a hug, a hand, a slap on the behind - cost nothing while she does not despise him)
+    lightContempt: 20    # contempt from which even a hug from him grates
+    lightResent: 35      # resentment from which it does too
     husbandAsk: 3        # asking her to undress
     husbandRefused: 5    # asking for what she turns down
     cameRelief: 10       # coming takes some of it away

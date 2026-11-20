@@ -93,6 +93,8 @@ export function registerRhythm(api: ModApi) {
 
   // --- the night has a clock -------------------------------------------------------------------
   api.events.on("husband:refused", (ctx) => {
+    const n1 = bs(ctx.state).night;
+    if (n1) n1.noes = (n1.noes ?? 0) + 1; // what she has said no to tonight colours what she says yes to after
     passNight(ctx, R.nightCosts.ask);
     changeHim(ctx, "mood", R.him.mood.refused, "refused");
   });
@@ -113,11 +115,15 @@ export function registerRhythm(api: ModApi) {
   api.events.on("couple:talk", (ctx) => passNight(ctx, R.nightCosts.talk));
   api.events.on("bed:ended", (ctx, e) => {
     const { outcome } = e.payload as { outcome: string };
+    const n0 = bs(ctx.state).night;
+    if (n0 && !["dropped", "stopped"].includes(outcome)) n0.had = (n0.had ?? 0) + 1; // for what is said after
     passNight(ctx, outcome === "by_hand" ? R.nightCosts.self : R.nightCosts.ask);
     changeHim(ctx, "energy", -R.him.bed, "bed");
     if (!["dropped", "went_soft", "stopped"].includes(outcome)) {
-      changeHim(ctx, "mood", R.him.mood.came, "came");
-      changeHim(ctx, "arousal", -100, "came");
+      const ruined = bs(ctx.state).husband.ruinedTurn === ctx.state.turn;
+      changeHim(ctx, "mood", ruined ? 0 : R.him.mood.came, "came");
+      // a ruined one is spent and still wanting: it takes the edge off and no more
+      changeHim(ctx, "arousal", ruined ? -content.body.his.ruinedRelief : -100, ruined ? "ruined" : "came");
     }
   });
   api.events.on("husband:came_touch", (ctx) => changeHim(ctx, "arousal", -100, "came"));
@@ -191,8 +197,10 @@ export function registerRhythm(api: ModApi) {
       const bed = late + (n.minute ?? 0);
       const his = Math.max(0, wakeMinute(ctx.state) - bed) / 60;
       const hers = Math.max(0, R.herWake * 60 - (late + (n.herAsleep ?? n.minute ?? 0))) / 60;
-      changeHim(ctx, "energy", Math.round(his * R.energyPerHour.him), "sleep");
-      changeHeroine(ctx, "energy", Math.round(hers * R.energyPerHour.her), "sleep");
+      // a short night is worth less than its hours: the first ones only take the edge off
+      const restOf = (h: number) => Math.min(h, R.sleep.fullAfter) * R.sleep.shortShare + Math.max(0, h - R.sleep.fullAfter);
+      changeHim(ctx, "energy", Math.round(restOf(his) * R.energyPerHour.him), "sleep");
+      changeHeroine(ctx, "energy", Math.round(restOf(hers) * R.energyPerHour.her), "sleep");
       // he lay down wanting and got nothing: it is still there in the morning
       if (himOf(ctx.state).arousal >= 40) changeHim(ctx, "arousal", R.him.arousal.carried, "unspent");
       b.slept = { him: Math.round(his * 10) / 10, her: Math.round(hers * 10) / 10 };
@@ -291,6 +299,7 @@ export function registerRhythm(api: ModApi) {
       h.washed = stamp(ctx.state);
       h.cumOn = 0;
       changeHim(ctx, "mood", R.bath.washMood, "wash");
+      changeHim(ctx, "energy", R.bath.washEnergy, "wash"); // a shower wakes him up a little
       ctx.log("log.bath.wash");
       spend(ctx, R.bath.washMinutes);
     },
@@ -339,6 +348,8 @@ export function registerRhythm(api: ModApi) {
       const warm = b.heroine.marriage.desire >= 50;
       changeHim(ctx, "arousal", warm ? 12 : 6, "bath");
       changeHim(ctx, "mood", 3, "bath");
+      changeHim(ctx, "energy", R.bath.washEnergy, "bath");
+      changeHeroine(ctx, "energy", R.bath.washEnergy, "bath");
       changeHeroine(ctx, "arousal", warm ? 8 : 2, "bath");
       changeHeroine(ctx, "mood", 2, "bath");
       ctx.log(warm ? "log.bath.together.warm" : "log.bath.together");

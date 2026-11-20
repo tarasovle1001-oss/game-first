@@ -7,9 +7,8 @@ import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Patron, Visit } from "../state";
 import { annoy } from "./annoy";
-import { resolveBody } from "./body";
 import { addHerTips, addMoney, addReputation } from "./economy";
-import { actById, CONSENT_FORMULA, gate, isIntimate, startWith, verdictOf } from "./encounters";
+import { actById, CONSENT_FORMULA, endEncounter, gate, isIntimate, startWith, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { EMOTIONS, feel, trustOf } from "./mind";
@@ -17,7 +16,7 @@ import type { Emotion } from "./mind";
 import { generatePatron } from "./patrons";
 import { HALL, husbandSees } from "./places";
 import { changeHim } from "./rhythm";
-import { runUnattended } from "./shift";
+import { attendTo, endAttend, leave as leaveVisit, runUnattended, seat } from "./shift";
 
 export const DEAL = "base/deal";
 export const GROUP = "base/group";
@@ -244,7 +243,14 @@ export function registerFloor(api: ModApi) {
     const b = bs(ctx.state);
     const sh = b.shift!;
     const g = sh.group!;
+    const venue = g.sauna ? SAUNA : LOUNGE;
+    if (b.encounter && b.encounter.loc === venue) endEncounter(ctx);
+    if (sh.attend?.loc === venue) endAttend(ctx);
     sh.group = undefined;
+    // they get up and go, all of them
+    const members = sh.visits.filter((v) => v.group);
+    for (const v of members) leaveVisit(ctx, v, "done");
+    sh.visits = sh.visits.filter((v) => !v.group);
     if (g.rounds === 0) {
       addReputation(ctx, -2 * Gr.restlessReputation);
       ctx.log("log.group.leave.nothing");
@@ -257,8 +263,11 @@ export function registerFloor(api: ModApi) {
   };
   /** The company is sent off at the door, or left standing there until it leaves. */
   const turnAway = (ctx: Ctx, waited: boolean) => {
-    const sh = bs(ctx.state).shift!;
+    const b = bs(ctx.state);
+    const sh = b.shift!;
+    const lead = sh.group?.lead;
     sh.group = undefined;
+    if (lead && !sh.visits.some((v) => v.patron === lead)) delete b.patrons[lead];
     addReputation(ctx, -2);
     ctx.log(waited ? "log.group.gone" : "log.group.decline");
   };
@@ -273,7 +282,12 @@ export function registerFloor(api: ModApi) {
     if (g.ignored >= 2) addReputation(ctx, -1);
     ctx.log(g.ignored >= 2 ? "log.group.ignored.again" : waited ? "log.group.ignored.waited" : "log.group.ignored");
   };
-  const tierFor = (heat: number) => Gr.tierByHeat.filter(([from]) => heat >= from).at(-1)?.[1] ?? 1;
+  /** How worked up the company is shows in every one of them. */
+  const warmMembers = (ctx: Ctx) => {
+    const sh = bs(ctx.state).shift!;
+    const g = sh.group!;
+    for (const v of sh.visits) if (v.group) v.heat = Math.max(v.heat ?? 0, g.heat);
+  };
   api.events.on("shift:minute", (ctx) => {
     const b = bs(ctx.state);
     const sh = b.shift;
@@ -297,21 +311,15 @@ export function registerFloor(api: ModApi) {
       if (sh.tick - g.pending >= 20) turnAway(ctx, true);
       return;
     }
+    const venue = g.sauna ? SAUNA : LOUNGE;
     // a round nobody brought: they notice, and it costs the house
     if (g.wants !== undefined && sh.tick - g.wants >= 20) ignored(ctx, true);
-    if (g.round) roundBeat(ctx);
-    // she comes back out
-    if (g.herOut !== undefined && !g.round && sh.tick >= g.herOut) {
-      g.herOut = undefined;
-      ctx.state.where[WIFE] = HALL;
-      ctx.log(`log.group.her_back${g.sauna ? ".sauna" : ""}`);
-      sh.interrupt = true;
-    }
-    if (sh.tick >= g.until && g.herOut === undefined) {
+    const inside = sh.attend?.loc === venue;
+    if (sh.tick >= g.until && !inside && b.encounter?.loc !== venue) {
       leave(ctx);
       return;
     }
-    if (!g.wants && sh.tick >= g.nextTray && sh.tick < g.until - 10) {
+    if (!g.wants && !inside && sh.tick >= g.nextTray && sh.tick < g.until - 10) {
       g.wants = sh.tick;
       sh.interrupt = true;
       ctx.log(`log.group.wants${g.sauna ? ".sauna" : ""}`);
@@ -319,164 +327,71 @@ export function registerFloor(api: ModApi) {
     if (g.wants !== undefined && sh.tick - g.wants === Gr.trayWait) {
       addReputation(ctx, -Gr.restlessReputation);
       g.heat = clamp(g.heat - 5);
+      warmMembers(ctx);
       ctx.log(`log.group.restless${g.sauna ? ".sauna" : ""}`);
     }
   });
-  /**
-   * She goes into the back room with a tray. It is played in beats: she sets the glasses down, they keep her talking,
-   * and only then does it come to whatever it comes to. Until that beat he can still walk in.
-   */
-  const herRound = (ctx: Ctx) => {
+  // She comes back out of the back room: what he can see of it from the hall is how long the door stayed shut.
+  api.events.on("attend:ended", (ctx, e) => {
     const b = bs(ctx.state);
-    const sh = b.shift!;
-    const g = sh.group!;
+    const g = b.shift?.group;
+    if (!g || e.payload!.why !== "tray") return;
     const venue = g.sauna ? SAUNA : LOUNGE;
-    g.heat = clamp(g.heat + Gr.heatHer);
-    g.did = undefined;
-    g.steps = 0;
-    const minutes = ctx.rng.int(Gr.inside[0], Gr.inside[1]);
-    g.round = { start: sh.tick, at: sh.tick + Gr.beats.decide, beat: 0 };
-    g.herOut = sh.tick + Math.max(minutes, Gr.beats.decide + 2);
-    sh.awayUntil = g.herOut;
-    sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, g.herOut);
-    ctx.state.where[WIFE] = venue;
-  };
-  /** The beats before it is decided: what he hears or sees of it depends on where he stands. */
-  const roundBeat = (ctx: Ctx) => {
-    const b = bs(ctx.state);
-    const sh = b.shift!;
-    const g = sh.group!;
-    const r = g.round!;
-    const venue = g.sauna ? SAUNA : LOUNGE;
-    const seen = husbandSees(ctx.state, venue) || b.mode === "open";
-    const since = sh.tick - r.start;
-    if (r.beat === 0 && since >= Gr.beats.serve) {
-      r.beat = 1;
-      ctx.log(`log.group.beat.serve${g.sauna ? ".sauna" : ""}`, { n: g.size }, seen ? undefined : ["unseen"]);
-    } else if (r.beat === 1 && since >= Gr.beats.talk) {
-      r.beat = 2;
-      // how they talk to her is how warm they are by now
-      const warm = g.heat >= Gr.beats.rowdyHeat ? "rowdy" : g.heat >= Gr.beats.warmHeat ? "warm" : "polite";
-      ctx.log(`log.group.beat.talk.${warm}`, undefined, seen ? undefined : ["unseen"]);
-      if (seen) sh.interrupt = true; // he is standing there: he gets to decide before it goes further
-    } else if (sh.tick >= r.at) {
-      g.round = undefined;
-      roundResolve(ctx);
-    }
-  };
-  const roundResolve = (ctx: Ctx) => {
-    const b = bs(ctx.state);
-    const sh = b.shift!;
-    const g = sh.group!;
-    const h = b.heroine;
-    const lead = b.patrons[g.lead]!;
-    const venue = g.sauna ? SAUNA : LOUNGE;
-    const seen = husbandSees(ctx.state, venue) || b.mode === "open";
-    const tags = seen ? undefined : ["unseen"];
-    let minutes = Math.max(0, (g.herOut ?? sh.tick) - sh.tick);
-    const tier = tierFor(g.heat + (g.sauna ? Gr.saunaTier : 0));
-    const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
-    const act = options.length > 0 ? ctx.rng.pick(options) : null;
-    if (act && tier >= 1) {
-      // several men at once push harder than one
-      const input: ConsentInput = { act: act.id, partner: lead.id, loc: venue, offer: 0, pressure: (g.size - 1) * Gr.pressurePerMan };
-      const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
-      const verdict = verdictOf(res.total);
-      b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: lead.id, act: act.id, loc: venue, verdict, seen, total: res.total, rows: res.rows });
-      if (b.proposals.length > 12) b.proposals.shift();
-      if (verdict === "refuse") {
-        g.heat = clamp(g.heat + Gr.refusedHeat);
-        annoy(ctx, 4 + g.size, "guests");
-        feel(ctx, "fear", 3 * g.size, 1.3 - h.traits.confidence / 100);
-        ctx.log("log.group.in.refused", { act: `act.${act.id}` }, tags);
-      } else {
-        const many = isIntimate(act) ? Math.max(1, Math.round(g.size * Gr.manyBonus)) : 1;
-        if (isIntimate(act)) {
-          minutes = ctx.rng.int(Gr.longInside[0], Gr.longInside[1]);
-          let came = 0;
-          for (let i = 0; i < many; i++) {
-            const out = resolveBody(ctx, act, { size: lead.size + ctx.rng.int(-3, 3), minutes: act.minutes });
-            if (out.came) came += 1;
-            ctx.emit("cum:landed", { by: lead.id, act: act.id });
-          }
-          lead.memory.sizeKnown = true;
-          lead.memory.orgasms += came;
-          if (b.mode === "hidden") b.secretActsToday += 1;
-          if (came > 0) feel(ctx, "delight", 8 + came * 3);
-        }
-        g.did = act.id; // the picture while she is still in there
-        lead.memory.tier = Math.max(lead.memory.tier, act.tier);
-        lead.memory.acts[act.id] = (lead.memory.acts[act.id] ?? 0) + many;
-        changeHeroine(ctx, "arousal", act.effects.arousal * (verdict === "eager" ? 1 : 0.5), act.id);
-        changeHeroine(ctx, "energy", act.effects.energy * many, act.id);
-        if (verdict === "hesitant") feel(ctx, "shame", 4 + tier);
-        const tip = Gr.tipPerTier * tier * g.size;
-        const till = addHerTips(ctx, tip);
-        sh.tips += till;
-        b.today.tips += till;
-        h.traits.openness = clamp(h.traits.openness + content.consent.drift.openness * Math.max(0, tier - 1));
-        h.traits.fidelity = clamp(h.traits.fidelity - content.consent.drift.fidelity * Math.max(0, tier - 1));
-        ctx.log(`log.group.in.${isIntimate(act) ? "far" : "play"}.${verdict}`, { act: `act.${act.id}`, n: many, tip }, tags);
-        // the same event a single guest raises, so the diary, the feelings and his reaction all see it
-        ctx.emit("encounter:started", { patron: lead.id, act: act.id, loc: venue, verdict, witnessed: seen, came: false, tier: act.tier, intimate: isIntimate(act), switched: false, group: g.size });
-        ctx.emit("encounter:ended", { patron: lead.id, act: act.id, loc: venue, minutes, came: 0 });
-      }
-    }
-    // it went well and stopped short of the bed: they do not let her go yet, and the next thing they ask is a step further
-    const last = g.did ? actById(g.did) : null;
-    if (last && !isIntimate(last) && (g.steps ?? 0) < Gr.beats.maxSteps && g.heat >= Gr.beats.warmHeat && h.energy > 0) {
-      g.steps = (g.steps ?? 0) + 1;
-      g.heat = clamp(g.heat + Gr.beats.stepHeat);
-      g.round = { start: sh.tick, at: sh.tick + Gr.beats.step, beat: 2 };
-      g.herOut = sh.tick + Gr.beats.step + 2;
-      sh.awayUntil = g.herOut;
-      sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, g.herOut);
-      ctx.log("log.group.beat.more", undefined, tags);
-      if (seen) sh.interrupt = true; // he is standing there: he can still take her out
-      return;
-    }
-    // from the hall he only sees how long the door stays shut
-    if (!seen && minutes >= Gr.longInside[0]) ctx.log(`log.group.long${g.sauna ? ".sauna" : ""}`);
-    g.herOut = sh.tick + minutes;
-    sh.awayUntil = g.herOut;
-    sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, g.herOut);
-  };
+    if (e.payload!.loc !== venue) return;
+    ctx.log(`log.group.her_back${g.sauna ? ".sauna" : ""}`);
+  });
   api.actions.register({
     id: GROUP,
     labelKey: "action.group",
-    describe: (a) => ({ key: `action.group.${a.payload!.do}` }),
+    describe: (a) => ({ key: `action.group.${a.payload!.do}${a.payload!.sauna ? ".sauna" : ""}` }),
     enumerate(state) {
       const b = bs(state);
-      const g = b.shift?.group;
-      if (state.time.phase !== "shift" || !g || b.caught || b.night?.sex) return [];
-      if (g.pending !== undefined) return ["accept", "decline"].map((d) => ({ type: GROUP, payload: { do: d } }));
-      // he has walked in while they still only have her talking: he can take her out with him
-      if (g.round && state.where[HUSBAND] === (g.sauna ? SAUNA : LOUNGE)) return [{ type: GROUP, payload: { do: "pull_out" } }];
+      const sh = b.shift;
+      const g = sh?.group;
+      if (state.time.phase !== "shift" || !sh || !g || b.caught || b.night?.sex) return [];
+      const pay = (d: string) => ({ type: GROUP, payload: (g.sauna ? { do: d, sauna: 1 } : { do: d }) as Record<string, string | number> });
+      if (g.pending !== undefined) return ["accept", "decline"].map(pay);
+      const venue = g.sauna ? SAUNA : LOUNGE;
+      // he has walked in while she is in there with them: he can take her out with him
+      if (sh.attend?.loc === venue && state.where[HUSBAND] === venue) return [pay("pull_out")];
       if (g.wants === undefined) return [];
       const dos: string[] = ["ignore"];
-      if (!b.encounter && g.herOut === undefined && b.heroine.energy > 0) dos.push("send_her");
+      if (!b.encounter && !sh.attend && b.heroine.energy > 0) dos.push("send_her");
       if (state.where[HUSBAND] === HALL || state.where[HUSBAND] === "cafe.bar") dos.push("self");
-      return dos.map((d) => ({ type: GROUP, payload: { do: d } }));
+      return dos.map(pay);
     },
     apply(ctx, action) {
       const b = bs(ctx.state);
       const sh = b.shift!;
       const g = sh.group!;
+      const venue = g.sauna ? SAUNA : LOUNGE;
       const what = action.payload!.do as string;
       if (what === "accept") {
-        // a full back room is talked about, and they pay for every round
+        // a full back room is talked about, and they pay for every round. They sit down in there, all of them
         g.pending = undefined;
         g.until = sh.tick + Gr.stay;
         g.nextTray = sh.tick + 5;
         addReputation(ctx, 2);
-        ctx.log("log.group.accept", { n: g.size });
+        const lead = b.patrons[g.lead]!;
+        seat(ctx, lead, false, { at: venue, stay: Gr.stay + 30, group: true, quiet: true });
+        for (let i = 1; i < g.size; i++) {
+          const m = generatePatron(ctx);
+          b.patrons[m.id] = m;
+          m.memory.visits = 1;
+          m.memory.lastDay = ctx.state.time.day;
+          seat(ctx, m, false, { at: venue, stay: Gr.stay + 30, group: true, quiet: true });
+        }
+        warmMembers(ctx);
+        ctx.log(g.sauna ? "log.group.accept.sauna" : "log.group.accept", { n: g.size });
         return;
       }
       if (what === "decline") return void turnAway(ctx, false);
       if (what === "pull_out") {
-        g.round = undefined;
-        g.herOut = sh.tick;
         g.heat = clamp(g.heat - Gr.beats.pullOutHeat);
+        warmMembers(ctx);
+        if (b.encounter?.loc === venue) endEncounter(ctx);
+        endAttend(ctx);
+        ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!;
         ctx.log("log.group.pull_out");
         ctx.emit("group:pulled_out", { heat: g.heat });
         return;
@@ -486,16 +401,20 @@ export function registerFloor(api: ModApi) {
       g.wants = undefined;
       g.rounds += 1;
       g.nextTray = sh.tick + Gr.trayEvery;
-      g.heat = clamp(g.heat + Gr.heatPerRound);
+      g.heat = clamp(g.heat + Gr.heatPerRound + (her ? Gr.heatHer : 0));
+      warmMembers(ctx);
       const round = ctx.rng.int(Gr.bill[0], Gr.bill[1]) * g.size;
       g.bill += round;
       b.stock = Math.max(0, b.stock - Math.ceil(g.size / 2));
+      for (const v of sh.visits) if (v.group) v.served += 1;
       if (her) {
         const till = addHerTips(ctx, Math.round(round * Gr.tipHer));
         sh.tips += till;
         b.today.tips += till;
         ctx.log(`log.group.send_her${g.sauna ? ".sauna" : ""}`);
-        herRound(ctx);
+        // she goes in with the tray and stays a while: from here it is the same evening as at any table,
+        // only with a whole company at it (see consent.company)
+        attendTo(ctx, venue, ctx.rng.int(Gr.inside[0], Gr.inside[1]), "tray", g.lead);
       } else {
         addMoney(ctx, Math.round(round * Gr.tipHusband), "tips");
         changeHim(ctx, "energy", -Gr.husbandEnergy, "tray");
@@ -600,7 +519,7 @@ export function registerFloor(api: ModApi) {
         if (how !== asked) ctx.log("log.join.downgrade", { name });
         // the second roll: she lets go at the last moment
         if (ctx.rng.chance(Math.min(F.join.ruinMax, F.join.ruinBase + b.power * F.join.ruinPerPower))) {
-          changeHim(ctx, "arousal", -60, "ruined");
+          changeHim(ctx, "arousal", -content.body.his.ruinedRelief, "ruined");
           changeHim(ctx, "mood", F.join.ruined.mood, "ruined");
           changeConfidence(ctx, F.join.ruined.confidence, "ruined");
           b.power = clamp(b.power + F.join.ruined.power);

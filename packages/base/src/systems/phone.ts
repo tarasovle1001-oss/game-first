@@ -30,6 +30,7 @@ export interface PhoneState {
   expected: string[]; // guests who wrote that they are coming tonight
   peekedDay: number;
   calledTick: number; // last shift tick he called her at, -1 = not tonight
+  calledAt?: number; // day * 1440 + minute of his last call in the afternoon
 }
 
 export const newPhone = (): PhoneState => ({ threads: {}, expected: [], peekedDay: 0, calledTick: -1 });
@@ -42,6 +43,29 @@ export function sendMessage(ctx: Ctx, other: string, msg: Omit<Message, "day" | 
   thread.push(full);
   if (thread.length > THREAD_LIMIT) thread.shift();
   ctx.emit("phone:message", { other, key: msg.key, heat: msg.heat });
+}
+
+/** A call in the afternoon: she is out on her own, or simply in another room. */
+function callByDay(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const day = b.day!;
+  b.phone.calledAt = ctx.state.time.day * 1440 + ctx.state.time.minute;
+  const factor = content.secrecy.styleFactor[b.husband.style];
+  detail(ctx, { id: "phone_ear", who: WIFE });
+  if (day.herOut) {
+    // she is "with a friend": what she says depends on the marriage and on how well she lies
+    if (b.mode === "open") ctx.log("log.phone.day.out.open");
+    else if (b.heroine.traits.honesty >= 60) {
+      b.suspicion = clamp(b.suspicion + P.callIgnored * factor);
+      ctx.log("log.phone.call.ignored");
+    } else {
+      b.suspicion = clamp(b.suspicion + (P.callBreathless / 2) * factor);
+      ctx.log("log.phone.day.out", { where: `loc.${day.cover ?? "town.square"}` });
+    }
+  } else if (day.her?.task === "away") ctx.log("log.phone.day.town", { where: `loc.${ctx.state.where[WIFE]}` });
+  else ctx.log("log.phone.day.home");
+  changeHeroine(ctx, "mood", 1, "call");
+  ctx.emit("phone:call", { from: HUSBAND, busy: Boolean(day.herOut) });
 }
 
 /** What a guest writes depends on how far things have gone between them. */
@@ -143,12 +167,15 @@ export function registerPhone(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       const sh = b.shift;
-      if (state.time.phase !== "shift" || !sh || b.caught) return [];
-      if (state.where[HUSBAND] === state.where[WIFE] || sh.tick - b.phone.calledTick < 30) return [];
+      if (b.caught || b.night?.sex || state.where[HUSBAND] === state.where[WIFE]) return [];
+      // in the afternoon too: wherever she is, he can ring her - not more than once an hour
+      if (state.time.phase === "prep") return b.day && state.time.day * 1440 + state.time.minute - (b.phone.calledAt ?? -999) >= 60 ? [{ type: CALL_WIFE }] : [];
+      if (state.time.phase !== "shift" || !sh || sh.tick - b.phone.calledTick < 30) return [];
       return [{ type: CALL_WIFE }];
     },
     apply(ctx) {
       const b = bs(ctx.state);
+      if (ctx.state.time.phase === "prep") return callByDay(ctx);
       const enc = b.encounter;
       b.phone.calledTick = b.shift!.tick;
       const busy = enc && isIntimate(actById(enc.act));

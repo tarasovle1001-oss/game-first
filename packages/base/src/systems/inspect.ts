@@ -204,6 +204,18 @@ export function inspect(prev: GameState, next: GameState): Inspection {
     const sign = w.sign ?? 0;
     rows.push({ id, group: w.group, label: w.label, ...(w.params ? { params: w.params } : {}), from: round(from), to: round(to), delta: round(delta), main: !!w.main, good: sign === 0 ? null : delta * sign > 0, via });
   }
+  // one answer of his can move what she believes about a dozen acts at once: that is one change, not a dozen rows
+  const beliefs = rows.filter((r) => r.id.startsWith("belief."));
+  if (beliefs.length > 3) {
+    const up = beliefs.filter((r) => r.delta > 0);
+    const down = beliefs.filter((r) => r.delta < 0);
+    for (const [list, dir] of [[up, "up"], [down, "down"]] as const) {
+      if (list.length <= 1) continue;
+      const avg = (f: (r: DeltaRow) => number) => round(list.reduce((s, r) => s + f(r), 0) / list.length);
+      for (const r of list) rows.splice(rows.indexOf(r), 1);
+      rows.push({ id: `belief.many.${dir}`, group: "belief", label: "inspect.beliefs", params: { n: list.length }, from: avg((r) => r.from), to: avg((r) => r.to), delta: avg((r) => r.delta), main: false, good: null, via: list[0]!.via });
+    }
+  }
   rows.sort((x, y) => Number(y.main) - Number(x.main) || GROUP_ORDER.indexOf(x.group) - GROUP_ORDER.indexOf(y.group) || Math.abs(y.delta) - Math.abs(x.delta));
   const minutes = (next.time.day - prev.time.day) * 1440 + next.time.minute - prev.time.minute;
   return { minutes, rows, told: told.map((x) => ({ key: x.key, ...(x.params ? { params: x.params } : {}) })) };

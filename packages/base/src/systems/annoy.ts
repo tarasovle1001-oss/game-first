@@ -45,7 +45,12 @@ export function registerAnnoy(api: ModApi) {
   api.events.on("couple:talk", (ctx, e) => {
     const { do: what, ok } = e.payload as { do: string; ok: boolean };
     const o = content.manners.talk.options.find((x) => x.id === what);
-    if (o?.group === "touch") annoy(ctx, ok ? A.husbandTouch : A.husbandRefused, "him");
+    if (o?.group !== "touch") return;
+    // a hug or a slap on the behind from a husband she still likes is simply nice
+    const h = bs(ctx.state).heroine;
+    const fond = (h.feel?.contempt ?? 0) < A.lightContempt && h.marriage.resent < A.lightResent;
+    if (ok && o.light && fond) return;
+    annoy(ctx, ok ? A.husbandTouch : A.husbandRefused, "him");
   });
   api.events.on("bare:asked", (ctx, e) => annoy(ctx, e.payload!.ok ? A.husbandAsk : A.husbandRefused, "him"));
   api.events.on("shift:tick", (ctx) => {

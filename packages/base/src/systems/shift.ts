@@ -7,7 +7,7 @@ import { addMoney, addReputation } from "./economy";
 import { advanceEncounter, endEncounter, runProposals, warmGuests } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { generatePatron, pickReturning } from "./patrons";
-import { HALL, husbandSees, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
+import { clockText, HALL, husbandSees, inTown, nextPhase, ticks, TICKS_PER_SHIFT, ticksDone } from "./places";
 export { HALL };
 
 import { changeHim, tired, wakeMinute } from "./rhythm";
@@ -43,10 +43,38 @@ export const interrupt = (ctx: Ctx) => {
   if (sh) sh.interrupt = true;
 };
 
-const wantsOrder = (v: Visit) => v.served === 0 || v.sinceOrder >= ORDER_EVERY;
+const wantsOrder = (v: Visit) => !v.group && v.out === undefined && (v.served === 0 || v.sinceOrder >= ORDER_EVERY);
+
+/** Where a guest's seat is tonight: the hall, or another room he has taken his drink to. */
+export const seatOf = (v: Visit) => v.at ?? HALL;
+/** Guests at tables in the hall: the ones the seats are counted for. */
+export const hallVisits = (visits: Visit[]) => visits.filter((v) => !v.group); // a man in the sauna or upstairs still has his table
+/** She goes into another room with the guests there, for a while: the hall mode runs in that room meanwhile. */
+export function attendTo(ctx: Ctx, loc: string, minutes: number, why: string, patron?: string) {
+  const sh = bs(ctx.state).shift;
+  if (!sh) return;
+  const until = sh.tick + Math.max(1, Math.round(minutes));
+  sh.attend = { loc, until, why, ...(patron ? { patron } : {}) };
+  sh.awayUntil = Math.max(sh.awayUntil ?? 0, until);
+  sh.wifeFreeAt = Math.max(sh.wifeFreeAt ?? 0, until);
+  ctx.state.where[WIFE] = loc;
+  interrupt(ctx);
+  ctx.emit("attend:started", { loc, why, ...(patron ? { patron } : {}) });
+}
+/** She comes back out of that room. */
+export function endAttend(ctx: Ctx) {
+  const sh = bs(ctx.state).shift;
+  if (!sh?.attend) return;
+  const was = sh.attend;
+  sh.attend = undefined;
+  sh.awayUntil = Math.min(sh.awayUntil ?? 0, sh.tick);
+  sh.wifeFreeAt = Math.min(sh.wifeFreeAt ?? 0, sh.tick);
+  if (ctx.state.where[WIFE] === was.loc) ctx.state.where[WIFE] = hallVisits(sh.visits).length > 0 ? HALL : "cafe.bar";
+  ctx.emit("attend:ended", { loc: was.loc, why: was.why });
+}
 
 /** Sits a guest down at a table and starts his visit. */
-function seat(ctx: Ctx, patron: Patron, known: boolean) {
+export function seat(ctx: Ctx, patron: Patron, known: boolean, opts: { at?: string; stay?: number; group?: boolean; quiet?: boolean } = {}) {
   const b = bs(ctx.state);
   const sh = b.shift!;
   patron.memory.visits += 1;
@@ -56,8 +84,10 @@ function seat(ctx: Ctx, patron: Patron, known: boolean) {
     ctx.log("log.patron.regular", { name: `@name:${patron.name}` });
   }
   sh.visits.push({
+    ...(opts.at ? { at: opts.at } : {}),
+    ...(opts.group ? { group: true } : {}),
     patron: patron.id,
-    stay: ctx.rng.int(ticks(bal.stayMinutes[0]), ticks(bal.stayMinutes[1])),
+    stay: opts.stay ?? ctx.rng.int(ticks(bal.stayMinutes[0]), ticks(bal.stayMinutes[1])),
     served: 0,
     waited: 0,
     sinceOrder: 0,
@@ -68,8 +98,8 @@ function seat(ctx: Ctx, patron: Patron, known: boolean) {
     retry: null,
     rounds: 0,
   });
-  ctx.state.where[patron.id] = HALL;
-  ctx.log(known ? "log.patron.returns" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
+  ctx.state.where[patron.id] = opts.at ?? HALL;
+  if (!opts.quiet) ctx.log(known ? "log.patron.returns" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
   ctx.emit("patron:arrived", { id: patron.id, returning: known });
   interrupt(ctx);
 }
@@ -86,7 +116,7 @@ function arrive(ctx: Ctx) {
   const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * share * (1 + (b.day?.arrivals ?? 0) + b.gossip * content.secrecy.gossip.arrivals);
   const count = Math.floor(perTick) + (ctx.rng.chance(perTick % 1) ? 1 : 0);
   for (let i = 0; i < count; i++) {
-    if (sh.visits.length >= bal.seats) {
+    if (hallVisits(sh.visits).length >= bal.seats) {
       sh.turnedAway += 1;
       b.today.turnedAway += 1;
       continue;
@@ -155,6 +185,14 @@ function serve(ctx: Ctx) {
     if (v && serveOne(ctx, v, "wife")) {
       served = v.patron;
       sh.wifeFreeAt = sh.tick + bal.serveMinutes;
+      // his drink goes to where he is sitting: the sauna, his room upstairs. She stays a moment, longer if she likes him
+      const there = ctx.state.where[v.patron];
+      if (there && there !== HALL && there !== "cafe.bar" && !v.away && !sh.attend) {
+        const p = b.patrons[v.patron];
+        const linger = ctx.rng.int(bal.attend.linger[0], bal.attend.linger[1]) + Math.max(0, p?.memory.affinity ?? 0) * bal.attend.perAffinity;
+        attendTo(ctx, there, bal.serveMinutes + linger, "serve", v.patron);
+        ctx.log(`log.attend.serve.${there.startsWith("hotel.") ? "room" : there === "cafe.sauna" ? "sauna" : "other"}`, { name: `@name:${p?.name ?? ""}`, room: `loc.${there}` }, husbandSees(ctx.state, HALL) || husbandSees(ctx.state, there) || b.mode === "open" ? undefined : ["unseen"]);
+      }
     }
   }
   for (const x of sh.visits) {
@@ -164,7 +202,7 @@ function serve(ctx: Ctx) {
   }
 }
 
-function leave(ctx: Ctx, v: Visit, reason: "done" | "ignored" | "closing") {
+export function leave(ctx: Ctx, v: Visit, reason: "done" | "ignored" | "closing") {
   const b = bs(ctx.state);
   const p = b.patrons[v.patron]!;
   if (reason === "ignored") {
@@ -185,7 +223,22 @@ function depart(ctx: Ctx) {
   const staying: Visit[] = [];
   for (const v of sh.visits) {
     v.stay -= 1;
-    if (bs(ctx.state).encounter?.patron === v.patron) {
+    // his time in the sauna or upstairs is up: back to the hall (unless he is busy with her there)
+    const enc0 = bs(ctx.state).encounter;
+    const inScene = enc0 && (enc0.patron === v.patron || enc0.men?.some((m) => m.patron === v.patron));
+    if (v.at && !v.group && v.atUntil !== undefined && sh.tick >= v.atUntil && !inScene && sh.attend?.patron !== v.patron) {
+      v.at = undefined;
+      v.atUntil = undefined;
+      if (!v.away && v.out === undefined) ctx.state.where[v.patron] = HALL;
+    }
+    // a lodger who went out comes back in
+    if (v.out !== undefined && sh.tick >= v.out) {
+      v.out = undefined;
+      ctx.state.where[v.patron] = seatOf(v);
+      ctx.log("log.lodger.back_in", { name: `@name:${bs(ctx.state).patrons[v.patron]?.name ?? ""}` }, ["minor"]);
+    }
+    const enc = bs(ctx.state).encounter;
+    if (enc && (enc.patron === v.patron || enc.men?.some((m) => m.patron === v.patron))) {
       v.stay = Math.max(1, v.stay); // nobody walks out in the middle of things
       staying.push(v);
     } else if (v.waited >= MAX_WAIT) leave(ctx, v, "ignored");
@@ -226,6 +279,18 @@ function tick(ctx: Ctx) {
     ctx.state.where[WIFE] = "home.bedroom";
     ctx.log("log.quiet.her.shift");
   }
+  // something else took her out of that room (her husband called her, a guest in the hall, a dare): the visit there is over
+  if (sh.attend && ctx.state.where[WIFE] !== sh.attend.loc && !hq.night?.sex) {
+    sh.attend = undefined;
+  }
+  // her time in the other room is up: she comes back out, unless something is still going on in there
+  if (sh.attend && sh.tick >= sh.attend.until) {
+    const enc = hq.encounter;
+    if (enc && enc.loc === sh.attend.loc) {
+      sh.attend.until = sh.tick + 1;
+      sh.awayUntil = Math.max(sh.awayUntil ?? 0, sh.attend.until);
+    } else endAttend(ctx);
+  }
   // she is on the floor while there are guests, behind the bar otherwise
   if (!bs(ctx.state).encounter && !bs(ctx.state).night && !bs(ctx.state).approach && !bs(ctx.state).ask && (sh.awayUntil ?? 0) <= sh.tick) ctx.state.where[WIFE] = sh.visits.length > 0 ? HALL : "cafe.bar";
   depart(ctx);
@@ -235,6 +300,12 @@ function tick(ctx: Ctx) {
     ctx.emit("shift:tick", { tick: sh.tick / TEN });
   }
   ctx.flush(); // every minute is fully resolved before the next one, however long the wait
+  // closing time: the clock stops here until he locks up, so nothing from the last minutes may hang on the screen
+  if (ticksDone(sh)) {
+    sh.fin = undefined;
+    sh.show = undefined;
+    sh.moment = null;
+  }
 }
 const TEN = ticks(10);
 
@@ -272,7 +343,7 @@ export function registerShift(api: ModApi) {
   api.events.on("base:invite-arrives", (ctx, e) => {
     const b = bs(ctx.state);
     const p = b.patrons[e.payload!.id as string];
-    if (!b.shift || !p || b.shift.visits.some((v) => v.patron === p.id) || b.shift.visits.length >= bal.seats) return;
+    if (!b.shift || !p || b.shift.visits.some((v) => v.patron === p.id) || hallVisits(b.shift.visits).length >= bal.seats) return;
     seat(ctx, p, true);
   });
 
@@ -308,9 +379,20 @@ export function registerShift(api: ModApi) {
   });
 
   // Walking from room to room takes a minute of the evening.
+  // Out to town and back takes as long as it does in the afternoon; the evening goes on without him.
   api.events.on("entity:moved", (ctx, e) => {
     const sh = bs(ctx.state).shift;
-    if (e.payload!.id === HUSBAND && ctx.state.time.phase === "shift" && sh && !ticksDone(sh) && !bs(ctx.state).night?.sex) tick(ctx);
+    if (e.payload!.id !== HUSBAND || ctx.state.time.phase !== "shift" || !sh || ticksDone(sh) || bs(ctx.state).night?.sex) return;
+    const from = e.payload!.from as string;
+    const to = e.payload!.to as string;
+    const H = content.day.herDay;
+    const minutes = inTown(from) !== inTown(to) ? H.walkToTown : inTown(to) ? H.walkInTown : 1;
+    if (inTown(from) !== inTown(to)) {
+      if (inTown(to)) sh.awaySince = sh.tick;
+      else sh.awaySince = undefined;
+      ctx.log(inTown(to) ? "log.away.leaves" : "log.away.back");
+    }
+    for (let i = 0; i < minutes && !ticksDone(sh); i++) tick(ctx);
   });
 
   // He takes a table himself: the order goes out, it costs him a few minutes, and nobody tips him.
@@ -380,22 +462,24 @@ export function registerShift(api: ModApi) {
     },
   });
 
-  // Open before the usual hour: an hour or two of the afternoon goes to the evening instead.
+  // Open right now: from midday he can unlock the doors whenever he likes, and the evening starts at once.
   api.actions.register({
     id: OPEN_EARLY,
     labelKey: "action.open_early",
-    describe: (a) => ({ key: "action.open_early.by", params: { hours: (a.payload!.minutes as number) / 60 } }),
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase !== "prep" || !b.day || b.day.busy || b.openEarly?.day === state.time.day) return [];
-      return bal.openEarly.filter((m) => b.day!.left >= m).map((m) => ({ type: OPEN_EARLY, payload: { minutes: m } }));
+      if (state.time.phase !== "prep" || !b.day || b.day.busy || b.day.left <= 0 || b.night?.sex || b.caught) return [];
+      if (state.time.minute < bal.openNowFrom * 60 || inTown(state.where[HUSBAND])) return [];
+      return [{ type: OPEN_EARLY }];
     },
-    apply(ctx, action) {
+    apply(ctx) {
       const b = bs(ctx.state);
-      const minutes = action.payload!.minutes as number;
+      const minutes = b.day!.left;
       b.openEarly = { day: ctx.state.time.day, minutes };
-      b.day!.left -= minutes; // that much of the afternoon is gone
-      ctx.log("log.open_early", { hours: minutes / 60 });
+      b.day!.left = 0;
+      b.day!.opening = true;
+      ctx.log("log.open_early", { time: clockText(ctx.state.time.minute) });
+      nextPhase(ctx);
     },
   });
   // The door: he can stop letting new people in, and with the hall empty he can call it a night.
@@ -471,12 +555,13 @@ export function registerShift(api: ModApi) {
     const b = bs(s);
     if ((s.time.phase === "shift") !== (b.shift !== null)) return `shift state does not match phase "${s.time.phase}"`;
     const present = new Set(b.shift?.visits.map((v) => v.patron) ?? []);
-    for (const id of present) {
-      if (!b.patrons[id]) return `visit of unknown patron ${id}`;
-      if (!s.where[id]) return `patron ${id} is visiting but is nowhere`;
+    for (const v of b.shift?.visits ?? []) {
+      if (!b.patrons[v.patron]) return `visit of unknown patron ${v.patron}`;
+      if (!s.where[v.patron] && v.out === undefined) return `patron ${v.patron} is visiting but is nowhere`;
+      if (s.where[v.patron] && v.out !== undefined) return `patron ${v.patron} is out of the building and on the map`;
     }
     for (const id of Object.keys(s.where)) if (/^p\d+$/.test(id) && !present.has(id)) return `patron ${id} is placed but not visiting`;
-    if (b.shift && b.shift.visits.length > content.balance.shift.seats) return "more guests than seats";
+    if (b.shift && hallVisits(b.shift.visits).length > content.balance.shift.seats) return "more guests than seats";
     return null;
   });
 }

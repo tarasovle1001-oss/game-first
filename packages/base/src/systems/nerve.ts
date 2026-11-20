@@ -102,7 +102,7 @@ export function registerNerve(api: ModApi) {
       const dry = dryOf(ctx.state);
       if (dry < 1 || !ctx.rng.chance(Math.min(N.wet.max, N.wet.base + dry * N.wet.perDryNight))) return;
       b.husband.dry = 0;
-      changeHim(ctx, "arousal", -100, "wet dream");
+      changeHim(ctx, "arousal", -content.body.his.wetRelief, "wet dream"); // in his sleep: it does not count for much
       // she is usually up before him: whether she saw the sheet is a matter of luck
       const noticed = ctx.rng.chance(N.wet.noticed);
       if (!noticed) {

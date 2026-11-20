@@ -89,7 +89,8 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   const advance = all.find((a) => a.type === CORE_ADVANCE);
   const bed = all.filter((a) => a.type === BED);
   // a company at the door is answered before anything else, like any question put to him
-  const atDoor = (a: Action) => a.type === "base/group" && (a.payload?.do === "accept" || a.payload?.do === "decline");
+  // the company in the back room cannot be passed over: at the door and when they call for a round, it is the only thing on the screen
+  const atDoor = (a: Action) => a.type === "base/group" && ["accept", "decline", "ignore", "send_her", "self"].includes(a.payload?.do as string);
   const answers = all.filter((a) => SITUATION.has(a.type) || atDoor(a));
   const urgent = all.filter((a) => URGENT.has(a.type));
   const withHer = all.filter((a) => sectionOf(a) !== undefined);
@@ -195,8 +196,10 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   if (answers.length > 0) {
     // the line that asks the question; other things that happened on the same move are in the log, not here
     const turnLines = state.log.filter((e) => e.turn === state.turn && !e.tags?.includes("unseen"));
+    // the company first: it is the one thing that cannot wait
+    answers.sort((x, y) => Number(atDoor(y)) - Number(atDoor(x)));
     const kind = answers[0]!.type === ANSWER ? (answers[0]!.payload?.kind as string) : "";
-    const asked = kind ? turnLines.filter((e) => e.key.startsWith(`log.approach.${kind}`)) : [];
+    const asked = kind ? turnLines.filter((e) => e.key.startsWith(`log.approach.${kind}`)) : atDoor(answers[0]!) ? [...state.log].reverse().filter((e) => /^log\.group\.(arrive|wants|restless)/.test(e.key)).slice(0, 1) : [];
     const lines = asked.length > 0 ? asked.slice(-1) : turnLines.slice(-2);
     return (
       <div className="menu2">
@@ -332,6 +335,11 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
         {phase === "prep" && b.day?.busy ? t("ui.busy", { what: t(`day.${b.day.busy.id}`), minutes: b.day.busy.left }) : phase === "shift" && waits.length === 0 && advance ? t("ui.closing") : t(`ui.act.hint.${phase}`)}
       </div>
       {urgent.length > 0 && <div className="m-section warn">{t("ui.urgent")}</div>}
+      {urgent.length > 0 && b.reaction && (() => {
+        // the line it started with: what she and the guest are doing right now, under the header and above the answers
+        const line = [...state.log].reverse().find((e) => e.key.startsWith(`log.act.${b.reaction!.act}.`) && !e.tags?.includes("unseen"));
+        return line ? <div className="m-context"><p>{renderLog(line, t, lang)}</p></div> : null;
+      })()}
       {urgent.map((a, i) => (
         <Item key={`u${i}`} tone="strong" title={label(a)} onClick={() => act(a)} />
       ))}

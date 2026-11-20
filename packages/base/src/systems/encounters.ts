@@ -68,6 +68,19 @@ const privateRoomFor = (state: GameState, engine: EngineView, partner?: string):
   return risk(best) >= 2 && !thrill ? null : best;
 };
 
+/** The room a guest is in right now, as far as she is concerned: the hall, or another room of the house. */
+export const roomOfGuest = (state: GameState, id: string) => {
+  const at = state.where[id];
+  return !at || at === "cafe.bar" ? HALL : at;
+};
+/** Rooms with a door of their own: whatever happens there needs no other room. */
+const closed = (loc: string) => loc !== HALL && (content.rooms.find((r) => r.id === loc)?.tags.includes("private") || loc.startsWith("hotel.") || loc === "cafe.sauna" || loc === "cafe.lounge");
+/** Where she is for the guests: the room she is attending, or the hall. */
+export const herRoom = (state: GameState) => {
+  const at = bs(state).shift?.attend;
+  return at && state.where[WIFE] === at.loc ? at.loc : HALL;
+};
+
 /** Money he puts on the table: the paying kind does, once per time with her. */
 const offerOf = (p: Patron, act: Act, paid: boolean) => (p.approach === "pay" && act.tier >= 3 && !paid ? Math.round((p.traits.generosity * act.tier) / 4) : 0);
 
@@ -102,7 +115,9 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   if (isIntimate(act) && v.rounds >= p.stamina) return null; // he is spent for tonight
   const offer = offerOf(p, act, false);
   const at = (loc: string): ConsentInput => ({ act: act.id, partner: p.id, loc, offer, pressure: v.pressure });
-  if (!isIntimate(act)) return at(HALL);
+  const here = roomOfGuest(state, p.id);
+  if (!isIntimate(act)) return at(here);
+  if (closed(here)) return at(here); // the back room, the sauna, his room: there is a door already
   // anything can happen right on the floor, it is just much harder for her. She steers it to where she minds least
   const room = privateRoomFor(state, engine, p.id);
   if (!room) return at(HALL);
@@ -133,9 +148,16 @@ export function endEncounter(ctx: Ctx, _force = true) {
   if (!enc) return;
   payOwed(ctx, enc);
   b.encounter = null;
-  ctx.state.where[WIFE] = HALL;
-  if (ctx.state.where[enc.patron]) ctx.state.where[enc.patron] = HALL;
   const sh = b.shift;
+  // she goes back to where she was working: the room she is attending, or the hall; he goes back to his seat
+  const attending = sh?.attend && sh.tick < sh.attend.until ? sh.attend.loc : null;
+  ctx.state.where[WIFE] = attending ?? HALL;
+  const ve = sh?.visits.find((x) => x.patron === enc.patron);
+  if (ctx.state.where[enc.patron]) ctx.state.where[enc.patron] = ve?.at ?? HALL;
+  for (const m of enc.men ?? []) {
+    const vm = sh?.visits.find((x) => x.patron === m.patron);
+    if (vm && ctx.state.where[m.patron]) ctx.state.where[m.patron] = vm.at ?? HALL;
+  }
   if (sh) {
     // she goes back to work, and he does not come at her again straight away
     sh.restUntil = sh.tick + S.restMinutes;
@@ -298,14 +320,14 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
   const b = bs(ctx.state);
   const act = actById(input.act);
   const eager = verdict === "eager";
-  if (!isLight(actById(input.act)) || actById(input.act).tier >= 2) setOutcome(ctx, outcomeOf(verdict), p.id, husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc) || bs(ctx.state).mode === "open");
+  if (!isLight(actById(input.act)) || actById(input.act).tier >= 2) setOutcome(ctx, outcomeOf(verdict), p.id, husbandSees(ctx.state, herRoom(ctx.state)) || husbandSees(ctx.state, input.loc) || bs(ctx.state).mode === "open");
   const k = eager ? 1 : 0.5; // reluctant yes: she gets half of the good out of it
   const e = act.effects;
 
   const first = (p.memory.acts[act.id] ?? 0) === 0;
   const sh = b.shift!;
   const running = b.encounter?.patron === p.id ? b.encounter : null;
-  const wasIn = running?.loc ?? HALL;
+  const wasIn = running?.loc ?? herRoom(ctx.state);
   // walking off the floor with a guest while her husband is looking needs a word of some kind
   const leaving = !isLight(act) && wasIn === HALL && input.loc !== HALL && husbandSees(ctx.state, HALL) && !husbandSees(ctx.state, input.loc);
   let aloud = false;
@@ -322,7 +344,7 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
     sh.interrupt = true;
   }
   if (isLight(act)) {
-    sh.moment = { patron: p.id, act: act.id, until: sh.tick + ticks(10) }; // shown as the scene for a while if nothing bigger happens
+    sh.moment = { patron: p.id, act: act.id, until: sh.tick + ticks(10), loc: input.loc }; // shown as the scene for a while if nothing bigger happens
   } else if (running) {
     running.act = act.id;
     running.verdict = verdict;
@@ -401,7 +423,7 @@ function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
   const type = content.patronTypes.find((t) => t.id === p.type)!;
   p.memory.refusals += 1;
   b.heroine.traits.confidence = clamp(b.heroine.traits.confidence + 0.2);
-  const seen = husbandSees(ctx.state, HALL) || b.mode === "open"; // he asks on the floor, wherever he wanted to go
+  const seen = husbandSees(ctx.state, herRoom(ctx.state)) || b.mode === "open"; // he asks where she is, wherever he wanted to go
   ctx.log(variantKey(`log.act.${act.id}.refuse`, (n) => ctx.rng.int(0, n - 1)), { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip: 0 }, seen ? undefined : ["unseen"]);
   // past the lightest things a "no" has a reason, and it shows
   const last = b.proposals.at(-1);
@@ -462,14 +484,15 @@ function herOwnMove(ctx: Ctx) {
   const sh = b.shift!;
   const h = b.heroine;
   const H = G.her;
-  if (b.encounter || sh.tick < (sh.restUntil ?? 0) || (sh.herMoves ?? 0) >= H.perShift || ctx.state.where[WIFE] !== HALL) return;
+  const room = herRoom(ctx.state);
+  if (b.encounter || sh.tick < (sh.restUntil ?? 0) || (sh.herMoves ?? 0) >= H.perShift || ctx.state.where[WIFE] !== room) return;
   const urge = Math.max(0, h.arousal - H.arousalFrom) * H.perArousal + h.frustration * H.perFrustration + h.drunk * H.perDrunk + (h.latents.exhibitionist !== undefined ? H.trait : 0) + (h.latents.disappointed !== undefined ? h.marriage.resent * H.perResent : 0);
   if (urge < H.urgeFrom || !ctx.rng.chance(Math.min(H.maxChance, (urge / 100) * H.chancePerMinute))) return;
   // whom: a man she likes; or a stranger, or a rough one, if that is her thing
   const drawn = (p: Patron) =>
     p.memory.affinity + (h.tastes.types[p.type] ?? 0) * 0.5 + (h.latents.new_faces !== undefined && p.memory.visits <= 1 ? H.traitPull : 0) + (h.latents.likes_rough !== undefined && p.approach === "push" ? H.traitPull : 0) + (h.latents.size_queen !== undefined && p.memory.sizeKnown ? (p.size - b.husband.size) * 2 : 0);
   const best = sh.visits
-    .filter((v) => !v.blocked && !v.away && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && v.served > 0)
+    .filter((v) => !v.blocked && (!v.away || room !== HALL) && v.out === undefined && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && (v.served > 0 || v.group) && roomOfGuest(ctx.state, v.patron) === room)
     .map((v) => ({ v, p: b.patrons[v.patron]!, pull: drawn(b.patrons[v.patron]!) }))
     .filter((x) => x.pull >= H.pullFrom)
     .sort((x, y) => y.pull - x.pull || x.p.id.localeCompare(y.p.id))[0];
@@ -482,15 +505,15 @@ function herOwnMove(ctx: Ctx) {
     .filter((a) => (a.tier === tier || (tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier && a.tier === topTier - 1)) && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina))
     .map((a) => {
       const at = (loc: string): ConsentInput => ({ act: a.id, partner: p.id, loc, offer: 0, pressure: 0 });
-      const room = isIntimate(a) ? privateRoomFor(ctx.state, ctx.engine, p.id) : null;
-      const input = room && score(at(room)).total > score(at(HALL)).total ? at(room) : at(HALL);
+      const other = isIntimate(a) && !closed(room) ? privateRoomFor(ctx.state, ctx.engine, p.id) : null;
+      const input = other && score(at(other)).total > score(at(room)).total ? at(other) : at(room);
       return { input, res: score(input) };
     })
     .sort((x, y) => y.res.total - x.res.total || x.input.act.localeCompare(y.input.act));
   const pick = options[0];
   if (!pick || pick.res.total < content.consent.eagerAt + H.margin) return; // she wants to, but not that much
   sh.herMoves = (sh.herMoves ?? 0) + 1;
-  const seen = husbandSees(ctx.state, HALL) || husbandSees(ctx.state, pick.input.loc);
+  const seen = husbandSees(ctx.state, room) || husbandSees(ctx.state, pick.input.loc);
   b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: pick.input.act, loc: pick.input.loc, verdict: "eager", seen, total: pick.res.total, rows: [...pick.res.rows, { id: "consent.her_own", labelKey: "factor.consent.her_own", value: 0 }] });
   if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
   p.memory.interest = clamp(p.memory.interest + H.interest);
@@ -516,13 +539,13 @@ export function warmGuests(ctx: Ctx) {
 }
 
 /** A hook for the terms between husband and wife: return true when she asks him before saying yes. */
-export const gate: { ask?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean; deal?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean; finish?: (ctx: Ctx, v: Visit, p: Patron, enc: Encounter) => boolean } = {};
+export const gate: { ask?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Verdict) => boolean; deal?: (ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) => boolean; finish?: (ctx: Ctx, v: Visit, p: Patron, enc: Encounter) => boolean } = {};
 /** Start an act with a guest outright (a dare taken, a yes given after asking). */
 export function startWith(ctx: Ctx, patronId: string, actId: string, verdict: Verdict) {
   const b = bs(ctx.state);
   const v = b.shift?.visits.find((x) => x.patron === patronId);
   const p = b.patrons[patronId];
-  if (!v || !p || b.encounter) return false;
+  if (!v || !p || b.encounter || v.out !== undefined || !ctx.state.where[p.id]) return false;
   const act = actById(actId);
   const loc = isIntimate(act) ? (privateRoomFor(ctx.state, ctx.engine, p.id) ?? HALL) : HALL;
   accept(ctx, v, p, { act: actId, partner: patronId, loc, offer: 0, pressure: 0 }, verdict);
@@ -533,10 +556,12 @@ export function runProposals(ctx: Ctx) {
   const b = bs(ctx.state);
   const sh = b.shift!;
   if (sh.moment && sh.tick >= sh.moment.until) sh.moment = null;
-  if (b.encounter || b.night || (sh.awayUntil ?? 0) > sh.tick) return;
+  if (b.encounter || b.night || ((sh.awayUntil ?? 0) > sh.tick && !sh.attend)) return;
+  // only the men in the room she is in: the hall, or the room she has gone into
+  const room = herRoom(ctx.state);
   // a man speaks up once he has been here a moment; the keener ones go first
   const eligible = sh.visits
-    .filter((v) => !v.blocked && !v.away && (v.served > 0 || v.waited > 0))
+    .filter((v) => !v.blocked && (!v.away || room !== HALL) && v.out === undefined && (v.served > 0 || v.waited > 0 || v.group) && roomOfGuest(ctx.state, v.patron) === room)
     .sort((a, c) => b.patrons[c.patron]!.memory.interest - b.patrons[a.patron]!.memory.interest || a.patron.localeCompare(c.patron));
   herOwnMove(ctx);
   if (b.encounter) return;
@@ -545,7 +570,10 @@ export function runProposals(ctx: Ctx) {
     if (spoke >= content.consent.proposalsPerTick) break;
     const p = b.patrons[v.patron]!;
     const perHour = (content.consent.askChancePerHour + p.memory.interest * content.consent.askChancePerInterest) * (1 + (v.heat ?? 0) / G.heatAsks);
-    if (!ctx.rng.chance((perHour * content.balance.shift.minutesPerTick) / 60)) continue;
+    // the man she went to see, or who called her in, speaks up straight away; the others as at any table
+    const first = sh.attend?.patron === v.patron && !sh.attend.asked;
+    if (first) sh.attend!.asked = true;
+    else if (!ctx.rng.chance((perHour * content.balance.shift.minutesPerTick) / 60 * (room === HALL ? 1 : S.roomAsks))) continue;
     const input = nextProposal(ctx.state, ctx.engine, v, (len) => ctx.rng.int(0, len - 1));
     if (!input) continue;
     const act = actById(input.act);
@@ -561,11 +589,11 @@ export function runProposals(ctx: Ctx) {
       rolled = c.hesitantYesAtZero + ((1 - c.hesitantYesAtZero) * (res.total - c.hesitantAt)) / Math.max(1, c.eagerAt - c.hesitantAt);
       if (!ctx.rng.chance(rolled)) verdict = "refuse";
     }
-    b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: input.act, loc: input.loc, verdict, seen: husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc), total: res.total, rows: res.rows, ...(rolled === undefined ? {} : { rolled }) });
+    b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: p.id, act: input.act, loc: input.loc, verdict, seen: husbandSees(ctx.state, room) || husbandSees(ctx.state, input.loc), total: res.total, rows: res.rows, ...(rolled === undefined ? {} : { rolled }) });
     if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
-    const seen = husbandSees(ctx.state, HALL) || husbandSees(ctx.state, input.loc);
+    const seen = husbandSees(ctx.state, room) || husbandSees(ctx.state, input.loc);
     ctx.emit("encounter:proposed", { patron: p.id, act: input.act, verdict, total: res.total, seen, rowIds: res.rows.map((r) => r.id) });
-    if (verdict !== "refuse" && gate.ask?.(ctx, v, p, input)) continue; // she goes to her husband first
+    if (gate.ask?.(ctx, v, p, input, verdict)) continue; // she goes to her husband first: glad of it, or not glad at all
     if (verdict === "refuse") refuse(ctx, v, p, input);
     else {
       accept(ctx, v, p, input, verdict);
@@ -690,8 +718,18 @@ export function registerEncounters(api: ModApi) {
   row("power_denies", 39, (s, _i, act, p) => (p || bs(s).mode !== "open" || act.tier < 5 ? null : -bs(s).power * sec.powerDenies));
   // the situation
   row("witnesses", 40, (s, i, act, p) => {
-    const others = (bs(s).shift?.visits.filter((v) => !v.away && v.patron !== i.partner).length ?? 0); // a man who has stepped out sees nothing
-    return p && i.loc === HALL && act.tier >= 3 && others > 0 ? -(100 - her(s).traits.openness) * c.witnesses : null;
+    // the other men in that room: in the hall the other tables, in the back room the rest of his company
+    const others = (bs(s).shift?.visits.filter((v) => !v.away && v.patron !== i.partner && roomOfGuest(s, v.patron) === i.loc).length ?? 0);
+    if (!p || act.tier < 3 || others === 0) return null;
+    return i.loc === HALL ? -(100 - her(s).traits.openness) * c.witnesses : -(100 - her(s).traits.openness) * c.witnesses * Math.min(1, others / 3);
+  });
+  // a company: the others egg him on, and saying no to a whole table is harder than to one man
+  row("company", 40.2, (s, i, act, p) => {
+    if (!p || act.tier < 1 || i.loc === HALL) return null;
+    const v = bs(s).shift?.visits.find((x) => x.patron === i.partner);
+    if (!v?.group) return null;
+    const others = bs(s).shift!.visits.filter((x) => x.group && x.patron !== i.partner && roomOfGuest(s, x.patron) === i.loc).length;
+    return others * c.companyPerMan || null;
   });
   row("plain_sight", 40.5, (_s, i, act, p) => (p && isIntimate(act) && i.loc === HALL ? -c.inPlainSight : null));
   // His eyes on her. How heavy they are depends on what she thinks he allows: if she is sure he does not mind,
@@ -718,6 +756,14 @@ export function registerEncounters(api: ModApi) {
     if (b.mode !== "open" && husbandSees(s, i.loc)) return null; // already counted in his eyes on her
     const binds = b.mode === "open" ? 1 : her(s).traits.honesty / 100;
     return (x / 100) * c.expect.behindBack * binds;
+  });
+  // He has gone out and left the bar to her: nobody to see, nobody to ask. She hurries to be done before he is back.
+  row("away", 41.7, (s, _i, act, p) => {
+    const sh = bs(s).shift;
+    if (!p || act.tier < 2 || !sh || sh.awaySince === undefined) return null;
+    const A = c.away;
+    const hours = Math.max(0, sh.tick - sh.awaySince) / 60;
+    return Math.min(A.max, A.base + hours * A.perHour) * (1 - (her(s).traits.honesty / 100) * A.honesty);
   });
   row("power", 42, (s, _i, act, p) => (p && bs(s).mode === "open" && act.tier >= 2 ? bs(s).power * sec.powerRow : null));
 
@@ -758,10 +804,11 @@ export function registerEncounters(api: ModApi) {
     priority: 50,
     match(state) {
       const m = bs(state).shift?.moment;
-      if (!m || !onScreen(state, HALL) || state.where[WIFE] !== HALL) return null;
+      const loc = m?.loc ?? HALL;
+      if (!m || !onScreen(state, loc) || state.where[WIFE] !== loc) return null;
       return {
         type: actById(m.act).scene,
-        location: HALL,
+        location: loc,
         participants: [
           { id: WIFE, role: "wife" },
           { id: m.patron, role: "patron" },

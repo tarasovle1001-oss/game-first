@@ -61,6 +61,7 @@ export interface Husband {
   arousal?: number; // 0..100
   washed?: string; // "day:phase" he last washed
   caged?: { day: number; asked?: number };
+  ruinedTurn?: number; // the move she ruined it for him on
   wetSecret?: number; // the day of a wet dream she slept through: his to tell or to keep // the cage is on since this day; the day he last asked to have it off
   confidence?: number; // 0..100, how sure of himself he is in bed; absent = the starting value
   dry?: number; // nights in a row without his own release
@@ -109,6 +110,10 @@ export interface Visit {
   heat?: number; // 0..100, how worked up he is
   patron: string;
   away?: { to: string; until: number }; // he has stepped out of the hall for a few minutes
+  at?: string; // where he sits, when it is not the hall: the back room with his company, the sauna, his room upstairs
+  atUntil?: number; // until when he stays there (then back to the hall); a company member stays for good
+  group?: boolean; // one of the company in the back room: served by the round, not table by table
+  out?: number; // a lodger who has gone out of the building: back at this minute (not on the map until then)
   stay: number; // ticks left
   served: number;
   waited: number; // ticks he has been waiting for an order
@@ -208,7 +213,7 @@ export interface Shift {
   tips: number;
   served: number;
   turnedAway: number;
-  moment: { patron: string; act: string; until: number } | null; // last light act of this tick
+  moment: { patron: string; act: string; until: number; loc?: string } | null; // last light act of this tick
   interrupt: boolean; // something worth stopping "wait until" for has happened
   herMoves?: number; // times she started something with a guest herself tonight
   wifeFreeAt?: number; // minute she is done with the order in her hands
@@ -225,6 +230,8 @@ export interface Shift {
   marksGuests?: boolean;
   hisQuiet?: boolean; // he has gone up to lie down in the middle of the evening
   quietUntil?: number; // she went up to lie down: the minute she is back
+  attend?: { loc: string; until: number; why: string; patron?: string; asked?: boolean }; // she is in another room with the guests there (a round, a drink to the sauna, a look in on a lodger): the hall mode runs there
+  awaySince?: number; // he is out in town: the minute he left (0 = he was not back by opening)
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
   groupAt?: number; // minute a company walks in
@@ -267,12 +274,12 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string; had?: number; noes?: number } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
   told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
-  day: { left: number; done: string[]; arrivals: number; herOut?: boolean; busy?: { id: string; left: number; spent?: number }; her?: { task: string; left: number }; tripped?: boolean; cover?: string; coverSeen?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
+  day: { left: number; done: string[]; arrivals: number; herOut?: boolean; busy?: { id: string; left: number; spent?: number }; her?: { task: string; left: number }; tripped?: boolean; cover?: string; coverSeen?: boolean; opening?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
   clean: number; // 0..100, how the room looks
   owned: string[]; // outfits she has
   toys: string[];
@@ -281,6 +288,7 @@ export interface BaseState {
   viewAll?: boolean; // never saved as true by the game: the screen sets it on its own copy when the player watches everything
   herToys?: string[]; // toys she bought herself, out of her own purse
   soloDay?: number; // the day she last shut herself in with one
+  solo?: { at: number; zone: string; started?: number; watched?: boolean; done?: boolean }; // today's session: when in the afternoon (minutes left), and how it goes
   lastToy?: { id: string; size: number; zone: string; day: number }; // what she used last, for the picture
   sentUp?: number; // the day he last sent her up to a lodger
   stayedUp?: { day: number; patron: string; act: string; tells: string }; // she did not come back before morning
@@ -306,7 +314,8 @@ export interface BaseState {
   wishStr?: Record<string, number>; // how fresh each of those is, 0..100: said again it is topped up, left alone it fades
   wishRun?: Record<string, { n: number; day: number; times?: number }>; // days running each wish has been said
   perm?: Record<string, "allow" | "forbid">; // single things he allowed or forbade
-  ask?: { patron: string; act: string; tick?: number }; // she is asking him before she says yes
+  ask?: { patron: string; act: string; tick?: number; tone?: string }; // she is asking him before she says yes (tone "reluctant": she does not want it and asks what to do)
+  askFree?: string[]; // "day:patron:act" he told her to decide herself about
   askWhy?: { patron: string; act: string }; // he said no and she wants to know why
   asksToday?: number;
   stanceSaid?: string[];

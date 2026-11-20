@@ -19,7 +19,9 @@ const K = content.body.his;
 const toyFor = (state: GameState) => {
   const b = bs(state);
   const fit = K.fitBase + b.husband.stretch * K.fitPerStretch;
-  return content.day.shop.toys.filter((t) => b.toys.includes(t.id) && t.size <= fit + K.tooBig).sort((x, y) => y.size - x.size)[0] ?? null;
+  // his own too: a toy still in the bag is his to use before it is ever hers
+  const mine = new Set([...b.toys, ...(b.bag ?? []).filter((x) => x.kind === "toy").map((x) => x.id)]);
+  return content.day.shop.toys.filter((t) => mine.has(t.id) && t.size <= fit + K.tooBig).sort((x, y) => y.size - x.size)[0] ?? null;
 };
 
 export function registerAlone(api: ModApi) {
@@ -57,6 +59,13 @@ export function registerAlone(api: ModApi) {
         if (toy) {
           // what he does to himself there tells her something about who can do what to whom
           b.power = clamp(b.power + A.toy.power);
+          // and it is one she has never seen: now she has
+          if ((b.bag ?? []).some((x) => x.id === toy.id)) {
+            b.bag = b.bag!.filter((x) => x.id !== toy.id);
+            b.toys.push(toy.id);
+            changeHeroine(ctx, "arousal", 3, "new toy");
+            ctx.log("log.alone.caught.toy.unknown", { toy: `toy.${toy.id}` });
+          }
           if (hard || (warm && h.traits.openness >= A.toy.joinOpenness)) {
             b.power = clamp(b.power + A.toy.powerJoin);
             changeHeroine(ctx, "arousal", A.toy.arousal, "husband");

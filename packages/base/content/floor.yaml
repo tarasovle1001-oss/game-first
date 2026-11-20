@@ -49,15 +49,15 @@ deal:                 # a guest with money goes to the husband first
   refuseHerRelief: { tenderness: 4, trust: 2 }
 groups:               # a company takes the back room
   fromDay: 3
-  chancePerDay: 0.35
+  chancePerDay: 0.22
   arriveTick: [60, 300]         # minute of the shift
-  stay: 150                     # minutes
+  stay: 210                     # minutes
   size: [3, 5]
   kinds: [stag, office, bikers, team]
   saunaChance: 0.5              # with a sauna built, how often a company takes it instead
   saunaHeat: 30                 # they start warmer, and she is in a towel
   saunaTier: 15                 # counts as this much extra heat when she walks in
-  trayEvery: 30                 # minutes between rounds
+  trayEvery: 40                 # minutes between rounds
   trayWait: 20                  # after this long without a round they get restless
   bill: [18, 30]                # per man per round
   tipHer: 0.25                  # share of a round, when she brings it
@@ -66,7 +66,7 @@ groups:               # a company takes the back room
   heatHer: 8                    # extra each time it is her
   restlessReputation: 1
   beats: { step: 4, maxSteps: 2, stepHeat: 8, serve: 1, talk: 3, decide: 6, warmHeat: 40, rowdyHeat: 70, pullOutHeat: 10 } # minutes after she walks in: the glasses go down, they keep her talking, it comes to something (until then he can still walk in)
-  inside: [10, 20]              # minutes she is in there with a tray
+  inside: [15, 30]              # minutes she is in there with a tray (longer if something starts)
   longInside: [30, 45]          # when it goes further
   tierByHeat: [[0, 1], [25, 2], [45, 4], [65, 6], [85, 7]]
   pressurePerMan: 1
@@ -140,9 +140,10 @@ finish:               # where a guest finishes, and what she makes of it
   shows: 4                    # minutes the ending stays as the scene
 roam: # guests get up and walk about: nobody sits in plain view the whole evening
   chancePerMinute: 0.012   # per seated guest: about one trip per guest per evening
-  meet: { chance: 0.35, interest: 50, affinity: 30, openness: 45, arousal: 35, extra: 5, ladder: [kiss, grope, handjob, blowjob] } # he steps out to the toilet or the stairs and she goes after him: as far up the ladder as she says yes to
+  meet: { chance: 0.35, interest: 50, affinity: 30, openness: 45, arousal: 35, extra: 5 } # he steps out to the toilet or the stairs and she goes after him: from there it is the hall mode, the two of them
+  sauna: { chance: 0.05, minutes: [30, 60], orderAfter: 10, bareHeat: 45, bareDrunk: 40, likeOpenness: 45, arousal: 4 } # per guest per ten minutes: he takes his drink into the sauna; worked up or drunk, the towel does not stay on
   places:
     - { id: toilet, to: cafe.toilet, weight: 5, minutes: [3, 6] }
     - { id: bar, to: cafe.bar, weight: 3, minutes: [2, 5] }
     - { id: call, to: hotel.landing, weight: 2, minutes: [3, 6] }   # a phone call on the stairs
-    - { id: peek, to: cafe.lounge, weight: 1, minutes: [1, 2] }     # a look into the small hall, when it is empty
+    - { id: peek, to: cafe.lounge, weight: 1, minutes: [4, 7] }     # a look into the small hall, when it is empty (long enough to be seen on the map)

@@ -1,4 +1,4 @@
-import type { GameState, ModApi } from "@tc/core";
+import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { HUSBAND, WIFE } from "../state";
 
@@ -24,6 +24,16 @@ export const husbandSees = (state: GameState, loc: string) => sight.get(state.wh
 export const husbandIn = (state: GameState, loc: string) => state.where[HUSBAND] === loc;
 /** True when he is next door: he sees nothing but may hear. */
 export const husbandNextTo = (state: GameState, loc: string) => !husbandSees(state, loc) && (linked.get(state.where[HUSBAND] ?? "")?.has(loc) ?? false);
+
+/** Moves the game on to the next phase from inside an action, the way core/advance does (never past the last phase of the day). */
+export function nextPhase(ctx: Ctx) {
+  const from = ctx.state.time.phase;
+  const i = PHASES.indexOf(from as (typeof PHASES)[number]);
+  if (i < 0 || i >= PHASES.length - 1) return;
+  ctx.emit("phase:exit", { phase: from });
+  ctx.emit("core:setPhase", { phase: PHASES[i + 1]!, newDay: false });
+}
+export const inTown = (loc: string | undefined) => !!loc?.startsWith("town.");
 
 /** Rooms from content, the cast, and the fallback "who is here" scene. */
 export function registerPlaces(api: ModApi) {

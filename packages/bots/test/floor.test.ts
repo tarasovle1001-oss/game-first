@@ -61,13 +61,18 @@ describe("the floor", () => {
     // they wait in the doorway until he says yes; a company let in is worth a little to the name of the place
     { const rep = bs(s).reputation; s = engine.dispatch(s, { type: GROUP, payload: { do: "accept" } }); expect(bs(s).reputation).toBe(Math.min(100, rep + 2)); }
     expect(bs(s).shift!.group).toBeDefined();
+    // they sit down in there, every one of them: on the map, served by the round
+    const members = bs(s).shift!.visits.filter((v) => v.group);
+    expect(members.length).toBe(bs(s).shift!.group!.size);
+    expect(members.every((v) => s.where[v.patron] === "cafe.lounge")).toBe(true);
     let guard = 0;
     while (!has(s, GROUP) && guard++ < 20) s = wait(s, 5);
     expect(has(s, GROUP, (p) => p.do === "self")).toBe(true);
     if (has(s, GROUP, (p) => p.do === "send_her")) {
       const sent = engine.dispatch(s, { type: GROUP, payload: { do: "send_her" } });
       expect(sent.where.wife).toBe("cafe.lounge");
-      expect(bs(sent).shift!.group!.herOut).toBeGreaterThan(bs(sent).shift!.tick);
+      expect(bs(sent).shift!.attend?.loc).toBe("cafe.lounge");
+      expect(bs(sent).shift!.attend!.until).toBeGreaterThan(bs(sent).shift!.tick);
       const back = wait(sent, 50);
       expect(back.where.wife).not.toBe("cafe.lounge");
     }

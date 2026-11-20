@@ -184,6 +184,11 @@ export function registerTerms(api: ModApi) {
         if (id === "friendlier" || id === "tone_down") continue;
         const k = wishShare(state, id);
         if (w.consent && tier <= (w.upTo ?? 99) && (!w.seen || husbandSees(state, loc))) total += w.consent * k;
+        // neutral words: for a modest wife they hold her back a little, for an open one they let her go along
+        if (w.byCharacter && tier >= 1 && tier <= (w.upTo ?? 99)) {
+          const t = bs(state).heroine.traits;
+          total += w.byCharacter * Math.max(-1, Math.min(1, (t.openness - 45) / 25 + (55 - t.fidelity) / 50)) * k;
+        }
         if (w.offer && offer > 0) total += offer * w.offer * content.consent.money * k;
       }
       return total ? Math.round(total * 10) / 10 : null;
@@ -230,25 +235,61 @@ export function registerTerms(api: ModApi) {
       ctx.emit("couple:allow", { item: it.id, say });
     },
   });
+  /** She came to him not wanting it: "we need the money", "no, and you don't have to", "you decide". */
+  const reluctantAnswer = (ctx: Ctx, patron: string, act: string, say: "yes" | "later" | "no") => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const R = T.ask.reluctant;
+    const v = b.shift?.visits.find((x) => x.patron === patron);
+    said(ctx, `told.permit.${say}.reluctant`, { what: `act.${act}` });
+    if (say === "yes") {
+      // "put up with it, we need the money": she hears that it is allowed, and that he asked it of her
+      b.expect[act] = Math.max(b.expect[act] ?? E.unknown, E.approve);
+      fx(ctx, h.latents.money_hungry !== undefined || h.latents.submissive !== undefined ? R.yesTakes : R.yes, "asked");
+      if (v) v.cooldownUntil = 0;
+      ctx.log("log.ask.reluctant.yes");
+    } else if (say === "no") {
+      b.expect[act] = E.forbid;
+      if (v) {
+        v.retry = null;
+        v.blocked = true; // he has a word with the man
+      }
+      fx(ctx, R.no, "asked");
+      ctx.log("log.ask.reluctant.no");
+    } else {
+      // "you decide": nothing is said about what he wants - a lot about how much rope she has
+      (b.askFree = b.askFree ?? []).push(`${ctx.state.time.day}:${patron}:${act}`);
+      if (b.askFree.length > 20) b.askFree.shift();
+      if (v) v.cooldownUntil = 0;
+      fx(ctx, R.later, "asked");
+      b.power = clamp(b.power + 1);
+      ctx.log("log.ask.reluctant.later");
+    }
+    ctx.emit("couple:permit", { say, act, patron, tone: "reluctant" });
+  };
   // --- 3. she asks him first -----------------------------------------------------------------------
-  gate.ask = (ctx, v, p, input) => {
+  gate.ask = (ctx, v, p, input, verdict) => {
     const b = bs(ctx.state);
     const h = b.heroine;
     const act = actById(input.act);
     const A = T.ask;
     if (b.ask || act.tier < A.fromTier || (b.asksToday ?? 0) >= A.perDay) return false;
+    if ((b.askFree ?? []).includes(`${ctx.state.time.day}:${p.id}:${act.id}`)) return false; // he told her to decide herself
+    // a decent wife who does not want it comes to him too - not to ask leave, to ask what to do about him
+    const reluctant = verdict !== "eager" && h.traits.fidelity >= A.reluctant.fidelity && h.traits.honesty >= A.honesty;
+    if (verdict === "refuse" && (!reluctant || act.tier > A.reluctant.upToTier || !ctx.rng.chance(A.reluctant.chance))) return false;
     if (Math.abs(expectOf(ctx.state, act.id)) >= A.maxSure || b.patrons[p.id]?.memory.stance === "free") return false;
     // in the open she always asks; while she hides things only for the milder ones, and only if she trusts him
     if (b.mode === "hidden" && (act.tier > A.upToTierHidden || h.traits.honesty < A.honesty || trustOf(ctx.state) < A.trust)) return false;
     // he has to be somewhere she can walk to
     if (ctx.state.where[HUSBAND]?.startsWith("town.")) return false;
-    b.ask = { patron: p.id, act: act.id, tick: b.shift?.tick ?? 0 };
+    b.ask = { patron: p.id, act: act.id, tick: b.shift?.tick ?? 0, ...(reluctant ? { tone: "reluctant" } : {}) };
     ctx.state.where[WIFE] = ctx.state.where[HUSBAND]!; // she comes over to ask
     b.asksToday = (b.asksToday ?? 0) + 1;
     v.retry = act.id;
     v.cooldownUntil = (b.shift?.tick ?? 0) + 10;
     if (b.shift) b.shift.interrupt = true;
-    ctx.log("log.ask.her", { name: `@name:${p.name}`, act: `act.${act.id}` });
+    ctx.log(reluctant ? "log.ask.her.reluctant" : "log.ask.her", { name: `@name:${p.name}`, act: `act.${act.id}` });
     ctx.emit("her:asked", { patron: p.id, act: act.id });
     return true;
   };
@@ -259,6 +300,14 @@ export function registerTerms(api: ModApi) {
       b.ask = undefined;
       b.askWhy = undefined;
     }
+  });
+  // he took her to bed instead of answering: that is an answer of a kind, and the question is dropped
+  api.events.on("bed:started", (ctx) => {
+    const b = bs(ctx.state);
+    if (!b.ask) return;
+    const v = b.shift?.visits.find((x) => x.patron === b.ask!.patron);
+    if (v) v.retry = null;
+    b.ask = undefined;
   });
   // he said nothing: after a while she takes that for "not now"
   api.events.on("shift:tick", (ctx) => {
@@ -273,13 +322,14 @@ export function registerTerms(api: ModApi) {
   api.actions.register({
     id: PERMIT,
     labelKey: "action.permit",
-    describe: (a) => (a.payload!.name !== undefined ? { key: `action.permit.${a.payload!.say}`, params: { name: `@name:${a.payload!.name}`, act: `act.${a.payload!.act}` } } : { key: `action.permit.${a.payload!.say}` }),
+    describe: (a) => (a.payload!.name !== undefined ? { key: `action.permit.${a.payload!.say}${a.payload!.tone ? ".reluctant" : ""}`, params: { name: `@name:${a.payload!.name}`, act: `act.${a.payload!.act}` } } : { key: `action.permit.${a.payload!.say}` }),
     enumerate(state) {
       const b = bs(state);
       if (b.askWhy) return ["explain", "because", "relent"].map((say) => ({ type: PERMIT, payload: { say } }));
       if (!b.ask) return [];
       const name = b.patrons[b.ask.patron]?.name ?? 0;
-      return ["yes", "later", "no"].map((say) => ({ type: PERMIT, payload: { say, name, act: b.ask!.act } }));
+      const tone = b.ask.tone === "reluctant" ? 1 : 0;
+      return ["yes", "later", "no"].map((say) => ({ type: PERMIT, payload: { say, name, act: b.ask!.act, ...(tone ? { tone } : {}) } }));
     },
     accepts: (state, a) => (bs(state).askWhy ? ["explain", "because", "relent"] : bs(state).ask ? ["yes", "later", "no"] : []).includes(a.payload?.say as string),
     apply(ctx, action) {
@@ -295,8 +345,9 @@ export function registerTerms(api: ModApi) {
         ctx.emit("couple:permit", { say, act });
         return;
       }
-      const { patron, act } = b.ask!;
+      const { patron, act, tone } = b.ask!;
       b.ask = undefined;
+      if (tone === "reluctant") return void reluctantAnswer(ctx, patron, act, say as "yes" | "later" | "no");
       const v = b.shift?.visits.find((x) => x.patron === patron);
       const want = verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { act, partner: patron, loc: HALL, offer: 0, pressure: 0 }).total);
       said(ctx, `told.permit.${say}`, { what: `act.${act}` });
@@ -381,7 +432,7 @@ export function registerTerms(api: ModApi) {
   const dareTargets = (state: GameState): { id: string; name: number }[] => {
     const b = bs(state);
     return (b.shift?.visits ?? [])
-      .filter((v) => v.stay > 0 && !v.blocked && b.patrons[v.patron])
+      .filter((v) => v.stay > 0 && !v.blocked && b.patrons[v.patron] && v.out === undefined && !v.group && state.where[v.patron] === HALL)
       .sort((a, c) => b.patrons[c.patron]!.memory.interest - b.patrons[a.patron]!.memory.interest || a.patron.localeCompare(c.patron))
       .slice(0, 2)
       .map((v) => ({ id: v.patron, name: b.patrons[v.patron]!.name }));

@@ -245,7 +245,7 @@ describe("the afternoon", () => {
     expect(engine.listActions(s).some((a) => a.type === "base/buy" && a.payload!.kind === "outfit")).toBe(true);
     expect(engine.checkInvariants(s)).toEqual([]);
   });
-  it("walking off in the middle of something drops it; the town is closed to him in the evening", () => {
+  it("walking off in the middle of something drops it; the evening starts without him, and he may stay out", () => {
     let s = engine.init(6);
     s = engine.dispatch(s, { type: "base/day", payload: { do: "clean" } });
     const clean = s.mods.base.clean;
@@ -253,9 +253,32 @@ describe("the afternoon", () => {
     expect(s.mods.base.day.busy).toBeUndefined();
     expect(s.mods.base.clean).toBe(clean);
     s = go(s, "cafe.hall", "town.square");
-    s = nextPhase(s);
-    expect(s.where.husband).toBe("cafe.hall");
+    // five o'clock comes while he is in town: the doors open, she is behind the bar
+    for (let i = 0; i < 40 && s.time.phase === "prep"; i++) s = engine.dispatch(s, { type: "base/prep-wait", payload: { minutes: 15 } });
+    expect(s.time.phase).toBe("shift");
+    expect(s.time.minute).toBe(17 * 60);
+    expect(s.where.husband).toBe("town.square");
+    expect(s.where.wife).toBe("cafe.bar");
+    expect(s.mods.base.shift.awaySince).toBe(0);
+    // back home, then out again in the evening; not in its last hour and a half
+    s = go(s, "cafe.hall");
+    expect(s.mods.base.shift.awaySince).toBeUndefined();
+    expect(engine.listActions(s).some((a) => a.type === CORE_MOVE && String(a.payload?.to).startsWith("town."))).toBe(true);
+    for (let i = 0; i < 9 * 4; i++) s = engine.dispatch(s, { type: "base/wait", payload: { minutes: 15 } });
     expect(engine.listActions(s).some((a) => a.type === CORE_MOVE && String(a.payload?.to).startsWith("town."))).toBe(false);
+  });
+  it("open now: from midday the evening starts at the current time, and the clock never jumps back", () => {
+    let s = engine.init(6);
+    expect(s.time.minute).toBeLessThan(12 * 60 + 1);
+    s = engine.dispatch(s, { type: "base/prep-wait", payload: { minutes: 60 } });
+    s = engine.dispatch(s, { type: "base/prep-wait", payload: { minutes: 15 } });
+    const at = s.time.minute;
+    expect(engine.listActions(s).some((a) => a.type === "base/open-early")).toBe(true);
+    s = engine.dispatch(s, { type: "base/open-early" });
+    expect(s.time.phase).toBe("shift");
+    expect(s.time.minute).toBe(at);
+    s = engine.dispatch(s, { type: "base/wait", payload: { minutes: 5 } });
+    expect(s.time.minute).toBe(at + 5);
   });
   it("she has her own afternoon: she moves through the house, and he has to be in her room to talk to her", () => {
     let s = engine.init(6);

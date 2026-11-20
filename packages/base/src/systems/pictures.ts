@@ -4,7 +4,6 @@ import type { ModApi } from "@tc/core";
 import { bs, HUSBAND, WIFE } from "../state";
 import { content } from "../content";
 import { HALL, husbandSees } from "./places";
-const LOUNGE = "cafe.lounge";
 const SAUNA = "cafe.sauna";
 import { actById, onScreen } from "./encounters";
 import { detail, freshGlance } from "./glance";
@@ -35,14 +34,25 @@ export function registerPictures(api: ModApi) {
       return { type: g.type, location: g.loc, participants: g.who, ...(g.tags ? { tags: g.tags } : {}) };
     },
   });
-  // She has walked over to him and is waiting for his answer.
+  // She has come over to ask him first about a guest: the two of them, talking, above whatever was just going on at a table.
+  api.scenes.register({
+    id: "base.ask",
+    priority: 73,
+    match(state) {
+      const b = bs(state);
+      const at = state.where[HUSBAND];
+      if (!b.ask || !at || state.where[WIFE] !== at || b.night?.sex || b.encounter || b.caught) return null;
+      return { type: "talk", location: at, participants: [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }] };
+    },
+  });
+  // She has walked over to him and is waiting for his answer: this outranks the glance of a moment at a table.
   api.scenes.register({
     id: "base.approach",
-    priority: 65,
+    priority: 72,
     match(state) {
       const ap = bs(state).approach;
       const at = state.where[HUSBAND];
-      if (!ap || !at || state.where[WIFE] !== at || bs(state).night?.sex) return null;
+      if (!ap || !at || state.where[WIFE] !== at || bs(state).night?.sex || bs(state).encounter || bs(state).caught) return null;
       return { type: APPROACH[ap.kind] ?? "talk", location: at, participants: [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }] };
     },
   });
@@ -66,20 +76,23 @@ export function registerPictures(api: ModApi) {
       return { type: actById(up.act).scene, location: up.room, participants: [{ id: WIFE, role: "wife" }, { id: up.patron, role: "patron" }], tags: { outfit: dressOf(state) } };
     },
   });
-  // She is in the back room with a company: the tray, the talk, and what it came to.
+  // She is in another room with the guests there (the back room, the sauna, a lodger's door): the tray, the talk.
+  // What it comes to is an ordinary scene with a guest (base.encounter); this is the picture until then.
   api.scenes.register({
     id: "base.company",
     priority: 58,
     match(state) {
       const b = bs(state);
-      const g = b.shift?.group;
-      if (!g || b.encounter || g.herOut === undefined) return null;
-      const venue = g.sauna ? SAUNA : LOUNGE;
-      if (state.where[WIFE] !== venue || !onScreen(state, venue)) return null;
-      const men = [{ id: g.lead, role: "patron" }];
-      const warm = g.heat >= content.floor.groups.beats.rowdyHeat ? "patron_touching" : g.heat >= content.floor.groups.beats.warmHeat ? "patron_flirting" : "patron_chatting";
-      const type = g.round ? (g.round.beat < 2 ? "serving" : warm) : g.did ? actById(g.did).scene : "serving";
-      return { type, location: venue, participants: [{ id: WIFE, role: "wife" }, ...men], tags: { outfit: dressOf(state), men: String(Math.min(3, g.size)), ...(g.sauna ? { outfit: "towel" } : {}) } };
+      const at = b.shift?.attend;
+      if (!at || b.encounter || state.where[WIFE] !== at.loc || !onScreen(state, at.loc)) return null;
+      const men = b.shift!.visits.filter((v) => state.where[v.patron] === at.loc).map((v) => v.patron);
+      const lead = at.patron && men.includes(at.patron) ? at.patron : men[0];
+      if (!lead) return null;
+      const heat = Math.max(0, ...b.shift!.visits.filter((v) => men.includes(v.patron)).map((v) => v.heat ?? 0));
+      const B = content.floor.groups.beats;
+      const type = heat >= B.rowdyHeat ? "patron_touching" : heat >= B.warmHeat ? "patron_flirting" : at.why === "tray" || at.why === "serve" ? "serving" : "patron_chatting";
+      const sauna = at.loc === SAUNA;
+      return { type, location: at.loc, participants: [{ id: WIFE, role: "wife" }, { id: lead, role: "patron" }], tags: { outfit: sauna ? "towel" : dressOf(state), ...(men.length > 1 ? { men: String(Math.min(3, men.length)) } : {}) } };
     },
   });
   api.scenes.register({
@@ -105,6 +118,16 @@ export function registerPictures(api: ModApi) {
       const b = bs(state);
       if (!b.deal || !b.shift || b.encounter || state.where[HUSBAND] !== HALL) return null;
       return { type: "deal", location: HALL, participants: [{ id: HUSBAND, role: "husband" }, { id: b.deal.patron, role: "patron" }, ...(state.where[WIFE] === HALL ? [{ id: WIFE, role: "wife" }] : [])] };
+    },
+  });
+  // Behind the bedroom door with her own drawer: for eyes that may see it, for as long as it lasts.
+  api.scenes.register({
+    id: "base.solo",
+    priority: 6,
+    match(state) {
+      const b = bs(state);
+      if (state.time.phase !== "prep" || b.day?.her?.task !== "solo" || !b.solo || state.where[WIFE] !== "home.bedroom" || !onScreen(state, "home.bedroom")) return null;
+      return { type: "her_solo", location: "home.bedroom", participants: [{ id: WIFE, role: "wife" }], tags: { toy: b.solo.zone } };
     },
   });
   api.scenes.register({

@@ -54,6 +54,7 @@ guest: # what a guest's evening does to him, and what she does about a guest her
 scene: # a thing with a guest runs minute by minute; every so often he tries to move it on
   tryEvery: [4, 8]          # minutes between his attempts to change what they are doing
   goingBonus: 10            # it is easier to say yes to the next thing once it is going
+  roomAsks: 4               # in another room with them (the back room, the sauna, upstairs) men speak up this many times as often as at a table
   maxMinutes: 60            # nobody keeps her off the floor longer than this...
   maxMinutesRoom: 150       # ...except in his own room upstairs
   paidDone: 1               # share of what the acts came to that he leaves if he finished
@@ -94,7 +95,9 @@ pityMax: 27
 familiar: 14     # she has already done this with him
 jumpPerTier: 14  # per tier he tries to skip with her
 witnesses: 0.15   # other guests can see, scaled by how closed she is
+companyPerMan: 2.5 # a company in the back room or the sauna: per other man of his there, they egg him on
 husbandWatching: 38 # her husband is in the room
+away: { base: 10, perHour: 4, max: 18, honesty: 0.5 } # he is out in town during the evening: the place is hers; more the longer he has been gone, less for an honest wife
 money: 0.3       # per unit of money offered, scaled by how badly they need it
 pressure: 0.25   # he insists: his persistence against her confidence
 tired: 15        # she has no energy left

@@ -7,7 +7,7 @@ import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { sizeClass } from "./body";
 import { actById } from "./encounters";
-import { nudge } from "./expectations";
+import { expectOf, nudge } from "./expectations";
 import { changeHeroine } from "./heroine";
 import { HALL } from "./places";
 
@@ -155,6 +155,10 @@ export function registerHerSide(api: ModApi) {
     const b = bs(ctx.state);
     if (b.approach) b.approach = null; // a guest got to her first
   });
+  api.events.on("bed:started", (ctx) => {
+    const b = bs(ctx.state);
+    if (b.approach) b.approach = null; // he answered with his hands
+  });
 
   // After closing she brings up the man it went furthest with tonight, as far as she is ready to say it, and asks if she did right.
   api.events.on("phase:enter", (ctx, e) => {
@@ -223,7 +227,7 @@ export function registerHerSide(api: ModApi) {
           feel(ctx, takes ? 0 : -1, takes ? 0 : A.endure.resent);
           changeHeroine(ctx, "mood", takes ? 0 : -4, "told to put up with it");
           // she hears what he is really saying: it is allowed
-          for (const a of content.acts) if (a.tier >= 2 && a.tier <= 4) b.expect[a.id] = Math.min(100, (b.expect[a.id] ?? 0) + A.endure.expect);
+          for (const a of content.acts) if (a.tier >= 2 && a.tier <= 4 && !a.only) b.expect[a.id] = Math.max(expectOf(ctx.state, a.id), A.endure.expect);
           b.told.push({ day: ctx.state.time.day, key: "told.endure" });
           if (b.told.length > 10) b.told.shift();
           ctx.log(takes ? `${key}.takes` : key, { name });

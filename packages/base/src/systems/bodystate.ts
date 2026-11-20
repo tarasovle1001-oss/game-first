@@ -124,7 +124,7 @@ export function registerBodyState(api: ModApi) {
   api.events.on("encounter:ended", (ctx) => {
     const b = bs(ctx.state);
     const sh = b.shift;
-    if (!sh || b.mode !== "hidden" || sh.group?.herOut !== undefined) return;
+    if (!sh || b.mode !== "hidden" || sh.attend) return; // still in the other room with them: she cleans up when she is out
     const marks = foreignMarks(ctx.state);
     const mussed = Object.keys(b.heroine.after ?? {}).length > 0;
     if (marks.length === 0 && !mussed) return;

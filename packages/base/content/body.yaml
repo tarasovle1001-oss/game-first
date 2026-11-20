@@ -15,7 +15,7 @@ sizeTasteGain: 4    # taste for size gained per orgasm with someone bigger than 
 night: # what she does when she lies awake wanting more
   maxAsks: 4              # how many times a night he can reach for her before she is simply asleep
   againPenalty: 8         # taken off her answer for every time he has already asked tonight
-  withoutPerLibido: 0.1   # frustration gained per point of her libido on a day without a single release (it fades by 2 a day on its own)
+  withoutPerLibido: 0.16  # frustration gained per point of her libido on a day without a single release (it fades by 2 a day on its own)
   restlessArousal: 40     # she cannot sleep above this arousal if nobody satisfied her tonight
   selfChance: 0.6         # she slips into the bathroom and takes care of herself
   slipOutChance: 0.35     # ...or goes to a lover, if there is a man she has slept with and has his number
@@ -26,7 +26,7 @@ night: # what she does when she lies awake wanting more
   elsewhere: 4 # anywhere but their own bedroom, with nobody around: a little harder
   public: { base: 25, perClosed: 0.5, exhibitionist: 30, gossip: 5, heat: 15, openness: 1.5 } # in front of guests: base plus per point of openness she lacks; what it does to the room
   wants: { arousal: 50, desire: 45, energy: 25, consent: 20, declineDesire: 1.5, declineResent: 3 } # she reaches for him herself: always when she is this worked up...
-  wantsChance: { base: 0.04, perLibido: 0.002, perDesireAbove: 0.004, perNightWithout: 0.04, max: 0.6 } # ...and by chance on any night: her libido, her desire for him above the level in "wants", nights since they last did
+  wantsChance: { base: 0.07, perLibido: 0.0025, perDesireAbove: 0.005, perNightWithout: 0.06, max: 0.65 } # ...and by chance on any night: her libido, her desire for him above the level in "wants", nights since they last did
 
 shownCm: { from: 12, factor: 1.6 } # the centimetres on screen: above `from` every cm counts for this much. Names only - the mechanics run on the plain numbers, so the balance does not move.
 sizeClasses: [11, 14, 17, 21] # cm: below the first is tiny, then small, average, big; from the last up is huge
@@ -73,6 +73,8 @@ his: # the husband's own body, for what she does to him
   fitBase: 9          # cm he takes comfortably at the start
   fitPerStretch: 0.14
   tooBig: 3           # a toy this much above his fit hurts more than it pleases
+  ruinedRelief: 15    # a ruined one takes only this much off how much he wants
+  wetRelief: 20       # so does one in his sleep
   powerPerPegging: 2
   peggingHerBase: 40  # what it gives her, plus her power over him
   peggingHerPerPower: 0.4
@@ -88,7 +90,7 @@ husband:
   size: 13
   stamina: 1
   minutes: 12       # how long he lasts
-  prematureChance: 0.12 # any night he can simply finish too early
+  prematureChance: 0.15 # any night he can simply finish too early
   prematureChancePerDeniedNight: 0.04
   shorterPerDeniedNight: 0.12 # share of his minutes lost per night he has gone without
   skillHalvesAt: 100   # her skill at which he lasts half as long
@@ -115,7 +117,7 @@ nerve: # his own body: confidence in bed (0..100) and nights without release. No
     gym: 1
     settle: 1        # per morning, back towards the start, from below and from above
   soft:
-    base: 0.04               # chance per turn of a scene, always: it happens to anyone
+    base: 0.07               # chance per turn of a scene, always: it happens to anyone (the first time only a warning: see save)
     perLostConfidence: 0.0012 # added per point of confidence below the start
   early:
     perDryNight: 0.04        # chance added per night without, to "any night he can finish too early"

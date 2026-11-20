@@ -17,7 +17,7 @@ activities:           # each once a day; at: cafe = at home, or the one place in
   - { id: gym, energy: 20, minutes: 90, cost: 20, gym: alone, at: town.gym }
   - { id: gym_together, energy: 20, minutes: 90, cost: 35, withHer: true, gym: together, at: town.gym, her: { mood: 3, energy: -8 } } # the changing rooms are separate
   - { id: sit_together, energy: -2, minutes: 30, withHer: true, at: cafe, her: { mood: 3, desire: 1 } }
-  - { id: nap, energy: -14, minutes: 60, at: cafe }   # an hour on the bed
+  - { id: nap, energy: -24, minutes: 60, at: cafe }   # an hour on the bed
 herDay:               # her own afternoon: one task after another, each in its room
   walkToTown: 10      # minutes between the cafe and the square
   walkInTown: 3
@@ -60,7 +60,12 @@ shop:                 # in town; she also buys for herself from her purse
   solo: # her own drawer: what she buys and uses by herself
     at: 15          # frustration from which she shuts herself in before opening
     idleBase: 0.04  # with a toy in the drawer: chance a day that she uses it without being driven to it...
-    idlePerLibido: 0.003 # ...plus this per point of her libido (a quiet wife about once a week, a hungry one every third day)
+    idlePerLibido: 0.004 # ...plus this per point of her libido (a quiet wife about twice a week, a hungry one every other day)
+    idlePerFrustration: 0.006 # ...plus this per point of frustration, below "at"
+    fingersShare: 0.6 # with no toy yet she still does it with her fingers, this share as often
+    minutes: [20, 40] # how long she is behind the bedroom door
+    watchOpenness: 65 # he walks in: from this openness (or warm and worked up, or in the open) she goes on and lets him look
+    interrupted: { resent: 1, mood: -3 } # otherwise she shouts that she is changing, and is cross for a while
     buyAt: 20       # frustration from which she buys her first one; half of it is enough for the next size
     firstSize: 11   # nothing smaller is worth her money
     outgrown: 2     # she wants the next size once she takes comfortably within this many cm of her biggest
@@ -79,8 +84,9 @@ upgrades:             # one-off, paid from the till (or on credit while the limi
 rhythm:               # the day around the clock: sleep, his own state, the bathroom, money on the mind
   wake: [9, 10, 12]   # he may sleep till; the first is the default
   herWake: 9
-  energyPerHour: { him: 10.5, her: 10.5 }
-  energyCost: 0.55    # everything that tires either of them costs this share of its listed price (one knob for "energy runs out too fast")
+  energyPerHour: { him: 12, her: 12 }
+  sleep: { fullAfter: 4, shortShare: 0.6 } # the first hours of sleep give back this share of an hour each: 4 to 9 is ~ 41, 2 to 10 is ~ 77
+  energyCost: 0.75    # everything that tires either of them costs this share of its listed price (one knob for "energy runs out too fast")
   quiet: { minutes: 60, her: 22 } # at zero energy in the afternoon either of them lies down: for how long, and what it gives her (his is the nap)
   herBedtime: 60      # minutes after midnight she is asleep, if nothing keeps her up
   wakeHer: { consent: -15, annoy: 10, mood: -3, tiredEnergy: 35, warmDesire: 55 } # below tiredEnergy she waves him off and sleeps on; from warmDesire she does not mind being woken
@@ -102,7 +108,7 @@ rhythm:               # the day around the clock: sleep, his own state, the bath
     mood: { came: 4, refused: -3, talkLow: 0.7, talkHigh: 1.15, toHer: 0.1 }
   # debt is counted over the loan they started with
   worry: { cashBelow: 150, debtFrom: 400, mood: -3, hardDebt: 1500, hardMood: -6, herShare: 0.6 }
-  bath: { steps: { minutes: 4, soap: 4, closer: 7, hers: 12, closerDesire: 40, hersDesire: 55 }, washMinutes: 15, washMood: 2, sendMinutes: 20, sendAnnoy: 3, walkIn: { margin: 30, arousal: 8, annoy: 8 } }
+  bath: { steps: { minutes: 4, soap: 4, closer: 7, hers: 12, closerDesire: 40, hersDesire: 55 }, washMinutes: 15, washMood: 2, washEnergy: 7, sendMinutes: 20, sendAnnoy: 3, walkIn: { margin: 30, arousal: 8, annoy: 8 } }
 world:                # the week and the sky: more people on some days, fewer on others
   weekdays: [0, -0.1, 0, 0, 0.05, 0.25, 0.2]   # Sunday first: share added to the evening's flow
   weather:

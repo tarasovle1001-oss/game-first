@@ -26,7 +26,7 @@ const canPay = (state: GameState, cost: number) => bs(state).money >= cost || bs
 const has = (state: GameState, id: string) => bs(state).upgrades.includes(id);
 export const hasUpgrade = has;
 
-const inTown = (loc: string | undefined) => !!loc?.startsWith("town.");
+import { inTown, nextPhase, TICKS_PER_SHIFT } from "./places";
 /** Where an activity can be done: "cafe" = anywhere at home, otherwise one place in town. */
 const isAt = (state: GameState, at: string | undefined) => {
   const here = state.where[HUSBAND];
@@ -110,6 +110,7 @@ function herDone(ctx: Ctx) {
     ctx.log("log.her.back");
   }
   if (day.her?.task === "shopping") ctx.log("log.her.shop_done");
+  if (day.her?.task === "solo") ctx.emit("solo:end");
   if (day.her?.task === "quiet") changeHeroine(ctx, "energy", D.rhythm.quiet.her, "quiet hour");
   if (t?.clean) b.clean = clamp(b.clean + t.clean);
   for (const [k, v] of Object.entries(t?.her ?? {})) changeHeroine(ctx, k as "mood", v, t!.id);
@@ -149,6 +150,11 @@ export function passPrep(ctx: Ctx, minutes: number) {
       day.her.left -= 1;
       if (day.her.left <= 0) herDone(ctx);
     } else if (day.her?.task === "with_you" && !day.busy) herNext(ctx);
+    // five o'clock: the doors open whether he is back or not. She stands behind the bar; he may still be in town
+    if (day.left <= 0 && !day.opening && !b.night?.sex) {
+      day.opening = true;
+      nextPhase(ctx);
+    }
     if (day.left % 10 === 0) {
       const h = b.heroine;
       h.annoyance = Math.max(0, (h.annoyance ?? 0) - content.manners.talk.annoy.coolPrep);
@@ -475,14 +481,25 @@ export function registerDay(api: ModApi) {
   });
   // The town is a place for the afternoon; he is back behind the door by opening time.
   // he does not set out for town with no time to get back - but once there he can always walk on and walk home (the clock simply stops at opening time)
-  api.locations.guard((state, actor, from, to) => actor !== HUSBAND || !inTown(to) || (state.time.phase === "prep" && (inTown(from) || (bs(state).day?.left ?? 0) > D.herDay.walkToTown * 2)));
+  // During the evening he can go out too, leaving the bar to her, only not in its last hour and a half.
+  api.locations.guard((state, actor, from, to) => {
+    if (actor !== HUSBAND || !inTown(to) || inTown(from)) return true;
+    if (state.time.phase === "prep") return (bs(state).day?.left ?? 0) > D.herDay.walkToTown * 2;
+    const sh = bs(state).shift;
+    return state.time.phase === "shift" && !!sh && !bs(state).caught && !bs(state).night?.sex && sh.tick < TICKS_PER_SHIFT + (sh.early ?? 0) - bal.shift.awayLastMinutes;
+  });
   api.events.on(
     "phase:enter",
     (ctx, e) => {
       if (e.payload!.phase !== "shift") return;
-      if (inTown(ctx.state.where[HUSBAND])) ctx.state.where[HUSBAND] = "cafe.hall";
+      // he may still be out: the evening starts without him, and she is behind the bar
+      const b = bs(ctx.state);
+      if (inTown(ctx.state.where[HUSBAND])) {
+        b.shift!.awaySince = 0;
+        ctx.log("log.away.opens");
+      }
       if (inTown(ctx.state.where[WIFE])) ctx.state.where[WIFE] = "cafe.bar";
-      if (bs(ctx.state).day) bs(ctx.state).day!.busy = undefined;
+      if (b.day) b.day.busy = undefined;
     },
     50,
   );
@@ -494,7 +511,7 @@ export function registerDay(api: ModApi) {
     describe: (a) => ({ key: `action.buy.${a.payload!.kind}`, params: { item: `${a.payload!.kind === "upgrade" ? "upgrade" : a.payload!.kind}.${a.payload!.id}`, cost: a.payload!.cost as number } }),
     enumerate(state) {
       const b = bs(state);
-      if (state.time.phase !== "prep" || !b.day || b.night?.sex) return [];
+      if ((state.time.phase !== "prep" && !(state.time.phase === "shift" && inTown(state.where[HUSBAND]))) || !b.day || b.night?.sex) return [];
       const out: { type: string; payload: Record<string, string | number> }[] = [];
       if (b.day.busy) return [];
       if (state.where[HUSBAND] === "town.shops") {

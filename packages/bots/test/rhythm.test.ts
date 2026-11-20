@@ -60,7 +60,7 @@ describe("the day around the clock", () => {
     expect(bs(s).clean).toBeCloseTo(20 + 45 / 4, 5);
     s = engine.dispatch(s, { type: "base/prep-wait", payload: { until: "done" } });
     expect(bs(s).clean).toBeCloseTo(65, 5);
-    expect(himOf(s).energy).toBeCloseTo(before - 14 * 0.55, 5);
+    expect(himOf(s).energy).toBeCloseTo(before - 14 * content.day.rhythm.energyCost, 5);
     expect(can(s, "clean")).toBe(true); // and it can be taken up again
     s = structuredClone(s);
     bs(s).husband.energy = 5;
@@ -68,7 +68,7 @@ describe("the day around the clock", () => {
     expect(can(s, "nap")).toBe(true);
     s = engine.dispatch(s, { type: DAY_DO, payload: { do: "nap" } });
     s = engine.dispatch(s, { type: "base/prep-wait", payload: { until: "done" } });
-    expect(himOf(s).energy).toBe(19);
+    expect(himOf(s).energy).toBe(5 + 24);
   });
   it("debt sits on both their moods in the morning", () => {
     const night = structuredClone(toNight(9));

@@ -10,6 +10,8 @@ import { CONSENT_FORMULA, isIntimate, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { generatePatron, pickReturning } from "./patrons";
+import { HALL, husbandSees, TICKS_PER_SHIFT } from "./places";
+import { attendTo } from "./shift";
 
 const H = content.balance.hotel;
 export const HOTEL_ROOMS = content.rooms.filter((r) => r.zone === "hotel" && r.tags.includes("guest")).map((r) => r.id);
@@ -221,10 +223,53 @@ export function registerHotel(api: ModApi) {
       ctx.log("log.hotel.checks_in", { name: `@name:${p.name}`, room: `loc.${room}`, nights });
     }
   });
-  // They come down for the evening.
+  // They come down for the evening, and stay in the house all of it: the cafe, their room, a walk outside.
   api.events.on("shift:tick", (ctx, e) => {
-    if ((e.payload!.tick as number) !== H.comesDownAtTick) return;
-    for (const l of Object.values(bs(ctx.state).lodgers)) ctx.emit("base:invite-arrives", { id: l.patron });
+    const b = bs(ctx.state);
+    const sh = b.shift;
+    if (!sh) return;
+    if ((e.payload!.tick as number) === H.comesDownAtTick) {
+      for (const l of Object.values(b.lodgers)) {
+        ctx.emit("base:invite-arrives", { id: l.patron });
+        ctx.flush();
+        const v = sh.visits.find((x) => x.patron === l.patron);
+        if (v) v.stay = Math.max(v.stay, TICKS_PER_SHIFT + (sh.early ?? 0) - sh.tick); // he is not going anywhere tonight
+      }
+      return;
+    }
+    const L = H.life;
+    for (const [room, l] of Object.entries(b.lodgers)) {
+      const v = sh.visits.find((x) => x.patron === l.patron);
+      const p = b.patrons[l.patron];
+      if (!v || !p || v.group) continue;
+      const busy = b.encounter?.patron === p.id || b.encounter?.men?.some((m) => m.patron === p.id) || sh.attend?.patron === p.id || v.away;
+      if (busy) continue;
+      const name = `@name:${p.name}`;
+      const seen = husbandSees(ctx.state, HALL) || b.mode === "open";
+      if (!v.at && v.out === undefined && v.served > 0 && ctx.state.where[p.id] === HALL) {
+        // up to his room for a while, or out for a walk
+        if (ctx.rng.chance(L.upChance)) {
+          v.at = room;
+          v.atUntil = sh.tick + ctx.rng.int(L.upMinutes[0], L.upMinutes[1]);
+          ctx.state.where[p.id] = room;
+          ctx.log("log.lodger.goes_up", { name, room: `loc.${room}` }, seen ? ["minor"] : ["unseen", "minor"]);
+        } else if (ctx.rng.chance(L.outChance)) {
+          v.out = sh.tick + ctx.rng.int(L.outMinutes[0], L.outMinutes[1]);
+          delete ctx.state.where[p.id];
+          ctx.log("log.lodger.goes_out", { name }, seen ? ["minor"] : ["unseen", "minor"]);
+        }
+        continue;
+      }
+      // he is upstairs: now and then she goes up to ask if he needs anything. How it goes from there is the hall mode
+      const h = b.heroine;
+      if (v.at === room && ctx.state.where[p.id] === room && !b.encounter && !sh.attend && !b.night && (sh.awayUntil ?? 0) <= sh.tick && ctx.state.where[WIFE] !== room && h.energy > 10) {
+        const warm = Math.max(0, p.memory.affinity) / 100 + Math.max(0, h.traits.openness - 40) / 200;
+        if (ctx.rng.chance(L.askChance * (0.5 + warm))) {
+          ctx.log("log.lodger.her_asks", { name, room: `loc.${room}` }, seen || husbandSees(ctx.state, room) ? undefined : ["unseen"]);
+          attendTo(ctx, room, ctx.rng.int(L.askMinutes[0], L.askMinutes[1]), "room", p.id);
+        }
+      }
+    }
   });
   // At night, with a lodger behind one of the doors: "go up to him". What for, he says or leaves to her.
   const LADDER = ["chat", "drink", "flirt", "kiss", "grope", "handjob", "blowjob", "sex"];
