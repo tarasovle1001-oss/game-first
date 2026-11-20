@@ -15,6 +15,7 @@ import { spawnSync } from "node:child_process";
 import { parse } from "yaml";
 import { content, promptFor } from "../../packages/base/src";
 import type { SceneDesc } from "../../packages/core/src";
+import { mountSynth } from "./synth";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const here = join(root, "tools", "prompt-lab");
@@ -38,6 +39,8 @@ const settings: Settings = {
   sceneSize: "832x1216", detailSize: "1024x1024", cast: "default",
   ...(existsSync(settingsFile) ? JSON.parse(readFileSync(settingsFile, "utf8")) : {}),
 };
+// an address given on the command line wins over the saved one (a run on a rented box over the lab's usual data)
+if (argv.includes("--comfy")) settings.comfy = opt("comfy", settings.comfy);
 const saveJson = (f: string, v: unknown) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f + ".part", JSON.stringify(v, null, 1)); renameSync(f + ".part", f); };
 
 // ---------- the scenes and close-ups ----------
@@ -202,18 +205,12 @@ async function pump() {
   } finally { running--; }
 }
 const kick = () => { for (let i = running; i < INFLIGHT; i++) void pump(); };
-async function draw(j: Job) {
-  const st = stateOf(j.scene);
-  const t = st.takes.find((x) => x.id === j.take)!;
-  const it = items.find((x) => x.id === j.scene)!;
-  // a take is drawn with the settings it was made with (a comparison of checkpoints / LoRAs keeps each its own)
-  const use: Settings = { ...settings, ...t.settings, comfy: settings.comfy };
-  const size = t.size ?? (it.kind === "detail" ? use.detailSize : use.sceneSize);
-  const prefix = `${j.scene}_${j.take}_${j.i}`;
-  const r = await fetch(`${settings.comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(t.positive, t.negativeFull, t.seeds[j.i]!, size, prefix, use), client_id: "prompt-lab" }) });
+// one picture: send the graph, wait, bring the PNG back
+async function render(positive: string, negative: string, seed: number, size: string, prefix: string, use: Settings, onId?: (id: string) => void): Promise<Buffer> {
+  const r = await fetch(`${settings.comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: graph(positive, negative, seed, size, prefix, use), client_id: "prompt-lab" }) });
   if (!r.ok) throw Error(`ComfyUI ${r.status}: ${(await r.text()).slice(0, 200)}`);
   const { prompt_id } = (await r.json()) as { prompt_id: string };
-  j.promptId = prompt_id;
+  onId?.(prompt_id);
   for (let waited = 0; waited < 15 * 60000; waited += 700) {
     await sleep(700);
     const h = (await (await fetch(`${settings.comfy}/history/${prompt_id}`)).json()) as Record<string, { status?: { status_str?: string }; outputs?: Record<string, { images?: { filename: string; subfolder: string; type: string }[] }> }>;
@@ -223,15 +220,24 @@ async function draw(j: Job) {
     const img = Object.values(e.outputs ?? {}).flatMap((o) => o.images ?? [])[0];
     if (!img) continue;
     const qs = new URLSearchParams({ filename: img.filename, subfolder: img.subfolder, type: img.type });
-    const file = `${j.take}_${j.i + 1}.png`;
-    writeFileSync(join(dataDir, j.scene, file), Buffer.from(await (await fetch(`${settings.comfy}/view?${qs}`)).arrayBuffer()));
-    const s2 = stateOf(j.scene);
-    const t2 = s2.takes.find((x) => x.id === j.take)!;
-    t2.files[j.i] = file;
-    saveState(j.scene, s2);
-    return;
+    return Buffer.from(await (await fetch(`${settings.comfy}/view?${qs}`)).arrayBuffer());
   }
   throw Error("no picture after 15 min");
+}
+async function draw(j: Job) {
+  const st = stateOf(j.scene);
+  const t = st.takes.find((x) => x.id === j.take)!;
+  const it = items.find((x) => x.id === j.scene)!;
+  // a take is drawn with the settings it was made with (a comparison of checkpoints / LoRAs keeps each its own)
+  const use: Settings = { ...settings, ...t.settings, comfy: settings.comfy };
+  const size = t.size ?? (it.kind === "detail" ? use.detailSize : use.sceneSize);
+  const png = await render(t.positive, t.negativeFull, t.seeds[j.i]!, size, `${j.scene}_${j.take}_${j.i}`, use, (id) => (j.promptId = id));
+  const file = `${j.take}_${j.i + 1}.png`;
+  writeFileSync(join(dataDir, j.scene, file), png);
+  const s2 = stateOf(j.scene);
+  const t2 = s2.takes.find((x) => x.id === j.take)!;
+  t2.files[j.i] = file;
+  saveState(j.scene, s2);
 }
 
 
@@ -270,10 +276,15 @@ const json = (res: import("node:http").ServerResponse, code: number, v: unknown)
 const body = (req: import("node:http").IncomingMessage) => new Promise<Record<string, unknown>>((ok) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => ok(b ? JSON.parse(b) : {})); });
 const SAFE = /^[a-z0-9_]+$/;
 
+// synthetic frames for concept LoRAs (synth.ts): its own pages, data and queue; it borrows the settings and the renderer
+const synth = mountSynth({ here, dataDir, inflight: INFLIGHT, style: (content.prompt as unknown as { style: { prefix: string; negative: string } }).style, wife: (content.casts[0] as unknown as { wife: { appearance: string; body: string } }).wife,
+  settings: () => settings, render: (pos, neg, seed, size, prefix, loras) => render(pos, neg, seed, size, prefix, loras ? { ...settings, loras } : settings), json, body });
+
 createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", "http://x");
   const r = url.pathname;
   try {
+    if (r === "/synth" || r.startsWith("/synth/") || r.startsWith("/api/synth/")) return void (await synth(req, res, url));
     if (r === "/") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(readFileSync(join(here, "index.html"))); return; }
     // the morning page of a night run (night-report.mjs writes it into the data folder)
     if (r === "/report") { const f = join(dataDir, "report.html"); res.writeHead(existsSync(f) ? 200 : 404, { "content-type": "text/html; charset=utf-8" }); res.end(existsSync(f) ? readFileSync(f) : "no report yet: node tools/prompt-lab/night-report.mjs"); return; }
@@ -400,7 +411,8 @@ createServer(async (req, res) => {
       let comfyOk = false;
       try { comfyOk = (await fetch(`${settings.comfy}/system_stats`, { signal: AbortSignal.timeout(1500) })).ok; } catch {}
       const done = jobs.filter((j) => j.status === "done").length;
-      return json(res, 200, { done, total: jobs.length, nosave: NOSAVE, batch: live.filter((j) => j.batch).length, queued: live.filter((j) => j.status === "queued").length, drawing: live.find((j) => j.status === "drawing") ?? null, drawingAll, errors: errs, comfyOk, comfy: settings.comfy });
+      const sy = synth.progress(); // synthetic rounds count into the same line
+      return json(res, 200, { done: done + sy.done, total: jobs.length + sy.total, nosave: NOSAVE, batch: live.filter((j) => j.batch).length, queued: live.filter((j) => j.status === "queued").length + sy.queued, drawing: live.find((j) => j.status === "drawing") ?? null, drawingAll: drawingAll + sy.drawing, errors: [...errs, ...sy.errors], comfyOk, comfy: settings.comfy });
     }
     if (r === "/api/mark" && req.method === "POST") {
       const b = await body(req);

@@ -3,6 +3,9 @@
 // Runs on Alexey's PC in its own window; the PC must not sleep (this keeps it awake while it runs; a closed lid may not).
 //
 //   node tools/night-run.mjs [--budget 5] [--plan tools/prompt-lab/night-plan.json] [--port 8196] [--inflight 4]
+// Synthetic rounds for concept LoRAs instead of a plan (drawn into the usual lab data, so they are reviewed at /synth):
+//   node tools/night-run.mjs --synth fd_behind,his_close [--mode wide|hits] [--scale 1] [--tag k1] --port 8195 --data tools/prompt-lab/data
+//   (close the Start-PromptLab window first: two labs must not share one data folder)
 //
 // Progress: the window (one line a minute), tools/prompt-lab/night/status.json, and the lab itself: http://127.0.0.1:8196
 // Run it again after a crash: it does not rent a second box (.vast-box.json) and does not post the plan twice.
@@ -15,7 +18,9 @@ const opt = (n, d) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[
 const BUDGET = Number(opt("budget", "5"));
 const PLAN = opt("plan", join("tools", "prompt-lab", "night-plan.json"));
 const PORT = Number(opt("port", "8196"));
-const DATA = join("tools", "prompt-lab", "night");
+const DATA = opt("data", join("tools", "prompt-lab", "night"));
+const SYNTH = opt("synth", "").split(",").filter(Boolean);
+const TAG = opt("tag", new Date().toISOString().slice(0, 10));
 const LORAS = "C:\\ComfyUI\\models\\loras";
 const LAB = `http://127.0.0.1:${PORT}`;
 mkdirSync(DATA, { recursive: true });
@@ -35,6 +40,10 @@ const node = (args, opts = {}) => spawnSync(process.execPath, args, { stdio: "in
 // keep Windows awake while this runs (released when the process ends)
 const awake = spawn("powershell", ["-NoProfile", "-Command", "$s='[DllImport(\"kernel32.dll\")] public static extern uint SetThreadExecutionState(uint f);'; $t=Add-Type -MemberDefinition $s -Name P -Namespace W -PassThru; $t::SetThreadExecutionState(0x80000001) | Out-Null; while ($true) { Start-Sleep 60 }"], { stdio: "ignore" });
 
+if (SYNTH.length) {
+  // the usual lab must be closed: it would keep its own copy of the same rounds
+  try { await fetch(`${LAB}/api/jobs`, { signal: AbortSignal.timeout(2000) }); console.log(`A lab already answers on ${LAB}. Close its window (Start-PromptLab) and run this again. Nothing was rented.`); process.exit(1); } catch {}
+}
 let tunnel = null, lab = null, finished = false;
 async function down(why) {
   if (finished) return;
@@ -44,7 +53,7 @@ async function down(why) {
   if (box().instance) log("down", "COULD NOT DESTROY the box: run node tools/vast-box.mjs down by hand");
   try { tunnel?.kill(); } catch {}
   try { awake.kill(); } catch {}
-  log("done", `${why}. The box is gone. Pictures: ${LAB} (this window keeps the lab open; close it when you are done)`);
+  log("done", `${why}. The box is gone. Pictures: ${LAB}${SYNTH.length ? "/synth" : ""} (this window keeps the lab open; close it when you are done)`);
 }
 process.on("SIGINT", async () => { await down("stopped by Ctrl+C"); process.exit(0); });
 
@@ -63,7 +72,7 @@ if (!(box().step === "ready" && box().instance)) {
 log("ready", `box ${box().instance} $${(box().price ?? 0).toFixed(2)}/h`);
 
 // 2. the concept LoRAs the plan asks for
-const plan = JSON.parse(readFileSync(PLAN, "utf8"));
+const plan = SYNTH.length ? { synth: readFileSync(join("tools", "prompt-lab", "synth.yaml"), "utf8") } : JSON.parse(readFileSync(PLAN, "utf8"));
 const wanted = [...new Set(JSON.stringify(plan).match(/[\w.-]+\.safetensors/g) ?? [])].filter((f) => !/^(sdxl_lightning|sora_v2|waiIllustrious)/.test(f) && existsSync(join(LORAS, f)));
 if (wanted.length && !existsSync(join(DATA, "loras-pushed"))) {
   log("loras", wanted.join(", "));
@@ -92,7 +101,18 @@ for (let i = 0; ; i++) {
 }
 
 // 5. the plan, once
-if (!existsSync(join(DATA, "plan-posted"))) {
+if (SYNTH.length) {
+  const mark = join(DATA, `synth-posted-${TAG}`);
+  if (!existsSync(mark)) {
+    const posted = [];
+    for (const concept of SYNTH) {
+      const r = await (await fetch(`${LAB}/api/synth/round`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ concept, mode: opt("mode", "wide"), scale: Number(opt("scale", "1")) }) })).json();
+      posted.push({ concept, ...r });
+      log("plan", `${concept}: round ${r.round}, ${r.frames} frames${r.error ? ` (${r.error})` : ""}`);
+    }
+    writeFileSync(mark, JSON.stringify(posted));
+  } else log("plan", `already posted (${mark}); rounds left running go on by themselves`);
+} else if (!existsSync(join(DATA, "plan-posted"))) {
   const r = await (await fetch(`${LAB}/api/compare`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(plan) })).json();
   writeFileSync(join(DATA, "plan-posted"), JSON.stringify(r));
   log("plan", `${r.takes} takes, ${r.pictures} pictures`);
