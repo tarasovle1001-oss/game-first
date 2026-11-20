@@ -2632,3 +2632,4 @@ log.open_early: "Today the doors open {hours} h early. A shorter day, a longer e
 patron.aim.food: "came for supper"
 patron.aim.her: "came to look at her"
 log.door.barge.open: "You walk in without knocking. She looks round, and so does {name}. Nobody hides anything: {act}."
+log.talk.dirty.no.alone: "You whisper it in her ear. She moves away. \"Not now.\""

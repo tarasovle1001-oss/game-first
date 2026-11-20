@@ -10,7 +10,7 @@ import { actById, CONSENT_FORMULA, endEncounter } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { annoy, annoyedLevel } from "./annoy";
-import { setOutcome, slurTags, voiced } from "./voice";
+import { setOutcome, slurTags, voiced, hasLine } from "./voice";
 import { HALL, husbandSees } from "./places";
 import { detail, glance } from "./glance";
 
@@ -227,7 +227,9 @@ export function registerCouple(api: ModApi) {
       let n = o.lines ? ctx.rng.int(1, o.lines) : 0;
       if (o.lines && o.lines > 1 && n === b.lastChatter) n = (n % o.lines) + 1;
       if (o.lines) b.lastChatter = n;
-      const line = o.lines ? `log.talk.${o.id}.${n}` : voiced(ctx.state, `log.talk.${o.id}${ok ? "" : ".no"}`);
+      // a refusal that blames the place ("not here") is only said where there is somebody to hear: alone with him she says something else
+      const alone = !ok && !publicNow && hasLine(`log.talk.${o.id}.no.alone`);
+      const line = o.lines ? `log.talk.${o.id}.${n}` : voiced(ctx.state, `log.talk.${o.id}${ok ? "" : alone ? ".no.alone" : ".no"}`);
       ctx.log(line, undefined, slurTags(ctx.state, line));
       if (ok && again > 0 && worth < 1) ctx.log(forward ? (worth > 0 ? "log.talk.again.forward" : "log.talk.again.forward.much") : worth > 0 ? "log.talk.again" : "log.talk.again.much");
       setOutcome(ctx, !ok ? "away" : (o.effects.arousal ?? 0) >= 4 ? "wants" : "agrees", HUSBAND);

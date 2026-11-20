@@ -51,3 +51,6 @@ export const outcomeOf = (verdict: Verdict): Outcome => (verdict === "eager" ? "
 export function setOutcome(ctx: Ctx, how: Outcome, who: string, seen = true) {
   bs(ctx.state).outcome = { turn: ctx.state.turn, day: ctx.state.time.day, minute: ctx.state.time.minute, how, who, seen };
 }
+
+/** Is there such a line in the texts? For variants that only some lines have. */
+export const hasLine = (key: string) => has(key);
