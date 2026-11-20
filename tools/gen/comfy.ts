@@ -12,7 +12,7 @@ export const DEFAULT_DRAW: DrawSettings = {
   scheduler: "simple",
 };
 
-export function comfyGraph(positive: string, negative: string, seed: number, size: string, prefix: string, use: DrawSettings) {
+export function comfyGraph(positive: string, negative: string, seed: number, size: string, prefix: string, use: DrawSettings, init?: { name: string; denoise: number }) {
   const [w, h] = size.split("x").map(Number) as [number, number];
   const g: Record<string, { class_type: string; inputs: Record<string, unknown> }> = {};
   g.ckpt = { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: use.ckpt } };
@@ -28,7 +28,9 @@ export function comfyGraph(positive: string, negative: string, seed: number, siz
   g.pos = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: positive } };
   g.neg = { class_type: "CLIPTextEncode", inputs: { clip: ["skip", 0], text: negative } };
   g.latent = { class_type: "EmptyLatentImage", inputs: { width: w, height: h, batch_size: 1 } };
-  g.sample = { class_type: "KSampler", inputs: { model, positive: ["pos", 0], negative: ["neg", 0], latent_image: ["latent", 0], seed, steps: use.steps, cfg: use.cfg, sampler_name: use.sampler, scheduler: use.scheduler, denoise: 1 } };
+  // painted over an earlier picture (already in ComfyUI's input folder): its latent instead of an empty one, part of the noise only
+  if (init) { g.load = { class_type: "LoadImage", inputs: { image: init.name } }; g.latent = { class_type: "VAEEncode", inputs: { pixels: ["load", 0], vae: ["ckpt", 2] } }; }
+  g.sample = { class_type: "KSampler", inputs: { model, positive: ["pos", 0], negative: ["neg", 0], latent_image: ["latent", 0], seed, steps: use.steps, cfg: use.cfg, sampler_name: use.sampler, scheduler: use.scheduler, denoise: init?.denoise ?? 1 } };
   g.decode = { class_type: "VAEDecode", inputs: { samples: ["sample", 0], vae: ["ckpt", 2] } };
   g.save = { class_type: "SaveImage", inputs: { images: ["decode", 0], filename_prefix: prefix } };
   return g;
@@ -37,8 +39,17 @@ export function comfyGraph(positive: string, negative: string, seed: number, siz
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** One picture: send the graph, wait, bring the PNG back. */
-export async function comfyRender(comfy: string, positive: string, negative: string, seed: number, size: string, prefix: string, use: DrawSettings, onId?: (id: string) => void, clientId = "test-city"): Promise<Buffer> {
-  const r = await fetch(`${comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: comfyGraph(positive, negative, seed, size, prefix, use), client_id: clientId }) });
+export async function comfyRender(comfy: string, positive: string, negative: string, seed: number, size: string, prefix: string, use: DrawSettings, onId?: (id: string) => void, clientId = "test-city", over?: { png: Buffer; denoise: number }): Promise<Buffer> {
+  let init: { name: string; denoise: number } | undefined;
+  if (over) {
+    const fd = new FormData();
+    fd.append("image", new Blob([new Uint8Array(over.png)], { type: "image/png" }), `${prefix.replace(/[^\w.-]+/g, "_")}_src.png`);
+    fd.append("overwrite", "true");
+    const up = await fetch(`${comfy}/upload/image`, { method: "POST", body: fd });
+    if (!up.ok) throw Error(`ComfyUI upload ${up.status}`);
+    init = { name: ((await up.json()) as { name: string }).name, denoise: over.denoise };
+  }
+  const r = await fetch(`${comfy}/prompt`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: comfyGraph(positive, negative, seed, size, prefix, use, init), client_id: clientId }) });
   if (!r.ok) throw Error(`ComfyUI ${r.status}: ${(await r.text()).slice(0, 200)}`);
   const { prompt_id } = (await r.json()) as { prompt_id: string };
   onId?.(prompt_id);

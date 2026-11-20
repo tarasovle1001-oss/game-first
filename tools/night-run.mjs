@@ -10,12 +10,17 @@
 // Progress: the window (one line a minute), tools/prompt-lab/night/status.json, and the lab itself: http://127.0.0.1:8196
 // Run it again after a crash: it does not rent a second box (.vast-box.json) and does not post the plan twice.
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, appendFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, appendFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const argv = process.argv.slice(2);
 const opt = (n, d) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
 const BUDGET = Number(opt("budget", "5"));
+// --hold: the box stays up after the queue is empty (Claude feeds it cycle after cycle). It goes down at the budget,
+// after --hours, or when <data>/heartbeat has not been touched for --idle minutes (nobody is feeding it any more).
+const HOLD = argv.includes("--hold");
+const HOURS = Number(opt("hours", "9"));
+const IDLE = Number(opt("idle", "45"));
 const PLAN = opt("plan", join("tools", "prompt-lab", "night-plan.json"));
 const PORT = Number(opt("port", "8196"));
 const DATA = opt("data", join("tools", "prompt-lab", "night"));
@@ -105,7 +110,7 @@ if (SYNTH.length) {
   const mark = join(DATA, `synth-posted-${TAG}`);
   if (!existsSync(mark)) {
     const posted = [];
-    for (const concept of SYNTH) {
+    for (const concept of SYNTH.filter((x) => x !== "hold")) {
       const r = await (await fetch(`${LAB}/api/synth/round`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ concept, mode: opt("mode", "wide"), scale: Number(opt("scale", "1")) }) })).json();
       posted.push({ concept, ...r });
       log("plan", `${concept}: round ${r.round}, ${r.frames} frames${r.error ? ` (${r.error})` : ""}`);
@@ -130,7 +135,12 @@ for (;;) {
   lastDone = j.done;
   const eta = rate > 0 ? `~${Math.ceil(left / rate)} min left` : "";
   log("watch", `${j.done}/${j.total} pictures, ${left} to go, ${rate}/min ${eta}${j.errors.length ? `, last error: ${j.errors.at(-1).error?.slice(0, 80)}` : ""}${j.comfyOk ? "" : ", ComfyUI not answering"}`);
-  if (left === 0 && Date.now() - t0 > 120000) { await down(`queue done: ${j.done}/${j.total}`); break; }
+  if (HOLD) {
+    const hb = join(DATA, "heartbeat");
+    const quiet = existsSync(hb) ? (Date.now() - statSync(hb).mtimeMs) / 60000 : (Date.now() - t0) / 60000;
+    if (quiet > IDLE && left === 0) { await down(`no new work for ${Math.round(quiet)} min`); break; }
+    if (Date.now() - t0 > HOURS * 3600000) { await down(`${HOURS} h limit`); break; }
+  } else if (left === 0 && Date.now() - t0 > 120000) { await down(`queue done: ${j.done}/${j.total}`); break; }
   // stop a few cents short of the ceiling: destroying takes a minute
   if (spent() + ((box().price ?? 1) / 60) * 3 >= BUDGET) { await down(`budget reached ($${spent().toFixed(2)})`); break; }
   if (!j.comfyOk) { deadSince ||= Date.now(); if (Date.now() - deadSince > 20 * 60000) { await down("ComfyUI unreachable for 20 min"); break; } } else deadSince = 0;

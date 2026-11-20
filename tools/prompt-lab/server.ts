@@ -186,8 +186,8 @@ async function pump() {
 }
 const kick = () => { for (let i = running; i < INFLIGHT; i++) void pump(); };
 // one picture: send the graph, wait, bring the PNG back
-function render(positive: string, negative: string, seed: number, size: string, prefix: string, use: Settings, onId?: (id: string) => void): Promise<Buffer> {
-  return comfyRender(settings.comfy, positive, negative, seed, size, `prompt-lab/${prefix}`, use, onId, "prompt-lab");
+function render(positive: string, negative: string, seed: number, size: string, prefix: string, use: Settings, onId?: (id: string) => void, init?: { file: string; denoise: number }): Promise<Buffer> {
+  return comfyRender(settings.comfy, positive, negative, seed, size, `prompt-lab/${prefix}`, use, onId, "prompt-lab", init ? { png: readFileSync(init.file), denoise: init.denoise } : undefined);
 }
 async function draw(j: Job) {
   const st = stateOf(j.scene);
@@ -243,7 +243,7 @@ const SAFE = /^[a-z0-9_]+$/;
 
 // synthetic frames for concept LoRAs (synth.ts): its own pages, data and queue; it borrows the settings and the renderer
 const synth = mountSynth({ here, dataDir, inflight: INFLIGHT, style: (content.prompt as unknown as { style: { prefix: string; negative: string } }).style, wife: (content.casts[0] as unknown as { wife: { appearance: string; body: string } }).wife,
-  settings: () => settings, render: (pos, neg, seed, size, prefix, loras) => render(pos, neg, seed, size, prefix, loras ? { ...settings, loras } : settings), json, body });
+  settings: () => settings, render: (pos, neg, seed, size, prefix, loras, init) => render(pos, neg, seed, size, prefix, loras ? { ...settings, loras } : settings, undefined, init), json, body });
 
 createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", "http://x");

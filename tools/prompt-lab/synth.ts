@@ -16,11 +16,11 @@ import { parse } from "yaml";
 type Target = { id: string; title: string; count: number; size?: string; prompt: string; acts?: string[]; axes?: Record<string, string[]>; negative?: string; loras?: string };
 type Concept = { id: string; title: string; trigger: string; negative?: string; targets: Target[] };
 type Book = { looks: { id: string; look: string; hand: string }[]; rooms: string[]; words: Record<string, string>; neg?: Record<string, string>; concepts: Concept[] };
-type Frame = { i: number; target: string; picks: Record<string, number>; look: string; room: string; positive: string; negative: string; caption: string; seed: number; size: string; loras?: string; file?: string; mark?: "keep" | "drop"; pre?: "drop"; error?: string };
-type Round = { concept: string; round: number; mode: "wide" | "hits"; at: string; status: "running" | "stopped" | "done"; frames: Frame[] };
+type Frame = { i: number; target: string; picks: Record<string, number>; look: string; room: string; positive: string; negative: string; caption: string; seed: number; size: string; loras?: string; init?: { k: number; i: number; denoise: number }; file?: string; mark?: "keep" | "drop"; pre?: "drop"; error?: string };
+type Round = { screened?: boolean; concept: string; round: number; mode: "wide" | "hits"; at: string; status: "running" | "stopped" | "done"; frames: Frame[] };
 type Deps = {
   here: string; dataDir: string; inflight: number; style: { prefix: string; negative: string }; wife: { appearance: string; body: string };
-  settings: () => { loras: string; detailSize: string }; render: (pos: string, neg: string, seed: number, size: string, prefix: string, loras?: string) => Promise<Buffer>;
+  settings: () => { loras: string; detailSize: string }; render: (pos: string, neg: string, seed: number, size: string, prefix: string, loras?: string, init?: { file: string; denoise: number }) => Promise<Buffer>;
   json: (res: ServerResponse, code: number, v: unknown) => void; body: (req: IncomingMessage) => Promise<Record<string, unknown>>;
 };
 
@@ -48,22 +48,23 @@ export function mountSynth(d: Deps) {
   const uniq = (ws: string[]) => { const seen = new Set<string>(); return ws.filter((w) => { const k = strip(w); if (seen.has(k)) return false; seen.add(k); return true; }); };
   const rnd = (seed: number) => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 2 ** 32; };
   // how often each axis value was kept so far: target -> axis -> [seen, kept] per value
-  function stats(c: string) {
+  // soft: Claude's night screening counts too - in a round he screened, a frame he did not drop is a hit (until Alexey marks it)
+  function stats(c: string, soft = false) {
     const out: Record<string, { seen: number; keep: number; axes: Record<string, [number, number][]>; looks: Record<string, [number, number]> }> = {};
-    for (const n of roundsOf(c)) for (const f of load(c, n)!.frames) {
-      const judged = f.mark || f.pre;
+    for (const n of roundsOf(c)) { const r = load(c, n)!; for (const f of r.frames) {
+      const judged = f.mark || f.pre || (soft && r.screened && f.file);
       if (!judged) continue;
-      const kept = f.mark === "keep" ? 1 : 0;
+      const kept = f.mark === "keep" || (soft && r.screened && !f.mark && !f.pre) ? 1 : 0;
       const t = (out[f.target] ??= { seen: 0, keep: 0, axes: {}, looks: {} });
       t.seen++; t.keep += kept;
       for (const [a, v] of Object.entries(f.picks)) { const row = ((t.axes[a] ??= [])[v] ??= [0, 0]); row[0]++; row[1] += kept; }
       const l = (t.looks[f.look] ??= [0, 0]); l[0]++; l[1] += kept;
-    }
+    } }
     return out;
   }
-  function plan(c: Concept, n: number, mode: "wide" | "hits", scale: number, only?: string[]): Frame[] {
+  function plan(c: Concept, n: number, mode: "wide" | "hits", scale: number, only?: string[], soft = false): Frame[] {
     const b = book();
-    const st = mode === "hits" ? stats(c.id) : {};
+    const st = mode === "hits" ? stats(c.id, soft) : {};
     const words: Record<string, string> = { ...b.words };
     const frames: Frame[] = [];
     const next = rnd(n * 7919 + c.id.length * 104729 + 17);
@@ -123,7 +124,7 @@ export function mountSynth(d: Deps) {
         busy++;
         for (;;) {
           try {
-            const png = await d.render(f.positive, f.negative, f.seed, f.size, `synth_${r.concept}_k${r.round}_${f.i}`, f.loras);
+            const png = await d.render(f.positive, f.negative, f.seed, f.size, `synth_${r.concept}_k${r.round}_${f.i}`, f.loras, f.init ? { file: imgFile(r.concept, f.init.k, f.init.i), denoise: f.init.denoise } : undefined);
             mkdirSync(dirname(imgFile(r.concept, r.round, f.i)), { recursive: true });
             writeFileSync(imgFile(r.concept, r.round, f.i), png);
             f.file = `${f.i}.png`; delete f.error;
@@ -159,7 +160,7 @@ export function mountSynth(d: Deps) {
     }
     if (p === "/api/synth/concepts") {
       const b = book();
-      return d.json(res, 200, { looks: b.looks.map((l) => l.id), queue: pending.length, concepts: b.concepts.map((c) => ({ id: c.id, title: c.title, trigger: c.trigger, targets: c.targets.map((t) => ({ id: t.id, title: t.title, count: t.count, axes: t.axes ?? {} })), rounds: summary(c.id), stats: stats(c.id) })) });
+      return d.json(res, 200, { looks: b.looks.map((l) => l.id), queue: pending.length, concepts: b.concepts.map((c) => ({ id: c.id, title: c.title, trigger: c.trigger, targets: c.targets.map((t) => ({ id: t.id, title: t.title, count: t.count, axes: t.axes ?? {} })), rounds: summary(c.id), stats: stats(c.id, q("soft") === "1") })) });
     }
     const b = post ? await d.body(req) : {};
     const cid = String(post ? b.concept ?? "" : q("c"));
@@ -180,7 +181,10 @@ export function mountSynth(d: Deps) {
       // a new round: this is the only place that starts drawing
       const n = (roundsOf(c.id).at(-1) ?? 0) + 1;
       const mode = b.mode === "hits" ? "hits" : "wide";
-      const frames = plan(c, n, mode, Number(b.scale) || 1, b.targets as string[] | undefined);
+      const frames = plan(c, n, mode, Number(b.scale) || 1, b.targets as string[] | undefined, !!b.soft);
+      // redraw: the new prompts painted over earlier frames (img2img) - keeps a composition that almost worked, fixes one thing
+      const rd = b.redraw as { sources: [number, number][]; denoise?: number } | undefined;
+      if (rd?.sources?.length) frames.forEach((f, k) => { const [sk, si] = rd.sources[k % rd.sources.length]!; f.init = { k: sk, i: si, denoise: rd.denoise ?? 0.6 }; });
       const r: Round = { concept: c.id, round: n, mode, at: new Date().toISOString(), status: "running", frames };
       start(r);
       return d.json(res, 200, { round: n, frames: frames.length });
@@ -191,7 +195,17 @@ export function mountSynth(d: Deps) {
     if (p === "/api/synth/resume") { start(r); return d.json(res, 200, { ok: true, left: r.frames.filter((f) => !f.file).length }); }
     if (p === "/api/synth/mark") {
       // one frame (Alexey's keys) or many at once (Claude's first pass: pre)
-      const ids = (b.frames as number[] | undefined) ?? [Number(b.i)];
+      // survivors + range: Claude's screening of a stretch of frames - everything in [from, to] not listed is dropped (pre)
+      if (b.survivors) {
+        const keep = new Set(b.survivors as number[]);
+        const [from, to] = (b.range as [number, number] | undefined) ?? [0, r.frames.length - 1];
+        for (let i = from; i <= to; i++) { const f = r.frames[i]; if (f) { if (keep.has(i)) delete f.pre; else f.pre = "drop"; } }
+        r.screened = true;
+        save(r);
+        return d.json(res, 200, { ok: true, kept: keep.size });
+      }
+      if (b.screened !== undefined) r.screened = !!b.screened;
+      const ids = (b.frames as number[] | undefined) ?? (b.i !== undefined ? [Number(b.i)] : []);
       for (const i of ids) {
         const f = r.frames[i];
         if (!f) continue;
