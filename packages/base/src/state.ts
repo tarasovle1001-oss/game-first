@@ -97,6 +97,7 @@ export interface Patron {
   aim?: "food" | "her"; // why he came the first time: supper, or what is said about the place
   regular: boolean;
   lender?: boolean; // the man the cafe owes money to
+  rich?: boolean; // a man with a fat wallet: rare, pays for everything, and three times what anyone else would
   likes?: string[]; // acts he steers toward when he gets the chance
   memory: PatronMemory;
 }
@@ -142,6 +143,7 @@ export interface BedScene {
   bored: number; // grows while what they do gives her too little
   asks: string | null; // what she has asked for instead: an act id, or "finish"
   ignored: number; // times he went on without answering her
+  himToy?: string; // the toy she is using on him tonight, once he begged for a bigger one
   warned?: "soft" | "early"; // he feels it going wrong: one move to do something about it (base/bed-save)
   demanded?: boolean; // with the cage on she has already said what she wants instead
   saved?: boolean; // he got through that moment: it does not come again this time
@@ -274,7 +276,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string; had?: number; noes?: number } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string; had?: number; noes?: number; smallAt?: number; smallDone?: boolean; himAsleep?: boolean; slept?: number } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
@@ -288,6 +290,7 @@ export interface BaseState {
   viewAll?: boolean; // never saved as true by the game: the screen sets it on its own copy when the player watches everything
   herToys?: string[]; // toys she bought herself, out of her own purse
   soloDay?: number; // the day she last shut herself in with one
+  alone?: { do: string; toy?: string; his: number; turns: number; turn: number; room: string; thought?: string }; // he is by himself with his hand or a toy, move by move
   solo?: { at: number; zone: string; started?: number; watched?: boolean; done?: boolean }; // today's session: when in the afternoon (minutes left), and how it goes
   lastToy?: { id: string; size: number; zone: string; day: number }; // what she used last, for the picture
   sentUp?: number; // the day he last sent her up to a lodger

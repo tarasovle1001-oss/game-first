@@ -184,7 +184,10 @@ describe("the husband's bad nights", () => {
     liar.mods.base.night!.wants = true; // she asked for it herself, and still will not get there
     liar.mods.base.husband.size = 8;
     liar.mods.base.heroine.energy = 80;
-    const after = playOut(engine.dispatch(liar, { type: NIGHT_ACT, payload: { act: "sex" } }));
+    liar.mods.base.husband.confidence = 100;
+    const started = structuredClone(engine.dispatch(liar, { type: NIGHT_ACT, payload: { act: "sex" } }));
+    bs(started).night!.sex!.saved = true; // tonight he does not go soft on her: this is about her
+    const after = playOut(started);
     expect(bs(after).night!.scene).toBe("faking_it");
     const tail = after.log.slice(-2);
     expect(tail[0]!.key).toBe("log.husband.sex.came");

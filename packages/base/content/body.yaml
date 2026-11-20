@@ -142,7 +142,8 @@ alone: # what he does by himself, at home, when she is not in the room
   joinOpenness: 45       # warm and this open, she does not stay in the door: she comes in
   joinDesire: 2
   joinMood: 4
-  caughtChance: 0.2      # she is in the house and awake: she opens the door
+  caughtChance: 0.2      # (old: per session) she is in the house and awake: she opens the door
+  steps: { minutes: 3, startShare: 0.4, handRate: 16, toyRate: 11, perStretch: 0.1, faster: 1.6, slower: 0.5, finishFrom: 70, caughtPerTurn: 0.05, think: { plain: 1.1, pathetic: 1.2, femdom: 1.3, netorare: 1.3 } } # played a few minutes at a time: how fast it goes, what a thought adds, her chance to open the door each move
   confidence: -2         # being walked in on by a wife who is not amused
   hardPower: 30          # from this much power over him she takes it as hers to use
   warmDesire: 55

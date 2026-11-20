@@ -82,7 +82,7 @@ export const herRoom = (state: GameState) => {
 };
 
 /** Money he puts on the table: the paying kind does, once per time with her. */
-const offerOf = (p: Patron, act: Act, paid: boolean) => (p.approach === "pay" && act.tier >= 3 && !paid ? Math.round((p.traits.generosity * act.tier) / 4) : 0);
+const offerOf = (p: Patron, act: Act, paid: boolean) => (p.approach === "pay" && act.tier >= (p.rich ? 2 : 3) && !paid ? Math.round(((p.traits.generosity * act.tier) / 4) * (p.rich ? content.balance.rich.offer : 1)) : 0);
 
 /** How far a man dares to go depends on how much he wants her. */
 const G = content.consent.guest;
@@ -108,8 +108,11 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
     // he picks among everything of the top two steps
     const wide = tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier;
     const options = content.acts.filter((a) => (a.tier === tier || (wide && a.tier === topTier - 1)) && !a.only && (a.id !== "drink" || p.approach === "drink"));
-    // the one who buys drinks keeps doing so while she is still fairly sober
-    const drink = p.approach === "drink" && tier >= 1 && b.heroine.drunk < 45 && v.tier >= 0 && roll(10) < 4;
+    // the one who buys drinks keeps doing so while she is still fairly sober; once she is tipsy, any man may think of it -
+    // nobody plans it, one glass simply makes the next one likelier
+    const Al = content.consent.alcohol;
+    const tipsy = b.heroine.drunk >= Al.othersFrom && b.heroine.drunk < Al.othersUpTo && v.tier >= 0 && tier >= 1 && roll(100) < Al.othersChance;
+    const drink = (p.approach === "drink" && tier >= 1 && b.heroine.drunk < Al.buyerUpTo && v.tier >= 0 && roll(10) < 4) || tipsy;
     act = drink ? actById("drink") : options[roll(options.length)]!;
   }
   if (isIntimate(act) && v.rounds >= p.stamina) return null; // he is spent for tonight
@@ -654,6 +657,8 @@ export function registerEncounters(api: ModApi) {
   // her state
   row("arousal", 10, (s, _i, act) => her(s).arousal * c.arousal * (0.3 + depth(act)));
   row("drunk", 11, (s) => her(s).drunk * c.drunk);
+  // past a point drink asks for more drink: another glass is easier to say yes to than the first
+  row("tipsy_more", 11.5, (s, _i, act) => (act.id === "drink" && her(s).drunk >= c.alcohol.selfFrom ? (her(s).drunk - c.alcohol.selfFrom) * c.alcohol.selfPer : null));
   row("mood", 12, (s) => (her(s).mood - 50) * c.mood);
   row("tired", 13, (s, _i, act) => (her(s).energy < 20 && act.tier >= 2 ? -c.tired : null));
   // nights that left her wanting add up, and at some point they speak for any man who is not her husband

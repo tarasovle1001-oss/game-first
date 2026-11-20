@@ -952,3 +952,9 @@ header { min-width: 0; }
 .fold > summary::before { content: "▸ "; }
 .fold[open] > summary::before { content: "▾ "; }
 .rg-who i.booked { opacity: 0.7; font-style: italic; }
+
+/* an order is waiting in this room: an orange frame; full orange when he can take it from here */
+.rg-order { display: block; margin-top: 4px; padding: 2px 6px; border: 1.5px solid #e8892b; background: #1d1712; color: #f0a050; border-radius: 4px; font-size: 11px; text-align: center; }
+.rg-order.can { background: #e8892b; color: #1a1006; cursor: pointer; font-weight: 600; }
+.rg-order.can:hover { background: #f59a3c; }
+.order-plate { display: inline-block; padding: 1px 6px; border: 1.5px solid #e8892b; background: #1d1712; color: #f0a050; border-radius: 4px; font-size: 11px; }

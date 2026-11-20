@@ -2,7 +2,7 @@
 // Root = what the phase offers; "her" = talk, touch, ask, by section; a group = one kind of action with many targets.
 // Items are cards with a hotkey, a title and (where the texts have one) a line of explanation.
 import { useEffect, useRef, useState } from "react";
-import { HEAR, CAUGHT_STOP, CAUGHT_WATCH, REACT_APPROVE, REACT_STOP, REACT, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, renderLog } from "@tc/base";
+import { HEAR, CAUGHT_STOP, CAUGHT_WATCH, REACT_APPROVE, REACT_STOP, REACT, DEAL, WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, ANSWER, BED, TALK, TELL, bs, content, WAIT, PREP_WAIT, NIGHT_WAIT, STRIP, WIFE, HUSBAND, renderLog, toyForHim, shownCm, ALONE_DO, aloneNow } from "@tc/base";
 import { CORE_ADVANCE, CORE_MOVE } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { engine } from "./game";
@@ -212,6 +212,19 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
     );
   }
 
+  // --- by himself behind a closed door: the column is the scene, like in bed
+  const alone = all.filter((a) => a.type === ALONE_DO);
+  if (alone.length > 0) {
+    const al = aloneNow(state);
+    return (
+      <div className="menu2">
+        <div className="m-title pink">{t("action.alone_do")}</div>
+        {al && <div className="m-context">{al.toy ? t(`toy.${al.toy}`) : t("action.alone.hand")} · {al.turns * content.body.alone.steps.minutes} {t("ui.min")} · {Math.round(al.his)}%</div>}
+        {alone.map((a, i) => item(a, i, a.payload?.do === "finish" ? "strong" : undefined))}
+      </div>
+    );
+  }
+
   // --- in bed: the column is the scene
   if (bed.length > 0) {
     const sex = b.night?.sex;
@@ -221,6 +234,12 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
         {sex && (
           <div className="m-context">
             {t(`act.${sex.act}`)} · {sex.turns * content.body.bed.minutesPerTurn} {t("ui.min")}
+            {["pegging", "dildo_him", "fisting_him", "prostate"].includes(sex.act) && (() => {
+              // what is in him and how far his body has come: the size is shown as on every other screen
+              const { toy } = toyForHim(state);
+              const stretch = Math.round(b.husband.stretch);
+              return <div className="small muted">{sex.act === "prostate" || !toy ? t("ui.bed.his_fingers", { stretch }) : t("ui.bed.his_toy", { toy: t(`toy.${toy.id}`), cm: shownCm(toy.size), stretch })}</div>;
+            })()}
             {sex.asks && <div className="bad small">{sex.asks === "finish" ? t("ui.bed.asks.finish") : t("ui.bed.asks", { act: t(`act.${sex.asks}`) })}</div>}
           </div>
         )}

@@ -238,3 +238,5 @@ export { BED_SAVE } from "./systems/marriage";
 export { BATH_DO } from "./systems/rhythm";
 export { OPEN_EARLY } from "./systems/shift";
 export { WAKE_HER } from "./systems/rhythm";
+export { toyForHim } from "./systems/marriage";
+export { ALONE_DO, aloneNow } from "./systems/alone";

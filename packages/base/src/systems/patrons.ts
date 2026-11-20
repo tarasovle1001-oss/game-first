@@ -45,6 +45,14 @@ export function generatePatron(ctx: Ctx): Patron {
     likes: ctx.rng.chance(0.75) ? [ctx.rng.pick(LIKEABLE), ...(ctx.rng.chance(0.3) ? [ctx.rng.pick(LIKEABLE)] : [])].filter((x, i, a) => a.indexOf(x) === i) : [],
     memory: { visits: 0, lastDay: 0, served: 0, tipsTotal: 0, affinity: 0, interest: ctx.rng.int(5, 35), tier: -1, acts: {}, refusals: 0, hasNumber: false, sizeKnown: false, orgasms: 0 },
   };
+  // now and then a man with real money: for her that is a reason of its own
+  const R = content.balance.rich;
+  if (ctx.state.time.day >= R.fromDay && ctx.rng.chance(R.chance)) {
+    patron.rich = true;
+    patron.approach = "pay";
+    patron.traits.generosity = Math.max(patron.traits.generosity, R.generosity);
+    patron.memory.interest = Math.max(patron.memory.interest, R.interest);
+  }
   b.patrons[patron.id] = patron;
   return patron;
 }

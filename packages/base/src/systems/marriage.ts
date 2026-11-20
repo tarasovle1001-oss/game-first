@@ -13,7 +13,8 @@ import { HALL, TICKS_PER_SHIFT } from "./places";
 import { runUnattended } from "./shift";
 import { passPrep } from "./day";
 
-import { himOf, tired } from "./rhythm";
+import { himOf, onNightMinute, tired } from "./rhythm";
+import { glance } from "./glance";
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
 const IN_BED = content.intimacy.bedroom; // which act is what: all of it is content
@@ -42,13 +43,17 @@ const FINISH = IN_BED.finish;
 const PULL_OUT = new Set(IN_BED.pullOut);
 const LEAD = content.intimacy.lead;
 /** The toy she would use on him: the biggest one he can take, or the smallest one there is. */
-const toyForHim = (state: GameState) => {
+export const toyForHim = (state: GameState) => {
   const b = bs(state);
   const K = content.body.his;
   const fit = K.fitBase + b.husband.stretch * K.fitPerStretch;
   const owned = content.day.shop.toys.filter((t) => b.toys.includes(t.id)).sort((x, y) => x.size - y.size);
-  return { fit, toy: [...owned].reverse().find((t) => t.size <= fit + K.tooBig) ?? null }; // nothing that fits = nothing she can use on him
+  // he begged for a bigger one tonight: that one, whether it fits or not
+  const asked = b.night?.sex?.himToy ? owned.find((t) => t.id === b.night!.sex!.himToy) : undefined;
+  return { fit, toy: asked ?? [...owned].reverse().find((t) => t.size <= fit + K.tooBig) ?? null }; // nothing that fits = nothing she can use on him
 };
+/** Acts that are about what is done to him, from behind. */
+const FEMDOM = new Set(["pegging", "dildo_him", "fisting_him", "prostate"]);
 /** Whether an act done to him is possible at all right now: a toy to do it with, a body that can take it. */
 /** What a man can still do for her with nothing left in him. */
 export const SOFT_ACTS = IN_BED.soft;
@@ -71,6 +76,7 @@ const herFromHis = (state: GameState, act: string) => {
   return clamp(K.peggingHerBase * (K.herShare[act] ?? 1) + b.power * K.peggingHerPerPower + (b.heroine.latents.cruel_streak ? 20 : 0));
 };
 const BEDROOM = "home.bedroom";
+const R0 = content.day.rhythm;
 
 const FIN_LAYOUTS = new Set(["fin_face", "fin_mouth", "fin_chest", "fin_belly", "fin_back", "fin_inside"]);
 
@@ -595,6 +601,15 @@ export function registerMarriage(api: ModApi) {
       sex.demanded = true;
       ctx.log("log.bed.cage.demand", { act: `act.${content.body.cage.demand}` });
     }
+    // a wife who has a taste for it, or holds the reins, now and then wants to be the one doing it to him
+    const hh = b.heroine;
+    if (!sex.lead && !sex.asks && !sex.out && !FEMDOM.has(sex.act) && sex.turns >= 2 && (b.power >= 20 || hh.latents.cruel_streak !== undefined || (hh.tastes.acts.pegging ?? 0) > 0 || (hh.tastes.acts.prostate ?? 0) > 0)) {
+      const cand = ["prostate", "dildo_him", "pegging"].filter((a) => hisActOpen(ctx.state, a));
+      if (cand.length > 0 && ctx.rng.chance(0.05 + b.power * 0.002)) {
+        sex.asks = ctx.rng.pick(cand);
+        ctx.log("log.bed.fd.she_wants", { act: `act.${sex.asks}` });
+      }
+    }
     // is she getting anything out of this?
     if (!sex.out) {
       if (sex.asks) {
@@ -915,9 +930,11 @@ export function registerMarriage(api: ModApi) {
   const bedOptions = (state: GameState): { type: string; payload: Record<string, string> }[] => {
       const sex = bs(state).night?.sex;
       if (!sex) return [];
+      // what is being done to him: he can only moan, ask for more, or ask her to go easy
+      const fd = FEMDOM.has(sex.act) ? ["moan", "beg_more", "beg_gentle"] : [];
       // she runs it: he follows, asks, or takes it back
-      if (sex.lead) return ["follow", ...(sex.his >= B.cumAt ? ["beg"] : []), "take_back", "stop"].map((d) => ({ type: BED, payload: { do: d } }));
-      const dos = ["keep", "faster", "slower", "talk", "kiss", "say_mine", "look_at_me"];
+      if (sex.lead) return ["follow", ...fd, ...(sex.his >= B.cumAt ? ["beg"] : []), "take_back", "stop"].map((d) => ({ type: BED, payload: { do: d } }));
+      const dos = ["keep", "faster", "slower", "talk", "kiss", "say_mine", "look_at_me", ...fd];
 
       if (!sex.byHand) dos.push("hand");
       if (!sex.top) dos.push("top");
@@ -1081,6 +1098,53 @@ export function registerMarriage(api: ModApi) {
           }
           break;
         }
+        case "moan": {
+          // he lets her hear it: a woman who holds the reins likes that, a gentle one is touched by it
+          const hard = b.power >= 25 || b.heroine.latents.cruel_streak !== undefined;
+          changeHeroine(ctx, "arousal", hard ? 5 : 2, "his moans");
+          if (hard) b.power = clamp(b.power + 0.5);
+          ctx.log(`log.bed.fd.moan.${hard ? "hard" : "soft"}`);
+          if (sex.lead) herTurn(ctx);
+          else turn(ctx, r.his * 1.15, 0);
+          break;
+        }
+        case "beg_more": {
+          // "more": a finger becomes a toy, a toy becomes the next size up - whether he can take it or not
+          const K = content.body.his;
+          const owned = content.day.shop.toys.filter((t) => b.toys.includes(t.id)).sort((x, y) => x.size - y.size);
+          const now = sex.act === "prostate" ? K.fingerSize : (toyForHim(ctx.state).toy?.size ?? 0);
+          const next = owned.find((t) => t.size > now);
+          const willing = b.power >= 15 || b.heroine.marriage.desire >= 50 || b.heroine.latents.cruel_streak !== undefined;
+          if (!willing) {
+            ctx.log("log.bed.fd.more.no");
+            if (sex.lead) herTurn(ctx);
+            else turn(ctx, r.his, 0);
+            break;
+          }
+          b.power = clamp(b.power + 1);
+          changeHeroine(ctx, "arousal", 3, "he begs");
+          if (sex.act === "prostate" && next && hisActOpen(ctx.state, "dildo_him")) {
+            sex.himToy = next.id;
+            setAct(ctx, "dildo_him");
+            ctx.log("log.bed.fd.more.toy", { toy: `toy.${next.id}` });
+          } else if (next && sex.act !== "fisting_him") {
+            sex.himToy = next.id;
+            setAct(ctx, sex.act); // his body takes the new size: the stretch is counted again
+            ctx.log("log.bed.fd.more.bigger", { toy: `toy.${next.id}` });
+          } else ctx.log("log.bed.fd.more.none");
+          if (sex.lead) herTurn(ctx);
+          else turn(ctx, r.his, 0);
+          break;
+        }
+        case "beg_gentle": {
+          // "easy...": a fond wife slows down; one who enjoys it does not
+          const hard = b.power >= 40 || b.heroine.latents.cruel_streak !== undefined;
+          if (hard) b.power = clamp(b.power + 1);
+          ctx.log(`log.bed.fd.gentle.${hard ? "no" : "ok"}`);
+          if (sex.lead && hard) herTurn(ctx);
+          else turn(ctx, r.his * (hard ? 1.2 : 0.6), 0);
+          break;
+        }
         case "take_back":
           sex.lead = false;
           if (b.power >= LEAD.takesAtPower) {
@@ -1134,17 +1198,28 @@ export function registerMarriage(api: ModApi) {
     },
   });
 
-  // The small hours. If the evening left her wanting, she does not just fall asleep.
-  api.events.on(
-    "phase:exit",
-    (ctx, e) => {
-      if (e.payload!.phase !== "night") return;
+  // The small hours. If the evening left her wanting, she does not just fall asleep. It happens at a minute of the night
+  // (so that a husband who sleeps an hour at a time can wake to it), or, if he slept straight through, as the night ends.
+  onNightMinute((ctx) => {
+    const n = bs(ctx.state).night;
+    if (!n || n.smallDone || n.smallAt === undefined || (n.minute ?? 0) < n.smallAt || n.herAsleep === undefined || n.sex || n.up) return;
+    smallHours(ctx);
+  });
+  api.events.on("phase:exit", (ctx, e) => void (e.payload!.phase === "night" && !bs(ctx.state).night?.smallDone && smallHours(ctx)), 10); // before sleep takes the edge off
+  api.events.on("phase:enter", (ctx, e) => {
+    const n = bs(ctx.state).night;
+    if (e.payload!.phase === "night" && n) n.smallAt = R0.herBedtime + ctx.rng.int(30, 200);
+  }, -6);
+  const smallHours = (ctx: Ctx) => {
       const b = bs(ctx.state);
+      if (b.night) b.night.smallDone = true;
       const h = b.heroine;
       const N = content.body.night;
       if (h.satisfied >= 50 || h.arousal < N.restlessArousal) return;
       const open = b.mode === "open";
-      const wakes = ctx.rng.chance(N.husbandWakesChance);
+      // lying awake next to her he cannot miss it; asleep, it is a matter of luck
+      const awake = ctx.state.time.phase === "night" && !b.night?.himAsleep && ctx.state.where[HUSBAND] === BEDROOM;
+      const wakes = awake || ctx.rng.chance(N.husbandWakesChance);
       const tags = open || wakes ? undefined : ["unseen"];
       const factor = content.secrecy.styleFactor[b.husband.style];
       // a lover: someone she has gone all the way with and can text
@@ -1183,6 +1258,7 @@ export function registerMarriage(api: ModApi) {
           h.arousal = clamp(h.arousal * 0.2);
           h.sizeTaste = clamp(h.sizeTaste + Math.max(0, toy.size - b.husband.size) * 0.5);
           ctx.log(open || wakes ? "log.night.toy.heard" : "log.night.toy", { toy: `toy.${toy.id}` }, tags);
+          glance(ctx, "her_solo", BEDROOM, [{ id: WIFE, role: "wife" }], { toy: "vagina" });
           ctx.emit("night:self", { noticed: open || wakes, toy: toy.id });
           return;
         }
@@ -1191,9 +1267,7 @@ export function registerMarriage(api: ModApi) {
         ctx.log(open || wakes ? "log.night.self.heard" : "log.night.self", undefined, tags);
         ctx.emit("night:self", { noticed: open || wakes });
       }
-    },
-    10, // before sleep takes the edge off
-  );
+  };
 
   // Once she is used to more than he has, wanting him fades a little every day.
   api.events.on("day:end", (ctx) => {

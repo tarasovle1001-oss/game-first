@@ -193,8 +193,13 @@ describe("in front of him", () => {
 describe("a lodger upstairs at night", () => {
   const ROOM = content.rooms.find((r) => r.zone === "hotel" && r.tags.includes("guest"))!.id;
   const night = (edit: (s: GameState) => void) => {
+    // the first evening of a game where somebody came in at all (a quiet first evening can be empty)
     let s = engine.init(6);
-    while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
+    for (const seed of [6, 7, 8, 9]) {
+      s = engine.init(seed);
+      while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
+      if (Object.keys(bs(s).patrons).length > 0) break;
+    }
     s = structuredClone(s);
     const b = bs(s);
     const p = Object.values(b.patrons)[0]!;

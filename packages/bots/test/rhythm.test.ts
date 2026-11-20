@@ -94,3 +94,28 @@ describe("the day around the clock", () => {
     expect(has(s, WASH)).toBe(false);
   });
 });
+
+describe("sleep by steps", () => {
+  it("an hour at a time the night goes on, the hours count for the morning, and the small hours happen while he sleeps", () => {
+    const toNight = (seed: number) => {
+      let s = engine.init(seed);
+      for (let i = 0; i < 200 && s.time.phase !== "night"; i++) {
+        const acts = engine.listActions(s);
+        s = engine.dispatch(s, acts.find((a) => a.type === CORE_ADVANCE) ?? acts.find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? acts.find((a) => /wait/.test(a.type))!);
+      }
+      return s;
+    };
+    let s = toNight(4);
+    expect(s.time.phase).toBe("night");
+    const at = s.time.minute;
+    s = engine.dispatch(s, { type: SLEEP, payload: { hours: 1 } });
+    expect(s.time.phase).toBe("night");
+    expect(s.time.minute).toBe(at + 60);
+    expect(bs(s).night!.slept).toBe(60);
+    expect(bs(s).night!.himAsleep).toBe(false);
+    // sleeping on until something wakes him ends in the morning at the latest
+    for (let i = 0; i < 30 && s.time.phase === "night"; i++) s = engine.dispatch(s, { type: SLEEP, payload: { until: "event" } });
+    expect(s.time.phase).not.toBe("night");
+    expect(engine.checkInvariants(s)).toEqual([]);
+  });
+});

@@ -30,6 +30,7 @@ heroine: # how her state settles during the evening, per 10 minutes
   arousalCoolPerTick: 0.35
   moodSettlePerTick: 0.02
   soberPerTick: 0.6
+  ownGlass: { base: 0.04, bad: 0.07, started: 0.03, drunk: 7, upTo: 60, badMood: 45, annoyed: 40 } # with a taste for drink: per ten minutes of the evening she pours herself one
 clock: # minute of the day each phase starts at
   prep: 720     # 12:00 (the afternoon system counts down from here to opening)
   night: 30     # 00:30
@@ -45,6 +46,7 @@ loan: # the debt is paid in instalments; miss one and the lender starts dropping
   consent: 10         # how much the debt argues for him, at the starting debt
   suspicion: 7        # the book shows less than it should
   lender: { size: 18, persistence: 85, generosity: 45, interest: 55, arrivesAtTick: 8 }
+rich: { fromDay: 3, chance: 0.025, generosity: 90, interest: 40, offer: 3, bill: 2.5 } # a rare guest with a fat wallet: orders big, puts money on the table from a kiss on, three times what others would
 hotel: # two rooms upstairs
   roomPrice: 55
   takeChance: 0.35      # per free room per evening, at reputation 50

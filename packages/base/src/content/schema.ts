@@ -57,10 +57,11 @@ export const balanceSchema = z
     debtInterestPerDay: z.number().min(0), // fraction, 0.01 = 1%
     service: z.object({ served: z.number(), ignored: z.number(), taperFrom: z.number() }).strict(),
     supplies: z.object({ packCost: z.number().positive(), packServings: z.number().int().positive() }).strict(),
-    heroine: z.object({ arousalCoolPerTick: z.number().min(0), moodSettlePerTick: z.number().min(0).max(1), soberPerTick: z.number().min(0) }).strict(),
+    heroine: z.object({ arousalCoolPerTick: z.number().min(0), moodSettlePerTick: z.number().min(0).max(1), soberPerTick: z.number().min(0), ownGlass: z.object({ base: z.number(), bad: z.number(), started: z.number(), drunk: z.number(), upTo: z.number(), badMood: z.number(), annoyed: z.number() }).strict() }).strict(),
     // clock: minute of the day each phase starts at (for the log and the top bar)
     clock: z.object({ prep: z.number().int(), night: z.number().int(), summary: z.number().int() }).strict(),
     loan: z.object({ everyDays: z.number().int().positive(), firstDueDay: z.number().int().positive(), share: z.number(), min: z.number(), lateFee: z.number(), visitsAfterMiss: z.number().int(), forgivePerTier: z.number(), consent: z.number(), suspicion: z.number(), lender: z.object({ size: z.number(), persistence: z.number(), generosity: z.number(), interest: z.number(), arrivesAtTick: z.number().int() }).strict() }).strict(),
+    rich: z.object({ fromDay: z.number().int(), chance: z.number().min(0).max(1), generosity: z.number(), interest: z.number(), offer: z.number(), bill: z.number() }).strict(),
     hotel: z.object({ roomPrice: z.number(), takeChance: z.number().min(0).max(1), returningChance: z.number().min(0).max(1), nights: z.tuple([z.number().int().positive(), z.number().int().positive()]), comesDownAtTick: z.number().int(), life: z.object({ upChance: z.number(), upMinutes: z.tuple([z.number().int(), z.number().int()]), outChance: z.number(), outMinutes: z.tuple([z.number().int(), z.number().int()]), askChance: z.number(), askMinutes: z.tuple([z.number().int(), z.number().int()]) }).strict(), nightVisitTier: z.number().int(), morningChance: z.number().min(0).max(1), towels: z.object({ bellAfter: z.tuple([z.number().int(), z.number().int()]), decideAfter: z.number().int(), heardSuspicion: z.number(), knockSuspicion: z.number(), interest: z.number(), chance: z.number().min(0).max(1), maxTier: z.number().int(), hoursAffinity: z.number(), hoursChance: z.number().min(0).max(1), hoursEnergy: z.number(), hoursSuspicion: z.number(), hoursPower: z.number() }).strict() }).strict(),
     shift: z
       .object({
@@ -202,6 +203,7 @@ export const consentSchema = z
     witnesses: z.number(),
     husbandWatching: z.number(),
     companyPerMan: z.number(),
+    alcohol: z.object({ selfFrom: z.number(), selfPer: z.number(), buyerUpTo: z.number(), othersFrom: z.number(), othersUpTo: z.number(), othersChance: z.number() }).strict(),
     away: z.object({ base: z.number(), perHour: z.number(), max: z.number(), honesty: z.number() }).strict(),
     money: z.number(),
     pressure: z.number(),
@@ -250,7 +252,7 @@ export const bodySchema = z
     fit: z.object({ vagina: zoneFit, anus: zoneFit, mouth: zoneFit }).strict(),
     alone: z
       .object({
-        rooms: z.array(z.string()), minutes: z.number().int().positive(), mood: z.number(), joinOpenness: z.number(), joinDesire: z.number(), joinMood: z.number(), caughtChance: z.number(), confidence: z.number(), hardPower: z.number(), warmDesire: z.number(), warmMaxResent: z.number(),
+        rooms: z.array(z.string()), minutes: z.number().int().positive(), mood: z.number(), joinOpenness: z.number(), joinDesire: z.number(), joinMood: z.number(), steps: z.object({ minutes: z.number().int(), startShare: z.number(), handRate: z.number(), toyRate: z.number(), perStretch: z.number(), faster: z.number(), slower: z.number(), finishFrom: z.number(), caughtPerTurn: z.number(), think: z.object({ plain: z.number(), pathetic: z.number(), femdom: z.number(), netorare: z.number() }).strict() }).strict(), caughtChance: z.number(), confidence: z.number(), hardPower: z.number(), warmDesire: z.number(), warmMaxResent: z.number(),
         hand: z.object({ mood: z.number(), desire: z.number(), moodWarm: z.number(), arousal: z.number() }).strict(),
         toy: z.object({ power: z.number(), powerJoin: z.number(), joinOpenness: z.number(), arousal: z.number(), mood: z.number(), pity: z.number() }).strict(),
       })

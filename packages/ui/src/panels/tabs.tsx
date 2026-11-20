@@ -55,15 +55,31 @@ export function Expectations({ state, t, lang }: Common) {
     .filter(([, v]) => Math.abs(v) >= 15)
     .map(([id, v]) => ({ id, v, ...expectLevel(v), tier: actOf(id)?.tier ?? 0 }))
     .sort((a, c) => a.tier - c.tier);
+  // one line per how sure she is, and acts that make up one "thing" (hands on her, her mouth...) said as that thing
   const list = (side: "allow" | "deny") => {
     const items = known.filter((k) => k.side === side);
     if (items.length === 0) return null;
+    const lines = (["knows", "suspects", "vague"] as const)
+      .map((sure) => {
+        const ids = new Set(items.filter((k) => k.sure === sure).map((k) => k.id));
+        const words: string[] = [];
+        for (const it of content.terms.items) {
+          const acts = (it.acts ?? []).filter((a) => ids.has(a));
+          if (acts.length >= 2 && acts.length === (it.acts ?? []).length) {
+            words.push(t(`item.${it.id}`));
+            for (const a of acts) ids.delete(a);
+          }
+        }
+        for (const id of items.filter((k) => ids.has(k.id)).map((k) => k.id)) words.push(t(`act.${id}`));
+        return { sure, words };
+      })
+      .filter((l) => l.words.length > 0);
     return (
       <>
         <div className="cap gap">{t(`ui.thinks.${side}`)}</div>
-        {items.map((k) => (
-          <div key={k.id} className="thinks">
-            <span className="muted small">{t(`ui.sure.${k.sure}`)}:</span> {t(`act.${k.id}`)}
+        {lines.map((l) => (
+          <div key={l.sure} className="thinks">
+            <span className="muted small">{t(`ui.sure.${l.sure}`)}:</span> {l.words.join(", ")}
           </div>
         ))}
       </>
@@ -179,6 +195,7 @@ export function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
       <div className="muted small">
         {t("ui.patron.line", { age: p.age, build: t(`patron.build.${p.build}`), approach: t(`patron.approach.${p.approach}`) })}
         {p.aim && ` · ${t(`patron.aim.${p.aim}`)}`}
+        {p.rich && ` · ${t("patron.rich")}`}
       </div>
       <div className="muted small">
         {t("ui.patron.memory", { visits: p.memory.visits, interest: Math.round(p.memory.interest), affinity: Math.round(p.memory.affinity) })}
@@ -224,7 +241,7 @@ export function GuestsTab({ state, t, lang, open }: Common) {
       {b.shift?.group && (
         <div className="small">
           {t("ui.group", { n: b.shift.group.size, heat: Math.round(b.shift.group.heat) })}
-          {b.shift.group.herOut !== undefined ? ` · ${t("ui.group.her")}` : b.shift.group.wants !== undefined ? ` · ${t("ui.group.wants")}` : ""}
+          {b.shift.attend?.loc === (b.shift.group.sauna ? "cafe.sauna" : "cafe.lounge") ? ` · ${t("ui.group.her")}` : b.shift.group.wants !== undefined ? ` · ${t("ui.group.wants")}` : ""}
         </div>
       )}
       <div className="cap">{t("ui.patrons")}</div>
@@ -234,7 +251,7 @@ export function GuestsTab({ state, t, lang, open }: Common) {
           <div key={v.patron}>
             <PatronRow p={b.patrons[v.patron]!} t={t} lang={lang} />
             <div className="small muted" style={{ marginLeft: 8 }}>
-              {b.encounter?.patron === v.patron ? t("ui.guest.withher") : v.served === 0 ? t("ui.guest.waiting") : t("ui.guest.served", { n: v.served })}
+              {b.encounter?.patron === v.patron ? t("ui.guest.withher") : v.served === 0 || v.sinceOrder >= content.balance.shift.orderEveryMinutes ? <span className="order-plate">{t("ui.guest.waiting")}</span> : t("ui.guest.served", { n: v.served })}
             </div>
             {(v.waited > 0 || (b.patrons[v.patron]!.memory.tier >= 3 && (b.patrons[v.patron]!.likes?.length ?? 0) > 0)) && (
               <div className={`small ${v.waited >= content.balance.shift.maxWaitMinutes * 0.6 ? "bad" : "muted"}`} style={{ marginLeft: 8 }}>

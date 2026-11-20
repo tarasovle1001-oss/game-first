@@ -100,6 +100,7 @@ export function seat(ctx: Ctx, patron: Patron, known: boolean, opts: { at?: stri
   });
   ctx.state.where[patron.id] = opts.at ?? HALL;
   if (!opts.quiet) ctx.log(known ? "log.patron.returns" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
+  if (patron.rich && !opts.quiet) ctx.log("log.patron.rich", { name: `@name:${patron.name}` });
   ctx.emit("patron:arrived", { id: patron.id, returning: known });
   interrupt(ctx);
 }
@@ -154,7 +155,7 @@ function serveOne(ctx: Ctx, v: Visit, taker: "wife" | "husband"): boolean {
   }
   const p = b.patrons[v.patron]!;
   const type = content.patronTypes.find((t) => t.id === p.type)!;
-  const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (ctx.state.where[HUSBAND] === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus) * (bal.billFactor - ((bal.billFactor - bal.billFactorFull) * Math.max(0, b.reputation - 50)) / 50));
+  const bill = Math.round(ctx.rng.int(type.spend[0], type.spend[1]) * (p.rich ? content.balance.rich.bill : 1) * (ctx.state.where[HUSBAND] === "cafe.kitchen" ? 1 + bal.husbandInKitchenBill : 1) * (1 + b.billBonus) * (bal.billFactor - ((bal.billFactor - bal.billFactorFull) * Math.max(0, b.reputation - 50)) / 50));
   const tip = taker === "husband" ? 0 : Math.max(0, Math.round(ctx.engine.evaluate<TipInput>(TIP_FORMULA, ctx.state, { patron: p.id, bill }).total));
   b.stock -= 1;
   b.clean = Math.max(0, b.clean - content.day.dirtPerServed);
@@ -258,6 +259,21 @@ export function runUnattended(ctx: Ctx, minutes: number) {
   for (let i = 0; i < n && !ticksDone(sh); i++) tick(ctx);
 }
 
+/** A woman with a taste for it pours herself one at the bar now and then: more on a bad evening, more once she has started. */
+function herOwnGlass(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const h = b.heroine;
+  const Al = content.balance.heroine.ownGlass;
+  if (!h.latents.likes_drink || b.encounter || b.night || h.drunk >= Al.upTo || b.stock <= 0) return;
+  const bad = h.mood < Al.badMood || (h.annoyance ?? 0) >= Al.annoyed;
+  const p = Al.base + (bad ? Al.bad : 0) + (h.drunk >= content.consent.alcohol.selfFrom ? Al.started : 0);
+  if (!ctx.rng.chance(p)) return;
+  changeHeroine(ctx, "drunk", Al.drunk, "her own glass");
+  b.stock -= 1;
+  const seen = husbandSees(ctx.state, ctx.state.where[WIFE] ?? HALL) || b.mode === "open";
+  ctx.log(bad ? "log.drink.herself.bad" : "log.drink.herself", undefined, seen ? undefined : ["unseen"]);
+}
+
 /** One minute of the evening. Slow things (moods, sobering up, timed arrivals) still run every ten: event "shift:tick". */
 function tick(ctx: Ctx) {
   const sh = bs(ctx.state).shift!;
@@ -297,6 +313,7 @@ function tick(ctx: Ctx) {
   ctx.emit("shift:minute", { minute: sh.tick });
   if (sh.tick % TEN === 0) {
     warmGuests(ctx);
+    herOwnGlass(ctx);
     ctx.emit("shift:tick", { tick: sh.tick / TEN });
   }
   ctx.flush(); // every minute is fully resolved before the next one, however long the wait

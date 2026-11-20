@@ -22,6 +22,9 @@
 - id: tipsy_loose      # drink takes more of her brakes off
   chance: 0.3
   strength: 0.25
+- id: likes_drink      # a taste for drink: she says yes to a glass more easily, and now and then pours herself one at the bar
+  chance: 0.2
+  strength: 14
 - id: romantic         # she needs to like the man: a stranger gets less, a familiar face more
   chance: 0.3
   strength: 9

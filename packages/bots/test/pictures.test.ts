@@ -111,9 +111,16 @@ describe("19c: the long evening, his own body, the cage", () => {
     mine.where.husband = "home.bathroom";
     mine.where.wife = "cafe.kitchen";
     expect(acts(mine, ALONE).map((a) => a.payload?.do)).toContain("hand");
-    const after = engine.dispatch(mine, { type: ALONE, payload: { do: "hand" } });
-    expect(bs(after).husband.spentDay).toBe(1);
+    let after = engine.dispatch(mine, { type: ALONE, payload: { do: "hand" } });
+    // it is played move by move, until he finishes (or she walks in)
     expect(acts(after, ALONE)).toEqual([]);
+    for (let i = 0; i < 20 && bs(after).alone && acts(after, "base/alone-do").length > 0; i++) {
+      const dos = acts(after, "base/alone-do");
+      after = engine.dispatch(after, dos.find((a) => a.payload?.do === "finish") ?? dos.find((a) => a.payload?.do === "faster")!);
+    }
+    expect(bs(after).alone).toBeUndefined();
+    if (!bs(after).husband.spentDay) expect(after.log.some((e) => e.key.startsWith("log.alone.caught"))).toBe(true);
+    else expect(bs(after).husband.spentDay).toBe(1);
     expect(confidenceOf(after)).toBeGreaterThanOrEqual(content.body.nerve.confidence.floor);
     const locked = structuredClone(mine);
     bs(locked).husband.caged = { day: 1 };

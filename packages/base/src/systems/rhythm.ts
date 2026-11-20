@@ -8,7 +8,7 @@ import { CONSENT_FORMULA } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { wash } from "./look";
-import { husbandSees } from "./places";
+import { clockText, husbandSees } from "./places";
 import { passPrep } from "./day";
 
 export const SLEEP = "base/sleep";
@@ -161,19 +161,53 @@ export function registerRhythm(api: ModApi) {
   api.actions.register({
     id: SLEEP,
     labelKey: "action.sleep",
-    describe: (a) => ({ key: "action.sleep.until", params: { hour: a.payload!.until as number } }),
+    describe: (a): { key: string; params?: Record<string, string | number> } => (a.payload!.hours ? { key: "action.sleep.hours", params: { hours: a.payload!.hours as number } } : a.payload!.until === "event" ? { key: "action.sleep.event" } : { key: "action.sleep.until", params: { hour: a.payload!.until as number } }),
     enumerate(state) {
       const b = bs(state);
       if (state.time.phase !== "night" || !b.night || b.night.sex || b.complaint) return [];
-      return R.wake.slice(1).map((h) => ({ type: SLEEP, payload: { until: h } }));
+      // an hour at a time, or until something wakes him: the night goes on while he sleeps, and he may wake to it
+      return [{ type: SLEEP, payload: { hours: 1 } as Record<string, string | number> }, { type: SLEEP, payload: { until: "event" } as Record<string, string | number> }, ...R.wake.slice(1).map((h) => ({ type: SLEEP, payload: { until: h } as Record<string, string | number> }))];
     },
-    accepts: (state, a) => state.time.phase === "night" && !bs(state).night?.sex && !bs(state).complaint && R.wake.includes(a.payload?.until as number),
+    accepts: (state, a) => state.time.phase === "night" && !bs(state).night?.sex && !bs(state).complaint && (a.payload?.hours === 1 || a.payload?.until === "event" || R.wake.includes(a.payload?.until as number)),
     apply(ctx, a) {
-      bs(ctx.state).wakeAt = a.payload!.until as number;
+      const b = bs(ctx.state);
+      if (a.payload!.hours || a.payload!.until === "event") return void sleepSteps(ctx, a.payload!.hours ? 60 : Infinity);
+      b.wakeAt = a.payload!.until as number;
       ctx.emit("phase:exit", { phase: "night" });
       ctx.emit("core:setPhase", { phase: "summary", newDay: false });
     },
   });
+  /** He sleeps for a while, five minutes at a time: what happens meanwhile happens, and may wake him. */
+  const sleepSteps = (ctx: Ctx, minutes: number) => {
+    const b = bs(ctx.state);
+    const n = b.night!;
+    const morning = 1440 + R.wake[0]! * 60;
+    n.himAsleep = true;
+    const before = ctx.state.log.length;
+    ctx.log("log.sleep.step");
+    let slept = 0;
+    while (slept < minutes) {
+      passNight(ctx, 5);
+      slept += 5;
+      const now = bs(ctx.state).night;
+      if (!now) return;
+      now.slept = (now.slept ?? 0) + 5;
+      if (ctx.state.time.minute >= morning) break;
+      // something he hears or sees wakes him; with everything on screen, so does what he would not have noticed
+      const fresh = ctx.state.log.slice(before + 1);
+      if (minutes === Infinity && fresh.some((e) => !e.tags?.includes("minor") && (!e.tags?.includes("unseen") || b.viewAll === true) && e.key !== "log.night.her_asleep")) break;
+      if (now.sex || bs(ctx.state).complaint || bs(ctx.state).approach) break;
+    }
+    const n2 = bs(ctx.state).night;
+    if (n2) n2.himAsleep = false;
+    if (ctx.state.time.minute >= morning) {
+      // morning: the night is over, he gets up at the usual hour
+      ctx.emit("phase:exit", { phase: "night" });
+      ctx.emit("core:setPhase", { phase: "summary", newDay: false });
+      return;
+    }
+    ctx.log("log.sleep.woke", { time: clockText(ctx.state.time.minute) });
+  };
   api.events.on(
     "phase:enter",
     (ctx, e) => {
@@ -195,7 +229,7 @@ export function registerRhythm(api: ModApi) {
       // minutes after midnight they lay down at: closing early buys sleep, a long evening costs it
       const late = nightStart(ctx.state) - 1440;
       const bed = late + (n.minute ?? 0);
-      const his = Math.max(0, wakeMinute(ctx.state) - bed) / 60;
+      const his = (Math.max(0, wakeMinute(ctx.state) - bed) + (n.slept ?? 0)) / 60; // and the hours he slept on and off before that
       const hers = Math.max(0, R.herWake * 60 - (late + (n.herAsleep ?? n.minute ?? 0))) / 60;
       // a short night is worth less than its hours: the first ones only take the edge off
       const restOf = (h: number) => Math.min(h, R.sleep.fullAfter) * R.sleep.shortShare + Math.max(0, h - R.sleep.fullAfter);
