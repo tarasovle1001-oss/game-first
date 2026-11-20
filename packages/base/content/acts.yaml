@@ -492,6 +492,7 @@
   lines: true
 - id: sauna_massage
   tier: 5
+  at: [cafe.sauna]
   base: -42
   scene: sauna_massage
   place: private

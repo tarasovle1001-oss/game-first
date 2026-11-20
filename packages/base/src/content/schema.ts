@@ -103,6 +103,7 @@ export const actSchema = z
     tip: z.number().min(0),
     zones: z.array(z.enum(["mouth", "vagina", "anus", "hands"])),
     lines: z.boolean().optional(), // has its own lines for the start and for the turns (log.act.<id>.*)
+    at: z.array(z.string()).optional(), // only in these rooms (a massage in the sauna is not a thing in the hall)
     only: z.enum(["husband"]).optional(), // an act that only happens in the marriage bed
     motives: z.array(z.enum(["affection", "giving", "power"])).optional(), // why she does it, when her own body is not the point
   })

@@ -15,7 +15,7 @@ function freeName(ctx: Ctx): number {
 
 /** A new person walks in: everything is rolled once from his type and then stays. */
 /** Acts a guest can have a taste for: anything past flirting that is not reserved for the marriage bed. */
-const LIKEABLE = content.acts.filter((a) => a.tier >= 4 && !a.only).map((a) => a.id);
+const LIKEABLE = content.acts.filter((a) => a.tier >= 4 && !a.only && !a.at).map((a) => a.id);
 
 export function generatePatron(ctx: Ctx): Patron {
   const b = bs(ctx.state);

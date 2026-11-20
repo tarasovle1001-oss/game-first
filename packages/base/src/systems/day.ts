@@ -252,7 +252,7 @@ function gym(ctx: Ctx, together: boolean) {
     .sort((x, y) => y.memory.interest - x.memory.interest || x.id.localeCompare(y.id))[0];
   if (!known || !ctx.rng.chance(G.meetChance)) return;
   const tier = Math.max(1, Math.min(known.memory.tier + 1, G.maxTier));
-  const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
+  const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink" && !a.at);
   if (options.length === 0) return;
   const act = ctx.rng.pick(options);
   const input: ConsentInput = { act: act.id, partner: known.id, loc: "town.gym", offer: 0, pressure: 0 };

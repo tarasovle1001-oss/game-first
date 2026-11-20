@@ -34,7 +34,7 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { mi
     const [room, l] = entry;
     const p = b.patrons[l.patron]!;
     const tier = Math.max(2, Math.min(p.memory.tier + 1, H.towels.maxTier));
-    const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink");
+    const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink" && !a.at);
     if (options.length === 0) return null;
     const act = ctx.rng.pick(options);
     const input: ConsentInput = { act: act.id, partner: p.id, loc: room, offer: 0, pressure: 0 };
@@ -63,7 +63,7 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { mi
       if (verdict === "eager" && (out.came || p.memory.affinity >= T.hoursAffinity) && ctx.rng.chance(T.hoursChance)) {
         hours = 1;
         for (let round = 1; round < Math.max(2, p.stamina); round++) {
-          const more = content.acts.filter((a) => !a.only && isIntimate(a) && a.tier <= p.memory.tier + 1 && a.tier >= Math.min(5, p.memory.tier));
+          const more = content.acts.filter((a) => !a.only && !a.at && isIntimate(a) && a.tier <= p.memory.tier + 1 && a.tier >= Math.min(5, p.memory.tier));
           const next = more.length ? ctx.rng.pick(more) : null;
           if (!next || verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { ...input, act: next.id }).total + content.consent.scene.goingBonus) === "refuse") break;
           const again = resolveBody(ctx, next, { size: p.size, minutes: next.minutes });

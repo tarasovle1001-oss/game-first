@@ -119,6 +119,7 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
   const offer = offerOf(p, act, false);
   const at = (loc: string): ConsentInput => ({ act: act.id, partner: p.id, loc, offer, pressure: v.pressure });
   const here = roomOfGuest(state, p.id);
+  if (act.at && !act.at.includes(here)) return null; // that one belongs to another room
   if (!isIntimate(act)) return at(here);
   if (closed(here)) return at(here); // the back room, the sauna, his room: there is a door already
   // anything can happen right on the floor, it is just much harder for her. She steers it to where she minds least
@@ -175,7 +176,7 @@ function nextInScene(ctx: Ctx, v: Visit, p: Patron, enc: Encounter): Act | null 
   const now = actById(enc.act);
   const cap = Math.min(topTier, tierCap(p, v) + 1); // in the middle of it a man dares a little more
   const options = content.acts.filter(
-    (a) => !a.only && a.id !== enc.act && a.id !== "drink" && a.minutes > 0 && a.tier <= cap && a.tier <= now.tier + 2 && a.tier >= now.tier && (!isIntimate(a) || v.rounds < p.stamina),
+    (a) => !a.only && a.id !== enc.act && a.id !== "drink" && a.minutes > 0 && a.tier <= cap && a.tier <= now.tier + 2 && a.tier >= now.tier && (!isIntimate(a) || v.rounds < p.stamina) && (!a.at || a.at.includes(enc.loc)),
   );
   if (options.length === 0) return null;
   const liked = options.filter((a) => p.likes?.includes(a.id)).sort((x, y) => y.tier - x.tier);
@@ -253,7 +254,7 @@ export function advanceEncounter(ctx: Ctx) {
     if ((enc.bored ?? 0) >= G.boredLimit) {
       // she steers it to something that does more for her, or she has had enough
       const better = content.acts
-        .filter((a) => !a.only && isIntimate(a) && a.id !== act.id && a.tier <= Math.max(act.tier, p.memory.tier) && (v.rounds < p.stamina))
+        .filter((a) => !a.only && isIntimate(a) && a.id !== act.id && a.tier <= Math.max(act.tier, p.memory.tier) && (v.rounds < p.stamina) && (!a.at || a.at.includes(enc.loc)))
         .map((a) => ({ a, r: pleasureFor(ctx.state, a, p.size) }))
         .filter((x) => x.r >= enc.pleasure + G.rewardBetter)
         .sort((x, y) => y.r - x.r || x.a.id.localeCompare(y.a.id))[0];
@@ -505,7 +506,7 @@ function herOwnMove(ctx: Ctx) {
   const score = (i: ConsentInput) => ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, i);
   const options = content.acts
     // at the top of the ladder there is one act only: with a man she has been there with, she chooses among the top two steps
-    .filter((a) => (a.tier === tier || (tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier && a.tier === topTier - 1)) && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina))
+    .filter((a) => (a.tier === tier || (tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier && a.tier === topTier - 1)) && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina) && (!a.at || a.at.includes(room)))
     .map((a) => {
       const at = (loc: string): ConsentInput => ({ act: a.id, partner: p.id, loc, offer: 0, pressure: 0 });
       const other = isIntimate(a) && !closed(room) ? privateRoomFor(ctx.state, ctx.engine, p.id) : null;
