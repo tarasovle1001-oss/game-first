@@ -474,7 +474,8 @@ export function registerDay(api: ModApi) {
     passPrep(ctx, far ? D.herDay.walkToTown : inTown(e.payload!.to as string) ? D.herDay.walkInTown : 1);
   });
   // The town is a place for the afternoon; he is back behind the door by opening time.
-  api.locations.guard((state, actor, _from, to) => actor !== HUSBAND || !inTown(to) || (state.time.phase === "prep" && (bs(state).day?.left ?? 0) > D.herDay.walkToTown * 2));
+  // he does not set out for town with no time to get back - but once there he can always walk on and walk home (the clock simply stops at opening time)
+  api.locations.guard((state, actor, from, to) => actor !== HUSBAND || !inTown(to) || (state.time.phase === "prep" && (inTown(from) || (bs(state).day?.left ?? 0) > D.herDay.walkToTown * 2)));
   api.events.on(
     "phase:enter",
     (ctx, e) => {

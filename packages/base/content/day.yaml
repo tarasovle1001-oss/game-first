@@ -83,7 +83,7 @@ rhythm:               # the day around the clock: sleep, his own state, the bath
   energyCost: 0.55    # everything that tires either of them costs this share of its listed price (one knob for "energy runs out too fast")
   quiet: { minutes: 60, her: 22 } # at zero energy in the afternoon either of them lies down: for how long, and what it gives her (his is the nap)
   herBedtime: 60      # minutes after midnight she is asleep, if nothing keeps her up
-  wakeHer: { consent: -15, annoy: 10, mood: -3 }
+  wakeHer: { consent: -15, annoy: 10, mood: -3, tiredEnergy: 35, warmDesire: 55 } # below tiredEnergy she waves him off and sleeps on; from warmDesire she does not mind being woken
   nightWaits: [5, 15, 60]
   nightUntilMax: 180  # "until something happens" at night gives up after this many minutes
   nightCosts: { ask: 5, turn: 2, self: 10, talk: 5 }

@@ -237,3 +237,4 @@ export { shownCm } from "./systems/body";
 export { BED_SAVE } from "./systems/marriage";
 export { BATH_DO } from "./systems/rhythm";
 export { OPEN_EARLY } from "./systems/shift";
+export { WAKE_HER } from "./systems/rhythm";

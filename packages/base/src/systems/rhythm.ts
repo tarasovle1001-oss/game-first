@@ -17,6 +17,7 @@ export const WASH = "base/wash";
 export const SEND_WASH = "base/send-wash";
 export const WASH_TOGETHER = "base/wash-together";
 export const BATH_DO = "base/bath-do";
+export const WAKE_HER = "base/wake-her";
 const R = content.day.rhythm;
 const BATH = "home.bathroom";
 /** The minute the night starts at: when the doors closed, which is the usual hour unless he shut early. */
@@ -345,6 +346,36 @@ export function registerRhythm(api: ModApi) {
       // they stay under the water a while longer: the scene is on screen now and for the next move, not one move late
       if (b.day?.her?.task === "wash") b.day.her.left = R.bath.washMinutes + 10;
       passPrep(ctx, R.bath.washMinutes);
+    },
+  });
+  // She is asleep: nothing is said to a sleeping woman. He can wake her - and how that goes is up to how she is and how she feels about him.
+  api.actions.register({
+    id: WAKE_HER,
+    labelKey: "action.wake_her",
+    enumerate(state) {
+      const n = bs(state).night;
+      return state.time.phase === "night" && n?.herAsleep !== undefined && !n.sex && state.where[HUSBAND] === state.where[WIFE] ? [{ type: WAKE_HER }] : [];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const n = b.night!;
+      passNight(ctx, 2);
+      if (h.energy < R.wakeHer.tiredEnergy) {
+        // too tired to be woken at all
+        annoy(ctx, R.wakeHer.annoy / 2, "him");
+        ctx.log("log.night.wake.no");
+        return;
+      }
+      n.herAsleep = undefined;
+      n.woken = true;
+      if (h.marriage.desire >= R.wakeHer.warmDesire && h.marriage.resent < 30) ctx.log("log.night.wake.fine");
+      else {
+        annoy(ctx, R.wakeHer.annoy, "him");
+        changeHeroine(ctx, "mood", R.wakeHer.mood, "woken");
+        ctx.log("log.night.wake.cross");
+      }
+      ctx.emit("her:woken");
     },
   });
   // Under the water together, move by move: his hands with the soap, then closer, if she lets him.

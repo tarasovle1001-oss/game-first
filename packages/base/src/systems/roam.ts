@@ -40,6 +40,8 @@ export function registerRoam(api: ModApi) {
       const seen = ctx.state.where[HUSBAND] === HALL || husbandSees(ctx.state, HALL);
       ctx.state.where[v.patron] = place.to;
       ctx.log(`log.roam.${place.id}`, { name: `@name:${p.name}` }, seen ? ["minor"] : ["unseen", "minor"]);
+      // a man who has his eye on her leaving the room is worth a look: the wait stops there, so that he is seen on the map while he is out
+      if ((seen || b.viewAll) && p.memory.interest >= Ro.meet.interest) sh.interrupt = true;
       // she goes after him: out of everybody's sight for a few minutes, as far as she says yes to
       const M = Ro.meet;
       const h = b.heroine;

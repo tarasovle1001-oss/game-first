@@ -1187,7 +1187,8 @@ export function registerMarriage(api: ModApi) {
       if (!b.night || (state.time.phase !== "night" && !b.night.sex) || state.where[HUSBAND] !== state.where[WIFE]) return null;
       const fin = b.night.fin && !b.night.sex ? `fin_${b.night.fin}` : "";
       return {
-        type: FIN_LAYOUTS.has(fin) ? fin : b.night.scene,
+        // once she is asleep the night is a sleeping picture, whatever came before it
+        type: b.night.herAsleep !== undefined && !b.night.sex ? "sleeping" : FIN_LAYOUTS.has(fin) ? fin : b.night.scene,
         location: state.where[HUSBAND]!,
         participants: [
           { id: WIFE, role: "wife" },

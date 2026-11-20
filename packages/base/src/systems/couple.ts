@@ -49,6 +49,7 @@ export const together = (state: GameState) => {
   const b = bs(state);
   if (state.time.phase === "summary" || b.caught || b.encounter || b.night?.sex) return false;
   if (state.time.phase === "night" && b.night?.scene.startsWith("fd_")) return false;
+  if (state.time.phase === "night" && b.night?.herAsleep !== undefined) return false; // nothing is said to a sleeping woman: wake her first (base/wake-her)
   if (b.day?.busy && state.time.phase === "prep") return false; // his hands are full
   return state.where[HUSBAND] === state.where[WIFE];
 };
