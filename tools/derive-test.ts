@@ -33,8 +33,8 @@ const VARIANTS: { id: string; label: string; mask: "face" | "cloth"; denoise: nu
   { id: "face_ecstatic", label: "лицо: на пике", mask: "face", denoise: 0.55, words: `face, ${mood("ecstatic")}` },
   { id: "face_shy", label: "лицо: стесняется", mask: "face", denoise: 0.5, words: `face, ${mood("shy")}` },
   { id: "face_marks", label: "лицо: следы", mask: "face", denoise: 0.5, words: `face, ${mood("aroused")}, ${W.cum.face}` },
-  { id: "cloth_naked", label: "одежда: без неё", mask: "cloth", denoise: 0.8, words: [W.outfit.naked, ...(W.bare.all ?? [])].join(", ") },
-  { id: "cloth_lingerie", label: "одежда: бельё", mask: "cloth", denoise: 0.8, words: W.outfit.lingerie ?? "" },
+  { id: "cloth_naked", label: "одежда: без неё", mask: "cloth", denoise: 0.8, words: [W.outfit.naked?.tags, ...(W.bare.all ?? [])].join(", ") },
+  { id: "cloth_lingerie", label: "одежда: бельё", mask: "cloth", denoise: 0.8, words: W.outfit.lingerie?.tags ?? "" },
 ];
 
 function serve(dir: string) {

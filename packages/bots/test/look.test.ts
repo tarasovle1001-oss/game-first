@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseMod, bs, describeScene } from "@tc/base";
+import { baseMod, bs, content, describeScene } from "@tc/base";
 import { createEngine } from "@tc/core";
 
 const engine = createEngine([baseMod]);
@@ -9,7 +9,7 @@ describe("the scene in words", () => {
     const s = engine.init(3);
     const w = describeScene(s, true);
     expect(w.heroine[0]).toBe("1girl");
-    expect(w.heroine).toContain("plain work dress");
+    expect(w.heroine).toContain(content.look.words.outfit.modest!.tags);
     expect(w.environment.length).toBe(1);
     expect(w.prompt.startsWith("1girl")).toBe(true);
   });

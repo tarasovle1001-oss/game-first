@@ -7,6 +7,7 @@ import { checkGen, drawPicture, fileOf, genAlive, genSetup, listFolder, picUrl, 
 import { downloadCard, dropThumb, keepThumb, loadHeroines, readCardFile, saveHeroines, thumbOf } from "./heroines";
 
 const H = content.heroine;
+const WORK_AND_HOME = ["modest", "fitted", "revealing", "daring", "homewear", "nightgown", "lingerie", "towel"];
 const NAMES = ["Ника", "Алина", "Вера", "Мила", "Лена", "Даша", "Катя", "Ира", "Оля", "Таня", "Соня", "Юля", "Аня", "Лиза", "Марина", "Ксюша", "Полина", "Света"];
 const rndName = () => NAMES[Math.floor(Math.random() * NAMES.length)]!;
 
@@ -247,6 +248,13 @@ export function HeroineBuilder({ t, start, onSave, onBack }: { t: T; start: Hero
                     <span>{t("ui.hero.negative")}</span>
                     <textarea rows={2} value={card.negative} onChange={(e) => set({ negative: e.target.value })} />
                   </label>
+                  <p className="muted small">{t("ui.hero.outfits.about")}</p>
+                  {WORK_AND_HOME.map((o) => (
+                    <label className="field" key={o}>
+                      <span>{t(`outfit.${o}`)}</span>
+                      <textarea rows={2} value={card.outfits?.[o] ?? ""} placeholder={content.look.words.outfit[o]?.tags ?? ""} onChange={(e) => set({ outfits: { ...card.outfits, [o]: e.target.value } })} />
+                    </label>
+                  ))}
                 </>
               )}
             </section>

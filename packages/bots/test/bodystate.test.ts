@@ -99,7 +99,7 @@ describe("bed and body", () => {
     expect(wearOf(s)).toBe(bs(s).heroine.outfit);
     s.where.wife = "home.bedroom";
     expect(wearOf(s)).toBe(I.wear.home);
-    expect(describeScene(s, true).heroine).toContain("oversized t-shirt, shorts");
+    expect(describeScene(s, true).heroine).toContain(content.look.words.outfit.homewear!.tags);
     expect(dressShift(s)).toBe(0);
     bs(s).heroine.mood = 10;
     bs(s).heroine.feel = { shame: 40 };

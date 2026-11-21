@@ -602,7 +602,7 @@ export const lookSchema = z
     after: z.record(z.string(), z.number().positive()),
     words: z
       .object({
-        outfit: z.record(z.string(), z.string()), bare: z.record(z.string(), z.array(z.string())), panties: z.record(z.string(), z.string()), skirtUp: z.string(),
+        outfit: z.record(z.string(), z.object({ tags: z.string(), core: z.string().optional(), top: z.string().optional(), lift: z.string().optional(), under: z.string().optional(), negative: z.string().optional() }).strict()), under: z.record(z.string(), z.object({ bra: z.string(), panties: z.string() }).strict()), bare: z.record(z.string(), z.array(z.string())), panties: z.record(z.string(), z.string()),
         mood: z.array(z.object({ when: z.string(), tags: z.array(z.string()) }).strict()), drunk: steps, stretch: z.record(z.string(), steps), sore: z.record(z.string(), steps).default({}), fin: z.record(z.string(), z.array(z.string())).default({}),
         cum: z.record(z.string(), z.string()), after: z.record(z.string(), z.string()), size: z.array(z.string()).length(5), man: z.record(z.string(), z.array(z.string())),
         hisCum: z.string(), hisStretch: steps, room: z.record(z.string(), z.string()), act: z.record(z.string(), z.string()),
@@ -636,7 +636,7 @@ export const promptSchema = z
   .strict();
 export type PromptWords = z.infer<typeof promptSchema>;
 /** cast.yaml: a character card per role. One cast = one picture pack. */
-const cardSchema = z.object({ anchor: z.string().default(""), strength: z.number().min(0.4).max(1.4).default(1.2), appearance: z.string().default(""), body: z.string().default(""), nude: z.string().default(""), clothes: z.string().default(""), closeup: z.string().default(""), negative: z.string().default("") }).strict();
+const cardSchema = z.object({ anchor: z.string().default(""), strength: z.number().min(0.4).max(1.4).default(1.2), appearance: z.string().default(""), body: z.string().default(""), nude: z.string().default(""), clothes: z.string().default(""), closeup: z.string().default(""), negative: z.string().default(""), outfits: z.record(z.string(), z.string()).optional() }).strict();
 export const castSchema = z.object({ id, name: z.string(), wife: cardSchema, husband: cardSchema, patron: cardSchema, patron2: cardSchema, patron3: cardSchema, watcher: cardSchema }).strict();
 export type Cast = z.infer<typeof castSchema>;
 export type CastCard = z.infer<typeof cardSchema>;

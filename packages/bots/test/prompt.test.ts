@@ -26,11 +26,11 @@ describe("picture prompts", () => {
     };
     const p = promptFor(desc);
     expect(Object.keys(p.regions).sort()).toEqual(["patron", "wife"]);
-    expect(p.regions.wife).toContain(W.outfit.lingerie);
+    expect(p.regions.wife).toContain("lingerie");
     expect(p.regions.wife).toContain(W.cum.face);
     expect(p.regions.wife).toContain(W.stretch.vagina![1]![1]);
     expect(p.regions.patron).toContain(W.size[4]);
-    expect(p.regions.patron).not.toContain(W.outfit.lingerie);
+    expect(p.regions.patron).not.toContain("lingerie");
     expect(p.regions.wife).not.toContain(W.size[4]);
     expect(p.shared).toContain("1girl");
     expect(p.shared).toContain("1boy");

@@ -14,8 +14,9 @@ const W = L.words;
 const INSIDE = new Set(["inside", "anus"]);
 
 import { cumPlaces } from "./terms";
-import { wearOf } from "./bodystate";
 import { freshDetails } from "./glance";
+import { wearWords } from "./wearwords";
+import { cardToCast } from "./card";
 export interface SceneWords {
   /** The same blocks an image pipeline works with: who she is right now, who is with her, where, what is going on. */
   heroine: string[];
@@ -61,15 +62,14 @@ export function describeScene(state: GameState, open = false): SceneWords {
   const actId = sex?.act ?? (enc && seen ? enc.act : (b.shift?.moment?.act ?? null));
   const partner = sex ? HUSBAND : enc && seen ? enc.patron : (b.shift?.moment?.patron ?? null);
   const heroine: string[] = ["1girl"];
-  const worn = wearOf(state);
-  const dress = bareOf(state) === "none" ? worn : dressOf(state);
-  heroine.push(W.outfit[dress] ?? dress);
   const bare = bareOf(state);
-  if (bare !== "none") heroine.push(...(W.bare[bare] ?? []));
+  const wear: Record<string, string> = { outfit: dressOf(state), ...(bare !== "none" ? { bare } : {}) };
   if (bare !== "all" && bare !== "bottom") {
-    if (h.panties && h.panties !== "on") heroine.push(W.panties[h.panties]!);
-    if (h.skirtUp) heroine.push(W.skirtUp);
+    if (h.panties && h.panties !== "on") wear.under = h.panties;
+    if (h.skirtUp) wear.skirt = "up";
   }
+  const actWords = actId ? (content.prompt.tags[content.acts.find((a) => a.id === actId)?.scene ?? ""] ?? "") : "";
+  heroine.push(...wearWords(wear, actWords, bs(state).heroine.card ? cardToCast(bs(state).heroine.card!) : undefined).words);
   heroine.push(...(W.mood.find((m) => m.when === faceOf(state))?.tags ?? []));
   const drunk = step(W.drunk, h.drunk);
   if (drunk) heroine.push(drunk);
@@ -150,7 +150,7 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
   if (roles.get("husband") === HUSBAND && b.husband.caged && intimate) out.cage = "1";
   if (!roles.has("wife")) return out;
   const bare = bareOf(state);
-  out.outfit = bare === "none" ? wearOf(state) : dressOf(state);
+  out.outfit = dressOf(state);
   if (bare !== "none") out.bare = bare;
   if (bare !== "all" && bare !== "bottom") {
     if (h.panties && h.panties !== "on") out.under = h.panties;

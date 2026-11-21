@@ -41,10 +41,11 @@ describe("how much she has on", () => {
   it("she dresses when told, and the picture key follows what she has on", () => {
     const s = together(3, (b) => (b.heroine.traits.openness = 60), "home.bedroom");
     const top = ask(s, "top");
-    expect(dressOf(top)).toBe("topless");
-    expect(dressOf(ask(top, "all"))).toBe("naked");
     const back = ask(top, "none");
-    expect(dressOf(back)).toBe(bs(back).heroine.outfit);
+    // partly off she is still in the same outfit: the picture keeps it and adds what is bare
+    expect(dressOf(top)).toBe(dressOf(back));
+    expect(bs(top).heroine.bare).toBe("top");
+    expect(dressOf(ask(top, "all"))).toBe("naked");
     expect(engine.checkInvariants(back)).toEqual([]);
   });
   it("naked on the floor: guests see it, tips and talk go up, and a new day starts dressed", () => {

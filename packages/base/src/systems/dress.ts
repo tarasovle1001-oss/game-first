@@ -11,6 +11,7 @@ import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
 import { HALL } from "./places";
 import { annoyanceOf } from "./annoy";
+import { wearOf } from "./bodystate";
 
 export const STRIP = "base/strip";
 const D = content.manners.talk.bare;
@@ -18,11 +19,8 @@ const BEDROOM = "home.bedroom";
 const LEVELS: Exclude<Bare, "none">[] = ["top", "bottom", "all"];
 
 export const bareOf = (state: GameState): Bare => bs(state).heroine.bare ?? "none";
-/** What the pictures call what she has on: the outfit, or what is left of it. */
-export const dressOf = (state: GameState): string => {
-  const bare = bareOf(state);
-  return bare === "none" ? bs(state).heroine.outfit : bare === "all" ? "naked" : bare === "top" ? "topless" : "bottomless";
-};
+/** What the pictures call what she has on: what she wears now (partly off is the "bare" tag on top of it), or nothing. */
+export const dressOf = (state: GameState): string => (bareOf(state) === "all" ? "naked" : wearOf(state));
 /** Who can see her where she is: nobody but him, nobody at all right now, or the guests. */
 export const eyesOn = (state: GameState, loc = state.where[WIFE] ?? ""): "bedroom" | "private" | "hall" => {
   if (loc === BEDROOM) return "bedroom";

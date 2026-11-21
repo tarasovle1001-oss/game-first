@@ -6,6 +6,7 @@ import type { SceneDesc } from "@tc/core";
 import { sceneFileName, sceneKey } from "@tc/core";
 import { actOf, content } from "../content";
 import type { Act, Cast, CastCard } from "../content/schema";
+import { wearWords } from "./wearwords";
 
 const W = content.look.words;
 const P = content.prompt;
@@ -50,12 +51,8 @@ function join(parts: (string | string[] | undefined | null | false)[]): string {
 }
 
 /** Her part: who she is, then what she has on, her face, her body, what is on her, then her pose. */
-function wifeWords(t: Record<string, string>): string[] {
-  const words: string[] = [];
-  if (t.outfit) words.push(W.outfit[t.outfit] ?? t.outfit);
-  if (t.bare) words.push(...(W.bare[t.bare] ?? []));
-  if (t.under) words.push(W.panties[t.under] ?? "");
-  if (t.skirt) words.push(W.skirtUp);
+function wifeWords(t: Record<string, string>, scene: string, wife?: CastCard): string[] {
+  const words: string[] = wearWords(t, scene, wife).words;
   if (t.face) words.push(...(W.mood.find((m) => m.when === t.face)?.tags ?? []));
   if (t.drunk) words.push(t.drunk);
   for (const [z, n] of levels(t.gape)) words.push(nth(W.stretch[ZONE[z]!], n) ?? "");
@@ -147,7 +144,8 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
 
   const regions: Record<string, string> = {};
   const sceneWords = isDetail ? detailWords : booru || slot("scene");
-  const herNude = !!P.her_nude_when && new RegExp(P.her_nude_when, "i").test(`${sceneWords}, ${wifeWords(t).join(", ")}`);
+  const her = wifeWords(t, sceneWords, cast.wife);
+  const herNude = !!P.her_nude_when && new RegExp(P.her_nude_when, "i").test(`${sceneWords}, ${her.join(", ")}`);
   const exposed = !!P.penis_when && new RegExp(P.penis_when, "i").test(sceneWords) && !(P.penis_unless && new RegExp(P.penis_unless, "i").test(sceneWords));
   for (const role of drawn) {
     const cls = SIZE_TAG[role] && t[SIZE_TAG[role]!] !== undefined ? Number(t[SIZE_TAG[role]!]) : undefined;
@@ -159,10 +157,10 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
       regions[role] = join([role === "wife" ? "female hand" : "male hand", (card?.appearance ?? "").split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), role === "wife" ? "wedding ring" : ""]);
       continue;
     }
-    regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed), role === "wife" ? wifeWords(t) : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
+    regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed), role === "wife" ? her : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
-  const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.3), (multiple boys:1.3)" : men === 0 ? "1boy, male focus" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? "")]);
+  const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.3), (multiple boys:1.3)" : men === 0 ? "1boy, male focus" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? ""), drawn.includes("wife") ? wearWords(t, sceneWords, cast.wife).negative : undefined]);
   // her first, then the room, then the men (with tags the room sits between them, as in the old packs)
   const others = Object.entries(regions).filter(([r]) => r !== "wife").map(([, v]) => v);
   const positive = booru && !isDetail ? join([shared, regions.wife, room, ...others]) : join([shared, ...Object.values(regions)]);

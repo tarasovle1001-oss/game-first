@@ -21,6 +21,8 @@ export interface HeroineCard {
   /** words only where her body is shown */
   nude: string;
   negative: string;
+  /** her own outfits: outfit id (look.yaml: words.outfit) -> tags instead of the shared ones; the first three stay in view when it is partly off */
+  outfits?: Record<string, string>;
   /** a set personality: the new-game screen starts from it */
   setup?: BaseSetup;
   createdAt: number;
@@ -62,7 +64,7 @@ function partTags(card: Pick<HeroineCard, "look" | "marks" | "extra">, part: "ap
 
 /** Her look as a cast card (cast.yaml: wife). */
 export function cardToCast(card: HeroineCard): CastCard {
-  return { anchor: "", strength: 1.2, appearance: partTags(card, "appearance"), body: partTags(card, "body"), nude: clean(card.nude), clothes: "", closeup: "", negative: clean(card.negative) };
+  return { anchor: "", strength: 1.2, appearance: partTags(card, "appearance"), body: partTags(card, "body"), nude: clean(card.nude), clothes: "", closeup: "", negative: clean(card.negative), ...(card.outfits && Object.values(card.outfits).some((v) => v.trim()) ? { outfits: Object.fromEntries(Object.entries(card.outfits).filter(([, v]) => v.trim()).map(([k, v]) => [k, clean(v)])) } : {}) };
 }
 
 /** A short line of her look for the picker: "long black hair, purple eyes, slim". */
@@ -74,7 +76,7 @@ export function lookSummary(card: Pick<HeroineCard, "look" | "marks" | "extra">)
 /** A version of her look: pictures drawn with another look are not hers any more. Short, stable, no crypto. */
 export function lookHash(c: CastCard): string {
   let h = 2166136261;
-  for (const ch of `${c.appearance}|${c.body}|${c.nude}|${c.negative}`) {
+  for (const ch of `${c.appearance}|${c.body}|${c.nude}|${c.negative}${c.outfits ? `|${JSON.stringify(c.outfits)}` : ""}`) {
     h ^= ch.charCodeAt(0);
     h = Math.imul(h, 16777619);
   }
@@ -109,6 +111,7 @@ export function readCard(raw: unknown): HeroineCard | null {
     extra: str(r.extra),
     nude: typeof r.nude === "string" ? r.nude.slice(0, 2000) : H().defaults.nude,
     negative: typeof r.negative === "string" ? r.negative.slice(0, 2000) : H().defaults.negative,
+    outfits: r.outfits && typeof r.outfits === "object" ? Object.fromEntries(Object.entries(r.outfits).filter(([k, v]) => typeof v === "string" && k in content.look.words.outfit).map(([k, v]) => [k, (v as string).slice(0, 600)])) : undefined,
     setup: r.setup && typeof r.setup === "object" ? r.setup : undefined,
     createdAt: Number(r.createdAt) || 0,
     updatedAt: Number(r.updatedAt) || 0,

@@ -32,10 +32,82 @@ after:              # minutes each shows once something intimate has ended
   hair: 60
   clothes: 30
 words:
-  outfit: { modest: plain work dress, fitted: fitted dress, revealing: low-cut dress, daring: skimpy dress, homewear: "oversized t-shirt, shorts", nightgown: short nightgown, lingerie: lace lingerie, towel: bath towel wrap, topless: topless, bottomless: bottomless, naked: completely nude }
+  # Her outfits, drawn the same in every picture. Tags checked against the Danbooru list (post counts in DECISIONS 21.11).
+  # tags: the whole outfit, dressed. core: what is left in view once it is partly off or pushed aside for an act
+  # (colour and type, no legwear). top: how her breasts come out of it. lift: how her lower half is bared.
+  # under: what she wears under it (words.under). negative: what the model likes to mix in instead.
+  # A ladder you read on a thumbnail: modest (blue, covered, apron) -> fitted (white shirt, black pencil skirt)
+  # -> revealing (red, bare shoulders, short) -> daring (black micro dress, fishnets). A heroine card can replace `tags` (outfits).
+  outfit:
+    modest:
+      tags: "(blue dress:1.2), collared dress, long sleeves, long dress, white apron, waist apron, black pantyhose, loafers"
+      core: "(blue dress:1.2), collared dress, white apron"
+      top: "dress pull, breasts out, open clothes"
+      lift: "dress lift, clothes lift"
+      under: plain
+      negative: "maid, maid headdress, frilled apron, school uniform, sailor collar, red dress, black dress, cleavage"
+    fitted:
+      tags: "(white shirt:1.2), dress shirt, sleeves rolled up, (black skirt:1.1), pencil skirt, high-waist skirt, black pantyhose, high heels"
+      core: "(white shirt:1.2), (black skirt:1.1), pencil skirt"
+      top: "open shirt, unbuttoned, breasts out"
+      lift: "skirt lift, clothes lift"
+      under: black
+      negative: "dress, apron, school uniform, sailor collar, necktie, jacket, pleated skirt"
+    revealing:
+      tags: "(red dress:1.2), off-shoulder dress, short dress, cleavage, bare shoulders, collarbone, black thighhighs, high heels"
+      core: "(red dress:1.2), off-shoulder dress, short dress"
+      top: "dress pull, breasts out"
+      lift: "dress lift, clothes lift"
+      under: red
+      negative: "apron, long sleeves, long dress, blue dress, school uniform, maid"
+    daring:
+      tags: "(black dress:1.2), microdress, strapless dress, cleavage, bare shoulders, fishnet thighhighs, garter straps, high heels, black choker"
+      core: "(black dress:1.2), microdress, strapless dress"
+      top: "dress pull, breasts out"
+      lift: "dress lift, upskirt"
+      under: thong
+      negative: "apron, long sleeves, long dress, white dress, school uniform, maid, pantyhose"
+    homewear:
+      tags: "(grey shirt:1.2), oversized shirt, t-shirt, (black shorts:1.1), dolphin shorts, bare legs, barefoot"
+      core: "(grey shirt:1.2), oversized shirt, t-shirt"
+      top: "shirt lift, breasts out"
+      lift: "shorts pull"
+      under: cotton
+      negative: "dress, apron, skirt, pantyhose, thighhighs, high heels, jacket"
+    nightgown:
+      tags: "(white nightgown:1.2), nightgown, spaghetti strap, lace trim, short dress, bare shoulders, bare legs, barefoot"
+      core: "(white nightgown:1.2), nightgown, spaghetti strap"
+      top: "strap slip, breasts out"
+      lift: "dress lift, clothes lift"
+      under: cotton
+      negative: "apron, pantyhose, high heels, jacket, school uniform, black dress"
+    lingerie:
+      tags: "lingerie, (purple bra:1.2), purple panties, lace bra, lace panties, garter belt, thighhighs, lace-trimmed legwear"
+      core: "lingerie, (purple bra:1.2), purple panties"
+      top: "bra pull, breasts out"
+      lift: "panty pull"
+      under: purple
+      negative: "dress, apron, shirt, skirt, pantyhose"
+    towel:
+      tags: "(naked towel:1.2), towel, (white towel:1.1), bare shoulders, wet hair, barefoot"
+      core: "(naked towel:1.2), towel"
+      top: "towel around waist, breasts out"
+      lift: "open towel"
+      negative: "dress, apron, shirt, swimsuit, bikini"
+    # what the pictures said before the outfit stayed known when partly off (old keys in packs)
+    topless: { tags: topless }
+    bottomless: { tags: bottomless }
+    naked: { tags: completely nude }
+  # under her outfit: the same bra and panties whether the skirt is up, the panties pushed aside or her top pulled down
+  under:
+    plain: { bra: white bra, panties: white panties }
+    black: { bra: black bra, panties: "black panties, lace-trimmed panties" }
+    red: { bra: red bra, panties: "red panties, lace panties" }
+    thong: { bra: no bra, panties: "thong, black panties" }
+    cotton: { bra: no bra, panties: white panties }
+    purple: { bra: purple bra, panties: purple panties }
   bare: { top: [bare breasts, nipples], bottom: [no panties, pussy], all: [completely nude, nipples, pussy] }
   panties: { aside: panties aside, off: no panties }
-  skirtUp: skirt lift
   mood:             # first match from the top
     - { when: scared, tags: [scared, tears] }
     - { when: angry, tags: [angry, glaring] }
