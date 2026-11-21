@@ -31,8 +31,8 @@ export function wearWords(t: Record<string, string>, scene: string, wife?: CastC
   const words: string[] = [];
   const topOff = bare === "top" || (bare === "none" && TOP_ACT.test(scene));
   const lowOff = bare === "bottom" || (bare === "none" && LOW_ACT.test(scene));
-  // partly off or pushed aside: what is left in view (no stockings in the way of an act)
-  words.push(topOff || lowOff ? o.core : o.tags);
+  // her top down keeps the rest as it is (stockings and shoes too); her lower half opened: what is left in view, no stockings in the way
+  words.push(lowOff ? o.core : o.tags);
   if (topOff) words.push(o.top, ...(bare === "top" ? (W().bare.top ?? []) : ["nipples"]));
   if (bare === "bottom") words.push(o.lift, ...(W().bare.bottom ?? []));
   else if (lowOff) words.push(o.lift, t.under === "off" || !o.panties ? "no panties" : `panties aside, ${o.panties}`, "pussy");

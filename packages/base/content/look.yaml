@@ -40,15 +40,15 @@ words:
   # -> revealing (red, bare shoulders, short) -> daring (black micro dress, fishnets). A heroine card can replace `tags` (outfits).
   outfit:
     modest:
-      tags: "(blue dress:1.2), collared dress, long sleeves, long dress, white apron, waist apron, black pantyhose, loafers"
-      core: "(blue dress:1.2), collared dress, white apron"
+      tags: "(blue dress:1.3), collared dress, long sleeves, long dress, white apron, waist apron, black pantyhose, loafers"
+      core: "(blue dress:1.3), collared dress, long sleeves, white apron"
       top: "dress pull, breasts out, open clothes"
       lift: "dress lift, clothes lift"
       under: plain
       negative: "maid, maid headdress, frilled apron, school uniform, sailor collar, red dress, black dress, cleavage"
     fitted:
       tags: "(white shirt:1.2), dress shirt, sleeves rolled up, (black skirt:1.1), pencil skirt, high-waist skirt, black pantyhose, high heels"
-      core: "(white shirt:1.2), (black skirt:1.1), pencil skirt"
+      core: "(white shirt:1.2), dress shirt, (black skirt:1.1), pencil skirt"
       top: "open shirt, unbuttoned, breasts out"
       lift: "skirt lift, clothes lift"
       under: black

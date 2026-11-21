@@ -26,7 +26,7 @@ describe("her outfits in pictures", () => {
   });
   it("an act in her outfit pushes it aside: no stockings in the way, the panties of that outfit aside", () => {
     const sex = her("patron_sex", { outfit: "modest", size: "3" }, [wife, guest]);
-    expect(sex).toContain("(blue dress:1.2)");
+    expect(sex).toContain("(blue dress:1.3)");
     expect(sex).not.toContain("black pantyhose");
     expect(sex).toContain("panties aside");
     expect(sex).toContain(W.under.plain!.panties);

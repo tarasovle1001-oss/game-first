@@ -20,11 +20,13 @@ const OUTFITS = opt("outfits", "modest,fitted,revealing,daring").split(",");
 const CAST = opt("cast", "default");
 const wife = { id: "wife", role: "wife" }, guest = { id: "p1", role: "patron" };
 // dressed in the hall; her top off for a flash; an act with the outfit pushed aside
-const SCENES: { id: string; desc: (o: string) => SceneDesc }[] = [
+const ONLY = opt("scenes", "");
+const SCENES_ALL: { id: string; desc: (o: string) => SceneDesc }[] = [
   { id: "idle", desc: (o) => ({ type: "idle", location: "cafe.hall", participants: [wife], tags: { outfit: o } }) },
   { id: "flash", desc: (o) => ({ type: "flash", location: "cafe.hall", participants: [wife], tags: { outfit: o, bare: "top" } }) },
   { id: "patron_sex", desc: (o) => ({ type: "patron_sex", location: "hotel.room1", participants: [wife, guest], tags: { outfit: o, size: "3" } }) },
 ];
+const SCENES = ONLY ? SCENES_ALL.filter((s) => ONLY.split(",").includes(s.id)) : SCENES_ALL;
 mkdirSync(OUT, { recursive: true });
 type Cell = { outfit: string; scene: string; seed: number; file: string; prompt: string };
 const done: Cell[] = [];
