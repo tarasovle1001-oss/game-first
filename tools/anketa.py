@@ -119,10 +119,11 @@ def merge(path):
             ru[i] = f"{m.group(1)}: {json.dumps(got[m.group(1)], ensure_ascii=False)}"; n += 1
     open(RU, "w", encoding="utf-8").write("\n".join(ru))
     words = {k[7:]: v for k, v in got.items() if k.startswith("prompt.") and v.strip()}
-    p = open(PROMPT, encoding="utf-8").read()
-    p = re.sub(r"^details:\n(?:  .*\n)*", "", p, flags=re.M).rstrip("\n") + "\n"
-    if words: p += "details:\n" + "".join(f"  {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}\n" for k, v in sorted(words.items()))
-    open(PROMPT, "w", encoding="utf-8").write(p)
+    if words:  # an anketa without the prompt part leaves prompt.yaml alone
+        p = open(PROMPT, encoding="utf-8").read()
+        p = re.sub(r"^details:\n(?:  .*\n)*", "", p, flags=re.M).rstrip("\n") + "\n"
+        p += "details:\n" + "".join(f"  {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}\n" for k, v in sorted(words.items()))
+        open(PROMPT, "w", encoding="utf-8").write(p)
     print(f"{n} game lines changed, {len(words)} prompt lines set. Now: pnpm content")
 
 if __name__ == "__main__":
