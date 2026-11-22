@@ -93,6 +93,7 @@ function herNext(ctx: Ctx) {
     // she says it to his face only if he is there to hear it; otherwise he finds a note
     const told = ctx.state.where[HUSBAND] === ctx.state.where[WIFE];
     ctx.state.where[WIFE] = to;
+    day.browse = to === "town.shops";
     ctx.log(told ? "log.her.trip" : "log.her.trip.note", { where: `loc.${to}` });
     return;
   }
@@ -108,6 +109,8 @@ function herDone(ctx: Ctx) {
   const t = D.herDay.tasks.find((x) => x.id === day.her?.task);
   if (day.her?.task === "away") {
     day.herOut = false; // she is back
+    if (day.browse) browse(ctx);
+    day.browse = false;
     ctx.log("log.her.back");
   }
   if (day.her?.task === "shopping") ctx.log("log.her.shop_done");
@@ -162,6 +165,46 @@ export function passPrep(ctx: Ctx, minutes: number) {
       ctx.emit("prep:tick", { left: day.left });
     }
   }
+}
+
+/**
+ * She has been round the shops on her own. Mostly she only looks: at a dress a step bolder than hers, at the window of
+ * the shop with the toys. What catches her eye depends on what is on her mind; now and then she comes back with a box.
+ */
+function browse(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const h = b.heroine;
+  const B = D.shop.browse;
+  const hidden = b.mode !== "open";
+  const tags = hidden ? ["unseen"] : undefined;
+  const fit = fitOf(ctx.state, "vagina");
+  const want = h.wantSize ?? 0;
+  // the shop with the toys draws her by how much size is on her mind, how badly she is left wanting, and what she failed to take
+  const pull = B.toysBase + h.sizeTaste * B.perTaste + h.frustration * B.perFrustration + (want > fit ? B.failed : 0);
+  if (ctx.rng.chance(Math.min(B.toysMax, pull))) {
+    const biggest = Math.max(0, ...D.shop.toys.filter((t) => b.toys.includes(t.id)).map((t) => t.size));
+    const next = D.shop.toys
+      .slice()
+      .sort((x, y) => x.size - y.size)
+      .find((t) => !b.toys.includes(t.id) && t.size > Math.max(biggest, fit - 1) && t.size >= D.shop.solo.firstSize && t.size <= fit + D.shop.toyStretchAbove);
+    ctx.log(`log.her.browse.toys.${ctx.rng.int(1, 3)}`, undefined, tags);
+    if (!next) return ctx.log(`log.her.browse.toys.bigger.${ctx.rng.int(1, 2)}`, undefined, ["unseen", "thought"]);
+    const keen = want > fit || h.frustration >= D.shop.solo.buyAt / 2 || h.sizeTaste >= B.buyTaste;
+    if (!keen) return ctx.log(`log.her.browse.toys.notyet.${ctx.rng.int(1, 2)}`, undefined, ["unseen", "thought"]);
+    if (b.purse < next.price) return ctx.log("log.her.browse.toys.dear", { toy: `toy.${next.id}`, price: next.price }, ["unseen", "thought"]);
+    b.purse -= next.price;
+    b.toys.push(next.id);
+    b.herToys = [...(b.herToys ?? []), next.id];
+    ctx.log(hidden ? "log.her.buys.toy.hidden" : "log.her.buys.toy", { toy: `toy.${next.id}` }, tags);
+    ctx.emit("her:bought", { kind: "toy", id: next.id });
+    return;
+  }
+  const outfit = content.outfits
+    .slice()
+    .sort((x, y) => x.order - y.order)
+    .find((o) => !b.owned.includes(o.id));
+  if (outfit && ctx.rng.chance(B.outfit)) return ctx.log(`log.her.browse.outfit.${ctx.rng.int(1, 3)}`, { outfit: `outfit.${outfit.id}` }, tags);
+  ctx.log(`log.her.browse.plain.${ctx.rng.int(1, 3)}`, undefined, tags);
 }
 
 /** What she buys or does with her own purse, at most one thing a day. */

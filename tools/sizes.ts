@@ -1,7 +1,7 @@
 // The men she meets, by size: bots play, every guest who came is counted once. Prints cm (real and as shown) and the class.
 // pnpm exec tsx tools/sizes.ts [days=30] [seeds=6] [out.json]
 import { writeFileSync } from "node:fs";
-import { baseMod, bs, content, shownCm, sizeClass } from "../packages/base/src";
+import { baseMod, bs, content, sizeClass, sizeStage } from "../packages/base/src";
 import { createEngine } from "../packages/core/src";
 import { ownerStrategy } from "../packages/bots/src";
 
@@ -22,13 +22,16 @@ const NAMES = ["крошечный", "маленький", "средний", "б
 const classes = NAMES.map(() => 0);
 const cms = [...byCm].sort((a, b) => a[0] - b[0]);
 console.log(`${total} гостей за ${days} дней x ${seeds} сидов; границы классов (см): ${content.body.sizeClasses.join(", ")}; муж: ${content.body.husband.size} см (${NAMES[sizeClass(content.body.husband.size)]})`);
-console.log("см  на экране  класс        доля");
+console.log("см  ступень  вид на картинке  доля");
 for (const [cm, n] of cms) {
   classes[sizeClass(cm)]! += n;
-  console.log(`${String(cm).padStart(2)}  ${String(shownCm(cm)).padStart(9)}  ${NAMES[sizeClass(cm)]!.padEnd(11)} ${((100 * n) / total).toFixed(1).padStart(5)}%  ${"#".repeat(Math.round((60 * n) / total))}`);
+  console.log(`${String(cm).padStart(2)}  ${String(sizeStage(cm)).padStart(7)}  ${NAMES[sizeClass(cm)]!.padEnd(15)} ${((100 * n) / total).toFixed(1).padStart(5)}%  ${"#".repeat(Math.round((60 * n) / total))}`);
 }
-console.log("по классам:");
+const stages = new Map<number, number>();
+for (const [cm, n] of cms) stages.set(sizeStage(cm), (stages.get(sizeStage(cm)) ?? 0) + n);
+console.log("по ступеням: " + [...stages].sort((a, b) => a[0] - b[0]).map(([st, n]) => `${st}: ${((100 * n) / total).toFixed(0)}%`).join("  "));
+console.log("по видам (для картинок):");
 NAMES.forEach((name, i) => console.log(`  ${name.padEnd(11)} ${((100 * classes[i]!) / total).toFixed(1).padStart(5)}%`));
 console.log("по типам гостей (см от-до, среднее):");
 for (const [type, list] of [...byType].sort()) console.log(`  ${type.padEnd(14)} ${Math.min(...list)}-${Math.max(...list)}  ${(list.reduce((a, b) => a + b, 0) / list.length).toFixed(1)}  (${list.length})`);
-if (out) writeFileSync(out, JSON.stringify({ total, cm: cms.map(([cm, n]) => ({ cm, shown: shownCm(cm), cls: sizeClass(cm), n })), classes }, null, 1));
+if (out) writeFileSync(out, JSON.stringify({ total, cm: cms.map(([cm, n]) => ({ cm, stage: sizeStage(cm), cls: sizeClass(cm), n })), classes }, null, 1));

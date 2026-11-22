@@ -6,7 +6,7 @@ import { outcomeOf, refusalWhy, setOutcome } from "./voice";
 import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Encounter, Patron, Verdict, Visit, Zone } from "../state";
-import { entersZone, fitOf, orgasm, pleasureFor, sizeStage, stepsAbove, useBody } from "./body";
+import { entersZone, fitOf, orgasm, pleasureFor, sizeStage, stepsAbove, takeChance, useBody } from "./body";
 import { settleSize } from "./taking";
 import { expectOf } from "./expectations";
 import { addHerTips } from "./economy";
@@ -85,6 +85,18 @@ export const herRoom = (state: GameState) => {
 /** Money he puts on the table: the paying kind does, once per time with her. */
 const offerOf = (p: Patron, act: Act, paid: boolean) => (p.approach === "pay" && act.tier >= (p.rich ? 2 : 3) && !paid ? Math.round(((p.traits.generosity * act.tier) / 4) * (p.rich ? content.balance.rich.offer : 1)) : 0);
 
+/**
+ * Is an act that has to get into her worth asking for with this man? Not when both know he is far past what she can take,
+ * and not again tonight after a try that failed, until her body has moved a step.
+ */
+export const worthTrying = (state: GameState, p: Patron, a: Act) => {
+  const zone = entersZone(a);
+  if (!zone || !p.memory.sizeKnown) return true;
+  if (takeChance(state, zone, p.size) <= 0) return false;
+  const no = p.memory.noFit;
+  return !(no && no.day === state.time.day && sizeStage(fitOf(state, zone)) <= no.stage);
+};
+
 /** How far a man dares to go depends on how much he wants her. */
 const G = content.consent.guest;
 /** A drunk or worked-up man dares more than his interest alone would let him. */
@@ -108,12 +120,13 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
     // at the very top there is one act only: a man who has already been there does not ask for it every single time -
     // he picks among everything of the top two steps
     const wide = tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier;
-    const options = content.acts.filter((a) => (a.tier === tier || (wide && a.tier === topTier - 1)) && !a.only && (a.id !== "drink" || p.approach === "drink"));
+    const options = content.acts.filter((a) => (a.tier === tier || (wide && a.tier === topTier - 1)) && !a.only && (a.id !== "drink" || p.approach === "drink") && worthTrying(state, p, a));
     // the one who buys drinks keeps doing so while she is still fairly sober; once she is tipsy, any man may think of it -
     // nobody plans it, one glass simply makes the next one likelier
     const Al = content.consent.alcohol;
     const tipsy = b.heroine.drunk >= Al.othersFrom && b.heroine.drunk < Al.othersUpTo && v.tier >= 0 && tier >= 1 && roll(100) < Al.othersChance;
     const drink = (p.approach === "drink" && tier >= 1 && b.heroine.drunk < Al.buyerUpTo && v.tier >= 0 && roll(10) < 4) || tipsy;
+    if (!drink && options.length === 0) return null; // nothing on that step he can ask for (what there is would not fit)
     act = drink ? actById("drink") : options[roll(options.length)]!;
   }
   if (isIntimate(act) && v.rounds >= p.stamina) return null; // he is spent for tonight
@@ -177,7 +190,7 @@ function nextInScene(ctx: Ctx, v: Visit, p: Patron, enc: Encounter): Act | null 
   const now = actById(enc.act);
   const cap = Math.min(topTier, tierCap(p, v) + 1); // in the middle of it a man dares a little more
   const options = content.acts.filter(
-    (a) => !a.only && a.id !== enc.act && a.id !== "drink" && a.minutes > 0 && a.tier <= cap && a.tier <= now.tier + 2 && a.tier >= now.tier && (!isIntimate(a) || v.rounds < p.stamina) && (!a.at || a.at.includes(enc.loc)),
+    (a) => !a.only && a.id !== enc.act && a.id !== "drink" && a.minutes > 0 && a.tier <= cap && a.tier <= now.tier + 2 && a.tier >= now.tier && (!isIntimate(a) || v.rounds < p.stamina) && (!a.at || a.at.includes(enc.loc)) && worthTrying(ctx.state, p, a),
   );
   if (options.length === 0) return null;
   const liked = options.filter((a) => p.likes?.includes(a.id)).sort((x, y) => y.tier - x.tier);
@@ -401,6 +414,8 @@ function accept(ctx: Ctx, v: Visit, p: Patron, asked: ConsentInput, verdict: Ver
     if (warms) b.encounter.warm = { ...b.encounter.warm, [warms]: Math.min(W.warmMax, (b.encounter.warm?.[warms] ?? 0) + W.warm) };
     if (settled.take !== "fits") b.encounter.took = settled.take;
   }
+  // it did not go in: he does not ask for that again tonight unless her body gives a step
+  if (zoneIn && settled.act.id !== asked.act) p.memory.noFit = { day: ctx.state.time.day, stage: sizeStage(fitOf(ctx.state, zoneIn)) };
 
   // a skilled hand or mouth is worth more to him
   const tip = Math.round(((act.tip * p.traits.generosity) / 50) * (1 + skill / 100) * content.balance.purse.actTipScale) + input.offer;
@@ -518,7 +533,7 @@ function herOwnMove(ctx: Ctx) {
   const score = (i: ConsentInput) => ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, i);
   const options = content.acts
     // at the top of the ladder there is one act only: with a man she has been there with, she chooses among the top two steps
-    .filter((a) => (a.tier === tier || (tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier && a.tier === topTier - 1)) && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina) && (!a.at || a.at.includes(room)))
+    .filter((a) => (a.tier === tier || (tier === topTier && Math.max(v.tier, p.memory.tier) >= topTier && a.tier === topTier - 1)) && !a.only && a.id !== "drink" && (!isIntimate(a) || v.rounds < p.stamina) && (!a.at || a.at.includes(room)) && worthTrying(ctx.state, p, a))
     .map((a) => {
       const at = (loc: string): ConsentInput => ({ act: a.id, partner: p.id, loc, offer: 0, pressure: 0 });
       const other = isIntimate(a) && !closed(room) ? privateRoomFor(ctx.state, ctx.engine, p.id) : null;

@@ -49,7 +49,8 @@ export function registerSolo(api: ModApi) {
     b.solo = undefined;
     if (b.soloDay === ctx.state.time.day || !b.day) return;
     // wanting drives her to it; with a toy in the drawer she also simply takes it out now and then, by how much she needs
-    const drive = So.idleBase + h.traits.libido * So.idlePerLibido + h.frustration * So.idlePerFrustration;
+    // ...and a size she could not take is something to work on
+    const drive = So.idleBase + h.traits.libido * So.idlePerLibido + h.frustration * So.idlePerFrustration + ((h.wantSize ?? 0) > fitOf(ctx.state, "vagina") && owned(b).length > 0 ? So.train : 0);
     if (h.frustration < So.at && !(owned(b).length > 0 ? ctx.rng.chance(drive) : ctx.rng.chance(drive * So.fingersShare))) return;
     // some time in the afternoon, when she has a moment
     b.solo = { at: ctx.rng.int(30, Math.max(31, b.day.left - So.minutes[1])), zone: "vagina" };
@@ -133,7 +134,7 @@ export function registerSolo(api: ModApi) {
     h.satisfied = S.toySatisfied;
     changeHeroine(ctx, "arousal", -h.arousal * 0.8, "alone");
     changeHeroine(ctx, "energy", -3, "alone");
-    h.sizeTaste = clamp(h.sizeTaste + Math.max(0, toy.size - b.husband.size) * 0.4);
+    h.sizeTaste = clamp(h.sizeTaste + Math.min(2, Math.max(0, toy.size - b.husband.size) * 0.4));
     b.lastToy = { id: toy.id, size: toy.size, zone, day: ctx.state.time.day };
     ctx.log(`log.solo.${zone}${heard ? ".heard" : ""}`, { toy: `toy.${toy.id}` }, tags);
     detail(ctx, { id: anal ? "toy_a" : "toy_v", who: WIFE, tags: { tsize: String(sizeClass(toy.size)), gape: String(Math.min(3, Math.floor(h.body[anal ? "anus" : "vagina"].stretch / 25))) }, secret: !heard });

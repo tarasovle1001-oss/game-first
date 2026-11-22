@@ -5,8 +5,9 @@ import { actOf, content } from "../content";
 import { confidenceOf, earlyChance, softChance } from "./nerve";
 import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import { fitOf, orgasm, pleasureFor, useBody } from "./body";
+import { fitOf, orgasm, pleasureFor, sizeStage, useBody } from "./body";
 import { resolveSized } from "./taking";
+import { think } from "./mind";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
@@ -188,6 +189,17 @@ export function registerMarriage(api: ModApi) {
       if (level > 0) {
         sex.looseSaid = true;
         ctx.log(`log.bed.loose.${level}`, undefined, level < 3 ? ["unseen"] : undefined); // the last one she says aloud
+      }
+      // what goes through her head about it: the drink, the man from this afternoon, or simply what she now knows others have
+      const h = b.heroine;
+      const today = h.lastBig?.day === ctx.state.time.day && h.lastBig.size > b.husband.size;
+      const knows = sizeStage(h.seenSize ?? 0) - sizeStage(b.husband.size) >= 2;
+      const crossed = level === 0 && knows && ctx.rng.chance(content.body.take.bedThought);
+      if (level === 0 && knows) sex.looseSaid = true; // one roll a night, not one per act
+      if (level > 0 || crossed) {
+        sex.looseSaid = true;
+        if (today && b.mode === "open" && level > 0) ctx.log(`log.bed.compare.say.${ctx.rng.int(1, 3)}`);
+        else think(ctx, today ? "thought.bed.compare" : level > 0 && h.drunk >= 30 ? "thought.bed.small.drunk" : level > 0 ? "thought.bed.small" : "thought.bed.knows", level > 0);
       }
     }
   };

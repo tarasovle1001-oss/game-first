@@ -1,5 +1,5 @@
 import { shownCm } from "@tc/base";
-import { cagedDays, confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
+import { cagedDays, confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, permOf, sizeStage, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
 import type { Patron } from "@tc/base";
 import type { Lang, T } from "../game";
 import { Bar, Common } from "./common";
@@ -169,7 +169,7 @@ export function CoupleTab({ state, t, lang, open }: Common) {
       {(["vagina", "anus", "mouth"] as const).map((z) => (
         <div key={z}>
           <Bar label={t(`zone.${z}`)} value={h.body[z].stretch} />
-          <div className="muted small indent">{t("ui.fit", { cm: shownCm(fitOf(state, z)) })}</div>
+          <div className="muted small indent">{t("ui.fit", { cm: Math.round(fitOf(state, z)), stage: sizeStage(fitOf(state, z)), perm: Math.round(content.body.fit[z].base + permOf(h.body[z]) * content.body.fit[z].perStretch) })}</div>
         </div>
       ))}
       {skills.length > 0 && (

@@ -1,6 +1,6 @@
 import { shownCm } from "@tc/base";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { CONSENT_FORMULA, verdictOf, describeScene, bs, clockText, content, fitOf, HUSBAND, patronName, pleasureFor, WIFE, husbandSees, sizeClass, pictureFrames, actById, actOf } from "@tc/base";
+import { CONSENT_FORMULA, verdictOf, describeScene, bs, clockText, content, fitOf, HUSBAND, patronName, pleasureFor, WIFE, husbandSees, sizeClass, sizeStage, pictureFrames, actById, actOf } from "@tc/base";
 import type { ConsentInput, ProposalRecord } from "@tc/base";
 import type { SceneDesc } from "@tc/core";
 import { renderSchematic } from "@tc/schematics";
@@ -193,12 +193,13 @@ export function SizeLine({ state, t, open }: Common) {
   const MAX = 50;
   return (
     <div className="sizeline" title={t(`size.${sizeClass(size)}`)}>
-      <span>{t("ui.size.his", { cm: shownCm(size) })}</span>
+      <span>{t("ui.size.his", { cm: shownCm(size), stage: sizeStage(size) })}</span>
       <div className="track">
         <div className="len" style={{ width: `${Math.min(100, (size / MAX) * 100)}%` }} />
-        {fit !== null && <div className="fit" style={{ left: `${Math.min(100, (fit / MAX) * 100)}%` }} title={t("ui.size.fit", { cm: shownCm(fit) })} />}
+        {fit !== null && <div className="fit" style={{ left: `${Math.min(100, (fit / MAX) * 100)}%` }} title={t("ui.size.fit", { cm: shownCm(fit), stage: sizeStage(fit) })} />}
       </div>
-      {fit !== null && <span className="muted small">{t("ui.size.fit", { cm: shownCm(fit) })}</span>}
+      {fit !== null && <span className="muted small">{t("ui.size.fit", { cm: shownCm(fit), stage: sizeStage(fit) })}</span>}
+      {enc?.took && !sex && <span className="muted small">{t(`ui.size.took.${enc.took}`)}</span>}
       <span className="hearts">{"♥".repeat(hearts) + "♡".repeat(5 - hearts)}</span>
     </div>
   );

@@ -17,6 +17,8 @@ export interface Heroine {
   // body, per zone, 0..100: `stretch` is what she takes today, `perm` what is hers for good (absent in old saves: see permOf), `peak` the highest ever
   body: Record<Zone, { stretch: number; peak: number; perm?: number }>;
   seenSize?: number; // cm: the biggest she has seen or had (her bar)
+  lastBig?: { day: number; size: number }; // the last time someone (or something) bigger than her husband was in her
+  wantSize?: number; // cm: a size she tried and could not take - what she is working toward
   skills: Record<string, number>; // act id -> 0..100
   frustration: number; // 0..100, nights that left her wanting pile up here
   satisfied: number; // 0..100, "just had her fill", cools down
@@ -84,6 +86,7 @@ export interface PatronMemory {
   hasNumber: boolean; // they exchanged numbers
   stance?: "free" | "polite" | "away"; // what her husband said about him
   sizeKnown: boolean; // she has seen what he has
+  noFit?: { day: number; stage: number }; // the day a try to take him failed, and the step her body stood on
   orgasms: number; // times he made her come
 }
 
@@ -286,7 +289,7 @@ export interface BaseState {
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
   told: { day: number; key: string; params?: Record<string, string | number> }[]; // what he has said or shown, newest last
-  day: { left: number; done: string[]; arrivals: number; herOut?: boolean; busy?: { id: string; left: number; spent?: number }; her?: { task: string; left: number }; tripped?: boolean; cover?: string; coverSeen?: boolean; opening?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
+  day: { left: number; done: string[]; arrivals: number; herOut?: boolean; browse?: boolean; busy?: { id: string; left: number; spent?: number }; her?: { task: string; left: number }; tripped?: boolean; cover?: string; coverSeen?: boolean; opening?: boolean } | null; // this afternoon: minutes left, what is done, tonight's extra flow
   clean: number; // 0..100, how the room looks
   owned: string[]; // outfits she has
   toys: string[];

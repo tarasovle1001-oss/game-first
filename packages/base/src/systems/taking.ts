@@ -39,10 +39,11 @@ export function settleSize(ctx: Ctx, act: Act, size: number, name: number | stri
     return { act, take };
   }
   const other = insteadOf(ctx);
+  h.wantSize = Math.max(h.wantSize ?? 0, size); // something to work toward: the drawer, the shop
   if (!opts.quiet) {
     ctx.log(`log.take.${take}.${ctx.rng.int(1, 3)}`, who, opts.tags);
     // who names the way round it: a woman sure of herself or keen on him says it first
-    const hers = h.traits.confidence + h.sizeTaste * 0.5 + h.arousal * 0.3 >= 75;
+    const hers = ctx.rng.chance(Math.min(0.9, Math.max(0.1, (h.traits.confidence + h.sizeTaste) / 200)));
     if (!opts.noInstead) ctx.log(`log.take.instead.${hers ? "her" : "him"}`, { ...who, other: `act.${other.id}` }, opts.tags);
   }
   think(ctx, `thought.take.${take}`, true);

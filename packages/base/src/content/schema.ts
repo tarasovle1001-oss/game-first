@@ -284,7 +284,7 @@ export const bodySchema = z
       .object({
         chance: z.array(z.number().min(0).max(1)).min(1), arousal: z.number(), warm: z.number(), warmMax: z.number(), drunk: z.number(), anus: z.number(),
         partial: z.number().min(0).max(1), partialShare: z.number(), share: z.number(), perAct: z.number(), volumeCap: z.number(), keep: z.number().min(0).max(1), fade: z.number().min(0).max(1),
-        instead: z.array(id).min(1), fearPerStage: z.number(), tasteSeen: z.number(), tasteHandled: z.number(),
+        instead: z.array(id).min(1), fearPerStage: z.number(), tasteSeen: z.number(), tasteHandled: z.number(), bedThought: z.number().min(0).max(1),
         giant: z.object({ fromDay: z.number(), chance: z.number().min(0).max(1), size: z.tuple([z.number(), z.number()]) }).strict(),
         ladder: z.object({ start: z.number(), perFame: z.number() }).strict(),
       })
@@ -430,9 +430,10 @@ export const daySchema = z
     shop: z
       .object({
         toys: z.array(z.object({ id, size: z.number().positive(), price: z.number().positive() }).strict()),
+        browse: z.object({ toysBase: z.number(), perTaste: z.number(), perFrustration: z.number(), failed: z.number(), toysMax: z.number(), buyTaste: z.number(), outfit: z.number() }).strict(),
         toyStretchAbove: z.number(),
         toySatisfied: z.number().min(0).max(100),
-        solo: z.object({ at: z.number(), idleBase: z.number().min(0), idlePerLibido: z.number().min(0), idlePerFrustration: z.number().min(0), fingersShare: z.number().min(0), minutes: z.tuple([z.number().int(), z.number().int()]), watchOpenness: z.number(), interrupted: z.object({ resent: z.number(), mood: z.number() }).strict(), buyAt: z.number(), firstSize: z.number(), outgrown: z.number(), relief: z.number(), analChance: z.number() }).strict(),
+        solo: z.object({ at: z.number(), idleBase: z.number().min(0), idlePerLibido: z.number().min(0), idlePerFrustration: z.number().min(0), train: z.number().min(0), fingersShare: z.number().min(0), minutes: z.tuple([z.number().int(), z.number().int()]), watchOpenness: z.number(), interrupted: z.object({ resent: z.number(), mood: z.number() }).strict(), buyAt: z.number(), firstSize: z.number(), outgrown: z.number(), relief: z.number(), analChance: z.number() }).strict(),
         gigolo: z
           .object({ price: z.number(), size: z.number(), minutes: z.number(), fidelityBelow: z.number(), sizeTasteFrom: z.number(), chance: z.number().min(0).max(1), suspicion: z.number() })
           .strict(),

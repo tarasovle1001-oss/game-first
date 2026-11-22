@@ -80,6 +80,7 @@ export function tryTake(ctx: Ctx, zone: "vagina" | "anus", size: number, warm = 
 /** Today's stretch from one act: a share of the centimetres above her size, or a little from sheer number when it fits. */
 function stretchBy(ctx: Ctx, zone: Zone, size: number, share = B.take.share) {
   const z = bs(ctx.state).heroine.body[zone];
+  if (zone !== "mouth" && size > bs(ctx.state).husband.size) bs(ctx.state).heroine.lastBig = { day: ctx.state.time.day, size };
   const over = size - fitOf(ctx.state, zone);
   const perm = permOf(z);
   if (over > 0) z.stretch = clamp(z.stretch + ((over * share) / B.fit[zone].perStretch) * (B.stretchZone[zone] ?? 1));

@@ -10,7 +10,7 @@ permanentShare: 0.6 # part of the peak stretch that never goes back
 skillGain: 7        # per practice, shrinking as the skill grows
 orgasmAt: 66        # climax meter (her arousal, how well he fits, how long it lasts) needed for her to come
 satisfiedCoolPerTick: 1.2
-sizeTasteGain: 4    # taste for size gained per orgasm with someone bigger than her husband
+sizeTasteGain: 1.5    # taste for size gained per orgasm with someone bigger than her husband
 
 night: # what she does when she lies awake wanting more
   maxAsks: 4              # how many times a night he can reach for her before she is simply asleep
@@ -41,16 +41,17 @@ take:
   drunk: 0.05        # tipsy: a little looser
   anus: -0.1         # the back way is harder
   partial: 0.5       # of the tries that fail: he gets partly in (it still leaves a mark)
-  partialShare: 0.1  # share of the centimetres above her size she gains today from a partial try
-  share: 0.3         # ...and from one that worked
-  perAct: 0.15       # stretch gained today from any act that fits: many in a day show by evening
+  partialShare: 0.06  # share of the centimetres above her size she gains today from a partial try
+  share: 0.15         # ...and from one that worked
+  perAct: 0.1       # stretch gained today from any act that fits: many in a day show by evening
   volumeCap: 6       # ...up to this much above what is hers for good
-  keep: 0.12         # each night this share of today's extra becomes hers for good
-  fade: 0.4          # ...and this share of it goes back; a week without and she is as tight as her permanent size
+  keep: 0.08         # each night this share of today's extra becomes hers for good
+  fade: 0.6          # ...and this share of it goes back; a week without and she is as tight as her permanent size
   instead: [thigh_job, blowjob, handjob, titfuck] # what they do when it does not go in: the one she is best at
   fearPerStage: 5    # consent she loses per step he is above her, for acts where it has to go in (her taste for size takes it back)
   tasteSeen: 2       # taste for size gained when a man shows her more than she has ever seen
-  tasteHandled: 0.5  # ...and each time she has one in her hand or mouth that she could not take
+  tasteHandled: 0.12  # ...and each time she has one in her hand or mouth that she could not take
+  bedThought: 0.25   # a night with her husband after she has seen what others have: how often it crosses her mind even when he still fits
   giant: { fromDay: 6, chance: 0.03, size: [40, 48] } # a rare guest past everyone else: word of him gets round
   ladder: { start: 30, perFame: 0.2 } # the biggest an ordinary guest can be: grows with how well known the place is
 
