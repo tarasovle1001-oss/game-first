@@ -21,7 +21,7 @@ const engine = createEngine(mods);
 const t = createTranslator({ en: [baseLocales.en!, cheatsLocales.en ?? {}], ru: [baseLocales.ru!, cheatsLocales.ru ?? {}] }, "ru");
 
 // the moves the notes point at ("запись N"), to stop at each of them
-const marks = [...text.slice(0, at).matchAll(/запись (\d+)\n {2}(.*)/g)].map((m) => ({ n: Number(m[1]), note: m[2]! }));
+const marks = [...text.slice(0, at).matchAll(/запись (\d+)\n(?: {2}pics? [^\n]*\n)* {2}(.*)/g)].map((m) => ({ n: Number(m[1]), note: m[2]! }));
 const stops = stopArg ? [{ n: Number(stopArg), note: "" }] : marks;
 const show = (s: GameState, n: number, note: string) => {
   const b = bs(s);

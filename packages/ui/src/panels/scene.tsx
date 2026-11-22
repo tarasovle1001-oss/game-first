@@ -1,11 +1,11 @@
 import { shownCm } from "@tc/base";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { CONSENT_FORMULA, verdictOf, describeScene, bs, clockText, content, fitOf, HUSBAND, patronName, pleasureFor, WIFE, husbandSees, sizeClass, pictureFrames, actById, actOf } from "@tc/base";
 import type { ConsentInput, ProposalRecord } from "@tc/base";
 import type { SceneDesc } from "@tc/core";
 import { renderSchematic } from "@tc/schematics";
 import { engine } from "../game";
-import { layoutFor } from "../pack";
+import { layoutFor, setOnScreen } from "../pack";
 import { fileOf, genAlive, syncFolder, useGen, wantFrames } from "../gen";
 import type { Shot } from "../pack";
 import { Bar, Common } from "./common";
@@ -19,11 +19,16 @@ export const WATCHERS = [
 ];
 
 /** A pack picture: alone, or her portrait with up to three close-ups beside it. A click on a close-up brings it to the middle. */
-export function Photo({ main, inserts, alt, veiled, wide, children }: { main: Shot; inserts: Shot[]; alt: string; veiled?: boolean; wide?: boolean; children?: React.ReactNode }) {
+export function Photo({ main, inserts, alt, veiled, wide, children, where = "here", pick = 0, split = false }: { main: Shot; inserts: Shot[]; alt: string; veiled?: boolean; wide?: boolean; children?: React.ReactNode; where?: "here" | "away"; pick?: number; split?: boolean }) {
   const [front, setFront] = useState<string | null>(null);
   const shots = [main, ...inserts];
   const big = shots.find((x) => x.key === front) ?? main;
   const side = shots.filter((x) => x !== big);
+  // what is big and what is beside it, for a playtest note; gone with the picture (the mannequin has no block)
+  useLayoutEffect(() => {
+    setOnScreen({ where, pick, split, frames: [{ slot: "main", shot: big }, ...side.map((shot) => ({ slot: "insert" as const, shot }))] });
+    return () => setOnScreen(null);
+  });
   return (
     <div className={`picture photo${veiled ? " veiled" : ""}`}>
       <div className={`frames n${side.length}${wide ? " wide" : ""}`}>
@@ -106,7 +111,7 @@ export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { sc
     <div className="scene">
       {away ? (
         awayPicture ? (
-          <Photo main={awayPicture.main} inserts={awayPicture.inserts} alt="" veiled={!clear} wide>
+          <Photo main={awayPicture.main} inserts={awayPicture.inserts} alt="" veiled={!clear} wide where="away" pick={pick} split={awayPicture.split}>
             {/* two rooms: she is the picture, he is only the close-up beside it, drawn larger */}
             <div className="photo-cap">{t("ui.scene.split", { her: clear ? t(`loc.${away.location}`) : t("ui.scene.unseen"), him: t(`loc.${state.where[HUSBAND] ?? ""}`) })}</div>
           </Photo>
@@ -114,7 +119,7 @@ export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { sc
           <div className={`picture${clear ? "" : " veiled"}`} dangerouslySetInnerHTML={{ __html: awaySvg }} />
         )
       ) : picture && scene && layout ? (
-        <Photo main={picture.main} inserts={picture.inserts} alt={t(`scene.${layout.id}`)}>
+        <Photo main={picture.main} inserts={picture.inserts} alt={t(`scene.${layout.id}`)} pick={pick} split={picture.split}>
           <div className="photo-cap">
             <b>{t(`scene.${layout.id}`)}</b> · {t(`loc.${scene.location}`)}
             {open && (picture.split || !picture.main.exact) && <span className="muted"> · {[picture.main, ...picture.inserts].map((x) => x.key).join(" + ")}</span>}

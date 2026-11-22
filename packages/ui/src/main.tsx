@@ -1,7 +1,7 @@
 import type { PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { tracer, resetTracer, bs, husbandSees } from "@tc/base";
+import { tracer, resetTracer, bs, husbandSees, cardFolder } from "@tc/base";
 import type { HeroineCard } from "@tc/base";
 import { loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
@@ -13,7 +13,7 @@ import { HeroinePicker, GenSwitch } from "./heroine";
 import { loadHeroines, saveHeroines } from "./heroines";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
-import { loadPack, packInfo } from "./pack";
+import { loadPack, packInfo, picNote } from "./pack";
 import { useStoredFlag } from "./stored";
 import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, TopBar, WhyTab } from "./panels";
 import { ActionMenu } from "./menu";
@@ -177,7 +177,7 @@ function App() {
     if (!text) return;
     const b = bs(state);
     const h = b.heroine;
-    const line = `[${BUILD}] день ${state.time.day}, ${clockOf(state)}, ${t(`base.phase.${state.time.phase}`)} | после: ${lastWhat || "-"} | она: энергия ${Math.round(h.energy)}, настроение ${Math.round(h.mood)}, возбуждение ${Math.round(h.arousal)}, открытость ${Math.round(h.traits.openness)}, верность ${Math.round(h.traits.fidelity)}, неудовл. ${Math.round(h.frustration)} | деньги ${b.money}, долг ${b.debt}, репутация ${Math.round(b.reputation)} | seed ${state.seed}, ход ${state.turn}${journal ? `, запись ${journal.actions.length}` : ""}\n  ${text}`;
+    const line = `[${BUILD}] день ${state.time.day}, ${clockOf(state)}, ${t(`base.phase.${state.time.phase}`)} | после: ${lastWhat || "-"} | она: энергия ${Math.round(h.energy)}, настроение ${Math.round(h.mood)}, возбуждение ${Math.round(h.arousal)}, открытость ${Math.round(h.traits.openness)}, верность ${Math.round(h.traits.fidelity)}, неудовл. ${Math.round(h.frustration)} | деньги ${b.money}, долг ${b.debt}, репутация ${Math.round(b.reputation)} | seed ${state.seed}, ход ${state.turn}${journal ? `, запись ${journal.actions.length}` : ""}\n${picNote(h.card ? cardFolder(h.card) : undefined).map((l) => `  ${l}\n`).join("")}  ${text}`;
     const next = [...notes, line];
     setNotes(next);
     try {
