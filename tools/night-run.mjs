@@ -143,5 +143,5 @@ for (;;) {
   } else if (left === 0 && Date.now() - t0 > 120000) { await down(`queue done: ${j.done}/${j.total}`); break; }
   // stop a few cents short of the ceiling: destroying takes a minute
   if (spent() + ((box().price ?? 1) / 60) * 3 >= BUDGET) { await down(`budget reached ($${spent().toFixed(2)})`); break; }
-  if (!j.comfyOk) { deadSince ||= Date.now(); if (Date.now() - deadSince > 20 * 60000) { await down("ComfyUI unreachable for 20 min"); break; } } else deadSince = 0;
+  if (!j.comfyOk && !argv.includes("--train")) { deadSince ||= Date.now(); if (Date.now() - deadSince > 20 * 60000) { await down("ComfyUI unreachable for 20 min"); break; } } else deadSince = 0;
 }

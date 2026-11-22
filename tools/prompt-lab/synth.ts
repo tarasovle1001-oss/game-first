@@ -16,7 +16,7 @@ import { parse } from "yaml";
 type Target = { id: string; title: string; count: number; size?: string; prompt: string; acts?: string[]; axes?: Record<string, string[]>; negative?: string; loras?: string };
 type Concept = { id: string; title: string; trigger: string; negative?: string; targets: Target[] };
 type Book = { looks: { id: string; look: string; hand: string }[]; rooms: string[]; words: Record<string, string>; neg?: Record<string, string>; concepts: Concept[] };
-type Frame = { i: number; target: string; picks: Record<string, number>; look: string; room: string; positive: string; negative: string; caption: string; seed: number; size: string; loras?: string; init?: { k: number; i: number; denoise: number }; file?: string; mark?: "keep" | "drop"; pre?: "drop"; error?: string };
+type Frame = { i: number; target: string; picks: Record<string, number>; look: string; room: string; positive: string; negative: string; caption: string; seed: number; size: string; loras?: string; init?: { k: number; i: number; denoise: number }; file?: string; mark?: "keep" | "drop"; top?: boolean; pre?: "drop"; error?: string };
 type Round = { screened?: boolean; concept: string; round: number; mode: "wide" | "hits"; at: string; status: "running" | "stopped" | "done"; frames: Frame[] };
 type Deps = {
   here: string; dataDir: string; inflight: number; style: { prefix: string; negative: string }; wife: { appearance: string; body: string };
@@ -146,7 +146,7 @@ export function mountSynth(d: Deps) {
   // a round that was running when the lab was closed goes on (stop it with the button if it should not)
   if (existsSync(dir)) for (const c of readdirSync(dir)) if (SAFE.test(c)) for (const n of roundsOf(c)) { const r = load(c, n)!; if (r.status === "running") { console.log(`synth: resuming ${c} round ${n}`); start(r); } }
 
-  const summary = (c: string) => roundsOf(c).map((n) => { const r = load(c, n)!; return { round: n, mode: r.mode, status: r.status, at: r.at, total: r.frames.length, drawn: r.frames.filter((f) => f.file).length, keep: r.frames.filter((f) => f.mark === "keep").length, drop: r.frames.filter((f) => f.mark === "drop").length, pre: r.frames.filter((f) => f.pre && !f.mark).length, errors: r.frames.filter((f) => f.error && !f.file).length }; });
+  const summary = (c: string) => roundsOf(c).map((n) => { const r = load(c, n)!; return { round: n, mode: r.mode, status: r.status, at: r.at, total: r.frames.length, drawn: r.frames.filter((f) => f.file).length, keep: r.frames.filter((f) => f.mark === "keep").length, drop: r.frames.filter((f) => f.mark === "drop").length, pre: r.frames.filter((f) => f.pre && !f.mark).length, errors: r.frames.filter((f) => f.error && !f.file).length, screened: !!r.screened, left: r.screened ? r.frames.filter((f) => f.file && !f.pre && !f.mark).length : 0, byTarget: r.screened ? r.frames.filter((f) => f.file && !f.pre && !f.mark).reduce((o: Record<string, number>, f) => { o[f.target] = (o[f.target] ?? 0) + 1; return o; }, {}) : {} }; });
 
   const handler = async (req: IncomingMessage, res: ServerResponse, url: URL) => {
     const p = url.pathname;
@@ -210,7 +210,8 @@ export function mountSynth(d: Deps) {
         const f = r.frames[i];
         if (!f) continue;
         if (b.pre !== undefined) { if (b.pre) f.pre = "drop"; else delete f.pre; }
-        if (b.mark !== undefined) { if (b.mark === "keep" || b.mark === "drop") f.mark = b.mark; else delete f.mark; }
+        if (b.mark !== undefined) { if (b.mark === "keep" || b.mark === "drop") f.mark = b.mark; else delete f.mark; if (f.mark !== "keep") delete f.top; }
+        if (b.top !== undefined) { if (b.top) { f.top = true; f.mark = "keep"; } else delete f.top; }
       }
       save(r);
       return d.json(res, 200, { ok: true });
@@ -223,7 +224,7 @@ export function mountSynth(d: Deps) {
       let n = 0;
       const perTarget: Record<string, number> = {};
       for (const k of roundsOf(c.id)) for (const f of load(c.id, k)!.frames) {
-        if (f.mark !== "keep" || !f.file) continue;
+        if (f.mark !== "keep" || !f.file || (b.top && !f.top)) continue;
         const name = `${c.id}_${f.target}_k${k}_${String(f.i).padStart(4, "0")}`;
         copyFileSync(imgFile(c.id, k, f.i), join(out, `${name}.png`));
         writeFileSync(join(out, `${name}.txt`), f.caption + "\n");

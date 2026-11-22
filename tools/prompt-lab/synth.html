@@ -7,23 +7,23 @@ select,button,input{background:#2a2a2e;color:#ddd;border:1px solid #555;border-r
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}.dim{color:#999}
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px;margin-top:8px}
 #grid div{position:relative;border:3px solid #333;border-radius:4px;cursor:pointer;min-height:60px}#grid img{width:100%;display:block}
-#grid .keep{border-color:#3c3}#grid .drop{border-color:#c33;opacity:.45}#grid .pre{border-color:#777;opacity:.35}#grid small{position:absolute;left:2px;top:2px;background:#000a;padding:0 3px;font-size:11px}
+#grid .keep{border-color:#3c3}#grid .top{border-color:#fc0;box-shadow:0 0 0 2px #fc0}#grid .drop{border-color:#c33;opacity:.45}#grid .pre{border-color:#777;opacity:.35}#grid small{position:absolute;left:2px;top:2px;background:#000a;padding:0 3px;font-size:11px}
 #big{position:fixed;inset:0;background:#000e;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9}#big img{max-height:86vh;max-width:96vw}#big p{margin:6px;max-width:90vw;text-align:center}
 table{border-collapse:collapse;margin-top:6px}td,th{border:1px solid #444;padding:2px 6px;text-align:left;font-size:12px;vertical-align:top}
 pre{white-space:pre-wrap;background:#242428;padding:8px;border-radius:4px;font-size:12px}
 </style>
 <h2>Синтетика <small class="dim">кадры для концептных LoRA · <a href="/">промпт-лаба</a></small></h2>
 <div class="bar"><select id="concept"></select> <span id="ctitle" class="dim"></span></div>
-<div class="bar">Круг: <select id="round"></select> <span id="rstat"></span>
+<div class="bar">Круг: <select id="round"></select> <label><input type="checkbox" id="allrounds"> все круги</label> <span id="rstat"></span>
   <button id="stop">стоп</button><button id="resume">продолжить</button></div>
 <div class="bar">
   <button id="preview">Примеры промптов (без генерации)</button>
   <button id="wide" class="go">Новый круг: широкий</button>
   <button id="hits" class="go">Новый круг: по удачным</button>
   масштаб <input id="scale" value="1" size="3" title="1 = столько кадров, сколько записано у цели; 0.25 = четверть">
-  <button id="export">Собрать датасет из оставленных</button> <span id="msg" class="dim"></span></div>
+  <button id="export">Собрать датасет из оставленных</button> <button id="exporttop">Только из топа</button> <span id="msg" class="dim"></span></div>
 <div class="bar">Цель: <select id="target"></select>
-  Показать: <select id="show"><option value="new">непросмотренные</option><option value="keep">оставленные</option><option value="drop">выкинутые</option><option value="all">все</option></select>
+  Показать: <select id="show"><option value="new">непросмотренные</option><option value="keep">оставленные</option><option value="top">топ</option><option value="drop">выкинутые</option><option value="all">все</option></select>
   <label><input type="checkbox" id="pre"> показывать то, что отсеял Claude</label>
   <span class="dim">Клик - крупно. K / → оставить, D / ← выкинуть, Backspace назад, Esc закрыть.</span></div>
 <div id="out"></div>
@@ -45,8 +45,12 @@ async function loadBook(keep) {
   const c = C();
   $("ctitle").textContent = `триггер ${c.trigger} · ${c.targets.reduce((a, t) => a + t.count, 0)} кадров на широкий круг`;
   const wasR = $("round").value;
-  $("round").replaceChildren(...c.rounds.map((r) => new Option(`К${r.round} · ${r.mode === "hits" ? "по удачным" : "широкий"} · ${r.drawn}/${r.total}`, r.round)));
-  if (keep && wasR) $("round").value = wasR; else if (c.rounds.length) $("round").value = c.rounds.at(-1).round;
+  const short = (id) => titleOf(id).split(":")[0].split(" (")[0];
+  const shown = c.rounds.filter((r) => $("allrounds").checked || r.left > 0 || r.keep > 0);
+  $("round").replaceChildren(...shown.map((r) => new Option($("allrounds").checked && !r.left ? `К${r.round} · ${r.drawn}/${r.total}${r.screened ? "" : " · не отсеян"}` : `К${r.round} · смотреть ${r.left}: ${Object.entries(r.byTarget).map(([t, n]) => `${short(t)} ${n}`).join(", ")}${r.keep ? ` · оставлено ${r.keep}` : ""}`, r.round)));
+  const total = c.rounds.reduce((a, r) => a + r.left, 0);
+  $("round").prepend(new Option(`ВСЁ ВМЕСТЕ · смотреть ${total}`, "all"));
+  if (keep && wasR && (wasR === "all" || shown.some((r) => String(r.round) === String(wasR)))) $("round").value = wasR; else $("round").value = "all";
   const wasT = $("target").value;
   $("target").replaceChildren(new Option("все цели", ""), ...c.targets.map((t) => new Option(`${t.title} (${t.id})`, t.id)));
   if (keep) $("target").value = wasT;
@@ -66,20 +70,38 @@ function drawStats() {
 async function loadRound() {
   $("grid").replaceChildren(); R = null;
   if (!$("round").value) { $("rstat").textContent = "кругов ещё нет"; return; }
+  if ($("round").value === "all") {
+    const c = C(), order = c.targets.map((t) => t.id), frames = [];
+    for (const r of c.rounds.filter((r) => r.left > 0 || r.keep > 0)) { const x = await J(`/api/synth/round?c=${c.id}&k=${r.round}`); for (const fr of x.frames) { fr.k = r.round; frames.push(fr); } }
+    frames.sort((a, b) => order.indexOf(a.target) - order.indexOf(b.target) || a.k - b.k || a.i - b.i);
+    R = { concept: c.id, round: "all", status: "done", frames };
+    fillTargets();
+    draw();
+    return;
+  }
   R = await J(`/api/synth/round?c=${$("concept").value}&k=${$("round").value}`);
+  fillTargets();
   draw();
 }
 const titleOf = (id) => C().targets.find((t) => t.id === id)?.title ?? id;
+function fillTargets() {
+  if (!R) return;
+  const was = $("target").value, n = {};
+  for (const fr of R.frames) if (fr.file && !fr.pre && !fr.mark) n[fr.target] = (n[fr.target] ?? 0) + 1;
+  const list = C().targets.filter((t) => n[t.id] || $("allrounds").checked);
+  $("target").replaceChildren(new Option(`все под-сцены · ${Object.values(n).reduce((a, b) => a + b, 0)}`, ""), ...list.map((t) => new Option(`${t.title.split(" (")[0]} · ${n[t.id] ?? 0}`, t.id)));
+  $("target").value = list.some((t) => t.id === was) ? was : "";
+}
 function draw() {
   if (!R) return;
   const t = $("target").value, show = $("show").value, pre = $("pre").checked;
   const drawn = R.frames.filter((f) => f.file);
-  $("rstat").textContent = `${R.status === "running" ? "идёт" : R.status === "done" ? "готов" : "остановлен"}: ${drawn.length}/${R.frames.length} кадров · оставлено ${R.frames.filter((f) => f.mark === "keep").length} · выкинуто ${R.frames.filter((f) => f.mark === "drop").length} · отсеял Claude ${R.frames.filter((f) => f.pre && !f.mark).length} · осталось смотреть ${drawn.filter((f) => !f.mark && !f.pre).length}`;
-  view = drawn.filter((f) => (!t || f.target === t) && (pre || !f.pre || f.mark) && (show === "all" || (show === "new" ? !f.mark : f.mark === show)));
+  $("rstat").textContent = `${R.status === "running" ? "идёт" : R.status === "done" ? "готов" : "остановлен"}: ${drawn.length}/${R.frames.length} кадров · оставлено ${R.frames.filter((f) => f.mark === "keep").length} (топ ${R.frames.filter((f) => f.top).length}) · выкинуто ${R.frames.filter((f) => f.mark === "drop").length} · отсеял Claude ${R.frames.filter((f) => f.pre && !f.mark).length} · осталось смотреть ${drawn.filter((f) => !f.mark && !f.pre).length}`;
+  view = drawn.filter((f) => (!t || f.target === t) && (pre || !f.pre || f.mark) && (show === "all" || (show === "new" ? !f.mark : show === "top" ? !!f.top : f.mark === show)));
   $("grid").replaceChildren(...view.slice(0, 600).map((f, n) => {
     const d = document.createElement("div");
-    d.className = f.mark ?? (f.pre ? "pre" : "");
-    d.innerHTML = `<img loading="lazy" src="/synth/img?c=${R.concept}&k=${R.round}&i=${f.i}"><small>${f.target}</small>`;
+    d.className = (f.mark ?? (f.pre ? "pre" : "")) + (f.top ? " top" : "");
+    d.innerHTML = `<img loading="lazy" src="/synth/img?c=${R.concept}&k=${f.k ?? R.round}&i=${f.i}"><small>${titleOf(f.target).split(":")[0].split(" (")[0]}</small>`;
     d.onclick = () => open(n);
     return d;
   }));
@@ -90,25 +112,29 @@ function open(n) {
   cur = n;
   const f = view[n];
   $("big").style.display = "flex";
-  $("big").querySelector("img").src = `/synth/img?c=${R.concept}&k=${R.round}&i=${f.i}`;
+  $("big").querySelector("img").src = `/synth/img?c=${R.concept}&k=${f.k ?? R.round}&i=${f.i}`;
   const t = C().targets.find((x) => x.id === f.target);
   const ax = Object.entries(f.picks).map(([a, v]) => t?.axes[a]?.[v]).filter(Boolean).join(" · ");
-  $("big").querySelector("p").innerHTML = `<b>${titleOf(f.target)}</b> · ${f.look} · ${n + 1}/${view.length} ${f.mark === "keep" ? "· ОСТАВЛЕН" : f.mark === "drop" ? "· выкинут" : ""}<br><span class=dim>${ax}</span>`;
+  $("big").querySelector("p").innerHTML = `<b>${titleOf(f.target)}</b> · ${f.look} · ${n + 1}/${view.length} ${f.top ? "· ТОП" : f.mark === "keep" ? "· ОСТАВЛЕН" : f.mark === "drop" ? "· выкинут" : ""}<br><span class=dim>${ax}</span>`;
 }
 async function mark(m) {
   const f = view[cur];
-  f.mark = m;
-  void J("/api/synth/mark", { concept: R.concept, round: R.round, i: f.i, mark: m }).catch((e) => say(e.message));
+  const top = m === "top";
+  f.mark = top ? "keep" : m;
+  if (top) f.top = true; else delete f.top;
+  void J("/api/synth/mark", top ? { concept: R.concept, round: f.k ?? R.round, i: f.i, top: true } : { concept: R.concept, round: f.k ?? R.round, i: f.i, mark: m }).catch((e) => say(e.message));
   open(cur + 1);
 }
 document.addEventListener("keydown", (e) => {
   if (cur < 0) return;
   if (["k", "K", "л", "Л", "ArrowRight"].includes(e.key)) { e.preventDefault(); void mark("keep"); }
+  else if (["t", "T", "е", "Е", "ArrowUp"].includes(e.key)) { e.preventDefault(); void mark("top"); }
   else if (["d", "D", "в", "В", "ArrowLeft"].includes(e.key)) { e.preventDefault(); void mark("drop"); }
   else if (e.key === "Backspace") { e.preventDefault(); if (cur > 0) open(cur - 1); }
   else if (e.key === "Escape") open(-1);
 });
 $("big").onclick = (e) => { if (e.target === $("big")) open(-1); };
+$("allrounds").onchange = async () => { await loadBook(true); await loadRound(); };
 $("concept").onchange = async () => { await loadBook(false); await loadRound(); };
 $("round").onchange = loadRound;
 for (const id of ["target", "show", "pre"]) $(id).onchange = draw;
@@ -127,7 +153,8 @@ $("wide").onclick = () => newRound("wide").catch((e) => say(e.message));
 $("hits").onclick = () => newRound("hits").catch((e) => say(e.message));
 $("stop").onclick = async () => { if (R) { await J("/api/synth/stop", { concept: R.concept, round: R.round }); await loadRound(); } };
 $("resume").onclick = async () => { if (R) { await J("/api/synth/resume", { concept: R.concept, round: R.round }); await loadRound(); } };
-$("export").onclick = async () => { const r = await J("/api/synth/export", { concept: $("concept").value }); say(`Датасет: ${r.pictures} кадров в ${r.folder}`); };
+$("exporttop").onclick = async () => { const r = await J("/api/synth/export", { round: 1, concept: $("concept").value, top: true }); say(`Датасет (топ): ${r.pictures} кадров в ${r.folder}`); };
+$("export").onclick = async () => { const r = await J("/api/synth/export", { round: 1, concept: $("concept").value }); say(`Датасет: ${r.pictures} кадров в ${r.folder}`); };
 setInterval(async () => { if (R?.status === "running" && cur < 0) { await loadBook(true); await loadRound(); } }, 8000);
 loadBook(false).then(loadRound).catch((e) => say(e.message));
 </script>

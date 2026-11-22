@@ -23,13 +23,30 @@ words:
   h_glove: "1boy, solo focus, male focus, {hand}, (black gloves:1.2), elbow gloves, latex gloves"
   h_pale: "1boy, solo focus, male focus, {hand}, (pale skin:1.2), long fingernails"
   h_full: "1girl, 1boy, {look}, nude, kneeling, smirk, looking down"
-  hpenis: "(small penis:1.3), foreskin"
+  # cycle 2 (night 21.11): h_full gave 0 everywhere and is out; glove in pov and a thin arm are new; hbody = the husband without a face, for close-ups
+  h_povglove: "1boy, solo focus, male focus, female pov, pov, pov hands, {hand}, (black gloves:1.3), elbow gloves, latex gloves"
+  h_slim: "1boy, solo focus, male focus, {hand}, (pale skin:1.2), slender fingers, thin wrist, slender arm, long fingernails"
+  hbody: "(faceless male:1.2), head out of frame, mature male, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, soft body"
+  # day 21.11: the age test (fd_behind k10) - a little leg / arm hair plus height reads as an adult; smooth bodies did not
+  husband2: "(mature male:1.3), adult, 35 years old, (stubble:1.3), facial hair, very short hair, tired eyes, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, broad shoulders, tall male, leg hair, arm hair, sparse chest hair"
+  hbody2: "(faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, thick thighs, tall male, leg hair, hairy legs"
+  hbody3: "(faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, thick thighs, large frame"
+  husband3: "(mature male:1.3), adult, 35 years old, (stubble:1.3), facial hair, very short hair, tired eyes, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, arm hair, leg hair"
+  hbody4: "(faceless male:1.2), head out of frame, (mature male:1.3), adult, male focus, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, large frame, (narrow hips:1.2), flat chest, masculine torso"
+  hpenis: "(small penis:1.3), foreskin, (pale penis:1.3), pink glans"
   patron: "mature male, dark-skinned male, muscular male, (huge penis:1.2), veiny penis"
   men2: "(2boys:1.2), faceless male, mature male, multiple penises"
   men3: "(3boys:1.2), faceless male, mature male, multiple penises"
 neg:
-  look: "plump, fat, chubby, curvy, thick thighs, wide hips, huge breasts"
+  look: "plump, fat, chubby, curvy, thick thighs, wide hips, huge breasts, love handles, belly fat, muffin top, (belly:1.1), skindentation, thick waist"
   husband: "(dark-skinned male:1.4), (dark skin:1.4), brown skin, tan, interracial, (child:1.4), (shota:1.4), (teenage:1.4), (young:1.3), (boy:1.3), (youthful face:1.3), (short male:1.2), bishounen, (muscular male:1.3), abs, large penis, huge penis, wide hips, large ass, breasts, pussy"
+  hbody: "(dark-skinned male:1.4), (dark skin:1.4), brown skin, tan, interracial, (child:1.4), (shota:1.4), (teenage:1.4), (young:1.3), (short male:1.2), (muscular male:1.3), abs, large penis, huge penis, wide hips, breasts, pussy, face"
+  husband2: "(dark-skinned male:1.4), (dark skin:1.4), brown skin, tan, interracial, (muscular male:1.3), abs, large penis, huge penis, (child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, (slim:1.2), skinny, narrow shoulders, androgynous, otoko no ko, bishounen, small body, old man, elderly, wrinkles, grey hair, obese"
+  hbody2: "(dark-skinned male:1.4), (dark skin:1.4), brown skin, tan, interracial, (muscular male:1.3), abs, large penis, huge penis, wide hips, breasts, pussy, face, (child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, (slim:1.2), skinny, narrow shoulders, androgynous, otoko no ko, bishounen, small body, old man, elderly, wrinkles, grey hair, obese"
+  hbody3: "(dark-skinned male:1.4), (dark skin:1.4), brown skin, tan, interracial, (muscular male:1.3), abs, large penis, huge penis, wide hips, breasts, pussy, face, (male pov:1.3), pov crotch, (2boys:1.4), multiple penises, hairy legs, pubic hair, (child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, (slim:1.2), skinny, narrow shoulders, androgynous, otoko no ko, bishounen, small body, old man, elderly, wrinkles, grey hair, obese"
+  husband3: "(dark-skinned male:1.4), (dark skin:1.4), brown skin, tan, interracial, (muscular male:1.3), abs, large penis, huge penis, (2boys:1.4), multiple boys, (child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, (slim:1.2), skinny, narrow shoulders, androgynous, otoko no ko, bishounen, small body, old man, elderly, wrinkles, grey hair, obese"
+  hbody4: "(dark-skinned male:1.4), (dark skin:1.4), brown skin, tan, interracial, (muscular male:1.3), abs, large penis, huge penis, (wide hips:1.3), hourglass, curvy, narrow waist, female, 1girl, breasts, pussy, face, (male pov:1.3), pov crotch, (2boys:1.4), multiple penises, pubic hair, (child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, (slim:1.2), skinny, narrow shoulders, androgynous, otoko no ko, bishounen, small body, old man, elderly, wrinkles, grey hair, obese"
+  hpenis: "(dark penis:1.4), brown penis, dark glans, veiny penis, (large penis:1.3), dark-skinned male"
   patron: "pale-skinned male, small penis"
 
 concepts:
@@ -113,6 +130,579 @@ concepts:
         axes:
           who: ["1girl, 1boy, {look}, clothed female nude male, sitting, smirk", "1girl, 1boy, {look}, nude, standing, smirk", "{h_glove}", "{h_pale}"]
           view: ["over the knee, on lap, from side", "close-up, from behind, ass focus, bent over", "all fours, from behind, ass focus"]
+      - id: prostate3
+        title: "Простата 3: крупно, без лица, её рука (перчатка / вид её глазами)"
+        count: 150
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari"
+        acts: ["(anal fingering:1.3), finger in ass, fingering", "(prostate milking:1.2), (anal fingering:1.2), finger in ass, handjob", "(anal fingering:1.3), two fingers, lube, anus", "(anal fingering:1.3), (prostate milking:1.1), one finger, finger in ass, hand on another's ass"]
+        axes:
+          who: ["{h_pov}", "{h_glove}", "{h_povglove}", "{h_slim}"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "from above, lower body, lying on back, legs up, spread legs", "close-up, lower body, lying on back, knees up, testicles, perineum"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: prostate5
+        title: "Простата 3: крупно, без лица, её рука (перчатка / вид её глазами) (муж 3: взрослый по телу, без волос в кадре)"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari"
+        acts: ["(anal fingering:1.3), finger in ass, fingering", "(prostate milking:1.2), (anal fingering:1.2), finger in ass, handjob", "(anal fingering:1.3), two fingers, lube, anus", "(anal fingering:1.3), (prostate milking:1.1), one finger, finger in ass, hand on another's ass"]
+        axes:
+          who: ["{h_pov}", "{h_glove}", "{h_povglove}", "{h_slim}"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "from above, lower body, lying on back, legs up, spread legs", "close-up, lower body, lying on back, knees up, testicles, perineum"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: prostate6
+        title: "Простата 6: муж 3, только перчатки, лёжа"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari"
+        acts: ["(anal fingering:1.3), finger in ass, fingering", "(prostate milking:1.2), (anal fingering:1.2), finger in ass, handjob", "(anal fingering:1.3), two fingers, lube, anus", "(anal fingering:1.3), (prostate milking:1.1), one finger, finger in ass, hand on another's ass"]
+        axes:
+          who: ["{h_glove}","{h_povglove}"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "from above, lower body, lying on back, legs up, spread legs", "close-up, lower body, lying on back, knees up, testicles, perineum"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: prostate7
+        title: "Простата 7: голая рука (без перчатки)"
+        count: 300
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "gloves, black gloves, latex gloves, elbow gloves, (male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari"
+        acts: ["(anal fingering:1.3), finger in ass, fingering", "(prostate milking:1.2), (anal fingering:1.2), finger in ass, handjob", "(anal fingering:1.3), two fingers, lube, anus", "(anal fingering:1.3), (prostate milking:1.1), one finger, finger in ass, hand on another's ass"]
+        axes:
+          who: ["{h_pov}","{h_slim}","{h_pale}"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "from above, lower body, lying on back, legs up, spread legs", "close-up, lower body, lying on back, knees up, testicles, perineum"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: prostate4
+        title: "Простата 3: крупно, без лица, её рука (перчатка / вид её глазами) (муж 2: взрослые признаки)"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody2}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari"
+        acts: ["(anal fingering:1.3), finger in ass, fingering", "(prostate milking:1.2), (anal fingering:1.2), finger in ass, handjob", "(anal fingering:1.3), two fingers, lube, anus", "(anal fingering:1.3), (prostate milking:1.1), one finger, finger in ass, hand on another's ass"]
+        axes:
+          who: ["{h_pov}", "{h_glove}", "{h_povglove}", "{h_slim}"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "from above, lower body, lying on back, legs up, spread legs", "close-up, lower body, lying on back, knees up, testicles, perineum"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: dildo3
+        title: "Дилдо в нём 3: крупно, игрушка в её руке"
+        count: 150
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, vaginal"
+        acts: ["(anal object insertion:1.3), (dildo:1.2), holding dildo", "(anal object insertion:1.3), (butt plug:1.2)", "(anal object insertion:1.3), (anal beads:1.2), pulling", "(anal object insertion:1.3), (dildo:1.2), holding sex toy, sex toy, lube"]
+        axes:
+          who: ["{h_pov}", "{h_glove}", "{h_povglove}", "1boy, solo, male focus"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "close-up, from behind, all fours, ass focus, testicles", "close-up, lower body, lying on back, knees up, anus"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: dildo5
+        title: "Дилдо в нём 3: крупно, игрушка в её руке (муж 3: взрослый по телу, без волос в кадре)"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, vaginal"
+        acts: ["(anal object insertion:1.3), (dildo:1.2), holding dildo", "(anal object insertion:1.3), (butt plug:1.2)", "(anal object insertion:1.3), (anal beads:1.2), pulling", "(anal object insertion:1.3), (dildo:1.2), holding sex toy, sex toy, lube"]
+        axes:
+          who: ["{h_pov}", "{h_glove}", "{h_povglove}", "1boy, solo, male focus"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "close-up, from behind, all fours, ass focus, testicles", "close-up, lower body, lying on back, knees up, anus"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: dildo6
+        title: "Дилдо в нём 6: муж 3, только лёжа"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, vaginal"
+        acts: ["(anal object insertion:1.3), (dildo:1.2), holding dildo", "(anal object insertion:1.3), (butt plug:1.2)", "(anal object insertion:1.3), (anal beads:1.2), pulling", "(anal object insertion:1.3), (dildo:1.2), holding sex toy, sex toy, lube"]
+        axes:
+          who: ["{h_pov}", "{h_glove}", "{h_povglove}", "1boy, solo, male focus"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs","close-up, lower body, lying on back, knees up, anus"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: dildo7
+        title: "Дилдо в нём 7: голая рука или игрушка без руки"
+        count: 300
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "gloves, black gloves, latex gloves, elbow gloves, (male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, vaginal"
+        acts: ["(anal object insertion:1.3), (dildo:1.2), holding dildo", "(anal object insertion:1.3), (butt plug:1.2)", "(anal object insertion:1.3), (anal beads:1.2), pulling", "(anal object insertion:1.3), (dildo:1.2), holding sex toy, sex toy, lube"]
+        axes:
+          who: ["{h_pov}","{h_pale}","1boy, solo, male focus"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs","close-up, lower body, lying on back, knees up, anus"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: dildo4
+        title: "Дилдо в нём 3: крупно, игрушка в её руке (муж 2: взрослые признаки)"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody2}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, vaginal"
+        acts: ["(anal object insertion:1.3), (dildo:1.2), holding dildo", "(anal object insertion:1.3), (butt plug:1.2)", "(anal object insertion:1.3), (anal beads:1.2), pulling", "(anal object insertion:1.3), (dildo:1.2), holding sex toy, sex toy, lube"]
+        axes:
+          who: ["{h_pov}", "{h_glove}", "{h_povglove}", "1boy, solo, male focus"]
+          view: ["close-up, lower body, lying on back, legs up, spread legs", "close-up, from behind, all fours, ass focus, testicles", "close-up, lower body, lying on back, knees up, anus"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: fisting3
+        title: "Кулак в нём 3: крупно сзади, рука в перчатке по локоть"
+        count: 150
+        prompt: "{who}, femdom, hetero, {act}, {view}, {hbody}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari"
+        acts: ["(anal fisting:1.3), fisting", "(anal fisting:1.3), fist, deep insertion, forearm", "(fisting:1.3), anal, large insertion, stomach bulge", "(anal fisting:1.3), wrist deep, lube, stretched anus"]
+        axes:
+          who: ["{h_glove}", "{h_povglove}", "{h_slim}", "1boy, solo focus, male focus, {hand}, (black gloves:1.3), (elbow gloves:1.3), latex, slender arm"]
+          view: ["close-up, from behind, all fours, ass focus", "close-up, lower body, lying on back, legs up", "close-up, from behind, top-down bottom-up, ass focus, testicles"]
+      - id: fisting4
+        title: "Кулак в нём 3: крупно сзади, рука в перчатке по локоть (муж 2: взрослые признаки)"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {view}, {hbody2}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari"
+        acts: ["(anal fisting:1.3), fisting", "(anal fisting:1.3), fist, deep insertion, forearm", "(fisting:1.3), anal, large insertion, stomach bulge", "(anal fisting:1.3), wrist deep, lube, stretched anus"]
+        axes:
+          who: ["{h_povglove}", "1boy, solo focus, male focus, female pov, pov hands, {hand}, (elbow gloves:1.3), black latex gloves, slender arm", "{h_glove}"]
+          view: ["close-up, from behind, all fours, ass focus", "close-up, lower body, lying on back, legs up", "close-up, from behind, top-down bottom-up, ass focus, testicles"]
+      - id: spank3
+        title: "Шлепки 3: она одета, он голый у неё на коленях / нагнут"
+        count: 150
+        prompt: "1girl, 1boy, {look}, {who}, femdom, hetero, {act}, {view}, nude male, {husband}, {room}"
+        negative: "(dark-skinned male:1.3), (2boys:1.4), nude female, female spanked"
+        acts: ["(spanking:1.3), (red ass:1.2), male ass", "(spanking:1.2), riding crop, holding riding crop, red ass, male ass", "(spanking:1.2), (holding paddle:1.2), paddle, red ass, male ass", "(spanking:1.3), slap mark, red ass, male ass, raised hand"]
+        axes:
+          who: ["clothed female nude male, sitting, smirk", "clothed female nude male, standing, smirk, looking down", "clothed female nude male, black dress, sitting, crossed legs"]
+          view: ["over the knee, on lap, from side", "over the knee, lying on lap, face down, from above", "bent over, from side, man bent over, hands on bed"]
+      - id: spank6
+        title: "Шлепки 6: как ветка 3 + возраст словами, шлёпают только его"
+        count: 100
+        prompt: "1girl, 1boy, {look}, {who}, femdom, hetero, {act}, {view}, nude male, {husband}, adult, 35 years old, {room}"
+        negative: "female spanked, spanked girl, (nude female:1.2), (child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, small body, (dark-skinned male:1.3), (2boys:1.4), nude female, female spanked"
+        acts: ["(spanking:1.3), (red ass:1.2), male ass", "(spanking:1.2), riding crop, holding riding crop, red ass, male ass", "(spanking:1.2), (holding paddle:1.2), paddle, red ass, male ass", "(spanking:1.3), slap mark, red ass, male ass, raised hand"]
+        axes:
+          who: ["clothed female nude male, sitting, smirk", "clothed female nude male, standing, smirk, looking down", "clothed female nude male, black dress, sitting, crossed legs"]
+          view: ["over the knee, on lap, from side", "over the knee, lying on lap, face down, from above", "bent over, from side, man bent over, hands on bed"]
+      - id: spank5
+        title: "Шлепки 3: она одета, он голый у неё на коленях / нагнут (муж 3: взрослый, без tall / плеч)"
+        count: 100
+        prompt: "1girl, 1boy, {look}, {who}, femdom, hetero, {act}, {view}, nude male, {husband3}, {room}"
+        negative: "(dark-skinned male:1.3), (2boys:1.4), nude female, female spanked"
+        acts: ["(spanking:1.3), (red ass:1.2), male ass", "(spanking:1.2), riding crop, holding riding crop, red ass, male ass", "(spanking:1.2), (holding paddle:1.2), paddle, red ass, male ass", "(spanking:1.3), slap mark, red ass, male ass, raised hand"]
+        axes:
+          who: ["clothed female nude male, sitting, smirk", "clothed female nude male, standing, smirk, looking down", "clothed female nude male, black dress, sitting, crossed legs"]
+          view: ["over the knee, on lap, from side", "over the knee, lying on lap, face down, from above", "bent over, from side, man bent over, hands on bed"]
+      - id: spank4
+        title: "Шлепки 3: она одета, он голый у неё на коленях / нагнут (муж 2: взрослые признаки)"
+        count: 100
+        prompt: "1girl, 1boy, {look}, {who}, femdom, hetero, {act}, {view}, nude male, {husband2}, {room}"
+        negative: "(dark-skinned male:1.3), (2boys:1.4), nude female, female spanked"
+        acts: ["(spanking:1.3), (red ass:1.2), male ass", "(spanking:1.2), riding crop, holding riding crop, red ass, male ass", "(spanking:1.2), (holding paddle:1.2), paddle, red ass, male ass", "(spanking:1.3), slap mark, red ass, male ass, raised hand"]
+        axes:
+          who: ["clothed female nude male, sitting, smirk", "clothed female nude male, standing, smirk, looking down", "clothed female nude male, black dress, sitting, crossed legs"]
+          view: ["over the knee, on lap, from side", "over the knee, lying on lap, face down, from above", "bent over, from side, man bent over, hands on bed"]
+      - id: age_full
+        title: "Тест возраста мужа: в полный рост с лицом, раком (худший случай)"
+        count: 144
+        prompt: "1boy, solo focus, male focus, nude, all fours, from side, full body, {man}, (pale-skinned male:1.4), (pale skin:1.3), white skin, {hpenis}, {room}"
+        negative: "(child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, (slim:1.2), skinny, narrow shoulders, androgynous, otoko no ko, bishounen, small body, (dark-skinned male:1.4), (2boys:1.4), muscular male, abs, old man, elderly, wrinkles, grey hair, obese"
+        axes:
+          man:
+            - "(mature male:1.3), adult, 35 years old, (stubble:1.3), facial hair, very short hair, tired eyes, average build, broad shoulders, tall male"
+            - "(mature male:1.3), adult, 35 years old, (stubble:1.3), facial hair, very short hair, tired eyes, average build, broad shoulders, tall male, leg hair, arm hair, chest hair"
+            - "(mature male:1.3), (middle-aged man:1.1), short hair, (beard:1.1), stubble, thick eyebrows, dad bod, tall male"
+            - "(mature male:1.3), 30s, (stubble:1.2), facial hair, very short hair, manly, masculine, thick neck, large hands, tall male, adult proportions, average build"
+            - "(mature male:1.3), adult, 30s, (stubble:1.2), facial hair, very short hair, tired eyes, (toned male:1.1), lean, broad shoulders, tall male"
+            - "(mature male:1.3), adult, 30s, (stubble:1.2), facial hair, very short hair, tired eyes, (toned male:1.1), broad shoulders, tall male, sparse chest hair, leg hair, arm hair"
+      - id: age_close
+        title: "Тест возраста мужа: крупно без лица, лёжа"
+        count: 144
+        prompt: "1boy, solo, male focus, nude, close-up, lower body, lying on back, legs up, spread legs, (faceless male:1.2), head out of frame, {man}, (pale-skinned male:1.4), (pale skin:1.3), white skin, {hpenis}, {room}"
+        negative: "(child:1.5), (shota:1.5), (teenage:1.4), (young:1.3), petite, short male, (slim:1.2), skinny, narrow shoulders, androgynous, otoko no ko, bishounen, small body, (dark-skinned male:1.4), (2boys:1.4), muscular male, abs, old man, elderly, wrinkles, grey hair, obese, face"
+        axes:
+          man:
+            - "(mature male:1.3), adult, average build, thick thighs, tall male, large frame"
+            - "(mature male:1.3), adult, average build, thick thighs, tall male, leg hair, hairy legs"
+            - "(mature male:1.3), adult, dad bod, belly, wide waist, thick legs"
+            - "(mature male:1.3), adult, masculine, manly, large hands, big feet, adult male body, average build, soft body"
+            - "(mature male:1.3), adult, (toned male:1.1), lean, thick thighs, tall male"
+            - "(mature male:1.3), adult, (toned male:1.1), thick thighs, tall male, leg hair, sparse body hair"
+      - id: pegging2
+        title: "Страпон 2: её глазами и крупно, муж без лица"
+        count: 300
+        prompt: "{who}, femdom, hetero, {act}, {view}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), multiple penises, yaoi, futanari, gloves, penis in pussy, vaginal"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), (strap-on:1.2), dildo, anal, sex from behind", "(pegging:1.2), strap-on, black strap-on, harness, anal, deep penetration"]
+        axes:
+          who: ["1boy, solo focus, male focus, female pov, pov, pov hands, {hand}, hands on another's hips", "1girl, 1boy, {look}, nude, strap-on, kneeling behind, hands on another's hips, head out of frame", "1boy, solo focus, male focus, female pov, pov, {hand}, hand on another's ass"]
+          view: ["close-up, from behind, man on all fours, male ass, ass focus", "close-up, lower body, man lying on back, legs up, spread legs, from above", "from side, lower body, man on all fours, top-down bottom-up"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: pegging3
+        title: "Страпон 3: только её глазами, её руки на его бёдрах"
+        count: 300
+        prompt: "close-up, femdom, female pov, pov, {act}, {view}, {hand}, {grip}, {state}, 1boy, male focus, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), multiple penises, yaoi, futanari, gloves, 1girl, breasts, female pegged, girl on all fours, (muscular male:1.3), abs, male wearing strap-on, vaginal, penis in pussy"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), strap-on, anal, deep penetration", "(pegging:1.2), strap-on, harness, anal"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, legs up, spread legs, from above", "man on all fours, top-down bottom-up, male ass, from behind"]
+          grip: ["hands on another's hips", "hand on another's ass", "hands on another's thighs"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: pegging5
+        title: "СТРАПОН 5: её глазами, её грудь в кадре сверху, чёрный страпон"
+        count: 300
+        prompt: "close-up, femdom, female pov, pov, (pov breasts:1.3), (large breasts:1.2), breasts, cleavage, {act}, (black strap-on:1.3), black dildo, strap-on harness, {view}, {hand}, {grip}, {state}, 1girl, 1boy, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), multiple penises, yaoi, futanari, penis on female, gloves, female pegged, girl on all fours, (muscular male:1.3), (muscular female:1.4), abs, male wearing strap-on, vaginal, penis in pussy, flesh-colored dildo, realistic dildo, flat chest, male chest, pectorals"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), strap-on, anal, deep penetration", "(pegging:1.2), strap-on, harness, anal"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, legs up, spread legs, from above", "man on all fours, top-down bottom-up, male ass, from behind"]
+          grip: ["hands on another's hips", "hand on another's ass", "hands on another's thighs"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: pegging4
+        title: "СТРАПОН 4: вид сбоку, видно что это женщина (грудь, волосы), чёрный страпон"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, {act}, {view}, (black strap-on:1.3), black dildo, strap-on harness, breasts, cleavage, long hair, {grip}, {hand}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male wearing strap-on, girl on all fours, female pegged, vaginal, penis in pussy, (muscular female:1.4), (muscular male:1.3), abs, (dark-skinned male:1.4), flesh-colored dildo, realistic dildo, flat chest, tomboy, gloves"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), strap-on, anal, deep penetration", "(pegging:1.2), strap-on, harness, anal"]
+        axes:
+          view: ["from side, man on all fours, girl kneeling behind him", "from side, man bent over bed, girl standing behind him", "from side, man lying on back, legs up, girl kneeling between his legs"]
+          grip: ["hands on another's hips", "hand on another's ass", "hands on another's thighs"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: prostate8
+        title: "Простата 8: она между его ног, вид его глазами, рука идёт от неё"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female, gloves"
+        acts: ["(anal fingering:1.3), finger in ass, fingering", "(prostate milking:1.2), (anal fingering:1.2), finger in ass", "(anal fingering:1.3), two fingers, lube, anus"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: dildo8
+        title: "Дилдо в нём 8: она между его ног, игрушка в её руке"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female, gloves, vaginal"
+        acts: ["(anal object insertion:1.3), (dildo:1.2), holding dildo", "(anal object insertion:1.3), (butt plug:1.2)", "(anal object insertion:1.3), (anal beads:1.2), pulling"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: fisting5
+        title: "Кулак в нём 5: она между его ног, перчатка по локоть"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, {view}, (black gloves:1.2), elbow gloves, latex gloves, {hbody3}, {hpenis}, {room}"
+        negative: "(male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female"
+        acts: ["(anal fisting:1.3), fisting, fist", "(anal fisting:1.3), fist, deep insertion, forearm", "(anal fisting:1.3), wrist deep, lube"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+      - id: prostate9
+        title: "ПРОСТАТА 9: палец читается, без пресса и смуглого тела"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, (male anus:1.2), hand between his legs, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(abs:1.4), (muscular male:1.4), six pack, bodybuilder, (dark skin:1.3), tan, pubic hair, handjob, penis grab, testicle grab, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female, gloves"
+        acts: ["(anal fingering:1.5), (finger in anus:1.3), fingering male, finger insertion", "(prostate milking:1.3), (anal fingering:1.4), finger in anus, lube", "(anal fingering:1.5), two fingers in anus, lube, spread anus"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: dildo9
+        title: "ДИЛДО В НЁМ 9: игрушка в нём, не в ней; без пресса"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, (male anus:1.2), {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(abs:1.4), (muscular male:1.4), six pack, bodybuilder, (dark skin:1.3), tan, pubic hair, female anal, butt plug, anal beads, object in female, anal tail, vaginal object insertion, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female, gloves, vaginal"
+        acts: ["(anal object insertion:1.4), (dildo in anus:1.3), male anal, holding dildo, pushing dildo", "(anal object insertion:1.4), (large dildo:1.2), dildo in male anus, holding dildo", "(anal object insertion:1.4), (vibrator:1.2), vibrator in anus, holding vibrator"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+          state: ["erection, precum", "handsfree ejaculation, cum"]
+      - id: fisting6
+        title: "КУЛАК В НЁМ 6: как 5, без пресса и смуглого тела"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, {view}, (black gloves:1.2), elbow gloves, latex gloves, {hbody3}, {hpenis}, {room}"
+        negative: "(abs:1.4), (muscular male:1.4), six pack, bodybuilder, (dark skin:1.3), tan, pubic hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female"
+        acts: ["(anal fisting:1.3), fisting, fist", "(anal fisting:1.3), fist, deep insertion, forearm", "(anal fisting:1.3), wrist deep, lube"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+      - id: prostate10
+        title: "ПРОСТАТА 10: палец в перчатке (перчатка привязывает руку к ней)"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, {view}, (black gloves:1.2), elbow gloves, latex gloves, {hbody3}, {hpenis}, {room}"
+        negative: "(anal fisting:1.3), fist, penis on female, female anal, pussy, (abs:1.4), (muscular male:1.4), six pack, bodybuilder, (dark skin:1.3), tan, pubic hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female"
+        acts: ["(anal fingering:1.4), index finger, finger in anus, one finger", "(prostate milking:1.3), (anal fingering:1.3), finger in anus, lube", "(anal fingering:1.4), two fingers, fingers in anus, lube"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+      - id: dildo10
+        title: "ДИЛДО В НЁМ 10: игрушка в её руке в перчатке"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, kneeling, between legs, leaning forward, cleavage, smirk, pov, {act}, {view}, (black gloves:1.2), elbow gloves, latex gloves, {hbody3}, {hpenis}, {room}"
+        negative: "(anal fisting:1.3), fist, female anal, butt plug, anal beads, anal tail, object in female, vaginal object insertion, pussy, (abs:1.4), (muscular male:1.4), six pack, bodybuilder, (dark skin:1.3), tan, pubic hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), futanari, penis on female"
+        acts: ["(anal object insertion:1.4), (dildo:1.3), holding dildo, dildo in anus", "(anal object insertion:1.4), (large dildo:1.2), holding dildo, pushing dildo", "(anal object insertion:1.4), (vibrator:1.2), holding vibrator"]
+        axes:
+          view: ["man lying on back, legs up, spread legs, from above", "man lying on back, knees up, spread legs, from above", "close-up, man lying on back, legs up, lower body"]
+      - id: x_side
+        title: "ПРОБА рука в нём: вид сбоку, она сзади него"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, breasts, {act}, (male penetrated:1.2), {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves"
+        acts: ["(anal fingering:1.4), finger in anus, (prostate milking:1.2)", "(anal fingering:1.4), fingering from behind, two fingers, lube", "(anal fisting:1.4), fisting, fist in anus, wrist", "(anal fisting:1.4), fisting, forearm, deep insertion"]
+        axes:
+          view: ["from side, boy on all fours, girl kneeling behind him, reach-around, handjob", "from side, boy bent over, girl standing behind him, hand on another's ass", "from side, boy lying on back, male legs up, girl kneeling between his legs"]
+      - id: pm_side
+        title: "ПРОСТАТА с чужой LoRA: вид сбоку, рука под ним и палец в нём"
+        count: 300
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,ProstateMilking_IL_V1_0.safetensors:0.8"
+        prompt: "1girl, 1boy, hetero, femdom, {look}, breasts, finger stimulate prostate, anal fingering, reach-around, from side, {act}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair"
+        acts: ["handjob, boy on all fours", "handjob, boy bent over", "boy on all fours, hand on another's ass"]
+        axes:
+          view: ["girl kneeling behind him", "girl kneeling beside him", "girl standing behind him"]
+      - id: pm_pov
+        title: "ПРОСТАТА с чужой LoRA: его глазами, ноги вверх"
+        count: 300
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,ProstateMilking_IL_V1_0.safetensors:0.8"
+        prompt: "1girl, 1boy, hetero, femdom, {look}, breasts, finger stimulate prostate, anal fingering, pov, male legs up, {act}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair"
+        acts: ["handjob", "smirk, looking at viewer", "two fingers, lube"]
+        axes:
+          view: ["girl kneeling between his legs", "girl leaning forward, cleavage", "close-up"]
+      - id: pm_fist
+        title: "КУЛАК с чужой LoRA (она заявлена только под палец)"
+        count: 300
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,ProstateMilking_IL_V1_0.safetensors:0.8"
+        prompt: "1girl, 1boy, hetero, femdom, {look}, breasts, (anal fisting:1.4), fisting, fist in anus, {act}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair"
+        acts: ["wrist, lube", "forearm, deep insertion", "(black gloves:1.2), elbow gloves, wrist"]
+        axes:
+          view: ["reach-around, from side, boy on all fours, girl kneeling behind him", "pov, male legs up, girl kneeling between his legs", "from side, boy bent over, girl standing behind him"]
+      - id: fpov_finger
+        title: "ПАЛЕЦ В НЁМ: её глазами, светлая женская рука от зрителя"
+        count: 300
+        prompt: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (anal fisting:1.3), fist, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fingering:1.4), index finger in anus, one finger, (prostate milking:1.2)", "(anal fingering:1.4), two fingers in anus, lube", "(anal fingering:1.4), fingering from behind, finger in anus, precum, dripping"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: fpov_fist
+        title: "КУЛАК В НЁМ: её глазами, светлая женская рука от зрителя"
+        count: 300
+        prompt: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fisting:1.4), fisting, fist in anus, wrist", "(anal fisting:1.4), fisting, forearm, deep insertion, stretched anus", "(anal fisting:1.4), four fingers in anus, hand in anus, lube"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: fpov_fist2
+        title: "КУЛАК В НЁМ 2: предплечье уходит в него, кисти не видно"
+        count: 300
+        prompt: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "hand on ass, ass grab, fingers visible, open hand, handjob, penis grab, anal fingering, (dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fisting:1.5), (arm in anus:1.3), forearm in anus, hand inside, wrist deep, stretched anus", "(anal fisting:1.5), (deep fisting:1.3), forearm inside, elbow deep, stretched anus, lube", "(anal fisting:1.5), fist inside anus, wrist inside, forearm, stomach bulge"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: fpov_fist3
+        title: "КУЛАК В НЁМ 3: предплечье в нём, жёсткий запрет второго мужчины"
+        count: 300
+        prompt: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), (1boy:1.2), (solo focus:1.2), male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(2boys:1.6), (multiple boys:1.5), (second penis:1.4), (multiple penises:1.5), (anal sex:1.4), sex, penis in anus, male on male, (male pov:1.4), pov crotch, pov penis, another torso, abs, pectorals, hand on ass, ass grab, fingers visible, open hand, handjob, penis grab, anal fingering, (dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fisting:1.5), (arm in anus:1.3), forearm in anus, hand inside, wrist deep, stretched anus", "(anal fisting:1.5), (deep fisting:1.3), forearm inside, elbow deep, stretched anus, lube", "(anal fisting:1.5), fist inside anus, wrist inside, forearm, stomach bulge"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f0_fpov_finger
+        title: "КОНТРОЛЬ фемдом без LoRA: fpov_finger"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (anal fisting:1.3), fist, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fingering:1.4), index finger in anus, one finger, (prostate milking:1.2)", "(anal fingering:1.4), two fingers in anus, lube", "(anal fingering:1.4), fingering from behind, finger in anus, precum, dripping"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f15_fpov_finger
+        title: "КОНТРОЛЬ фемдом tc_femdom.safetensors:0.4: fpov_finger"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom.safetensors:0.4"
+        prompt: "tc_femdom, close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (anal fisting:1.3), fist, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fingering:1.4), index finger in anus, one finger, (prostate milking:1.2)", "(anal fingering:1.4), two fingers in anus, lube", "(anal fingering:1.4), fingering from behind, finger in anus, precum, dripping"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f10_fpov_finger
+        title: "КОНТРОЛЬ фемдом tc_femdom-1000.safetensors:0.6: fpov_finger"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-1000.safetensors:0.6"
+        prompt: "tc_femdom, close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (anal fisting:1.3), fist, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fingering:1.4), index finger in anus, one finger, (prostate milking:1.2)", "(anal fingering:1.4), two fingers in anus, lube", "(anal fingering:1.4), fingering from behind, finger in anus, precum, dripping"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f5_fpov_finger
+        title: "КОНТРОЛЬ фемдом tc_femdom-500.safetensors:0.8: fpov_finger"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-500.safetensors:0.8"
+        prompt: "tc_femdom, close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (anal fisting:1.3), fist, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fingering:1.4), index finger in anus, one finger, (prostate milking:1.2)", "(anal fingering:1.4), two fingers in anus, lube", "(anal fingering:1.4), fingering from behind, finger in anus, precum, dripping"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f0_fpov_fist3
+        title: "КОНТРОЛЬ фемдом без LoRA: fpov_fist3"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), (1boy:1.2), (solo focus:1.2), male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(2boys:1.6), (multiple boys:1.5), (second penis:1.4), (multiple penises:1.5), (anal sex:1.4), sex, penis in anus, male on male, (male pov:1.4), pov crotch, pov penis, another torso, abs, pectorals, hand on ass, ass grab, fingers visible, open hand, handjob, penis grab, anal fingering, (dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fisting:1.5), (arm in anus:1.3), forearm in anus, hand inside, wrist deep, stretched anus", "(anal fisting:1.5), (deep fisting:1.3), forearm inside, elbow deep, stretched anus, lube", "(anal fisting:1.5), fist inside anus, wrist inside, forearm, stomach bulge"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f15_fpov_fist3
+        title: "КОНТРОЛЬ фемдом tc_femdom.safetensors:0.4: fpov_fist3"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom.safetensors:0.4"
+        prompt: "tc_femdom, close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), (1boy:1.2), (solo focus:1.2), male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(2boys:1.6), (multiple boys:1.5), (second penis:1.4), (multiple penises:1.5), (anal sex:1.4), sex, penis in anus, male on male, (male pov:1.4), pov crotch, pov penis, another torso, abs, pectorals, hand on ass, ass grab, fingers visible, open hand, handjob, penis grab, anal fingering, (dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fisting:1.5), (arm in anus:1.3), forearm in anus, hand inside, wrist deep, stretched anus", "(anal fisting:1.5), (deep fisting:1.3), forearm inside, elbow deep, stretched anus, lube", "(anal fisting:1.5), fist inside anus, wrist inside, forearm, stomach bulge"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f10_fpov_fist3
+        title: "КОНТРОЛЬ фемдом tc_femdom-1000.safetensors:0.6: fpov_fist3"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-1000.safetensors:0.6"
+        prompt: "tc_femdom, close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), (1boy:1.2), (solo focus:1.2), male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(2boys:1.6), (multiple boys:1.5), (second penis:1.4), (multiple penises:1.5), (anal sex:1.4), sex, penis in anus, male on male, (male pov:1.4), pov crotch, pov penis, another torso, abs, pectorals, hand on ass, ass grab, fingers visible, open hand, handjob, penis grab, anal fingering, (dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fisting:1.5), (arm in anus:1.3), forearm in anus, hand inside, wrist deep, stretched anus", "(anal fisting:1.5), (deep fisting:1.3), forearm inside, elbow deep, stretched anus, lube", "(anal fisting:1.5), fist inside anus, wrist inside, forearm, stomach bulge"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f5_fpov_fist3
+        title: "КОНТРОЛЬ фемдом tc_femdom-500.safetensors:0.8: fpov_fist3"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-500.safetensors:0.8"
+        prompt: "tc_femdom, close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.3), pale arm, slender arm, slender fingers, (red nails:1.2), nail polish, bracelet, {act}, (male penetrated:1.2), (1boy:1.2), (solo focus:1.2), male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(2boys:1.6), (multiple boys:1.5), (second penis:1.4), (multiple penises:1.5), (anal sex:1.4), sex, penis in anus, male on male, (male pov:1.4), pov crotch, pov penis, another torso, abs, pectorals, hand on ass, ass grab, fingers visible, open hand, handjob, penis grab, anal fingering, (dark-skinned hand:1.4), (dark hand:1.3), tan hand, dark arm, veiny arm, muscular arm, male arm, (futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fisting:1.5), (arm in anus:1.3), forearm in anus, hand inside, wrist deep, stretched anus", "(anal fisting:1.5), (deep fisting:1.3), forearm inside, elbow deep, stretched anus, lube", "(anal fisting:1.5), fist inside anus, wrist inside, forearm, stomach bulge"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: f0_dildo11
+        title: "КОНТРОЛЬ фемдом без LoRA: dildo11"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "1boy, solo, male focus, {act}, {view}, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), average build, thick thighs, large frame, ass focus, male ass, anus, testicles, arms out of frame, head out of frame, {hpenis}, {room}"
+        negative: "1girl, female, breasts, pussy, (2boys:1.5), multiple boys, yaoi, another person, hand, hands, (abs:1.3), (muscular male:1.4), bodybuilder, (dark skin:1.3), (dark-skinned male:1.4), tan, pubic hair, hairy ass, (large penis:1.3), petite, small body, child, (shota:1.5), femboy, otoko no ko, trap, slim"
+        acts: ["(anal object insertion:1.4), (dildo:1.3), dildo in anus", "(anal object insertion:1.4), (butt plug:1.3)", "(anal object insertion:1.4), (vibrator:1.2), vibrator in anus", "(anal object insertion:1.4), (anal beads:1.2)"]
+        axes:
+          view: ["close-up, from behind, all fours, ass up", "close-up, from behind, bent over, kneeling", "close-up, lying on back, legs up, spread legs, from below"]
+      - id: f15_dildo11
+        title: "КОНТРОЛЬ фемдом tc_femdom.safetensors:0.4: dildo11"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom.safetensors:0.4"
+        prompt: "tc_femdom, 1boy, solo, male focus, {act}, {view}, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), average build, thick thighs, large frame, ass focus, male ass, anus, testicles, arms out of frame, head out of frame, {hpenis}, {room}"
+        negative: "1girl, female, breasts, pussy, (2boys:1.5), multiple boys, yaoi, another person, hand, hands, (abs:1.3), (muscular male:1.4), bodybuilder, (dark skin:1.3), (dark-skinned male:1.4), tan, pubic hair, hairy ass, (large penis:1.3), petite, small body, child, (shota:1.5), femboy, otoko no ko, trap, slim"
+        acts: ["(anal object insertion:1.4), (dildo:1.3), dildo in anus", "(anal object insertion:1.4), (butt plug:1.3)", "(anal object insertion:1.4), (vibrator:1.2), vibrator in anus", "(anal object insertion:1.4), (anal beads:1.2)"]
+        axes:
+          view: ["close-up, from behind, all fours, ass up", "close-up, from behind, bent over, kneeling", "close-up, lying on back, legs up, spread legs, from below"]
+      - id: f10_dildo11
+        title: "КОНТРОЛЬ фемдом tc_femdom-1000.safetensors:0.6: dildo11"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-1000.safetensors:0.6"
+        prompt: "tc_femdom, 1boy, solo, male focus, {act}, {view}, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), average build, thick thighs, large frame, ass focus, male ass, anus, testicles, arms out of frame, head out of frame, {hpenis}, {room}"
+        negative: "1girl, female, breasts, pussy, (2boys:1.5), multiple boys, yaoi, another person, hand, hands, (abs:1.3), (muscular male:1.4), bodybuilder, (dark skin:1.3), (dark-skinned male:1.4), tan, pubic hair, hairy ass, (large penis:1.3), petite, small body, child, (shota:1.5), femboy, otoko no ko, trap, slim"
+        acts: ["(anal object insertion:1.4), (dildo:1.3), dildo in anus", "(anal object insertion:1.4), (butt plug:1.3)", "(anal object insertion:1.4), (vibrator:1.2), vibrator in anus", "(anal object insertion:1.4), (anal beads:1.2)"]
+        axes:
+          view: ["close-up, from behind, all fours, ass up", "close-up, from behind, bent over, kneeling", "close-up, lying on back, legs up, spread legs, from below"]
+      - id: f5_dildo11
+        title: "КОНТРОЛЬ фемдом tc_femdom-500.safetensors:0.8: dildo11"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-500.safetensors:0.8"
+        prompt: "tc_femdom, 1boy, solo, male focus, {act}, {view}, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), average build, thick thighs, large frame, ass focus, male ass, anus, testicles, arms out of frame, head out of frame, {hpenis}, {room}"
+        negative: "1girl, female, breasts, pussy, (2boys:1.5), multiple boys, yaoi, another person, hand, hands, (abs:1.3), (muscular male:1.4), bodybuilder, (dark skin:1.3), (dark-skinned male:1.4), tan, pubic hair, hairy ass, (large penis:1.3), petite, small body, child, (shota:1.5), femboy, otoko no ko, trap, slim"
+        acts: ["(anal object insertion:1.4), (dildo:1.3), dildo in anus", "(anal object insertion:1.4), (butt plug:1.3)", "(anal object insertion:1.4), (vibrator:1.2), vibrator in anus", "(anal object insertion:1.4), (anal beads:1.2)"]
+        axes:
+          view: ["close-up, from behind, all fours, ass up", "close-up, from behind, bent over, kneeling", "close-up, lying on back, legs up, spread legs, from below"]
+      - id: f0_pegging4
+        title: "КОНТРОЛЬ фемдом без LoRA: pegging4"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "1girl, 1boy, hetero, femdom, {look}, {act}, {view}, (black strap-on:1.3), black dildo, strap-on harness, breasts, cleavage, long hair, {grip}, {hand}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male wearing strap-on, girl on all fours, female pegged, vaginal, penis in pussy, (muscular female:1.4), (muscular male:1.3), abs, (dark-skinned male:1.4), flesh-colored dildo, realistic dildo, flat chest, tomboy, gloves"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), strap-on, anal, deep penetration", "(pegging:1.2), strap-on, harness, anal"]
+        axes:
+          view: ["from side, man on all fours, girl kneeling behind him", "from side, man bent over bed, girl standing behind him", "from side, man lying on back, legs up, girl kneeling between his legs"]
+          grip: ["hands on another's hips", "hand on another's ass", "hands on another's thighs"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: f15_pegging4
+        title: "КОНТРОЛЬ фемдом tc_femdom.safetensors:0.4: pegging4"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom.safetensors:0.4"
+        prompt: "tc_femdom, 1girl, 1boy, hetero, femdom, {look}, {act}, {view}, (black strap-on:1.3), black dildo, strap-on harness, breasts, cleavage, long hair, {grip}, {hand}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male wearing strap-on, girl on all fours, female pegged, vaginal, penis in pussy, (muscular female:1.4), (muscular male:1.3), abs, (dark-skinned male:1.4), flesh-colored dildo, realistic dildo, flat chest, tomboy, gloves"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), strap-on, anal, deep penetration", "(pegging:1.2), strap-on, harness, anal"]
+        axes:
+          view: ["from side, man on all fours, girl kneeling behind him", "from side, man bent over bed, girl standing behind him", "from side, man lying on back, legs up, girl kneeling between his legs"]
+          grip: ["hands on another's hips", "hand on another's ass", "hands on another's thighs"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: f10_pegging4
+        title: "КОНТРОЛЬ фемдом tc_femdom-1000.safetensors:0.6: pegging4"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-1000.safetensors:0.6"
+        prompt: "tc_femdom, 1girl, 1boy, hetero, femdom, {look}, {act}, {view}, (black strap-on:1.3), black dildo, strap-on harness, breasts, cleavage, long hair, {grip}, {hand}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male wearing strap-on, girl on all fours, female pegged, vaginal, penis in pussy, (muscular female:1.4), (muscular male:1.3), abs, (dark-skinned male:1.4), flesh-colored dildo, realistic dildo, flat chest, tomboy, gloves"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), strap-on, anal, deep penetration", "(pegging:1.2), strap-on, harness, anal"]
+        axes:
+          view: ["from side, man on all fours, girl kneeling behind him", "from side, man bent over bed, girl standing behind him", "from side, man lying on back, legs up, girl kneeling between his legs"]
+          grip: ["hands on another's hips", "hand on another's ass", "hands on another's thighs"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: f5_pegging4
+        title: "КОНТРОЛЬ фемдом tc_femdom-500.safetensors:0.8: pegging4"
+        count: 16
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_femdom-500.safetensors:0.8"
+        prompt: "tc_femdom, 1girl, 1boy, hetero, femdom, {look}, {act}, {view}, (black strap-on:1.3), black dildo, strap-on harness, breasts, cleavage, long hair, {grip}, {hand}, {state}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male wearing strap-on, girl on all fours, female pegged, vaginal, penis in pussy, (muscular female:1.4), (muscular male:1.3), abs, (dark-skinned male:1.4), flesh-colored dildo, realistic dildo, flat chest, tomboy, gloves"
+        acts: ["(pegging:1.3), strap-on, anal", "(pegging:1.3), strap-on, anal, deep penetration", "(pegging:1.2), strap-on, harness, anal"]
+        axes:
+          view: ["from side, man on all fours, girl kneeling behind him", "from side, man bent over bed, girl standing behind him", "from side, man lying on back, legs up, girl kneeling between his legs"]
+          grip: ["hands on another's hips", "hand on another's ass", "hands on another's thighs"]
+          state: ["erection, precum", "handsfree ejaculation, cum, cumdrip"]
+      - id: pm_side2
+        title: "ПРОСТАТА с чужой LoRA на весе 0.4: вид сбоку"
+        count: 300
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,ProstateMilking_IL_V1_0.safetensors:0.4"
+        prompt: "1girl, 1boy, hetero, femdom, {look}, breasts, finger stimulate prostate, anal fingering, reach-around, from side, {act}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair"
+        acts: ["handjob, boy on all fours", "handjob, boy bent over", "boy on all fours, hand on another's ass"]
+        axes:
+          view: ["girl kneeling behind him", "girl kneeling beside him", "girl standing behind him"]
+      - id: pm_side3
+        title: "ПРОСТАТА с чужой LoRA на весе 0.55: вид сбоку"
+        count: 300
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,ProstateMilking_IL_V1_0.safetensors:0.55"
+        prompt: "1girl, 1boy, hetero, femdom, {look}, breasts, finger stimulate prostate, anal fingering, reach-around, from side, {act}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair"
+        acts: ["handjob, boy on all fours", "handjob, boy bent over", "boy on all fours, hand on another's ass"]
+        axes:
+          view: ["girl kneeling behind him", "girl kneeling beside him", "girl standing behind him"]
+      - id: x_otk
+        title: "ПРОБА рука в нём: он у неё на коленях (как шлепки)"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, breasts, boy over girl's lap, over the knee, girl sitting, bare ass, male ass, {act}, (male penetrated:1.2), {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves"
+        acts: ["(anal fingering:1.4), finger in anus, (prostate milking:1.2)", "(anal fingering:1.4), fingering from behind, two fingers, lube", "(anal fisting:1.4), fisting, fist in anus, wrist", "(anal fisting:1.4), fisting, forearm, deep insertion"]
+        axes:
+          view: ["from side", "from above", "from behind, ass focus"]
+      - id: x_fpov
+        title: "ПРОБА рука в нём: её глазами, её руки от зрителя"
+        count: 300
+        prompt: "close-up, femdom, female pov, pov, pov hands, slender fingers, nail polish, {act}, (male penetrated:1.2), 1boy, male focus, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves, 1girl, (male hand:1.3), hairy arms"
+        acts: ["(anal fingering:1.4), finger in anus, (prostate milking:1.2)", "(anal fingering:1.4), fingering from behind, two fingers, lube", "(anal fisting:1.4), fisting, fist in anus, wrist", "(anal fisting:1.4), fisting, forearm, deep insertion"]
+        axes:
+          view: ["man on all fours, male ass, from behind", "man lying on back, male legs up, spread legs, from above", "man bent over, male ass, from behind"]
+      - id: x_face
+        title: "ПРОБА рука в нём: её лицо рядом с его задом"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {look}, girl beside boy, face next to ass, looking at viewer, smirk, hand on another's ass, {act}, (male penetrated:1.2), {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(futanari:1.5), penis on female, newhalf, (2boys:1.5), multiple boys, yaoi, male masturbation, female anal, female penetrated, vaginal, girl on all fours, (abs:1.3), (muscular male:1.3), (dark-skinned male:1.4), dark skin, pubic hair, gloves"
+        acts: ["(anal fingering:1.4), finger in anus, (prostate milking:1.2)", "(anal fingering:1.4), fingering from behind, two fingers, lube", "(anal fisting:1.4), fisting, fist in anus, wrist", "(anal fisting:1.4), fisting, forearm, deep insertion"]
+        axes:
+          view: ["close-up, from behind, boy on all fours, male ass", "close-up, from behind, boy bent over, male ass", "close-up, boy lying on side, male ass"]
+      - id: dildo11
+        title: "ДИЛДО В НЁМ 11: он один, его зад крупно, игрушка уже в нём, без рук"
+        count: 300
+        prompt: "1boy, solo, male focus, {act}, {view}, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), average build, thick thighs, large frame, ass focus, male ass, anus, testicles, arms out of frame, head out of frame, {hpenis}, {room}"
+        negative: "1girl, female, breasts, pussy, (2boys:1.5), multiple boys, yaoi, another person, hand, hands, (abs:1.3), (muscular male:1.4), bodybuilder, (dark skin:1.3), (dark-skinned male:1.4), tan, pubic hair, hairy ass, (large penis:1.3), petite, small body, child, (shota:1.5), femboy, otoko no ko, trap, slim"
+        acts: ["(anal object insertion:1.4), (dildo:1.3), dildo in anus", "(anal object insertion:1.4), (butt plug:1.3)", "(anal object insertion:1.4), (vibrator:1.2), vibrator in anus", "(anal object insertion:1.4), (anal beads:1.2)"]
+        axes:
+          view: ["close-up, from behind, all fours, ass up", "close-up, from behind, bent over, kneeling", "close-up, lying on back, legs up, spread legs, from below"]
+      - id: prostate11
+        title: "ПРОСТАТА 11: он один, в нём массажёр простаты / маленький вибратор"
+        count: 300
+        prompt: "1boy, solo, male focus, {act}, {view}, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), average build, thick thighs, large frame, ass focus, male ass, anus, testicles, arms out of frame, head out of frame, {hpenis}, {room}"
+        negative: "1girl, female, breasts, pussy, (2boys:1.5), multiple boys, yaoi, another person, hand, hands, (abs:1.3), (muscular male:1.4), bodybuilder, (dark skin:1.3), (dark-skinned male:1.4), tan, pubic hair, hairy ass, (large penis:1.3), petite, small body, child, (shota:1.5), femboy, otoko no ko, trap, slim"
+        acts: ["(anal object insertion:1.4), (prostate massager:1.3), sex toy, small toy in anus", "(anal object insertion:1.4), (vibrator:1.3), small vibrator in anus, remote control vibrator, wire", "(anal object insertion:1.4), (prostate massager:1.3), precum, dripping"]
+        axes:
+          view: ["close-up, from behind, all fours, ass up", "close-up, from behind, bent over, kneeling", "close-up, lying on back, legs up, spread legs, from below"]
+      - id: bigtoy1
+        title: "БОЛЬШАЯ ИГРУШКА 1 (вместо кулака): он один, огромный дилдо, растянуто"
+        count: 300
+        prompt: "1boy, solo, male focus, {act}, {view}, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), average build, thick thighs, large frame, ass focus, male ass, anus, testicles, arms out of frame, head out of frame, {hpenis}, {room}"
+        negative: "1girl, female, breasts, pussy, (2boys:1.5), multiple boys, yaoi, another person, hand, hands, (abs:1.3), (muscular male:1.4), bodybuilder, (dark skin:1.3), (dark-skinned male:1.4), tan, pubic hair, hairy ass, (large penis:1.3), petite, small body, child, (shota:1.5), femboy, otoko no ko, trap, slim"
+        acts: ["(anal object insertion:1.4), (huge dildo:1.4), (large insertion:1.3), stretched anus, gaping", "(anal object insertion:1.4), (huge dildo:1.3), thick dildo, deep insertion, stomach bulge", "(anal object insertion:1.4), (large butt plug:1.3), huge butt plug, stretched anus"]
+        axes:
+          view: ["close-up, from behind, all fours, ass up", "close-up, from behind, bent over, kneeling", "close-up, lying on back, legs up, spread legs, from below"]
       - id: spank_him
         title: "Шлепает его: красный зад"
         count: 80
@@ -153,6 +743,22 @@ concepts:
         axes:
           extra: ["{hand}, hand on another's thigh", "{hand}, holding key, key", "precum, dripping", "testicles"]
           view: ["lower body, head out of frame, standing, facing viewer", "lower body, sitting, spread legs", "lower body, lying on back, from above", "from side, lower body, standing"]
+      - id: cage2
+        title: "Клетка на нём (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo focus, male focus, close-up, {act}, {extra}, {view}, {hbody3}, nude male, {room}"
+        acts: ["(chastity cage:1.3)", "(chastity cage:1.3), padlock, locked", "(chastity cage:1.2), flat chastity cage", "(chastity cage:1.2), penis cage, chastity belt"]
+        axes:
+          extra: ["{hand}, hand on another's thigh", "{hand}, holding key, key", "precum, dripping", "testicles"]
+          view: ["lower body, head out of frame, standing, facing viewer", "lower body, sitting, spread legs", "lower body, lying on back, from above", "from side, lower body, standing"]
+      - id: cage3
+        title: "Клетка на нём (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo focus, male focus, close-up, {act}, {extra}, {view}, {hbody4}, nude male, {room}"
+        acts: ["(chastity cage:1.3)", "(chastity cage:1.3), padlock, locked", "(chastity cage:1.2), flat chastity cage", "(chastity cage:1.2), penis cage, chastity belt"]
+        axes:
+          extra: ["{hand}, hand on another's thigh", "{hand}, holding key, key", "precum, dripping", "testicles"]
+          view: ["lower body, head out of frame, standing, facing viewer", "lower body, sitting, spread legs", "lower body, lying on back, from above", "from side, lower body, standing"]
       - id: soft
         title: "Обмякший после (или не встал)"
         count: 80
@@ -161,10 +767,36 @@ concepts:
         axes:
           extra: ["after ejaculation, cum, cumdrip", "{hand}, penis grab", "{hand}, pointing", "sweat"]
           view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "lower body, standing, facing viewer", "from side, lower body, lying"]
+      - id: soft2
+        title: "Обмякший после (или не встал) (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo focus, male focus, close-up, {act}, {extra}, {view}, {hbody3}, {hpenis}, nude male, {room}"
+        acts: ["(flaccid:1.3)", "(flaccid:1.3), penis, foreskin, phimosis", "(flaccid:1.2), after sex, penis"]
+        axes:
+          extra: ["after ejaculation, cum, cumdrip", "{hand}, penis grab", "{hand}, pointing", "sweat"]
+          view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "lower body, standing, facing viewer", "from side, lower body, lying"]
+      - id: soft3
+        title: "Обмякший после (или не встал) (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo focus, male focus, close-up, {act}, {extra}, {view}, {hbody4}, {hpenis}, nude male, {room}"
+        acts: ["(flaccid:1.3)", "(flaccid:1.3), penis, foreskin, phimosis", "(flaccid:1.2), after sex, penis"]
+        axes:
+          extra: ["after ejaculation, cum, cumdrip", "{hand}, penis grab", "{hand}, pointing", "sweat"]
+          view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "lower body, standing, facing viewer", "from side, lower body, lying"]
       - id: cum_pants
         title: "Кончил в штаны: мокрое пятно, члена не видно"
         count: 100
         prompt: "1boy, solo focus, male focus, close-up, clothed male, {pants}, {act}, crotch focus, {extra}, {view}, {husband}, {room}"
+        acts: ["(cum stain:1.3), (wet spot:1.2), wet clothes", "(cum in clothes:1.3), wet spot, stained clothes", "(cum through clothes:1.3), wet pants, cum stain", "(wet pants:1.2), (cum stain:1.3), premature ejaculation"]
+        negative: "(penis:1.3), penis out, erection, nude male, open fly, testicles"
+        axes:
+          pants: ["(baggy pants:1.1)", "jeans", "sweatpants", "pants, belt"]
+          extra: ["cum through clothes", "{hand}, pointing", "hands on own knees", "dripping"]
+          view: ["lower body, head out of frame, sitting, spread legs", "lower body, standing, facing viewer", "lower body, standing, from above", "lower body, sitting, from side"]
+      - id: cum_pants2
+        title: "Кончил в штаны: мокрое пятно, члена не видно (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo focus, male focus, close-up, clothed male, {pants}, {act}, crotch focus, {extra}, {view}, {hbody3}, {room}"
         acts: ["(cum stain:1.3), (wet spot:1.2), wet clothes", "(cum in clothes:1.3), wet spot, stained clothes", "(cum through clothes:1.3), wet pants, cum stain", "(wet pants:1.2), (cum stain:1.3), premature ejaculation"]
         negative: "(penis:1.3), penis out, erection, nude male, open fly, testicles"
         axes:
@@ -191,6 +823,26 @@ concepts:
           act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
           view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
           state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: mouth2
+        title: "Его член у неё во рту: лицо крупно (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: mouth3
+        title: "Во рту 3: маленький бледный член"
+        count: 300
+        prompt: "1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
       - id: body
         title: "Его тело без неё: бледный, обычный, взрослый (без лица)"
         count: 120
@@ -200,6 +852,397 @@ concepts:
           dress: ["nude male, {hpenis}, flaccid", "nude male, {hpenis}, flaccid, navel", "clothed male, t-shirt, (baggy pants:1.1)", "topless male, boxers", "clothed male, t-shirt, jeans"]
           view: ["cowboy shot, standing, facing viewer, arms at sides", "lower body, standing, from side", "sitting, spread legs, lower body, facing viewer", "lying on back, from above, upper body, stomach", "standing, from behind, back, male ass"]
       # ---- round 2 (21.11)
+      - id: body2
+        title: "Его тело без неё: бледный, обычный, взрослый (без лица) (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo, male focus, head out of frame, {dress}, {view}, {hbody3}, {room}"
+        negative: "1girl, female, feminine, androgynous, otoko no ko, curvy, narrow waist, hands on own penis, male masturbation, erection"
+        axes:
+          dress: ["nude male, {hpenis}, flaccid", "nude male, {hpenis}, flaccid, navel", "clothed male, t-shirt, (baggy pants:1.1)", "topless male, boxers", "clothed male, t-shirt, jeans"]
+          view: ["cowboy shot, standing, facing viewer, arms at sides", "lower body, standing, from side", "sitting, spread legs, lower body, facing viewer", "lying on back, from above, upper body, stomach", "standing, from behind, back, male ass"]
+      # ---- round 2 (21.11)
+      - id: body3
+        title: "Его тело без неё: бледный, обычный, взрослый (без лица) (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo, male focus, head out of frame, {dress}, {view}, {hbody4}, {room}"
+        negative: "1girl, female, feminine, androgynous, otoko no ko, curvy, narrow waist, hands on own penis, male masturbation, erection"
+        axes:
+          dress: ["nude male, {hpenis}, flaccid", "nude male, {hpenis}, flaccid, navel", "clothed male, t-shirt, (baggy pants:1.1)", "topless male, boxers", "clothed male, t-shirt, jeans"]
+          view: ["cowboy shot, standing, facing viewer, arms at sides", "lower body, standing, from side", "sitting, spread legs, lower body, facing viewer", "lying on back, from above, upper body, stomach", "standing, from behind, back, male ass"]
+      # ---- round 2 (21.11)
+      - id: ruined3
+        title: "Впустую 3: он кончает без рук, её рука отдёрнута"
+        count: 150
+        prompt: "{who}, femdom, hetero, {act}, {gesture}, {view}, {hbody}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, 1girl, handjob, penis grab"
+        acts: ["(ruined orgasm:1.3), (handsfree ejaculation:1.2), cum, twitching penis", "(handsfree ejaculation:1.3), ejaculation, cumdrip, weak ejaculation", "(ruined orgasm:1.3), cumdrip, cum, dripping", "(handsfree ejaculation:1.3), (ruined orgasm:1.2), cum on stomach, erection"]
+        axes:
+          who: ["{h_pov}", "{h_povglove}", "{h_glove}"]
+          gesture: ["open hand, hand up", "open hand, hand up, spread fingers, cum on hand", "hands off, hand hovering"]
+          view: ["lower body, lying on back, from above", "close-up, lower body, lying on back", "from side, lower body, kneeling"]
+      - id: ruined5
+        title: "Впустую 3: он кончает без рук, её рука отдёрнута (муж 3: взрослый по телу, без волос в кадре)"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {gesture}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, 1girl, handjob, penis grab"
+        acts: ["(ruined orgasm:1.3), (handsfree ejaculation:1.2), cum, twitching penis", "(handsfree ejaculation:1.3), ejaculation, cumdrip, weak ejaculation", "(ruined orgasm:1.3), cumdrip, cum, dripping", "(handsfree ejaculation:1.3), (ruined orgasm:1.2), cum on stomach, erection"]
+        axes:
+          who: ["{h_pov}", "{h_povglove}", "{h_glove}"]
+          gesture: ["open hand, hand up", "open hand, hand up, spread fingers, cum on hand", "hands off, hand hovering"]
+          view: ["lower body, lying on back, from above", "close-up, lower body, lying on back", "from side, lower body, kneeling"]
+      - id: ruined6
+        title: "Впустую 6: муж 3, только лёжа, вид её глазами"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {gesture}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, 1girl, handjob, penis grab"
+        acts: ["(ruined orgasm:1.3), (handsfree ejaculation:1.2), cum, twitching penis", "(handsfree ejaculation:1.3), ejaculation, cumdrip, weak ejaculation", "(ruined orgasm:1.3), cumdrip, cum, dripping", "(handsfree ejaculation:1.3), (ruined orgasm:1.2), cum on stomach, erection"]
+        axes:
+          who: ["{h_pov}","{h_povglove}"]
+          gesture: ["open hand, hand up", "open hand, hand up, spread fingers, cum on hand", "hands off, hand hovering"]
+          view: ["lower body, lying on back, from above","close-up, lower body, lying on back"]
+      - id: ruined7
+        title: "Впустую 7: голая рука, её глазами"
+        count: 300
+        prompt: "{who}, femdom, hetero, {act}, {gesture}, {view}, {hbody3}, {hpenis}, {room}"
+        negative: "gloves, black gloves, latex gloves, elbow gloves, (male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, 1girl, handjob, penis grab"
+        acts: ["(ruined orgasm:1.3), (handsfree ejaculation:1.2), cum, twitching penis", "(handsfree ejaculation:1.3), ejaculation, cumdrip, weak ejaculation", "(ruined orgasm:1.3), cumdrip, cum, dripping", "(handsfree ejaculation:1.3), (ruined orgasm:1.2), cum on stomach, erection"]
+        axes:
+          who: ["{h_pov}","{h_pale}"]
+          gesture: ["open hand, hand up", "open hand, hand up, spread fingers, cum on hand", "hands off, hand hovering"]
+          view: ["lower body, lying on back, from above","close-up, lower body, lying on back"]
+      - id: ruined4
+        title: "Впустую 3: он кончает без рук, её рука отдёрнута (муж 2: взрослые признаки)"
+        count: 100
+        prompt: "{who}, femdom, hetero, {act}, {gesture}, {view}, {hbody2}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), muscular arm, veiny arm, hairy arm, futanari, 1girl, handjob, penis grab"
+        acts: ["(ruined orgasm:1.3), (handsfree ejaculation:1.2), cum, twitching penis", "(handsfree ejaculation:1.3), ejaculation, cumdrip, weak ejaculation", "(ruined orgasm:1.3), cumdrip, cum, dripping", "(handsfree ejaculation:1.3), (ruined orgasm:1.2), cum on stomach, erection"]
+        axes:
+          who: ["{h_pov}", "{h_povglove}", "{h_glove}"]
+          gesture: ["open hand, hand up", "open hand, hand up, spread fingers, cum on hand", "hands off, hand hovering"]
+          view: ["lower body, lying on back, from above", "close-up, lower body, lying on back", "from side, lower body, kneeling"]
+      - id: cage4
+        title: "Клетка 4: крупно, он лёжа, её рука"
+        count: 100
+        prompt: "close-up, femdom, {act}, 1boy, male focus, {view}, crotch focus, lower body, head out of frame, {hand}, {hbody3}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), standing, wide hips, female, 1girl, breasts, pussy, futanari"
+        acts: ["(chastity cage:1.3), male chastity, holding key, key", "(chastity cage:1.3), male chastity, finger on cage, teasing", "(chastity cage:1.3), flat chastity cage, padlock, key"]
+        axes:
+          view: ["lying on back, spread legs", "lying on back, knees up, from above", "sitting, spread legs, from above"]
+      - id: soft4
+        title: "Обмякший 4: крупно, он лёжа, её рука"
+        count: 100
+        prompt: "close-up, femdom, {act}, 1boy, male focus, {view}, crotch focus, lower body, head out of frame, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(male hand:1.3), (dark-skinned male:1.4), (2boys:1.4), standing, wide hips, female, 1girl, breasts, pussy, futanari, erection"
+        acts: ["flaccid, soft penis, (small penis:1.2), finger on penis", "flaccid, soft penis, lifting penis, two fingers, pinching", "flaccid, small penis, hand on another's thigh"]
+        axes:
+          view: ["lying on back, spread legs", "lying on back, knees up, from above", "sitting, spread legs, from above"]
+      - id: handjob4
+        title: "Её рука на члене 4: она за кадром по шею, рука идёт от неё"
+        count: 300
+        prompt: "1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: ruined8
+        title: "Впустую 8: она за кадром по шею, её раскрытые ладони, он кончает без рук"
+        count: 300
+        prompt: "1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {gesture}, {view}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari, handjob, penis grab"
+        acts: ["(ruined orgasm:1.3), (handsfree ejaculation:1.2), cum, twitching penis", "(handsfree ejaculation:1.3), ejaculation, cumdrip, weak ejaculation", "(ruined orgasm:1.3), cumdrip, cum, dripping"]
+        axes:
+          gesture: ["open hands, hands up, palms", "hands off, hands raised, w arms", "hands on own thighs, smirk"]
+          view: ["man lying on back, spread legs, from above", "close-up, man lying on back, lower body"]
+      - id: cage5
+        title: "Клетка 5: он один, без рук, сидя или лёжа"
+        count: 300
+        prompt: "1boy, solo, male focus, close-up, {act}, {view}, crotch focus, lower body, head out of frame, arms out of frame, {hbody3}, {room}"
+        negative: "(2boys:1.5), multiple boys, yaoi, another person, 1girl, hand, hands, (male hand:1.3), (dark-skinned male:1.4), futanari, breasts, pussy, wide hips, standing"
+        acts: ["(chastity cage:1.3), male chastity", "(chastity cage:1.3), male chastity, padlock", "(chastity cage:1.3), flat chastity cage, precum"]
+        axes:
+          view: ["lying on back, spread legs, from above", "sitting, spread legs, from above", "lying on back, knees up"]
+      - id: soft5
+        title: "Обмякший 5: он один, без рук, сидя или лёжа"
+        count: 300
+        prompt: "1boy, solo, male focus, close-up, {act}, {view}, crotch focus, lower body, head out of frame, arms out of frame, {hbody3}, {hpenis}, {room}"
+        negative: "(2boys:1.5), multiple boys, yaoi, another person, 1girl, hand, hands, (male hand:1.3), (dark-skinned male:1.4), futanari, breasts, pussy, wide hips, standing, erection"
+        acts: ["flaccid, soft penis, (small penis:1.2)", "flaccid, soft penis, (small penis:1.2), after sex, cumdrip", "flaccid, small penis, foreskin, phimosis"]
+        axes:
+          view: ["lying on back, spread legs, from above", "sitting, spread legs, from above", "lying on back, knees up"]
+      - id: ctl_hand_0
+        title: "КОНТРОЛЬ LoRA вставок мужа: hand, вес 0"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: ctl_hand_04
+        title: "КОНТРОЛЬ LoRA вставок мужа: hand, вес 0.4"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.4"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: ctl_hand_06
+        title: "КОНТРОЛЬ LoRA вставок мужа: hand, вес 0.6"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: ctl_hand_08
+        title: "КОНТРОЛЬ LoRA вставок мужа: hand, вес 0.8"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: ctl_mouth_0
+        title: "КОНТРОЛЬ LoRA вставок мужа: mouth, вес 0"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: ctl_mouth_04
+        title: "КОНТРОЛЬ LoRA вставок мужа: mouth, вес 0.4"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.4"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: ctl_mouth_06
+        title: "КОНТРОЛЬ LoRA вставок мужа: mouth, вес 0.6"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: ctl_mouth_08
+        title: "КОНТРОЛЬ LoRA вставок мужа: mouth, вес 0.8"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: ctl_foot_0
+        title: "КОНТРОЛЬ LoRA вставок мужа: foot, вес 0"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "precum, 1girl, 1boy, hetero, femdom, {act}, {view}, (small feet:1.2), feet, (mature female:1.2), curvy, shapely legs, smooth legs, feminine legs, lower legs, feet focus, barefoot, black toenails, girl out of frame, female legs only, (faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (petite:1.4), (flat chest:1.4), skinny, thin legs, small body, (loli:1.5), child, (thick thighs:1.4), (muscular legs:1.4), thick calves, muscular calves, large legs, leg hair, hairy legs, male legs, (muscular female:1.3), (large feet:1.4), big feet, long feet, long toes, (futanari:1.5), penis on female, newhalf, girl with penis, female crotch, pussy, spread legs female, (2boys:1.5), yaoi, (dark-skinned male:1.4), male feet"
+        acts: ["(footjob:1.3), two-footed footjob, soles", "(footjob:1.3), one foot, foot on penis, stepping on penis", "(footjob:1.2), toes, penis between feet"]
+        axes:
+          view: ["close-up, man lying on back, lower body, from above", "close-up, from side, man lying on back", "pov, man sitting, spread legs, from above"]
+      - id: ctl_foot_04
+        title: "КОНТРОЛЬ LoRA вставок мужа: foot, вес 0.4"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.4"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, femdom, {act}, {view}, (small feet:1.2), feet, (mature female:1.2), curvy, shapely legs, smooth legs, feminine legs, lower legs, feet focus, barefoot, black toenails, girl out of frame, female legs only, (faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (petite:1.4), (flat chest:1.4), skinny, thin legs, small body, (loli:1.5), child, (thick thighs:1.4), (muscular legs:1.4), thick calves, muscular calves, large legs, leg hair, hairy legs, male legs, (muscular female:1.3), (large feet:1.4), big feet, long feet, long toes, (futanari:1.5), penis on female, newhalf, girl with penis, female crotch, pussy, spread legs female, (2boys:1.5), yaoi, (dark-skinned male:1.4), male feet"
+        acts: ["(footjob:1.3), two-footed footjob, soles", "(footjob:1.3), one foot, foot on penis, stepping on penis", "(footjob:1.2), toes, penis between feet"]
+        axes:
+          view: ["close-up, man lying on back, lower body, from above", "close-up, from side, man lying on back", "pov, man sitting, spread legs, from above"]
+      - id: ctl_foot_06
+        title: "КОНТРОЛЬ LoRA вставок мужа: foot, вес 0.6"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, femdom, {act}, {view}, (small feet:1.2), feet, (mature female:1.2), curvy, shapely legs, smooth legs, feminine legs, lower legs, feet focus, barefoot, black toenails, girl out of frame, female legs only, (faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (petite:1.4), (flat chest:1.4), skinny, thin legs, small body, (loli:1.5), child, (thick thighs:1.4), (muscular legs:1.4), thick calves, muscular calves, large legs, leg hair, hairy legs, male legs, (muscular female:1.3), (large feet:1.4), big feet, long feet, long toes, (futanari:1.5), penis on female, newhalf, girl with penis, female crotch, pussy, spread legs female, (2boys:1.5), yaoi, (dark-skinned male:1.4), male feet"
+        acts: ["(footjob:1.3), two-footed footjob, soles", "(footjob:1.3), one foot, foot on penis, stepping on penis", "(footjob:1.2), toes, penis between feet"]
+        axes:
+          view: ["close-up, man lying on back, lower body, from above", "close-up, from side, man lying on back", "pov, man sitting, spread legs, from above"]
+      - id: ctl_foot_08
+        title: "КОНТРОЛЬ LoRA вставок мужа: foot, вес 0.8"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, femdom, {act}, {view}, (small feet:1.2), feet, (mature female:1.2), curvy, shapely legs, smooth legs, feminine legs, lower legs, feet focus, barefoot, black toenails, girl out of frame, female legs only, (faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (petite:1.4), (flat chest:1.4), skinny, thin legs, small body, (loli:1.5), child, (thick thighs:1.4), (muscular legs:1.4), thick calves, muscular calves, large legs, leg hair, hairy legs, male legs, (muscular female:1.3), (large feet:1.4), big feet, long feet, long toes, (futanari:1.5), penis on female, newhalf, girl with penis, female crotch, pussy, spread legs female, (2boys:1.5), yaoi, (dark-skinned male:1.4), male feet"
+        acts: ["(footjob:1.3), two-footed footjob, soles", "(footjob:1.3), one foot, foot on penis, stepping on penis", "(footjob:1.2), toes, penis between feet"]
+        axes:
+          view: ["close-up, man lying on back, lower body, from above", "close-up, from side, man lying on back", "pov, man sitting, spread legs, from above"]
+      - id: ctl_soft_0
+        title: "КОНТРОЛЬ LoRA вставок мужа: soft, вес 0"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7"
+        prompt: "precum, 1boy, solo, male focus, close-up, {act}, {view}, crotch focus, lower body, head out of frame, arms out of frame, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (2boys:1.5), multiple boys, yaoi, another person, 1girl, hand, hands, (male hand:1.3), (dark-skinned male:1.4), futanari, breasts, pussy, wide hips, standing, erection"
+        acts: ["flaccid, soft penis, (small penis:1.2)", "flaccid, soft penis, (small penis:1.2), after sex, cumdrip", "flaccid, small penis, foreskin, phimosis"]
+        axes:
+          view: ["lying on back, spread legs, from above", "sitting, spread legs, from above", "lying on back, knees up"]
+      - id: ctl_soft_04
+        title: "КОНТРОЛЬ LoRA вставок мужа: soft, вес 0.4"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.4"
+        prompt: "tc_hisclose, precum, 1boy, solo, male focus, close-up, {act}, {view}, crotch focus, lower body, head out of frame, arms out of frame, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (2boys:1.5), multiple boys, yaoi, another person, 1girl, hand, hands, (male hand:1.3), (dark-skinned male:1.4), futanari, breasts, pussy, wide hips, standing, erection"
+        acts: ["flaccid, soft penis, (small penis:1.2)", "flaccid, soft penis, (small penis:1.2), after sex, cumdrip", "flaccid, small penis, foreskin, phimosis"]
+        axes:
+          view: ["lying on back, spread legs, from above", "sitting, spread legs, from above", "lying on back, knees up"]
+      - id: ctl_soft_06
+        title: "КОНТРОЛЬ LoRA вставок мужа: soft, вес 0.6"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1boy, solo, male focus, close-up, {act}, {view}, crotch focus, lower body, head out of frame, arms out of frame, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (2boys:1.5), multiple boys, yaoi, another person, 1girl, hand, hands, (male hand:1.3), (dark-skinned male:1.4), futanari, breasts, pussy, wide hips, standing, erection"
+        acts: ["flaccid, soft penis, (small penis:1.2)", "flaccid, soft penis, (small penis:1.2), after sex, cumdrip", "flaccid, small penis, foreskin, phimosis"]
+        axes:
+          view: ["lying on back, spread legs, from above", "sitting, spread legs, from above", "lying on back, knees up"]
+      - id: ctl_soft_08
+        title: "КОНТРОЛЬ LoRA вставок мужа: soft, вес 0.8"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1boy, solo, male focus, close-up, {act}, {view}, crotch focus, lower body, head out of frame, arms out of frame, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (2boys:1.5), multiple boys, yaoi, another person, 1girl, hand, hands, (male hand:1.3), (dark-skinned male:1.4), futanari, breasts, pussy, wide hips, standing, erection"
+        acts: ["flaccid, soft penis, (small penis:1.2)", "flaccid, soft penis, (small penis:1.2), after sex, cumdrip", "flaccid, small penis, foreskin, phimosis"]
+        axes:
+          view: ["lying on back, spread legs, from above", "sitting, spread legs, from above", "lying on back, knees up"]
+      - id: c5_hand_06
+        title: "КОНТРОЛЬ tc_hisclose-500 вес 0.6: hand"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-500.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: c5_hand_08
+        title: "КОНТРОЛЬ tc_hisclose-500 вес 0.8: hand"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-500.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: c10_hand_06
+        title: "КОНТРОЛЬ tc_hisclose-1000 вес 0.6: hand"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-1000.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: c10_hand_08
+        title: "КОНТРОЛЬ tc_hisclose-1000 вес 0.8: hand"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-1000.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, hetero, {look}, head out of frame, kneeling, between legs, leaning forward, cleavage, pov, {act}, {view}, {state}, {hand}, {hbody3}, {hpenis}, {room}"
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (male masturbation:1.4), masturbation, (male hand:1.4), own hands, hand on own penis, (2boys:1.5), multiple boys, yaoi, (dark-skinned male:1.4), gloves, futanari"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), two fingers, pinching, small penis humiliation", "(handjob:1.3), stroking, foreskin", "(handjob:1.2), fingertips, glans, teasing"]
+        axes:
+          view: ["man lying on back, spread legs, from above", "man sitting, spread legs, from above", "close-up, man lying on back, lower body"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: c5_mouth_06
+        title: "КОНТРОЛЬ tc_hisclose-500 вес 0.6: mouth"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-500.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: c5_mouth_08
+        title: "КОНТРОЛЬ tc_hisclose-500 вес 0.8: mouth"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-500.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: c10_mouth_06
+        title: "КОНТРОЛЬ tc_hisclose-1000 вес 0.6: mouth"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-1000.safetensors:0.6"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: c10_mouth_08
+        title: "КОНТРОЛЬ tc_hisclose-1000 вес 0.8: mouth"
+        count: 12
+        loras: "sdxl_lightning_8step_lora.safetensors:1,sora_v2-000010.safetensors:0.7,tc_hisclose-1000.safetensors:0.8"
+        prompt: "tc_hisclose, precum, 1girl, 1boy, {look}, close-up, hetero, {act}, {act}, {view}, {state}, {hbody3}, {hpenis}, (small penis:1.5), (pale penis:1.3), (pale-skinned male:1.4), short penis, foreskin"
+        acts: ["(fellatio:1.3), penis in mouth", "(fellatio:1.3), oral, sucking, penis in mouth", "(licking penis:1.3), tongue, glans", "(fellatio:1.2), kissing penis, glans"]
+        negative: "(dark-skinned male:1.4), dark skin, tan, (abs:1.3), muscular male, muscular, (veiny penis:1.3), pubic hair, male pubic hair, (large penis:1.4), leg hair, (large penis:1.5), (huge penis:1.5), long penis, (dark penis:1.5), (dark-skinned male:1.5), dark skin, tan, veiny penis, interracial, (2boys:1.4), yaoi, (2boys:1.3), penis on female, breasts out"
+        axes:
+          act: ["lips, looking up", "licking penis, tongue out", "eyes closed, lips", "looking at viewer, bored, half-closed eyes"]
+          view: ["from side, faceless male", "pov, from above", "from below, faceless male", "portrait, from side"]
+          state: ["saliva", "cum in mouth, cum on lips", "precum, saliva trail", "saliva, lips"]
+      - id: bulge3
+        title: "Бугор 3: он один, без рук"
+        count: 300
+        prompt: "1boy, solo, male focus, close-up, {act}, {pants}, {view}, clothed male, crotch focus, lower body, head out of frame, arms out of frame, mature male"
+        negative: "(2boys:1.5), multiple boys, yaoi, another person, 1girl, hand, hands, (male hand:1.3), (dark-skinned male:1.4), futanari, breasts, pussy, wide hips, penis, exposed penis, open fly"
+        acts: ["(bulge:1.0), erection under clothes", "(erection under clothes:1.1), bulge, wet spot", "(bulge:0.9), (wet spot:1.2)"]
+        axes:
+          pants: ["(baggy pants:1.2)", "sweatpants, loose clothes", "pants, belt, loose clothes"]
+          view: ["standing, facing viewer", "sitting, spread legs, from above", "lying on back, from above"]
+      - id: foot3
+        title: "Её нога 3: только её ноги, без её паха"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {act}, {view}, (small feet:1.2), feet, slender legs, barefoot, black toenails, girl out of frame, female legs only, {hbody3}, {hpenis}, {room}"
+        negative: "(large feet:1.4), big feet, long feet, long toes, (futanari:1.5), penis on female, newhalf, girl with penis, female crotch, pussy, spread legs female, (2boys:1.5), yaoi, (dark-skinned male:1.4), male feet"
+        acts: ["(footjob:1.3), two-footed footjob, soles", "(footjob:1.3), one foot, foot on penis, stepping on penis", "(footjob:1.2), toes, penis between feet"]
+        axes:
+          view: ["close-up, man lying on back, lower body, from above", "close-up, from side, man lying on back", "pov, man sitting, spread legs, from above"]
+      - id: foot4
+        title: "ЕГО нога 4: тонкие женские ноги, без толстых бёдер и икр"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {act}, {view}, (small feet:1.2), feet, (slender legs:1.3), (thin legs:1.2), slim thighs, thin calves, smooth legs, feminine legs, barefoot, black toenails, girl out of frame, female legs only, (faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, {hpenis}, {room}"
+        negative: "(thick thighs:1.4), (muscular legs:1.4), thick calves, muscular calves, large legs, leg hair, hairy legs, male legs, (muscular female:1.3), (large feet:1.4), big feet, long feet, long toes, (futanari:1.5), penis on female, newhalf, girl with penis, female crotch, pussy, spread legs female, (2boys:1.5), yaoi, (dark-skinned male:1.4), male feet"
+        acts: ["(footjob:1.3), two-footed footjob, soles", "(footjob:1.3), one foot, foot on penis, stepping on penis", "(footjob:1.2), toes, penis between feet"]
+        axes:
+          view: ["close-up, man lying on back, lower body, from above", "close-up, from side, man lying on back", "pov, man sitting, spread legs, from above"]
+      - id: foot5
+        title: "ЕГО нога 5: взрослые женские ноги (не толстые и не тонкие), только голени и ступни"
+        count: 300
+        prompt: "1girl, 1boy, hetero, femdom, {act}, {view}, (small feet:1.2), feet, (mature female:1.2), curvy, shapely legs, smooth legs, feminine legs, lower legs, feet focus, barefoot, black toenails, girl out of frame, female legs only, (faceless male:1.2), head out of frame, (mature male:1.3), adult, (pale-skinned male:1.4), (pale skin:1.3), white skin, average build, {hpenis}, {room}"
+        negative: "(petite:1.4), (flat chest:1.4), skinny, thin legs, small body, (loli:1.5), child, (thick thighs:1.4), (muscular legs:1.4), thick calves, muscular calves, large legs, leg hair, hairy legs, male legs, (muscular female:1.3), (large feet:1.4), big feet, long feet, long toes, (futanari:1.5), penis on female, newhalf, girl with penis, female crotch, pussy, spread legs female, (2boys:1.5), yaoi, (dark-skinned male:1.4), male feet"
+        acts: ["(footjob:1.3), two-footed footjob, soles", "(footjob:1.3), one foot, foot on penis, stepping on penis", "(footjob:1.2), toes, penis between feet"]
+        axes:
+          view: ["close-up, man lying on back, lower body, from above", "close-up, from side, man lying on back", "pov, man sitting, spread legs, from above"]
       - id: handjob2
         title: "Её рука на его члене 2 (маленький бледный член, её рука)"
         count: 100
@@ -208,6 +1251,16 @@ concepts:
         acts: ["(handjob:1.3), penis grab", "(handjob:1.3), fingers, glans, small penis humiliation", "(handjob:1.2), two fingers, small penis humiliation", "(handjob:1.3), stroking, foreskin"]
         axes:
           who: ["{h_pov}", "{h_glove}", "{h_pale}", "{h_full}"]
+          view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "from side, lower body, standing"]
+          state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
+      - id: handjob3
+        title: "Её рука на члене 3: голая рука"
+        count: 300
+        prompt: "{who}, close-up, hetero, {act}, {view}, {state}, {husband}, {hpenis}, {room}"
+        negative: "gloves, black gloves, latex gloves, elbow gloves, (male hand:1.3), (dark-skinned male:1.3), (2boys:1.4)"
+        acts: ["(handjob:1.3), penis grab", "(handjob:1.3), fingers, glans, small penis humiliation", "(handjob:1.2), two fingers, small penis humiliation", "(handjob:1.3), stroking, foreskin"]
+        axes:
+          who: ["{h_pov}","{h_pale}"]
           view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "from side, lower body, standing"]
           state: ["erection, precum", "erection, (precum:1.3), precum string", "ejaculation, cum, cum on hand"]
       - id: ruined2
@@ -235,6 +1288,16 @@ concepts:
         title: "Её нога на его члене"
         count: 60
         prompt: "1boy, solo focus, male focus, close-up, hetero, femdom, (footjob:1.3), feet, soles, toes, black toenails, {view}, {state}, {husband}, {hpenis}, {room}"
+        axes:
+          view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "pov, lower body", "from side, lower body"]
+          state: ["erection, precum", "ejaculation, cum on feet", "two-footed footjob, erection", "stepping on penis, erection"]
+
+  # ---------------------------------------------------------------- 3
+  # two ways to show the inside: through the skin (Alexey's favourite) and as a side window; one LoRA, told apart by their own tags
+      - id: foot2
+        title: "Её нога на его члене (РјСѓР¶ 3)"
+        count: 100
+        prompt: "1boy, solo focus, male focus, close-up, hetero, femdom, (footjob:1.3), feet, soles, toes, black toenails, {view}, {state}, {hbody3}, {hpenis}, {room}"
         axes:
           view: ["lower body, head out of frame, sitting, spread legs", "lower body, lying on back, from above", "pov, lower body", "from side, lower body"]
           state: ["erection, precum", "ejaculation, cum on feet", "two-footed footjob, erection", "stepping on penis, erection"]
@@ -278,6 +1341,33 @@ concepts:
         negative: "cross-section, inset, multiple views, 1boy, penis, male"
         axes:
           where: ["vaginal object insertion, stomach bulge", "anal object insertion"]
+          pose: ["lying on back, spread legs, from above, lower body", "squatting, facing viewer, lower body", "lying on side, facing viewer", "standing, lower body, navel"]
+      - id: thru_anal2
+        title: "СКВОЗЬ ТЕЛО: анально 2 - без матки, прямая кишка"
+        count: 100
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, (rectum:1.2), intestines, {act}, deep penetration, {fin}, {pose}, {patron}, {room}"
+        acts: ["(see-through body:1.3), (x-ray:1.2), penis visible through skin", "(x-ray:1.4), internal, penis visible through skin, see-through body", "(see-through body:1.4), translucent skin, penis shadow", "(see-through body:1.2), (x-ray:1.2)"]
+        negative: "(uterus:1.5), (womb:1.4), cervix, ovaries, fallopian tubes, uterus outline, womb tattoo, pubic tattoo, cross-section, inset, multiple views, vaginal, penis in pussy"
+        axes:
+          pose: ["doggystyle, from side, all fours, stomach", "reverse cowgirl position, facing viewer, lower body, navel", "lying on side, spooning, facing viewer, stomach", "standing sex, sex from behind, from side"]
+          fin: ["sweat", "internal cumshot, cum in ass, cum overflow"]
+      - id: thru_anal3
+        title: "СКВОЗЬ ТЕЛО: анально 3 - без матки и без кишок"
+        count: 100
+        prompt: "1girl, 1boy, {look}, nude, hetero, sex, (anal:1.3), penis in ass, {act}, deep penetration, {fin}, {pose}, {patron}, {room}"
+        acts: ["(see-through body:1.3), (x-ray:1.2), penis visible through skin", "(x-ray:1.4), internal, penis visible through skin, see-through body", "(see-through body:1.4), translucent skin, penis shadow", "(see-through body:1.2), (x-ray:1.2)"]
+        negative: "(intestines:1.4), guts, organs, internal organs, (uterus:1.5), (womb:1.4), cervix, ovaries, fallopian tubes, uterus outline, womb tattoo, pubic tattoo, cross-section, inset, multiple views, vaginal, penis in pussy"
+        axes:
+          pose: ["doggystyle, from side, all fours, stomach", "reverse cowgirl position, facing viewer, lower body, navel", "lying on side, spooning, facing viewer, stomach", "standing sex, sex from behind, from side"]
+          fin: ["sweat", "internal cumshot, cum in ass, cum overflow"]
+      - id: thru_toy_anal
+        title: "СКВОЗЬ ТЕЛО: игрушка в попе - без матки"
+        count: 80
+        prompt: "1girl, solo, {look}, nude, {act}, (dildo:1.2), {where}, {pose}, pussy juice, {room}"
+        acts: ["(see-through body:1.3), (x-ray:1.2)", "(x-ray:1.4), internal, see-through body", "(see-through body:1.4), translucent skin"]
+        negative: "(uterus:1.5), (womb:1.4), cervix, ovaries, fallopian tubes, uterus outline, womb tattoo, pubic tattoo, vaginal object insertion, cross-section, inset, multiple views, 1boy, penis, male"
+        axes:
+          where: ["(anal object insertion:1.3), dildo in ass, (rectum:1.2)", "(anal object insertion:1.3), anal beads, (rectum:1.2)"]
           pose: ["lying on back, spread legs, from above, lower body", "squatting, facing viewer, lower body", "lying on side, facing viewer", "standing, lower body, navel"]
       - id: inset_vag
         title: "Окошко: вагинально, без спермы"
@@ -353,6 +1443,43 @@ concepts:
           face: ["saliva, tears", "eyes closed, sweat", "looking up", "cum in mouth, cum in pussy"]
 
   # ---------------------------------------------------------------- 5
+  - id: figure
+    title: "ФИГУРА готки: четыре варианта тела на одном лице"
+    trigger: figtest
+    negative: "plump, fat, chubby, (huge breasts:1.3), large breasts, (huge ass:1.3), love handles, belly fat, muffin top, skindentation, thick waist, petite, flat chest, child, loli, muscular female, abs, 1boy, penis"
+    targets:
+      - id: fig_a
+        title: "Фигура A: slim, slender body, medium breasts, (narrow waist:1.3)"
+        count: 40
+        size: 832x1216
+        prompt: "1girl, solo, black hair, long hair, blunt bangs, purple eyes, tsurime, thick eyebrows, mascara, long eyelashes, lips, thick lips, black lipstick, eyeliner, pale skin, black choker, ear piercing, mature woman, slim, slender body, medium breasts, (narrow waist:1.3), {pose}, {wear}, {room}"
+        axes:
+          pose: ["standing, from behind, looking back, full body", "standing, facing viewer, cowboy shot, hand on hip", "bent over, from behind, ass focus, looking back", "all fours, from behind, top-down bottom-up", "lying on side, from front, full body", "kneeling, from side, arched back"]
+          wear: ["nude, nipples", "black lingerie, black panties, black bra", "(red dress:1.2), off-shoulder dress, short dress, dress lift, black panties", "(white shirt:1.2), dress shirt, (black skirt:1.1), pencil skirt, black pantyhose"]
+      - id: fig_b
+        title: "Фигура B: slender, medium breasts, (narrow waist:1.2), (wide hips:1.1), (ass vis"
+        count: 40
+        size: 832x1216
+        prompt: "1girl, solo, black hair, long hair, blunt bangs, purple eyes, tsurime, thick eyebrows, mascara, long eyelashes, lips, thick lips, black lipstick, eyeliner, pale skin, black choker, ear piercing, mature woman, slender, medium breasts, (narrow waist:1.2), (wide hips:1.1), (ass visible through thighs:1.2), thigh gap, hip bones, toned, {pose}, {wear}, {room}"
+        axes:
+          pose: ["standing, from behind, looking back, full body", "standing, facing viewer, cowboy shot, hand on hip", "bent over, from behind, ass focus, looking back", "all fours, from behind, top-down bottom-up", "lying on side, from front, full body", "kneeling, from side, arched back"]
+          wear: ["nude, nipples", "black lingerie, black panties, black bra", "(red dress:1.2), off-shoulder dress, short dress, dress lift, black panties", "(white shirt:1.2), dress shirt, (black skirt:1.1), pencil skirt, black pantyhose"]
+      - id: fig_c
+        title: "Фигура C: slender, small breasts, (narrow waist:1.2), (wide hips:1.2), (pear-sha"
+        count: 40
+        size: 832x1216
+        prompt: "1girl, solo, black hair, long hair, blunt bangs, purple eyes, tsurime, thick eyebrows, mascara, long eyelashes, lips, thick lips, black lipstick, eyeliner, pale skin, black choker, ear piercing, mature woman, slender, small breasts, (narrow waist:1.2), (wide hips:1.2), (pear-shaped figure:1.1), (ass visible through thighs:1.3), round ass, hip bones, {pose}, {wear}, {room}"
+        axes:
+          pose: ["standing, from behind, looking back, full body", "standing, facing viewer, cowboy shot, hand on hip", "bent over, from behind, ass focus, looking back", "all fours, from behind, top-down bottom-up", "lying on side, from front, full body", "kneeling, from side, arched back"]
+          wear: ["nude, nipples", "black lingerie, black panties, black bra", "(red dress:1.2), off-shoulder dress, short dress, dress lift, black panties", "(white shirt:1.2), dress shirt, (black skirt:1.1), pencil skirt, black pantyhose"]
+      - id: fig_d
+        title: "Фигура D: fit, medium breasts, (narrow waist:1.3), (wide hips:1.2), thick thighs"
+        count: 40
+        size: 832x1216
+        prompt: "1girl, solo, black hair, long hair, blunt bangs, purple eyes, tsurime, thick eyebrows, mascara, long eyelashes, lips, thick lips, black lipstick, eyeliner, pale skin, black choker, ear piercing, mature woman, fit, medium breasts, (narrow waist:1.3), (wide hips:1.2), thick thighs, (ass visible through thighs:1.2), bubble butt, hip bones, hip dips, {pose}, {wear}, {room}"
+        axes:
+          pose: ["standing, from behind, looking back, full body", "standing, facing viewer, cowboy shot, hand on hip", "bent over, from behind, ass focus, looking back", "all fours, from behind, top-down bottom-up", "lying on side, from front, full body", "kneeling, from side, arched back"]
+          wear: ["nude, nipples", "black lingerie, black panties, black bra", "(red dress:1.2), off-shoulder dress, short dress, dress lift, black panties", "(white shirt:1.2), dress shirt, (black skirt:1.1), pencil skirt, black pantyhose"]
   - id: sixty_nine
     title: "69: она сверху, оба ртом"
     trigger: pos69
@@ -380,6 +1507,28 @@ concepts:
           pose: ["girl on top, lying on person, upside-down, head between thighs", "girl on top, all fours, man lying on back, head between thighs", "lying on side, side-by-side, head between thighs"]
           view: ["from side", "from side, full body", "from above"]
           state: ["saliva, pussy juice", "licking, tongue"]
+      - id: husband69c
+        title: "69 с мужем 3: она сверху, бледный муж"
+        count: 150
+        size: 832x1216
+        prompt: "1girl, 1boy, {look}, nude, hetero, {act}, {pose}, {view}, licking, tongue, {husband}, {hpenis}, {skin}, {room}"
+        negative: "(dark-skinned male:1.5), (dark skin:1.4), tan, tanned male, interracial, large penis, huge penis"
+        acts: ["(69:1.4), fellatio, cunnilingus", "(69:1.3), (fellatio:1.2), (cunnilingus:1.2), licking pussy, penis in mouth", "(69:1.4), fellatio, cunnilingus, face in crotch, oral"]
+        axes:
+          pose: ["girl on top, lying on person, upside-down, head between thighs", "girl on top, all fours, man lying on back, head between thighs"]
+          view: ["from side", "from above", "from side, close-up"]
+          skin: ["pale skin, white skin", "(pale skin:1.3), (white skin:1.2), same skin color", "(pale:1.3), colored skin, white skin"]
+      - id: husband69d
+        title: "69 с мужем 3: она сверху, бледный муж (муж 2: взрослые признаки)"
+        count: 100
+        size: 832x1216
+        prompt: "1girl, 1boy, {look}, nude, hetero, {act}, {pose}, {view}, licking, tongue, {husband2}, {hpenis}, {skin}, {room}"
+        negative: "(dark-skinned male:1.5), (dark skin:1.4), tan, tanned male, interracial, large penis, huge penis"
+        acts: ["(69:1.4), fellatio, cunnilingus", "(69:1.3), (fellatio:1.2), (cunnilingus:1.2), licking pussy, penis in mouth", "(69:1.4), fellatio, cunnilingus, face in crotch, oral"]
+        axes:
+          pose: ["girl on top, lying on person, upside-down, head between thighs", "girl on top, all fours, man lying on back, head between thighs"]
+          view: ["from side", "from above", "from side, close-up"]
+          skin: ["pale skin, white skin", "(pale skin:1.3), (white skin:1.2), same skin color", "(pale:1.3), colored skin, white skin"]
       - id: patron69
         title: "69 с гостем"
         count: 150

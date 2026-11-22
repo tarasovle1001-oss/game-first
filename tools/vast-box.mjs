@@ -9,14 +9,14 @@
 //   node tools/vast-box.mjs status                    instance, GPUs, models, ComfyUI copies, logs tail
 //   node tools/vast-box.mjs tunnel [--port 18188]     ssh -L 127.0.0.1:<port> -> proxy 18999 (stays in foreground)
 //   node tools/vast-box.mjs stop | resume             let the GPU go and keep the disk / take it back (then up + tunnel)
-//   node tools/vast-box.mjs fetch --civitai <ver> --name <f>  another checkpoint onto the box
+//   node tools/vast-box.mjs fetch --civitai <ver> --name <f> [--lora]  another checkpoint (or, with --lora, a LoRA) onto the box
 //   node tools/vast-box.mjs push <file>...            copy files (LoRAs) into the box's ComfyUI models/loras
 //   node tools/vast-box.mjs down                      destroy the rented instance
 //   up --avoid <machine,...>: skip machines that failed before (night-run passes the one it just gave up on)
 // Progress of `up`: .vast-box.json (step, message, at) and console lines.
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 
 const argv = process.argv.slice(2);
@@ -158,15 +158,44 @@ else if (cmd === "push") {
   }
   save("push", `${files.length} file(s) on the box`);
 }
+else if (cmd === "sh") {
+  // run a local bash script on the box: sh <script.sh> [args...]; output goes to the console
+  const [file, ...all] = argv.slice(1);
+  const ti = all.indexOf("--timeout");
+  const rest = ti >= 0 ? [...all.slice(0, ti), ...all.slice(ti + 2)] : all;
+  const r = spawnSync("ssh", [...sshArgs(), "bash", "-s", "--", ...rest], { input: readFileSync(file, "utf8").replace(/\r\n/g, "\n"), stdio: ["pipe", "inherit", "inherit"], timeout: Number(opt("timeout", "3600")) * 1000 });
+  process.exit(r.status ?? 1);
+}
+else if (cmd === "pushdir") {
+  // a dataset folder onto the box: pushdir <folder> <name>  ->  /workspace/tr/data/<name>/
+  const [dir, name] = argv.slice(1);
+  if (!dir || !/^[\w-]+$/.test(name ?? "")) { console.log("pushdir <folder> <name>"); process.exit(1); }
+  const tarFile = join(tmpdir(), `tc-${name}.tar`);
+  let r = spawnSync("tar", ["-cf", tarFile, "-C", dir, "."], { stdio: "inherit" });
+  if (r.status !== 0) process.exit(1);
+  const a = sshArgs(); const target = a.pop(); const port = a.splice(a.indexOf("-p"), 2)[1];
+  r = spawnSync("scp", [...a, "-P", port, tarFile, `${target}:/workspace/tc-${name}.tar`], { stdio: "inherit", timeout: 30 * 60000 });
+  if (r.status !== 0) process.exit(1);
+  r = spawnSync("ssh", [...sshArgs(), `rm -rf /workspace/tr/data/${name} && mkdir -p /workspace/tr/data/${name} && tar -xf /workspace/tc-${name}.tar -C /workspace/tr/data/${name} && rm /workspace/tc-${name}.tar && ls /workspace/tr/data/${name} | wc -l`], { stdio: "inherit" });
+  process.exit(r.status ?? 1);
+}
+else if (cmd === "pull") {
+  // a file from the box: pull <remote path> <local path>
+  const [from, to] = argv.slice(1);
+  const a = sshArgs(); const target = a.pop(); const port = a.splice(a.indexOf("-p"), 2)[1];
+  const r = spawnSync("scp", [...a, "-P", port, `${target}:${from}`, to], { stdio: "inherit", timeout: 30 * 60000 });
+  process.exit(r.status ?? 1);
+}
 else if (cmd === "fetch") {
   // another checkpoint from Civitai onto the box, by version id: fetch --civitai 1887507 --name illumiyume_v35_vpred.safetensors
   const ver = opt("civitai"), name = opt("name");
   if (!ver || !name || !/^[\w.-]+\.safetensors$/.test(name)) { console.log("fetch --civitai <version id> --name <file>.safetensors"); process.exit(1); }
-  const dst = `/workspace/ComfyUI/models/checkpoints/${name}`;
+  const isLora = argv.includes("--lora");
+  const dst = `/workspace/ComfyUI/models/${isLora ? "loras" : "checkpoints"}/${name}`;
   remote(`import os,pathlib,subprocess,json
 env=dict(x.decode().split('=',1) for x in pathlib.Path('/proc/1/environ').read_bytes().split(b'\\0') if b'=' in x)
 p=pathlib.Path('${dst}')
-if not (p.exists() and p.stat().st_size>1e9):
+if not (p.exists() and p.stat().st_size>${isLora ? "1e7" : "1e9"}):
  sh="curl -fL --retry 4 -s -o '%s.part' 'https://civitai.com/api/download/models/${ver}?token=%s' && mv '%s.part' '%s' && echo DONE || echo FAILED"%(p,env.get('CIVITAI_TOKEN',''),p,p)
  subprocess.Popen(['bash','-c',sh],stdin=subprocess.DEVNULL,stdout=open('/workspace/tc-fetch.log','ab'),stderr=subprocess.STDOUT,start_new_session=True)
 print(json.dumps(dict(ok=True)))`);
