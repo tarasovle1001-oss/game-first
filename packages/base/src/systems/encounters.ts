@@ -5,8 +5,9 @@ import { actById, actOf, content } from "../content";
 import { outcomeOf, refusalWhy, setOutcome } from "./voice";
 import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import type { Encounter, Patron, Verdict, Visit } from "../state";
-import { fitOf, orgasm, pleasureFor, useBody } from "./body";
+import type { Encounter, Patron, Verdict, Visit, Zone } from "../state";
+import { entersZone, fitOf, orgasm, pleasureFor, sizeStage, stepsAbove, useBody } from "./body";
+import { settleSize } from "./taking";
 import { expectOf } from "./expectations";
 import { addHerTips } from "./economy";
 import { changeHeroine } from "./heroine";
@@ -320,9 +321,15 @@ export function advanceEncounter(ctx: Ctx) {
   ctx.log("log.enc.stays", { name, act: `act.${next.id}`, now: `act.${enc.act}` }, tags);
 }
 
-function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Verdict) {
+function accept(ctx: Ctx, v: Visit, p: Patron, asked: ConsentInput, verdict: Verdict) {
   const b = bs(ctx.state);
-  const act = actById(input.act);
+  // she said yes; whether a man his size gets in is another matter. If not, they find a way round it.
+  const warmth = b.encounter?.patron === p.id ? b.encounter.warm : undefined;
+  const wanted = actById(asked.act);
+  const zoneIn = entersZone(wanted);
+  const settled = settleSize(ctx, wanted, p.size, p.name, { warm: zoneIn ? (warmth?.[zoneIn] ?? 0) : 0, tags: husbandSees(ctx.state, asked.loc) || b.mode === "open" ? undefined : ["unseen"] });
+  const input = settled.act.id === asked.act ? asked : { ...asked, act: settled.act.id };
+  const act = settled.act;
   const eager = verdict === "eager";
   if (!isLight(actById(input.act)) || actById(input.act).tier >= 2) setOutcome(ctx, outcomeOf(verdict), p.id, husbandSees(ctx.state, herRoom(ctx.state)) || husbandSees(ctx.state, input.loc) || bs(ctx.state).mode === "open");
   const k = eager ? 1 : 0.5; // reluctant yes: she gets half of the good out of it
@@ -388,6 +395,11 @@ function accept(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput, verdict: Ver
     b.encounter.pleasure = useBody(ctx, act, p.size);
     b.encounter.hisRate = 100 / (act.minutes * (0.7 + ctx.rng.int(0, 60) / 100));
     p.memory.sizeKnown = true;
+    // what is done to a place now makes the next, bigger try in this scene likelier to work
+    const W = content.body.take;
+    const warms: Zone | null = zoneIn ?? (["fingering", "cunnilingus", "mutual_touching", "toy_on_her"].includes(act.id) ? "vagina" : act.id === "rimming_her" ? "anus" : null);
+    if (warms) b.encounter.warm = { ...b.encounter.warm, [warms]: Math.min(W.warmMax, (b.encounter.warm?.[warms] ?? 0) + W.warm) };
+    if (settled.take !== "fits") b.encounter.took = settled.take;
   }
 
   // a skilled hand or mouth is worth more to him
@@ -494,7 +506,7 @@ function herOwnMove(ctx: Ctx) {
   if (urge < H.urgeFrom || !ctx.rng.chance(Math.min(H.maxChance, (urge / 100) * H.chancePerMinute))) return;
   // whom: a man she likes; or a stranger, or a rough one, if that is her thing
   const drawn = (p: Patron) =>
-    p.memory.affinity + (h.tastes.types[p.type] ?? 0) * 0.5 + (h.latents.new_faces !== undefined && p.memory.visits <= 1 ? H.traitPull : 0) + (h.latents.likes_rough !== undefined && p.approach === "push" ? H.traitPull : 0) + (h.latents.size_queen !== undefined && p.memory.sizeKnown ? (p.size - b.husband.size) * 2 : 0);
+    p.memory.affinity + (h.tastes.types[p.type] ?? 0) * 0.5 + (h.latents.new_faces !== undefined && p.memory.visits <= 1 ? H.traitPull : 0) + (h.latents.likes_rough !== undefined && p.approach === "push" ? H.traitPull : 0) + (h.latents.size_queen !== undefined && p.memory.sizeKnown ? Math.min(30, (sizeStage(p.size) - sizeStage(b.husband.size)) * 4) : 0);
   const best = sh.visits
     .filter((v) => !v.blocked && (!v.away || room !== HALL) && v.out === undefined && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && (v.served > 0 || v.group) && roomOfGuest(ctx.state, v.patron) === room)
     .map((v) => ({ v, p: b.patrons[v.patron]!, pull: drawn(b.patrons[v.patron]!) }))
@@ -708,8 +720,11 @@ export function registerEncounters(api: ModApi) {
     if (p && !p.memory.sizeKnown) return null;
     const size = p ? p.size : bs(s).husband.size;
     const diff = size - fitOf(s, "vagina"); // against what she is used to by now
-    // with her husband it is habit and duty as much as wanting: his size counts for half
-    return clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap) * (p ? 1 : c.sizeHusband);
+    // curiosity pulls, as much as size matters to her; with her husband it is habit and duty as much as wanting: his size counts for half
+    const pull = clamp(diff * c.size * (0.4 + her(s).sizeTaste / 60), -c.sizeCap, c.sizeCap) * (p ? 1 : c.sizeHusband);
+    // ...and a body not ready for it holds back: every step he is above her, less for a woman who wants it
+    const fear = stepsAbove(s, zone, size) * content.body.take.fearPerStage * Math.max(0.2, 1 - her(s).sizeTaste / 100);
+    return pull - fear;
   });
   // him: her husband
   row("marital", 36, (_s, i, _a, p) => (p ? null : c.marital + (i.loc === "home.bedroom" ? c.maritalBed : 0)));

@@ -4,7 +4,7 @@ import type { Ctx, GameState, ModApi } from "@tc/core";
 import { actById, actOf, content } from "../content";
 import { bs, HUSBAND, WIFE } from "../state";
 import { onNightMinute, passNight } from "./rhythm";
-import { resolveBody } from "./body";
+import { resolveSized } from "./taking";
 import { addHerTips, addMoney } from "./economy";
 import { CONSENT_FORMULA, isIntimate, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
@@ -55,7 +55,7 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { mi
     changeHeroine(ctx, "arousal", act.effects.arousal, act.id);
     let hours = 0;
     if (isIntimate(act)) {
-      const out = resolveBody(ctx, act, { size: p.size, minutes: act.minutes });
+      const out = resolveSized(ctx, act, { size: p.size, minutes: act.minutes }, p.name);
       p.memory.sizeKnown = true;
       if (out.came) p.memory.orgasms += 1;
       // it was good, and she likes him: she does not come back down. One more time for as long as he has it in him
@@ -66,7 +66,7 @@ function roomVisit(ctx: Ctx, kind: "towels" | "breakfast", staged = false): { mi
           const more = content.acts.filter((a) => !a.only && !a.at && isIntimate(a) && a.tier <= p.memory.tier + 1 && a.tier >= Math.min(5, p.memory.tier));
           const next = more.length ? ctx.rng.pick(more) : null;
           if (!next || verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { ...input, act: next.id }).total + content.consent.scene.goingBonus) === "refuse") break;
-          const again = resolveBody(ctx, next, { size: p.size, minutes: next.minutes });
+          const again = resolveSized(ctx, next, { size: p.size, minutes: next.minutes }, p.name);
           p.memory.tier = Math.max(p.memory.tier, next.tier);
           p.memory.acts[next.id] = (p.memory.acts[next.id] ?? 0) + 1;
           if (again.came) p.memory.orgasms += 1;

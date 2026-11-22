@@ -50,11 +50,18 @@ shop:                 # in town; she also buys for herself from her purse
     - { id: toy_plug, size: 9, price: 40 }      # small ones: of no use to her, a start for him
     - { id: toy_slim, size: 11, price: 60 }
     - { id: toy_small, size: 14, price: 90 }
+    - { id: toy_16, size: 16, price: 120 }
     - { id: toy_big, size: 18, price: 160 }
+    - { id: toy_20, size: 20, price: 200 }
     - { id: toy_huge, size: 23, price: 260 }
+    - { id: toy_26, size: 26, price: 300 }
     - { id: toy_28, size: 28, price: 340 }
+    - { id: toy_31, size: 31, price: 380 }
     - { id: toy_34, size: 34, price: 420 }
+    - { id: toy_37, size: 37, price: 470 }
     - { id: toy_40, size: 40, price: 520 }
+    - { id: toy_44, size: 44, price: 600 }
+    - { id: toy_48, size: 48, price: 700 }
   toyStretchAbove: 4  # she buys a toy at most this much above what she takes comfortably
   toySatisfied: 80
   solo: # her own drawer: what she buys and uses by herself
@@ -71,7 +78,7 @@ shop:                 # in town; she also buys for herself from her purse
     outgrown: 2     # she wants the next size once she takes comfortably within this many cm of her biggest
     relief: 25      # frustration a session with a toy takes off (half with fingers only)
     analChance: 0.35 # how often it is the back way, once she has a taste for it
-  gigolo: { price: 250, size: 24, minutes: 40, fidelityBelow: 45, sizeTasteFrom: 45, chance: 0.5, suspicion: 4 }
+  gigolo: { price: 250, size: 40, minutes: 40, fidelityBelow: 45, sizeTasteFrom: 45, chance: 0.5, suspicion: 4 }
   affair: { fidelityBelow: 50, affinity: 30, chance: 0.3, minutes: 120, suspicion: 3 } # an afternoon "with a friend" with a lover who has her number
   herOutfitMargin: 5  # she buys an outfit herself once her openness is this close to it
 leftHer: { mood: -4, resent: 1.5 } # he walks off in the middle of an outing with her

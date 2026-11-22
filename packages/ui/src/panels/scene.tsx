@@ -190,7 +190,7 @@ export function SizeLine({ state, t, open }: Common) {
   const zone = act.zones.includes("anus") ? "anus" : act.zones.includes("vagina") ? "vagina" : act.zones.includes("mouth") ? "mouth" : null;
   const fit = zone ? fitOf(state, zone) : null;
   const hearts = Math.max(0, Math.min(5, Math.round(pleasureFor(state, act, size) / 20)));
-  const MAX = 40;
+  const MAX = 50;
   return (
     <div className="sizeline" title={t(`size.${sizeClass(size)}`)}>
       <span>{t("ui.size.his", { cm: shownCm(size) })}</span>

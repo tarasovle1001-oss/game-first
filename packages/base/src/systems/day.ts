@@ -4,7 +4,8 @@ import { glance } from "./glance";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import { fitOf, resolveBody } from "./body";
+import { fitOf } from "./body";
+import { resolveSized } from "./taking";
 import { addMoney, addReputation } from "./economy";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
@@ -200,7 +201,7 @@ function herMorning(ctx: Ctx) {
     .filter((p) => p.memory.hasNumber && p.memory.tier >= 7 && p.memory.affinity >= A.affinity)
     .sort((x, y) => y.memory.affinity - x.memory.affinity || x.id.localeCompare(y.id))[0];
   if (lover && h.traits.fidelity < A.fidelityBelow && ctx.rng.chance(A.chance)) {
-    const out = resolveBody(ctx, actById("sex"), { size: lover.size, minutes: 40 });
+    const out = resolveSized(ctx, actById("sex"), { size: lover.size, minutes: 40 });
     lover.memory.acts.sex = (lover.memory.acts.sex ?? 0) + 1;
     lover.memory.affinity = clamp(lover.memory.affinity + (out.came ? 6 : 2), -100, 100);
     if (out.came) lover.memory.orgasms += 1;
@@ -223,7 +224,8 @@ function herMorning(ctx: Ctx) {
   const g = D.shop.gigolo;
   if (b.purse >= g.price && h.traits.fidelity < g.fidelityBelow && h.sizeTaste >= g.sizeTasteFrom && ctx.rng.chance(g.chance)) {
     b.purse -= g.price;
-    const out = resolveBody(ctx, actById("sex"), { size: g.size, minutes: g.minutes });
+    // as big as she can hope to take: a step above her own
+    const out = resolveSized(ctx, actById("sex"), { size: Math.min(g.size, Math.round(fitOf(ctx.state, "vagina") + 4)), minutes: g.minutes });
     h.marriage.desire = clamp(h.marriage.desire - 2);
     if (hidden) {
       b.secretActsToday += 1;
@@ -274,7 +276,7 @@ function gym(ctx: Ctx, together: boolean) {
   changeHeroine(ctx, "arousal", act.effects.arousal, act.id);
   const intimate = act.place === "private";
   if (intimate) {
-    const out = resolveBody(ctx, act, { size: known.size, minutes: act.minutes });
+    const out = resolveSized(ctx, act, { size: known.size, minutes: act.minutes }, known.name);
     known.memory.sizeKnown = true;
     if (out.came) known.memory.orgasms += 1;
     b.sizeToday = Math.max(b.sizeToday ?? 0, known.size);

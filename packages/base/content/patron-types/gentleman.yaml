@@ -2,7 +2,7 @@ id: gentleman
 weight: 3
 age: [55, 68]
 builds: ["slim", "average", "heavy"]
-size: [10, 16] # cm
+size: [20, 27] # cm
 stamina: [1, 1] # rounds in a row
 traits:
   persistence: [10, 40]

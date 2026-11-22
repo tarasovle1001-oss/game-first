@@ -103,7 +103,7 @@ export function NewGame({ t, seed, card, onStart, onCancel, onKeep }: { t: T; se
           </div>
           <div>
             <div className="cap">{t("ui.newgame.him")}</div>
-            {slider(t("ui.newgame.size"), husband.size, (v) => setHusband({ ...husband, size: v }), 6, 26, shownCm)}
+            {slider(t("ui.newgame.size"), husband.size, (v) => setHusband({ ...husband, size: v }), 5, 13, shownCm)}
             {slider(t("ui.newgame.minutes"), husband.minutes, (v) => setHusband({ ...husband, minutes: v }), 1, 40)}
             <button className="link" onClick={() => setBodiesOpen(!bodiesOpen)}>
               {t("ui.newgame.bodies")} {bodiesOpen ? "▴" : "▾"}

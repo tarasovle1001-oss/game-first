@@ -2,7 +2,7 @@ id: businessman
 weight: 5
 age: [35, 55]
 builds: ["average", "heavy"]
-size: [12, 17] # cm
+size: [21, 31] # cm
 stamina: [1, 2] # rounds in a row
 traits:
   persistence: [45, 80]

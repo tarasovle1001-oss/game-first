@@ -15,6 +15,7 @@ import { EMOTIONS, feel, trustOf } from "./mind";
 import type { Emotion } from "./mind";
 import { generatePatron } from "./patrons";
 import { HALL, husbandSees } from "./places";
+import { sizeShown } from "./taking";
 import { changeHim } from "./rhythm";
 import { attendTo, endAttend, leave as leaveVisit, runUnattended, seat } from "./shift";
 
@@ -106,6 +107,7 @@ export function registerFloor(api: ModApi) {
     // he showed her: from now on his size counts in what she agrees to (the "size" row of consent)
     if (m.reveals) {
       p.memory.sizeKnown = true;
+      sizeShown(ctx, p.size);
       detail(ctx, { id: "guest_flash", who: p.id, secret: !seen });
     }
     if (m.hers) detail(ctx, { id: "touch_bulge", who: p.id, secret: !seen });

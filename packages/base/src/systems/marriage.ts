@@ -5,7 +5,8 @@ import { actOf, content } from "../content";
 import { confidenceOf, earlyChance, softChance } from "./nerve";
 import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import { fitOf, orgasm, pleasureFor, resolveBody, useBody } from "./body";
+import { fitOf, orgasm, pleasureFor, useBody } from "./body";
+import { resolveSized } from "./taking";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
@@ -1229,7 +1230,7 @@ export function registerMarriage(api: ModApi) {
         .sort((x, y) => y.memory.affinity - x.memory.affinity || x.id.localeCompare(y.id));
       if (lovers.length > 0 && h.traits.fidelity < N.slipOutFidelityBelow && ctx.rng.chance(N.slipOutChance)) {
         const p = lovers[0]!;
-        const out = resolveBody(ctx, actById("sex"), { size: p.size, minutes: 30 });
+        const out = resolveSized(ctx, actById("sex"), { size: p.size, minutes: 30 }, p.name);
         p.memory.acts.sex = (p.memory.acts.sex ?? 0) + 1;
         p.memory.interest = clamp(p.memory.interest + 6);
         p.memory.affinity = clamp(p.memory.affinity + (out.came ? 8 : 3), -100, 100);

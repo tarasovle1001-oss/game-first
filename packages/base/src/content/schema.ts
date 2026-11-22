@@ -279,6 +279,16 @@ export const bodySchema = z
     his: z.object({ fitBase: z.number(), fitPerStretch: z.number(), tooBig: z.number(), ruinedRelief: z.number(), wetRelief: z.number(), powerPerPegging: z.number(), peggingHerBase: z.number(), peggingHerPerPower: z.number(), practice: z.number(), fingerSize: z.number(), fistSize: z.number(), rimmingRate: z.number(), power: z.record(z.string(), z.number()), herShare: z.record(z.string(), z.number()), hisShare: z.record(z.string(), z.number()) }).strict(),
     shownCm: z.object({ from: z.number(), factor: z.number() }).strict(),
     sizeClasses: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+    stages: z.array(z.number()).min(3),
+    take: z
+      .object({
+        chance: z.array(z.number().min(0).max(1)).min(1), arousal: z.number(), warm: z.number(), warmMax: z.number(), drunk: z.number(), anus: z.number(),
+        partial: z.number().min(0).max(1), partialShare: z.number(), share: z.number(), perAct: z.number(), volumeCap: z.number(), keep: z.number().min(0).max(1), fade: z.number().min(0).max(1),
+        instead: z.array(id).min(1), fearPerStage: z.number(), tasteSeen: z.number(), tasteHandled: z.number(),
+        giant: z.object({ fromDay: z.number(), chance: z.number().min(0).max(1), size: z.tuple([z.number(), z.number()]) }).strict(),
+        ladder: z.object({ start: z.number(), perFame: z.number() }).strict(),
+      })
+      .strict(),
     night: nightSchema,
     // the bedroom scene, turn by turn: both of them have a pleasure meter 0..100
     bed: z

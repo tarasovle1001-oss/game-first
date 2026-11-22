@@ -63,8 +63,9 @@ describe("bed and body", () => {
     expect(bs(s).night!.sex!.top).toBe(true);
     expect(has(s, BED, (p) => p.do === "keep")).toBe(false);
     expect(has(s, BED, (p) => p.do === "follow")).toBe(true);
-    for (let i = 0; i < 40 && bs(s).night?.sex; i++) s = engine.dispatch(s, { type: BED, payload: { do: "follow" } });
-    expect(bs(s).night!.sex).toBeNull();
+    // until what she led is over (a second go may follow: that one is no longer hers to lead)
+    for (let i = 0; i < 40 && bs(s).night?.sex?.lead; i++) s = engine.dispatch(s, { type: BED, payload: { do: "follow" } });
+    expect(bs(s).night!.sex?.lead ?? false).toBe(false);
     expect(s.log.some((e) => e.key.startsWith("log.bed.lead."))).toBe(true);
   });
   it("where he comes: there are more places, and afterwards he can ask for more", () => {

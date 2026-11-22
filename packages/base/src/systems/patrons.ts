@@ -2,6 +2,7 @@ import type { Ctx, ModApi } from "@tc/core";
 import { content, patronType } from "../content";
 import { bs } from "../state";
 import type { Patron } from "../state";
+import { fameOf } from "./rhythm";
 
 const POOL_LIMIT = 40;
 const FORGET_AFTER_DAYS = 14;
@@ -24,13 +25,17 @@ export function generatePatron(ctx: Ctx): Patron {
   const approach = ctx.rng.weighted(
     (Object.entries(type.approach) as [Patron["approach"], number][]).map(([item, weight]) => ({ item, weight })),
   );
+  // how big a guest can be grows with the name of the place: the first weeks bring the smaller of each kind
+  const L = content.body.take.ladder;
+  const top = L.start + fameOf(ctx.state) * L.perFame;
+  const size = Math.round(Math.min(roll(type.size), Math.max(type.size[0], top)));
   const patron: Patron = {
     id: `p${b.nextPatron++}`,
     type: type.id,
     name: freeName(ctx),
     age: roll(type.age),
     build: ctx.rng.pick(type.builds),
-    size: roll(type.size),
+    size,
     stamina: roll(type.stamina),
     traits: {
       persistence: roll(type.traits.persistence),
@@ -53,6 +58,9 @@ export function generatePatron(ctx: Ctx): Patron {
     patron.traits.generosity = Math.max(patron.traits.generosity, R.generosity);
     patron.memory.interest = Math.max(patron.memory.interest, R.interest);
   }
+  // and once in a long while a man past all of them
+  const G = content.body.take.giant;
+  if (ctx.state.time.day >= G.fromDay && ctx.rng.chance(G.chance)) patron.size = ctx.rng.int(G.size[0], G.size[1]);
   b.patrons[patron.id] = patron;
   return patron;
 }

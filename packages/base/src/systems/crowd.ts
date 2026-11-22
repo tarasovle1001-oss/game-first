@@ -8,6 +8,8 @@ import type { Encounter, Patron } from "../state";
 import { annoy } from "./annoy";
 import { addHerTips, addReputation } from "./economy";
 import { actById, CONSENT_FORMULA, gate, isIntimate, verdictOf } from "./encounters";
+import { entersZone } from "./body";
+import { settleSize } from "./taking";
 import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { EMOTIONS, feel, trustOf } from "./mind";
@@ -64,6 +66,9 @@ function tryJoin(ctx: Ctx, enc: Encounter, id: string, bonus: number): boolean {
     b.proposals.push({ day: ctx.state.time.day, tick: sh.tick, patron: id, act, loc: enc.loc, verdict, seen: !tags, total, rows: res.rows });
     if (b.proposals.length > 12) b.proposals.shift();
     if (verdict === "refuse") continue;
+    // she would; whether he fits there is another matter - if not, he looks for another place
+    const into = entersZone(actById(act));
+    if (into && settleSize(ctx, actById(act), p.size, p.name, { warm: enc.warm?.[into] ?? 0, tags, noInstead: true }).act.id !== act) continue;
     enc.men = [...(enc.men ?? []), { patron: id, slot, act }];
     enc.crowd = (enc.crowd ?? []).filter((x) => x !== id);
     enc.pleasure = clamp(enc.pleasure * C.joinerRate);

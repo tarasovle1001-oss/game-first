@@ -14,8 +14,9 @@ export interface Heroine {
   drunk: number;
   // character, 0..100, changes slowly
   traits: { openness: number; confidence: number; fidelity: number; honesty: number; libido: number };
-  // body: how much each zone has been stretched (0..100) and the highest it has ever been
-  body: Record<Zone, { stretch: number; peak: number }>;
+  // body, per zone, 0..100: `stretch` is what she takes today, `perm` what is hers for good (absent in old saves: see permOf), `peak` the highest ever
+  body: Record<Zone, { stretch: number; peak: number; perm?: number }>;
+  seenSize?: number; // cm: the biggest she has seen or had (her bar)
   skills: Record<string, number>; // act id -> 0..100
   frustration: number; // 0..100, nights that left her wanting pile up here
   satisfied: number; // 0..100, "just had her fill", cools down
@@ -165,6 +166,8 @@ export type Verdict = "eager" | "hesitant" | "refuse";
 
 /** Something is happening between her and a guest right now. The scene is derived from it. */
 export interface Encounter {
+  warm?: Partial<Record<Zone, number>>; // what was done to a place earlier in this scene: makes a bigger size likelier to go in
+  took?: string; // how the last try to take his size went: took / partial / failed / never (for the screen)
   patron: string;
   act: string;
   loc: string;

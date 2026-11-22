@@ -219,7 +219,7 @@ export { DEAL, GROUP, TABLE, JOIN, LOUNGE } from "./systems/floor";
 export { CROWD, crowdOf, menOf } from "./systems/crowd";
 export { soreOf, slick, wearOf, foreignMarks, visibleMarks, dressShift } from "./systems/bodystate";
 export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryOf, weekdayOf, fameOf, fameTier } from "./systems/rhythm";
-export { pleasureFor, sizeClass } from "./systems/body";
+export { entersZone, permOf, pleasureFor, sizeClass, sizeStage, stepsAbove, takeChance } from "./systems/body";
 export { inspect, note, tracer, resetTracer } from "./systems/inspect";
 export type { DeltaRow, DeltaVia, DeltaGroup, Inspection } from "./systems/inspect";
 export { voiceOf, refusalWhy } from "./systems/voice";
