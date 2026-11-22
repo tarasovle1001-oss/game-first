@@ -21,6 +21,36 @@ lead:                 # she runs the scene
   snowballOpenness: 60
   lickPower: 40
   power: 2            # what an ending on her terms adds to her power
+her:                  # who she is in bed with him, by her power over him (0..100): how she speaks, why she starts, what he owes her
+  tones: [25, 50, 75] # power from which she no longer asks but suggests, says, orders
+  powerFrom: { early: 3, leftWanting: 1.5, pestering: 2, declined: 1.5, guest: 1.2 } # power she gains, in any mode: he is over too soon, she is left wanting, he keeps asking, he turns her down; and each day she has had a man bigger than him
+  owes:               # what he owes her: every failure is counted, and collected when she has the say
+    max: 5
+    pester: 3         # asking this many times in one night counts
+    punishPower: 20   # from this power she collects
+    ruinPer: 0.35     # chance that she ruins his ending, per thing owed
+    randomRuin: 0.4   # with nothing owed: this share of the old chance (lead.ending.ruined), from lead.ruinedPower
+    forgiveMood: 60   # a good day and a good mood: she lets one go...
+    forgiveChance: 0.3
+    forgivePower: 0.4   # ...and her grip loosens by this
+  why:                # why she reaches for him tonight
+    needFrustration: 40  # left wanting this much, she comes for what she needs even without wanting him much
+    needPower: 25        # ...from this power: he is a means
+    rewardMood: 65       # nothing owed, a good mood, wanting him: a night "as before"
+    rewardDesire: 55
+    rewardPower: 25
+    playPower: 50        # from here some nights she simply takes the lead, in any mode
+    playChance: 0.4
+    guestArousal: 35     # in the open: a guest left her worked up, she brings it home and tells him
+  second:             # he is done and she is not, or she has come and wants more
+    base: 0.1         # she came and wants another: chance...
+    perLibido: 0.012  # ...per point of libido above 50
+    energy: 25
+    maxRounds: 3
+    refusedResent: 2  # he says no to it
+  report: { turns: [2, 5, 8], his: 6 } # in the open she tells him about today's guest while they are at it: on which turns, what it does to him
+  punish: [edging, tease_denial, ignore_handjob, facesitting] # what she has in mind when he owes her
+  need: [cunnilingus, toy_on_her, facesitting]                # ...and when she only needs to come
 finish:               # he chose where; she has her own mind
   dodgeConfidence: 60 # a face she did not want: she turns away
   holdArousal: 65     # he pulls out and she wanted it inside: she holds him

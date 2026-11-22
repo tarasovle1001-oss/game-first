@@ -7,6 +7,7 @@ import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { fitOf, orgasm, pleasureFor, sizeStage, useBody } from "./body";
 import { resolveSized } from "./taking";
+import { owe, toneOf, whyTonight } from "./hernight";
 import { think } from "./mind";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
@@ -98,10 +99,18 @@ export function registerMarriage(api: ModApi) {
       const C = content.body.night.wantsChance;
       // worked up, she always does; otherwise it is a matter of how much she needs it, how much she wants him, and how long it has been
       const luck = able && h.arousal < W.arousal && ctx.rng.chance(Math.min(C.max, C.base + h.traits.libido * C.perLibido + (h.marriage.desire - W.desire) * C.perDesireAbove + Math.max(0, b.denied) * C.perNightWithout));
-      if (promised || (able && h.arousal >= W.arousal) || luck) {
+      // left wanting badly enough, a wife with some say comes for what she needs whether she wants him or not
+      const Hn = content.intimacy.her;
+      const needs = h.frustration >= Hn.why.needFrustration && b.power >= Hn.why.needPower && h.energy >= W.energy / 2 && h.satisfied < 50;
+      if (promised || (able && h.arousal >= W.arousal) || luck || needs) {
         b.night.wants = true;
         b.night.scene = "wants_him";
-        ctx.log("log.night.wants");
+        // why she reaches for him decides what she has in mind, and her power over him decides how she says it
+        const why = whyTonight(ctx);
+        b.night.why = why;
+        ctx.log(`log.her.night.${why}.t${toneOf(ctx.state)}`);
+        const idea = (why === "punish" ? Hn.punish : why === "need" && needs && !able ? Hn.need : []).filter((a) => NIGHT_ACTS.includes(a) && hisActOpen(ctx.state, a));
+        if (idea.length > 0) b.night.counter = ctx.rng.pick(idea); // tonight it is this or nothing
         // he is locked up and she is fond of him: her idea of tonight is about him, by the only way left
         if (b.husband.caged && h.marriage.desire >= content.body.cage.prostateDesire && hisActOpen(ctx.state, "prostate") && ctx.rng.chance(content.body.cage.prostateChance)) {
           b.night.counter = "prostate";
@@ -240,7 +249,7 @@ export function registerMarriage(api: ModApi) {
     sex.bored = R.limit - 1.5; // she waits a little for his answer before the next move
     if (best && best.r >= now + R.better && sex.ignored < 2) {
       sex.asks = best.a;
-      ctx.log("log.bed.she_asks", { act: `act.${best.a}` });
+      ctx.log(`log.bed.she_asks.t${toneOf(ctx.state)}`, { act: `act.${best.a}` });
       return;
     }
     if (loving && !ctx.rng.chance(R.lovingOut)) {
@@ -550,6 +559,12 @@ export function registerMarriage(api: ModApi) {
     else ctx.state.time.minute += B.minutesPerTurn;
     if (sex.turns % 3 === 0 && (b.night!.third || b.night!.here === "public")) ctx.log(`log.bed.${b.night!.third ? "third" : "watched"}.${ctx.rng.int(1, 4)}`, b.night!.third ? { name: `@name:${b.patrons[b.night!.third]?.name ?? ""}` } : undefined);
     if (actById(sex.act).lines && sex.turns % 2 === 0) ctx.log(`log.act.${sex.act}.turn.${ctx.rng.int(1, 3)}`);
+    // in the open, on a night a guest sent her home worked up: she tells him about it while they are at it
+    const Rp = content.intimacy.her.report;
+    if (b.night!.why === "guest" && b.mode === "open" && Rp.turns.includes(sex.turns)) {
+      ctx.log(`log.bed.report.${Rp.turns.indexOf(sex.turns) + 1}`);
+      his += Rp.his;
+    }
     sex.his = clamp(sex.his + his);
     sex.hers = clamp(sex.hers + hers);
     // he goes over in the first moves: it is over before she gets there, never both at once
@@ -652,15 +667,24 @@ export function registerMarriage(api: ModApi) {
     const b = bs(ctx.state);
     const h = b.heroine;
     const A = B.after;
-    if (!b.night || b.night.sex || was.soft || was.came > 0 || was.out || was.hers < A.minHers || h.marriage.resent >= A.maxResent) return false;
-    if (!ctx.rng.chance(Math.min(0.95, A.chance + Math.max(0, h.marriage.desire - 50) * A.perDesire))) return false;
+    if (!b.night || b.night.sex || was.soft || was.out || h.marriage.resent >= A.maxResent) return false;
+    const S2 = content.intimacy.her.second;
+    const rounds = b.night.rounds ?? 0;
+    if (was.came > 0) {
+      // she has come and can go on: with her libido one is not always enough (with guests it never is)
+      if (rounds >= S2.maxRounds - 1 || h.energy < S2.energy || !ctx.rng.chance(Math.min(0.9, S2.base + Math.max(0, h.traits.libido - 50) * S2.perLibido))) return false;
+    } else {
+      if (was.hers < A.minHers) return false;
+      if (!ctx.rng.chance(Math.min(0.95, A.chance + Math.max(0, h.marriage.desire - 50) * A.perDesire + toneOf(ctx.state) * 0.1))) return false;
+    }
+    b.night.rounds = rounds + 1;
     const pick = SOFT_ACTS.filter((a) => BED_ACTS.includes(a) && hisActOpen(ctx.state, a) && (!HIS_ACTS.includes(a) || b.power >= LEAD.hisActsPower))
       .map((a) => ({ a, r: rewardOf(ctx.state, a, HIS_ACTS.includes(a) ? herFromHis(ctx.state, a) : pleasureFor(ctx.state, actById(a), b.husband.size)) }))
       .sort((x, y) => y.r - x.r || x.a.localeCompare(y.a))[0];
     if (!pick) return false;
     b.night.sex = { act: pick.a, his: 0, hers: clamp(was.hers), came: 0, turns: 0, top: false, skirt: true, pleasure: 0, bored: 0, asks: null, ignored: 0, out: false, byHand: false, looseSaid: true, soft: true };
     setAct(ctx, pick.a);
-    ctx.log("log.bed.she_continues", { act: `act.${pick.a}` });
+    ctx.log(`log.bed.second.${was.came > 0 ? "more" : "need"}.t${toneOf(ctx.state)}`, { act: `act.${pick.a}` });
     ctx.emit("bed:continued", { act: pick.a });
     return true;
   };
@@ -801,10 +825,18 @@ export function registerMarriage(api: ModApi) {
     let where = FINISH[sex.act]?.[0] ?? "on_her";
     let how = "plain";
     if (!HIS_ACTS.includes(sex.act) && sex.act !== "rimming_him") {
-      if ((b.power >= LEAD.ruinedPower || cruel) && ctx.rng.chance(LEAD.ending.ruined)) how = "ruined";
+      // a ruined ending is what he owes her, collected: the more is owed, the likelier. With nothing owed it is a rare whim; on a night meant as a reward, never
+      const O = content.intimacy.her.owes;
+      const owed = (b.owes ?? 0) > 0 && b.power >= O.punishPower;
+      if (b.night?.why === "reward") how = inside ? "inside" : "plain";
+      else if (owed && ctx.rng.chance(Math.min(0.9, (b.owes ?? 0) * O.ruinPer))) {
+        how = "ruined";
+        b.owes = (b.owes ?? 0) - 1;
+        ctx.log(`log.bed.ruin.owed.${ctx.rng.int(1, 2)}`, { n: b.owes });
+      } else if ((b.power >= LEAD.ruinedPower || cruel) && ctx.rng.chance(LEAD.ending.ruined * (owed ? 1 : O.randomRuin))) how = "ruined";
       else if (b.power >= LEAD.snowballPower && h.traits.openness >= LEAD.snowballOpenness && ctx.rng.chance(LEAD.ending.snowball)) how = "snowball";
       else if (inside && b.power >= LEAD.lickPower && ctx.rng.chance(LEAD.ending.lickClean)) how = "lick_clean";
-      else if (inside) how = "inside";
+      else if (inside && how === "plain") how = "inside";
     }
     if (how === "ruined") {
       // she lets go of him at the last moment: it happens, and it is worth nothing to him
@@ -889,10 +921,15 @@ export function registerMarriage(api: ModApi) {
   api.events.on("bed:started", (ctx) => {
     const b = bs(ctx.state);
     const sex = b.night?.sex;
-    if (!sex || b.mode !== "open" || ctx.state.time.phase !== "night") return;
+    if (!sex || ctx.state.time.phase !== "night") return;
     const cruel = b.heroine.latents.cruel_streak !== undefined;
-    if (b.power < LEAD.takesAtPower && !cruel) return;
-    if (!ctx.rng.chance(cruel ? LEAD.cruelTakes : LEAD.takesChance)) return;
+    // she came to play, or to collect: the scene is hers from the start, in any mode
+    const hers = b.night?.why === "play" || b.night?.why === "punish";
+    if (!hers) {
+      if (b.mode !== "open") return;
+      if (b.power < LEAD.takesAtPower && !cruel) return;
+      if (!ctx.rng.chance(cruel ? LEAD.cruelTakes : LEAD.takesChance)) return;
+    }
     sex.lead = true;
     onTop(ctx);
     ctx.log("log.bed.lead.takes");
@@ -1192,9 +1229,18 @@ export function registerMarriage(api: ModApi) {
           finish(ctx, "choice");
           break;
         }
-        case "stop":
+        case "stop": {
+          // saying no to what she kept him for after he was done: that is one more thing he owes her
+          const sx = bs(ctx.state).night!.sex!;
+          const kept = sx.soft && (bs(ctx.state).night!.rounds ?? 0) > 0 && sx.came === 0;
           finish(ctx, "stop");
+          if (kept) {
+            feel(ctx, 0, content.intimacy.her.second.refusedResent);
+            ctx.log(`log.bed.second.refused.t${toneOf(ctx.state)}`);
+            owe(ctx, "refused");
+          }
           break;
+        }
         case "switch": {
           const to = action.payload!.to as string;
           if (ask(ctx, to, B.switchBonus) === "refuse") {

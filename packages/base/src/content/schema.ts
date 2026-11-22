@@ -752,6 +752,18 @@ const ids = z.array(z.string());
 export const intimacySchema = z
   .object({
     lead: z.object({ ordinaryShare: z.number(), variety: z.number(), takesAtPower: z.number(), takesChance: z.number(), cruelTakes: z.number(), hisActsPower: z.number(), holdAt: z.number(), slipPerTurn: z.number(), slipped: nums, minTurns: z.number(), maxTurns: z.number(), begAllowDesire: z.number(), begDenied: nums, takeBack: nums, ending: z.object({ ruined: z.number(), snowball: z.number(), lickClean: z.number() }).strict(), ruinedPower: z.number(), snowballPower: z.number(), snowballOpenness: z.number(), lickPower: z.number(), power: z.number() }).strict(),
+    her: z
+      .object({
+        tones: z.tuple([z.number(), z.number(), z.number()]),
+        powerFrom: z.object({ early: z.number(), leftWanting: z.number(), pestering: z.number(), declined: z.number(), guest: z.number() }).strict(),
+        owes: z.object({ max: z.number(), pester: z.number(), punishPower: z.number(), ruinPer: z.number(), randomRuin: z.number(), forgiveMood: z.number(), forgiveChance: z.number(), forgivePower: z.number() }).strict(),
+        why: z.object({ needFrustration: z.number(), needPower: z.number(), rewardMood: z.number(), rewardDesire: z.number(), rewardPower: z.number(), playPower: z.number(), playChance: z.number(), guestArousal: z.number() }).strict(),
+        second: z.object({ base: z.number(), perLibido: z.number(), energy: z.number(), maxRounds: z.number(), refusedResent: z.number() }).strict(),
+        report: z.object({ turns: z.array(z.number()), his: z.number() }).strict(),
+        punish: z.array(id),
+        need: z.array(id),
+      })
+      .strict(),
     finish: z.object({ dodgeConfidence: z.number(), holdArousal: z.number(), holdDesire: z.number(), holdChance: z.number() }).strict(),
     after: z.object({ willingOpenness: z.number(), reversePower: z.number(), done: nums, reversed: nums, refused: nums }).strict(),
     talk: z.object({ sayMine: nums, sayMineLaugh: nums, sayMinePower: z.number(), lookAtMe: nums }).strict(),

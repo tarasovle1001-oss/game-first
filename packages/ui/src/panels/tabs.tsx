@@ -1,5 +1,5 @@
 import { shownCm } from "@tc/base";
-import { cagedDays, confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, permOf, sizeStage, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
+import { cagedDays, confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, toneOf, permOf, sizeStage, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
 import type { Patron } from "@tc/base";
 import type { Lang, T } from "../game";
 import { Bar, Common } from "./common";
@@ -110,7 +110,8 @@ export function CoupleTab({ state, t, lang, open }: Common) {
       <div className="cap">{t("ui.marriage")}</div>
       <Bar label={t("stat.desire")} value={h.marriage.desire} tone="pink" />
       <Bar label={t("stat.resent")} value={h.marriage.resent} tone="amber" />
-      {b.mode === "open" && <Bar label={t("ui.power")} value={b.power} />}
+      {(b.mode === "open" || b.power > 0) && <Bar label={t("ui.power")} value={b.power} />}
+      {(b.power > 0 || (b.owes ?? 0) > 0) && <div className="muted small indent">{t("ui.tone", { tone: t(`ui.tone.${toneOf(state)}`), n: b.owes ?? 0 })}</div>}
       <div className="muted small">
         {t("ui.husband.line", { size: shownCm(b.husband.size), minutes: b.husband.minutes, style: t(`husband.style.${b.husband.style}`) })}
       </div>

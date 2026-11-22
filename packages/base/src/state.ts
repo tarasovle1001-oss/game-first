@@ -280,11 +280,14 @@ export interface BaseState {
   mode: Mode;
   suspicion: number; // 0..100, only matters while hidden
   power: number; // her power over him, 0..100, grows once it is open
+  owes?: number; // what he owes her in bed: failures she has counted and not yet collected
+  owedDay?: number; // the day the last one was added
+  toneSaid?: number; // the highest tone (0..3) the morning after has already shown
   denied: number; // nights in a row he got nothing
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string; had?: number; noes?: number; smallAt?: number; smallDone?: boolean; himAsleep?: boolean; slept?: number } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; why?: "need" | "guest" | "punish" | "reward" | "play"; rounds?: number; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string; had?: number; noes?: number; smallAt?: number; smallDone?: boolean; himAsleep?: boolean; slept?: number } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea
