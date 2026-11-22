@@ -21,7 +21,18 @@ export function renderParams(params: Params | undefined, t: T, lang: string): Pa
   return out;
 }
 
-export const renderLog = (e: LogEntry, t: T, lang: string) => t(e.key, renderParams(e.params, t, lang));
+/**
+ * A line as the player reads it. A key with several wordings ("key", "key#2", "key#3") shows one of them, picked by
+ * when the line was logged: the same entry always reads the same, the next one of its kind reads differently.
+ * The game itself rolls nothing for this, so adding wordings never shifts a seed.
+ */
+export const renderLog = (e: LogEntry, t: T, lang: string) => t(e.key.includes("#") ? e.key : variantKey(e.key, (n) => wordingOf(e) % n), renderParams(e.params, t, lang));
+function wordingOf(e: LogEntry): number {
+  const text = `${e.key}|${e.day}|${e.minute}|${e.turn}`;
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return (h >>> 7) >>> 0;
+}
 export const patronName = (nameIndex: number, lang: string) => {
   const entry = content.names[nameIndex];
   return entry ? ((entry as Record<string, string>)[lang] ?? entry.en) : "?";
