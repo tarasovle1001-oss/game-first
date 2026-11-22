@@ -418,7 +418,7 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
   // since 22.11 a scene is one picture: the close-ups of the act ("his part of her", one per man) are no longer asked for.
   // The list stays in the shape of the frames, always empty; the free close-ups (details) go beside the picture as before.
   const inserts: SceneDesc[] = [];
-  const { men: _m, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, ...look } = tags;
+  const { men: _m, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, tsize: _t, toy: _toy, cage: _cg, ...look } = tags;
   return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc) };
 }
 
