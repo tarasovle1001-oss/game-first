@@ -130,13 +130,35 @@ export function describeScene(state: GameState, open = false): SceneWords {
  * Coarse on purpose - levels, not numbers - so one picture covers a stretch of play. Order = most important
  * first; a pack that lacks the exact picture drops tags from the end of this list (see sceneKeyFallbacks).
  */
-export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "crowd", "face", "hsize", "tsize", "under", "skirt", "after", "drunk", "toy", "cage"];
+export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "phase", "crowd", "face", "tsize", "under", "skirt", "toy", "cage"];
 /**
  * What a whole picture and her portrait do not show (the picture pass of 22.11 looked: a guest's size class, the marks on
  * her, how stretched or sore she is read the same at that distance). They stay out of those keys - one picture for all of
  * them - and live in the close-ups, which do show them.
  */
-const UNSEEN_WHOLE = ["size", "size2", "size3", "marks", "gape", "sore"];
+const UNSEEN_WHOLE = ["size", "size2", "size3", "hsize", "marks", "gape", "sore"];
+/**
+ * The picture chat looked again (22.11, `claude/pics-answers.md`): the flush after an orgasm and how drunk she is show
+ * nowhere - they are not in any key. No underwear and a lifted skirt show on her portrait only: a whole scene drops them.
+ */
+const PORTRAIT_ONLY = ["under", "skirt"];
+/**
+ * More than one man on her is one pool of pictures: `group/patron+wife/<room>/men=2|3|4,phase=during|after` + her look.
+ * Who has which part of her stays in the game (attempts, stretch, text) and in the mannequin; the picture does not tell
+ * the layouts apart. Her husband joining a guest is the same pool. `men=4` stands for four and more.
+ */
+const GROUP = /^(came_)?(group_|join_)/;
+const MEN_ROLES = new Set(["husband", "patron", "patron2", "patron3"]);
+const groupOf = (desc: SceneDesc, tags: Record<string, string>): SceneDesc => {
+  const wife = desc.participants.find((p) => p.role === "wife");
+  const men = desc.participants.filter((p) => MEN_ROLES.has(p.role));
+  const count = Math.max(men.length, Number(tags.men ?? 0));
+  if (!GROUP.test(desc.type) || !wife || count < 2) return { ...desc, tags };
+  const first = men.find((m) => m.role === "patron") ?? men[0]!;
+  const { fin: _f, cage: _c, tsize: _t, toy: _toy, ...look } = tags;
+  const after = desc.type.startsWith("came_") || desc.type === "group_after";
+  return { type: "group", location: desc.location, participants: [wife, { id: first.id, role: "patron" }], tags: { ...look, men: String(Math.min(4, count)), phase: after ? "after" : "during" } };
+};
 /** Scenes where a toy is the subject: its size class goes into the key. */
 const TOY_HERS = new Set(["toy_on_her", "came_toy_on_her"]);
 const TOY_HIS = new Set(["dildo_him", "came_dildo_him"]);
@@ -167,9 +189,6 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
     if (h.skirtUp) out.skirt = "up";
   }
   out.face = faceOf(state);
-  if (Object.values(h.after ?? {}).some((v) => v > 0)) out.after = "1";
-  const drunk = step(W.drunk, h.drunk);
-  if (drunk) out.drunk = drunk;
   // what is under her clothes is not in the picture: it would only multiply pictures that look the same
   const lower = bare === "all" || bare === "bottom" || ((h.panties === "off" || h.panties === "aside") && !!h.skirtUp) || intimate;
   const marks = Object.entries(h.cum ?? {})
@@ -203,7 +222,11 @@ export function pictureScene(engine: EngineView, state: GameState): SceneDesc | 
   return desc ? withLook(state, desc) : null;
 }
 /** Adds her look to any scene description; tags the scene already set win. */
-export const withLook = (state: GameState, desc: SceneDesc): SceneDesc => ({ ...desc, tags: { ...lookTags(state, desc), ...(desc.tags ?? {}) } });
+export const withLook = (state: GameState, desc: SceneDesc): SceneDesc => {
+  const tags = { ...lookTags(state, desc), ...(desc.tags ?? {}) };
+  for (const k of PORTRAIT_ONLY) delete tags[k];
+  return groupOf(desc, tags);
+};
 
 const mark = (ctx: Ctx, place: string, his = false) => {
   const h = bs(ctx.state).heroine;
@@ -413,12 +436,12 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
  */
 export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames {
   const full = withLook(state, desc);
-  const tags = full.tags ?? {};
+  const tags = { ...lookTags(state, desc), ...(desc.tags ?? {}) }; // her portrait keeps what only it shows
   const wife = desc.participants.find((p) => p.role === "wife");
   // since 22.11 a scene is one picture: the close-ups of the act ("his part of her", one per man) are no longer asked for.
   // The list stays in the shape of the frames, always empty; the free close-ups (details) go beside the picture as before.
   const inserts: SceneDesc[] = [];
-  const { men: _m, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, tsize: _t, toy: _toy, cage: _cg, ...look } = tags;
+  const { men: _m, phase: _p, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, tsize: _t, toy: _toy, cage: _cg, ...look } = tags;
   return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc) };
 }
 

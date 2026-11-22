@@ -260,3 +260,44 @@ describe("free close-ups", () => {
     expect(detailsFor(open, desc).map((x) => x.type)).toContain("detail_phone_busy");
   });
 });
+
+import { withLook } from "@tc/base";
+import { sceneKey } from "@tc/core";
+describe("pictures: what a key carries after the picture chat looked (22.11)", () => {
+  const her = { id: "wife", role: "wife" };
+  const fresh = () => engine.init(5, { base: { preset: "ordinary" } });
+  it("more than one man is one pool: the number of men, the phase, the room", () => {
+    const s = fresh();
+    const two = withLook(s, { type: "group_spitroast", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "b", role: "patron2" }], tags: { men: "2" } });
+    expect(sceneKey(two)).toMatch(/^group\/patron\+wife\/cafe\.staff\/.*men=2.*phase=during/);
+    // her husband joining a guest is the same pool, and so is what the picture used to tell apart
+    const join = withLook(s, { type: "join_mouth", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "husband", role: "husband" }], tags: {} });
+    expect(sceneKey(join)).toBe(sceneKey(two));
+    expect(sceneKey(withLook(s, { type: "group_dp", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "b", role: "patron2" }], tags: { men: "2" } }))).toBe(sceneKey(two));
+    // five men are "4"; afterwards is the other phase
+    const many = withLook(s, { type: "group_airtight", location: "hotel.room1", participants: [her, { id: "a", role: "patron" }, { id: "b", role: "patron2" }, { id: "c", role: "patron3" }], tags: { men: "5" } });
+    expect(many.tags!.men).toBe("4");
+    expect(withLook(s, { type: "group_after", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }], tags: { men: "3" } }).tags).toMatchObject({ men: "3", phase: "after" });
+    expect(withLook(s, { type: "came_join_dp", location: "home.bedroom", participants: [her, { id: "a", role: "patron" }, { id: "husband", role: "husband" }], tags: {} }).tags!.phase).toBe("after");
+    const p = promptFor(many);
+    expect(p.positive).toContain("4boys");
+    expect(p.positive).toContain("gangbang");
+    expect(p.lora?.file).toBe("tc_groups");
+    expect(promptFor(two).positive).toContain("mmf threesome");
+  });
+  it("the flush and the drink are in no key; no underwear and a lifted skirt only on her portrait; his size in no whole scene", () => {
+    const s = structuredClone(fresh());
+    const h = bs(s).heroine;
+    h.drunk = 80;
+    h.after = { sweat: 30 };
+    h.panties = "off";
+    h.skirtUp = true;
+    const f = pictureFrames(s, { type: "idle", location: "cafe.hall", participants: [her], tags: {} });
+    expect(Object.keys(f.full.tags!)).not.toEqual(expect.arrayContaining(["after"]));
+    for (const k of ["after", "drunk", "under", "skirt"]) expect(f.full.tags![k], k).toBeUndefined();
+    for (const k of ["after", "drunk"]) expect(f.portrait!.tags![k], k).toBeUndefined();
+    expect(f.portrait!.tags).toMatchObject({ under: "off", skirt: "up" });
+    const bed = withLook(s, { type: "sex", location: "home.bedroom", participants: [her, { id: "husband", role: "husband" }], tags: {} });
+    expect(bed.tags!.hsize).toBeUndefined();
+  });
+});

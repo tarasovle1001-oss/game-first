@@ -1,6 +1,6 @@
 // Guests try their luck with her, she answers through one formula.
 // Every row of that formula is named and visible; mods add rows with api.formulas.addFactor(CONSENT_FORMULA, ...).
-import type { Ctx, EngineView, GameState, ModApi } from "@tc/core";
+import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
 import { actById, actOf, content } from "../content";
 import { outcomeOf, refusalWhy, setOutcome } from "./voice";
 import type { Act } from "../content/schema";
@@ -828,9 +828,11 @@ export function registerEncounters(api: ModApi) {
   api.scenes.register({
     id: "base.finish",
     priority: 90,
-    match(state) {
+    match(state): SceneDesc | null {
       const f = bs(state).shift?.fin;
       if (!f || bs(state).encounter || (bs(state).shift?.tick ?? 0) >= f.until || !onScreen(state, f.loc)) return null;
+      // a group that has finished: the picture is all of them after it, not one man's ending
+      if ((f.men ?? 0) >= 2) return { type: "group_after", location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), men: String(f.men) } };
       return { type: FIN_SCENE[f.place] ?? actById(f.act).scene, location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), fin: f.place } };
     },
   });

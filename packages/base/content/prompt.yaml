@@ -132,6 +132,7 @@ poses:
   came_join_hold: { scene: "medium shot, three-quarter view, double penetration with partner, group framing", patron: "lying on back, one hand on her hip, penetrating from below", wife: "straddling, hands on his shoulder and chest, receiving both", husband: "kneeling behind, hands on her hip and shoulder, penetrating from behind" }
   join_after: { scene: "medium shot, three-quarter view, double penetration with partner, group framing", patron: "lying on back, one hand on her hip, penetrating from below", wife: "straddling, hands on his shoulder and chest, receiving both", husband: "kneeling behind, hands on her hip and shoulder, penetrating from behind" }
   came_join_after: { scene: "medium shot, three-quarter view, double penetration with partner, group framing", patron: "lying on back, one hand on her hip, penetrating from below", wife: "straddling, hands on his shoulder and chest, receiving both", husband: "kneeling behind, hands on her hip and shoulder, penetrating from behind" }
+  group_after: { scene: "medium shot, after group sex, men standing around her", wife: "kneeling on the floor, exhausted, looking up", patron: "standing over her" }
   group_spitroast: { scene: "medium shot, dual contact, dynamic group framing", wife: "on all fours, receiving from both ends", patron: "kneeling behind, hands on her hips and butt, penetrating from behind", patron2: "kneeling in front, one hand on her head, penis in her mouth" }
   group_spitroast_hand: { scene: "medium shot, wide angle, three-person contact, busy framing", wife: "kneeling, one hand stroking third man, receiving from behind and mouth", patron: "kneeling behind, one hand on her hip, penetrating from behind", patron2: "standing in front, one hand on her head, penis in her mouth", patron3: "standing beside, penis shown, being stroked" }
   group_dp: { scene: "medium shot, three-quarter view, double penetration, close group framing", patron: "lying on back, one hand on her hip, penetrating from below", wife: "straddling, hands on his shoulder and chest, receiving both", patron2: "kneeling behind, hands on her hip and shoulder, penetrating from behind" }
@@ -472,6 +473,12 @@ tags:
   lead_ruined: "hetero, femdom, (ruined orgasm:1.2), hands up, ejaculation, cum, cumdrip, penis, twitching penis, smirk, looking at penis, kneeling, on floor, between legs, man sitting on bed, spread legs, head out of frame, (from side:1.3), profile, (2people:1.1), uncensored, cum string"
   lead_snowball: "hetero, femdom, (snowballing:1.3), cum swap, (french kiss:1.2), kiss, cum in mouth, cum on tongue, cum string, girl on top, leaning over, hand on another's chin, man lying on back, on bed, upper body, from side, uncensored, saliva"
   lead_lick_clean: "hetero, femdom, (facesitting:1.3), sitting on face, straddling, (cunnilingus:1.1), cum in pussy, cumdrip, after sex, looking down, smirk, hand on another's head, man lying on back, on bed, from side, uncensored"
+  # more than one man: one pool of pictures by the number of men and the phase (look.ts: groupOf)
+  group: "hetero, group sex"
+  "group+men.2": "threesome, mmf threesome"
+  "group+men.3": "gangbang"
+  "group+men.4": "gangbang"
+  "group+phase.after": "after sex, cum on body, cum on face, exhausted, men standing around"
   join_husband: "hetero, threesome, mmf threesome, (spitroast:1.2), sex from behind, fellatio, all fours, man kneeling behind, man kneeling in front, penis, from side"
   group_spitroast: "hetero, threesome, mmf threesome, (spitroast:1.2), sex from behind, doggystyle, fellatio, all fours, man kneeling behind, man kneeling in front, penis, penetration, from side"
   group_spitroast_hand: "hetero, group sex, gangbang, spitroast, sex from behind, fellatio, handjob, all fours, multiple penises, men standing, from side"
@@ -630,6 +637,7 @@ loras:
   came_pegging: { file: tc_femdom, weight: 0.4 }
   spank_him: { file: tc_femdom, weight: 0.4 }
   came_spank_him: { file: tc_femdom, weight: 0.4 }
+  group: { file: tc_groups, weight: 0.4 }
   "group_*": { file: tc_groups, weight: 0.4 }
   "join_*": { file: tc_groups, weight: 0.4 }
   "came_join_*": { file: tc_groups, weight: 0.4 }

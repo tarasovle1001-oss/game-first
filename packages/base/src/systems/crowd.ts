@@ -253,7 +253,7 @@ export function registerCrowd(api: ModApi) {
     const wantsFace = (p.approach === "push" || (v.drunk ?? 0) >= 60) && options.includes("face");
     let place = wantsFace ? "face" : ctx.rng.pick(options);
     const show = (pl: string) => {
-      sh.fin = { patron: p.id, place: pl, act: enc.act, loc: enc.loc, until: sh.tick + Fi.shows };
+      sh.fin = { patron: p.id, place: pl, act: enc.act, loc: enc.loc, until: sh.tick + Fi.shows, ...((enc.men?.length ?? 0) > 0 ? { men: 1 + enc.men!.length } : {}) };
     };
     if (place === "face" || place === "mouth") {
       const glad = h.traits.openness >= (Fi.wants[place] ?? 100) || h.latents.oral_fixation !== undefined || p.memory.affinity >= Fi.likedAffinity || h.drunk >= Fi.drunk;

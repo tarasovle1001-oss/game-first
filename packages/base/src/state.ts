@@ -231,7 +231,7 @@ export interface Shift {
   upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight
-  fin?: { patron: string; place: string; act: string; loc: string; until: number }; // how the last one ended, while it still shows
+  fin?: { patron: string; place: string; act: string; loc: string; until: number; men?: number }; // how the last one ended, while it still shows
   lastCrowd?: { crowd: string[]; men: { patron: string; slot: string; act: string }[] }; // who was around the encounter that is running
   cleanUntil?: number; // minute she is done cleaning herself up
   marksSeen?: boolean;

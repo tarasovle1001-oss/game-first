@@ -374,6 +374,12 @@
     - { role: patron, pose: kneel, x: 27, y: 0, flip: true, torso: 64, head: 44, penis: { to: wife.groin }, armR: { to: wife.kneeR, dy: -6 }, armL: { to: wife.chest, dx: 6, dy: -10 } }
     - { role: patron2, pose: kneel, x: -52, y: 0, flip: false, torso: 88, head: 60, penis: { angle: -10, len: 22 }, armR: { to: wife.head, dx: -2, dy: 6 } }
 
+# a group has finished: she is on her knees, the men stand around (the mannequin draws two of them)
+- id: group_after
+  figures:
+    - { role: wife, pose: kneel, x: 0, y: 0, flip: false, torso: 84, head: 72 }
+    - { role: patron, pose: stand, x: 30, y: 0, flip: true, torso: 92, head: 68 }
+
 # --- her husband joins her and a guest ---
 - id: join_hand
   figures:

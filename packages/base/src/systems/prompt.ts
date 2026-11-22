@@ -109,7 +109,8 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   const dressedDetail = isDetail && !!P.penis_unless && new RegExp(P.penis_unless, "i").test(detailMain);
   const detailWords = isDetail ? [detailMain, ...Object.entries(t).filter(([k]) => !(dressedDetail && k === "size")).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
   // booru tags of the scene (prompt.yaml: tags) lead the prompt; a scene that has them does not use its English pose slots
-  const booru = isDetail ? "" : (P.tags[desc.type] ?? "").trim();
+  // ...and may have extra words for one value of a tag ("group+men.3")
+  const booru = isDetail ? "" : [P.tags[desc.type] ?? "", ...tagKeys.map((k) => P.tags[`${desc.type}+${k}`] ?? "")].map((x) => x.trim()).filter(Boolean).join(", ");
   // rules on top of the scene tags (prompt.yaml: rules): by what the tags say and who is in the scene
   const has = (role: string) => desc.participants.some((p) => (role === "patron" ? p.role.startsWith("patron") : p.role === role));
   // close-ups get the rules too (fluids, no censoring), matched on their own words
