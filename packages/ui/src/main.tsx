@@ -13,7 +13,7 @@ import { HeroinePicker, GenSwitch } from "./heroine";
 import { loadHeroines, saveHeroines } from "./heroines";
 import { AUTOSAVE_KEY, carryOver, downloadText, engine, game, makeGame, newSeed, readModFile, SAVE_KEY, setGame } from "./game";
 import type { Lang, ModPack } from "./game";
-import { loadPack, packInfo, picNote } from "./pack";
+import { canRememberPack, loadPack, packInfo, picNote, pickPack, rememberedPack, reopenPack } from "./pack";
 import { useStoredFlag } from "./stored";
 import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, TopBar, WhyTab } from "./panels";
 import { ActionMenu } from "./menu";
@@ -29,7 +29,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "21a";
+const BUILD = "21b";
 const RESUME_KEY = "test-city.resume";
 const JOURNAL_KEY = "test-city.journal";
 /**
@@ -160,6 +160,34 @@ function App() {
   const [menu, setMenu] = useState(false);
   const [packCount, setPackCount] = useState(0);
   const packInput = useRef<HTMLInputElement | null>(null);
+  // the pack folder is remembered by the browser: read at once when it lets us, otherwise on the first click (it asks once)
+  const [packWait, setPackWait] = useState<string | null>(null); // name of a remembered folder that still needs a click
+  const [packBusy, setPackBusy] = useState<number | null>(null); // files read so far while a folder is loading
+  const takePack = async (run: (onCount: (n: number) => void) => Promise<number | null>) => {
+    setPackBusy(0);
+    const n = await run(setPackBusy);
+    setPackBusy(null);
+    if (n !== null) {
+      setPackCount(n);
+      setPackWait(null);
+    }
+    return n;
+  };
+  useEffect(() => {
+    void rememberedPack().then((r) => {
+      if (!r) return;
+      if (r.ready) void takePack((c) => reopenPack(false, c));
+      else setPackWait(r.name);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!packWait) return;
+    const once = () => void takePack((c) => reopenPack(true, c));
+    window.addEventListener("pointerdown", once, { once: true });
+    return () => window.removeEventListener("pointerdown", once);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [packWait]);
   const [setupOpen, setSetupOpen] = useState(!resumed);
   // the heroine picked on the first new-game screen: undefined = not yet, null = the default one
   const [chosen, setChosen] = useState<HeroineCard | null | undefined>(undefined); // the first thing a player sees, unless there is a game to come back to
@@ -381,6 +409,7 @@ function App() {
           <button className={debug ? "on" : ""} title={t("ui.cheats.key")} onClick={() => setDebug(!debug)}>
             {t("ui.debug")}
           </button>
+          {(packBusy !== null || packWait) && <span className="muted small">{packBusy !== null ? t("ui.pack.reading", { n: packBusy }) : t("ui.pack.wait", { name: packWait ?? "" })}</span>}
           <button onClick={addNote} title={t("ui.note.hint")}>
             {t("ui.note")}
             {notes.length > 0 ? ` ${notes.length}` : ""}
@@ -416,9 +445,11 @@ function App() {
             <button onClick={() => downloadText(`test-city-day${state.time.day}.json`, saveGame(state, engine))}>{t("ui.save.file")}</button>
             <button onClick={() => saveInput.current?.click()}>{t("ui.load.file")}</button>
             <button onClick={() => modInput.current?.click()}>{t("ui.mod.add")}</button>
-            <button onClick={() => packInput.current?.click()}>{t("ui.pack.add")}</button>
+            <button onClick={() => (canRememberPack() ? void takePack(pickPack) : packInput.current?.click())}>{t("ui.pack.add")}</button>
             <GenSwitch t={t} />
-            {packCount > 0 && <div className="muted small">{t("ui.pack.loaded", { name: packInfo().name, n: packInfo().keys })}</div>}
+            {packBusy !== null && <div className="muted small">{t("ui.pack.reading", { n: packBusy })}</div>}
+            {packWait && packBusy === null && <div className="muted small">{t("ui.pack.wait", { name: packWait })}</div>}
+            {packCount > 0 && packBusy === null && <div className="muted small">{t("ui.pack.loaded", { name: packInfo().name, n: packInfo().keys, files: packCount })}</div>}
             <div className="muted small">
               {t("ui.mods")}: {game.packs.map((p) => `${p.mod.id} v${p.mod.version}`).join(", ")}
             </div>

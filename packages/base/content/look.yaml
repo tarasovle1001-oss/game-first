@@ -31,6 +31,14 @@ after:              # minutes each shows once something intimate has ended
   sweat: 40
   hair: 60
   clothes: 30
+# Choosing a picture when the pack has no exact one: the nearest picture of the same scene with the same people.
+# Each difference costs its weight; the cheapest picture wins. Numbers (a size) cost by how far apart they are.
+match:
+  room: 5          # another room
+  other: 1         # a tag not listed below
+  lacks: 0.6       # share of the weight when the picture simply does not show a thing (shows nothing wrong either)
+  wholeCap: 9      # a whole-scene picture further off than this gives way to her portrait + close-ups
+  tags: { bare: 12, wear: 6, outfit: 8, men: 9, toy: 5, cage: 5, fin: 5, face: 3, size: 3, hsize: 3, size2: 2, size3: 2, marks: 3, crowd: 3, under: 2, skirt: 2, drunk: 1, gape: 1, sore: 1, after: 1 }
 words:
   # Her outfits, drawn the same in every picture. Tags checked against the Danbooru list (post counts in DECISIONS 21.11).
   # tags: the whole outfit, dressed. core: what is left in view once it is partly off or pushed aside for an act

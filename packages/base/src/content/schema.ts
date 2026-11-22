@@ -600,6 +600,8 @@ export const lookSchema = z
   .object({
     marks: z.object({ byAct: z.record(z.string(), z.array(z.string()).min(1)), husbandWhere: z.record(z.string(), z.string()), lasts: z.record(z.string(), z.number().positive()), dripAfter: z.number(), onHim: z.number() }).strict(),
     after: z.record(z.string(), z.number().positive()),
+    // how a picture is chosen when the pack has no exact one (systems/packfind.ts)
+    match: z.object({ room: z.number(), other: z.number(), lacks: z.number().min(0).max(1), wholeCap: z.number(), tags: z.record(z.string(), z.number()) }).strict(),
     words: z
       .object({
         outfit: z.record(z.string(), z.object({ tags: z.string(), core: z.string().optional(), top: z.string().optional(), lift: z.string().optional(), under: z.string().optional(), negative: z.string().optional() }).strict()), under: z.record(z.string(), z.object({ bra: z.string(), panties: z.string() }).strict()), bare: z.record(z.string(), z.array(z.string())), panties: z.record(z.string(), z.string()),

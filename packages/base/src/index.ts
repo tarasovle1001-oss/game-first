@@ -197,6 +197,8 @@ export { OUTFIT_BACK } from "./systems/manners";
 export { ANSWER } from "./systems/herside";
 export { annoyanceOf, annoyedLevel } from "./systems/annoy";
 export { describeScene, faceOf, lookTags, pictureFrames, pictureScene, resolveFrames, withLook, PICTURE_TAGS } from "./systems/look";
+export { findPicture, packIndex, packLayout, pictureCost } from "./systems/packfind";
+export type { Found, Hit, PackEntry, PackIndex } from "./systems/packfind";
 export type { PictureFrames } from "./systems/look";
 export { promptFor, sceneAct } from "./systems/prompt";
 export type { ScenePrompt } from "./systems/prompt";
