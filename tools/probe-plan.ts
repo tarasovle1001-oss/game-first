@@ -38,7 +38,7 @@ for (const preset of content.presets.map((p) => p.id))
 const rows: Record<string, unknown>[] = [];
 const push = (desc: SceneDesc, kind: "scene" | "detail", n: number) => {
   const p = promptFor(desc, card ? "default" : cast, wife);
-  rows.push({ kind, key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, size: kind === "detail" ? DETAIL : SCENE, positive: p.positive, negative: p.negative, empty: p.empty });
+  rows.push({ kind, key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, size: kind === "detail" ? DETAIL : SCENE, positive: p.positive, negative: p.negative, empty: p.empty, ...(p.lora ? { lora: p.lora } : {}) });
 };
 
 for (const l of content.scenes) {

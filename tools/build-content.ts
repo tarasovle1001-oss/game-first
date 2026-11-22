@@ -136,6 +136,13 @@ const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1
 for (const lang of langs)
   for (const [key, text] of Object.entries(locales[lang]!)) {
     const en = locales.en?.[key];
+    // another wording of a line ("key#2") may leave a placeholder out (a line without the name), never bring a new one in
+    if (key.includes("#")) {
+      const base = new Set(placeholders(locales[lang]![key.split("#")[0]!] ?? "").split(","));
+      const extra = placeholders(text).split(",").filter((p) => p && !base.has(p));
+      if (extra.length) errors.push(`locale "${lang}" key "${key}": {${extra.join("}, {")}} is not in the line it is a wording of`);
+      continue;
+    }
     if (en !== undefined && placeholders(en) !== placeholders(text)) errors.push(`locale "${lang}" key "${key}": placeholders differ from en`);
   }
 

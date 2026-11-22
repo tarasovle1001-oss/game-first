@@ -637,6 +637,8 @@ export const promptSchema = z
     details_grok: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
     detail_with: z.record(z.string(), z.array(z.string())).default({}),
     detail_nobody: z.array(z.string()).default([]),
+    detail_head: z.array(z.string()).default([]),
+    loras: z.record(z.string(), z.object({ file: z.string().min(1), weight: z.number().positive() }).strict()).default({}),
     detail_hands: z.record(z.string(), z.array(z.string())).default({}),
     tags_wayward: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),
     negatives: z.record(z.string(), z.string().nullable().transform((s) => s ?? "")).default({}),

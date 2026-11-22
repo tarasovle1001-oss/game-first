@@ -74,7 +74,7 @@ for (const { n, desc, kind } of counts.values()) {
 
 const row = (desc: SceneDesc, n: number, kind: Kind = "full") => {
   const p = promptFor(desc, card ? "default" : cast, wife);
-  return { kind, key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, shared: p.shared, regions: p.regions, positive: p.positive, negative: p.negative, empty: p.empty };
+  return { kind, key: p.key, file: p.file, n, layout: p.layout, location: desc.location, roles: desc.participants.map((x) => x.role), tags: desc.tags ?? {}, shared: p.shared, regions: p.regions, positive: p.positive, negative: p.negative, empty: p.empty, ...(p.lora ? { lora: p.lora } : {}) };
 };
 const every = [...counts.values()].map((v) => row(v.desc, v.n, v.kind)).sort((a, b) => b.n - a.n);
 const rows = every.filter((r) => r.kind === "full");

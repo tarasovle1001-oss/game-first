@@ -49,6 +49,7 @@ export const visibleMarks = (state: GameState): string[] => Object.keys(bs(state
 export const wearOf = (state: GameState): string => {
   const b = bs(state);
   const h = b.heroine;
+  if (state.where[WIFE] === "cafe.sauna") return I.wear.wash; // in the sauna she is in a towel, whatever she came to work in
   if (state.time.phase === "shift") return h.outfit;
   if (state.time.phase === "night") return b.night?.wants || h.traits.openness >= I.wear.boldOpenness ? I.wear.nightBold : I.wear.night;
   if (b.day?.her?.task === "wash") return I.wear.wash;

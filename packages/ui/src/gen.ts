@@ -99,7 +99,7 @@ export function drawPicture(desc: SceneDesc, card: HeroineCard | undefined | nul
   const p = (async () => {
     try {
       const pr = promptFor(desc, "default", wifeOf(card));
-      let job = await call<{ id?: string; state: string; url?: string; ahead?: number; error?: string }>("/api/draw", { folder, file, positive: pr.positive, negative: pr.negative, size: sizeOf(desc), replace: !!opts.replace });
+      let job = await call<{ id?: string; state: string; url?: string; ahead?: number; error?: string }>("/api/draw", { folder, file, positive: pr.positive, negative: pr.negative, size: sizeOf(desc), replace: !!opts.replace, ...(pr.lora ? { lora: pr.lora } : {}) });
       const jobId = job.id;
       const started = Date.now();
       while (job.state === "queued" || job.state === "drawing") {
@@ -138,7 +138,7 @@ export function wantFrames(frames: PictureFrames, card: HeroineCard | undefined 
   // pictures are of her: a room without her is not worth a picture
   if (!frames.full.participants.some((p) => p.role === "wife")) return;
   const folder = folderOf(card);
-  const want = frames.splitOnly && frames.portrait ? [frames.portrait, ...frames.inserts] : [frames.full];
+  const want = [frames.full];
   for (const d of want) {
     const file = fileOf(d);
     if (hasExact(file)) continue;

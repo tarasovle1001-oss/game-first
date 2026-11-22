@@ -4,7 +4,8 @@
 import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
 import { actOf, content } from "../content";
 import { bs, HUSBAND, WIFE } from "../state";
-import { sizeClass } from "./body";
+import { fitOf, sizeClass } from "./body";
+import { toyForHim } from "./marriage";
 import { bareOf, dressOf } from "./dress";
 import { annoyedLevel } from "./annoy";
 import { husbandSees } from "./places";
@@ -129,7 +130,16 @@ export function describeScene(state: GameState, open = false): SceneWords {
  * Coarse on purpose - levels, not numbers - so one picture covers a stretch of play. Order = most important
  * first; a pack that lacks the exact picture drops tags from the end of this list (see sceneKeyFallbacks).
  */
-export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "crowd", "face", "marks", "size", "hsize", "size2", "size3", "under", "skirt", "gape", "sore", "after", "drunk", "toy", "cage"];
+export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "crowd", "face", "hsize", "tsize", "under", "skirt", "after", "drunk", "toy", "cage"];
+/**
+ * What a whole picture and her portrait do not show (the picture pass of 22.11 looked: a guest's size class, the marks on
+ * her, how stretched or sore she is read the same at that distance). They stay out of those keys - one picture for all of
+ * them - and live in the close-ups, which do show them.
+ */
+const UNSEEN_WHOLE = ["size", "size2", "size3", "marks", "gape", "sore"];
+/** Scenes where a toy is the subject: its size class goes into the key. */
+const TOY_HERS = new Set(["toy_on_her", "came_toy_on_her"]);
+const TOY_HIS = new Set(["dildo_him", "came_dildo_him"]);
 const HIDDEN = new Set(["inside", "anus", "thighs"]);
 const level = (table: [number, string][], value: number) => table.filter(([from]) => value >= from).length;
 
@@ -174,6 +184,16 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
     .map((z) => [z[0], level(W.sore[z] ?? [], h.sore?.[z] ?? 0)] as const)
     .filter(([, n]) => n > 0);
   if (sore.length) out.sore = sore.map(([z, n]) => `${z}${n}`).join("");
+  for (const k of UNSEEN_WHOLE) delete out[k];
+  // a toy in the middle of the scene: how big it is shows, and is drawn
+  if (TOY_HIS.has(desc.type)) {
+    const toy = toyForHim(state).toy;
+    if (toy) out.tsize = String(sizeClass(toy.size));
+  } else if (TOY_HERS.has(desc.type)) {
+    const fit = fitOf(state, "vagina") + content.day.shop.toyStretchAbove;
+    const size = Math.max(0, ...content.day.shop.toys.filter((t) => b.toys.includes(t.id) && t.size <= fit).map((t) => t.size));
+    if (size > 0) out.tsize = String(sizeClass(size));
+  }
   return out;
 }
 
@@ -272,9 +292,6 @@ export function registerLook(api: ModApi) {
   });
 }
 
-/** What goes into a close-up: only what a frame without faces can show. */
-const INSERT_TAGS = ["fin", "size", "gape", "sore", "marks", "bare", "under", "skirt"];
-const SIZE_TAG: Record<string, string> = { patron: "size", patron2: "size2", patron3: "size3", husband: "hsize" };
 
 export interface PictureFrames {
   /** The whole scene in one picture: what a pack shows when it has it. */
@@ -297,7 +314,7 @@ const D = content.floor.details;
 /** His hands on her, by the picture it happens in: which parts get a close-up. */
 const GROPE: Record<string, string[]> = {
   patron_touching: ["grope_thigh"], patron_moment_sit_on_lap: ["grope_butt"], patron_groping: ["grope_breast", "grope_under"], patron_lap_dance: ["grope_butt"],
-  him_grope: ["grope_breast", "grope_butt"], sauna_massage: ["grope_butt"],
+  him_grope: ["grope_breast", "grope_butt"],
 };
 /** She is showing herself: the parts in close-up. */
 const SHOWS = new Set(["flash", "walk_naked", "striptease", "body_shot", "masturbate_show"]);
@@ -398,27 +415,11 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
   const full = withLook(state, desc);
   const tags = full.tags ?? {};
   const wife = desc.participants.find((p) => p.role === "wife");
-  const enc = bs(state).encounter;
-  const sceneOf = (act: string | undefined) => actOf(act)?.scene;
-  const grouped = !!enc && desc.participants.some((p) => p.id === enc.patron) && ((enc.men?.length ?? 0) > 0 || desc.type.startsWith("join_"));
+  // since 22.11 a scene is one picture: the close-ups of the act ("his part of her", one per man) are no longer asked for.
+  // The list stays in the shape of the frames, always empty; the free close-ups (details) go beside the picture as before.
   const inserts: SceneDesc[] = [];
-  // a close-up of contact needs contact: nothing of the kind for standing at the bar, talking, pouring a drink
-  const layout = content.scenes.find((x) => x.id === desc.type);
-  const contact = !!layout?.figures.some((f) => f.penis) || content.acts.some((a) => a.scene === desc.type && a.tier >= 2) || !!layout?.split;
-  if (wife)
-    for (const p of desc.participants) {
-      if (inserts.length >= 3 || !(p.role in SIZE_TAG) || !contact) continue;
-      // in a group each man has his own part of her: his close-up is the one of a pair doing that
-      const pair = !grouped ? desc.type : p.id === enc!.patron ? sceneOf(enc!.act) : (sceneOf(enc!.men?.find((m) => m.patron === p.id)?.act) ?? desc.type);
-      const t: Record<string, string> = {};
-      for (const k of INSERT_TAGS) if (tags[k] !== undefined) t[k] = tags[k]!;
-      const size = tags[SIZE_TAG[p.role]!];
-      delete t.size;
-      if (size !== undefined) t.size = size;
-      inserts.push({ type: `insert_${pair ?? desc.type}`, location: desc.location, participants: [{ id: p.id, role: p.role === "husband" ? "husband" : "patron" }], tags: t });
-    }
   const { men: _m, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, ...look } = tags;
-  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc), ...(content.scenes.find((x) => x.id === desc.type)?.split ? { splitOnly: true } : {}) };
+  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc) };
 }
 
 /**

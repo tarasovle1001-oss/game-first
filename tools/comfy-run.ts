@@ -39,7 +39,7 @@ const loras = opt("loras", "sdxl_lightning_8step_lora.safetensors:1,sora_v2-0000
   .map((s) => ({ name: s.split(":")[0]!, w: Number(s.split(":")[1] ?? 1) }));
 const cn = opt("cn", "noob_depth_fp16.safetensors")!;
 
-type Row = { key: string; file: string; layout: string; positive: string; negative: string; empty: string[]; size?: string };
+type Row = { key: string; file: string; layout: string; positive: string; negative: string; empty: string[]; size?: string; lora?: { file: string; weight: number } };
 const plan = JSON.parse(readFileSync(planFile, "utf8")) as { plan: Row[]; base: Row[] };
 let rows: Row[] = plan.plan;
 const layouts = opt("layouts")?.split(",");
@@ -79,7 +79,9 @@ function graph(job: (typeof jobs)[number], depth: string | undefined) {
   g.ckpt = { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: opt("ckpt", "waiIllustriousSDXL_v170.safetensors") } };
   let model: [string, number] = ["ckpt", 0];
   let clip: [string, number] = ["ckpt", 1];
-  loras.forEach((l, i) => {
+  // the row's own LoRA (prompt.yaml: loras, written into the plan) goes on top of the ones given on the command line
+  const own = job.row.lora ? [{ name: `${job.row.lora.file.replace(/\.safetensors$/, "")}.safetensors`, w: job.row.lora.weight }] : [];
+  [...loras, ...own].forEach((l, i) => {
     g[`lora${i}`] = { class_type: "LoraLoader", inputs: { model, clip, lora_name: l.name, strength_model: l.w, strength_clip: l.w } };
     model = [`lora${i}`, 0];
     clip = [`lora${i}`, 1];

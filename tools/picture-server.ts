@@ -6,7 +6,7 @@
 //   Start-Generator.bat   or   pnpm exec tsx tools/picture-server.ts [--port 8197] [--comfy http://127.0.0.1:8188] [--dir pictures]
 //
 // API (CORS open, local only): GET /api/status, GET /api/list?folder=, POST /api/card {folder, card},
-// POST /api/draw {folder, file, positive, negative, size, seed?, replace?} -> {id}, GET /api/job?id=, POST /api/cancel {folder?},
+// POST /api/draw {folder, file, positive, negative, size, seed?, replace?, lora?: {file, weight}} -> {id}, GET /api/job?id=, POST /api/cancel {folder?},
 // GET /pic/<folder>/<file>.png
 import { createServer } from "node:http";
 import type { ServerResponse, IncomingMessage } from "node:http";
@@ -36,7 +36,7 @@ const FOLDER = /^h_[a-z0-9]{4,16}(_[a-z0-9]{1,10})?$|^default$/;
 const FILE = /^[\w.+=,~-]{1,220}$/;
 const SIZE = /^\d{3,4}x\d{3,4}$/;
 
-type Job = { id: string; folder: string; file: string; positive: string; negative: string; size: string; seed: number; state: "queued" | "drawing" | "done" | "error"; error?: string; at: number };
+type Job = { id: string; folder: string; file: string; positive: string; negative: string; size: string; seed: number; lora?: string; state: "queued" | "drawing" | "done" | "error"; error?: string; at: number };
 const jobs = new Map<string, Job>();
 const queue: Job[] = []; // newest request first: what is on screen now matters more than what was a minute ago
 let drawing = 0;
@@ -71,7 +71,8 @@ async function pump() {
       if (j.state !== "queued") continue;
       j.state = "drawing";
       try {
-        const png = await comfyRender(COMFY, j.positive, j.negative, j.seed, j.size, `test-city/${j.folder}`, draw);
+        // a scene with a LoRA of its own (prompt.yaml: loras): loaded on top of the usual ones, for this picture only
+        const png = await comfyRender(COMFY, j.positive, j.negative, j.seed, j.size, `test-city/${j.folder}`, j.lora ? { ...draw, loras: [draw.loras, j.lora].filter(Boolean).join(",") } : draw);
         mkdirSync(join(DIR, j.folder), { recursive: true });
         const tmp = `${pathOf(j.folder, j.file)}.part`;
         writeFileSync(tmp, png);
@@ -127,7 +128,10 @@ createServer(async (req, res) => {
         if (same.state === "queued") queue.splice(queue.indexOf(same), 1), queue.unshift(same);
         return json(res, 200, { id: same.id, state: same.state, ahead: queue.indexOf(same) });
       }
-      const job: Job = { id: `j${++n}`, folder, file, positive: String(b.positive ?? ""), negative: String(b.negative ?? ""), size, seed: Number.isFinite(Number(b.seed)) ? Number(b.seed) : Math.floor(Math.random() * 2 ** 31), state: "queued", at: Date.now() };
+      // {file, weight} from the game; only a plain file name gets through
+      const lr = b.lora as { file?: unknown; weight?: unknown } | undefined;
+      const lora = lr && typeof lr.file === "string" && /^[\w.-]+$/.test(lr.file) && Number(lr.weight) > 0 ? `${lr.file.replace(/\.safetensors$/, "")}.safetensors:${Number(lr.weight)}` : undefined;
+      const job: Job = { id: `j${++n}`, folder, file, positive: String(b.positive ?? ""), negative: String(b.negative ?? ""), size, ...(lora ? { lora } : {}), seed: Number.isFinite(Number(b.seed)) ? Number(b.seed) : Math.floor(Math.random() * 2 ** 31), state: "queued", at: Date.now() };
       jobs.set(job.id, job);
       queue.unshift(job);
       // a long walk through the game leaves old wishes behind: keep the newest 40

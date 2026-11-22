@@ -490,14 +490,3 @@
   tip: 20
   zones: []
   lines: true
-- id: sauna_massage
-  tier: 5
-  at: [cafe.sauna]
-  base: -42
-  scene: sauna_massage
-  place: private
-  effects: { arousal: 9, mood: 1, energy: -4, interest: 7, affinity: 2 }
-  minutes: 10
-  tip: 30
-  zones: []
-  lines: true

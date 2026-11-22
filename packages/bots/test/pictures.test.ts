@@ -47,37 +47,55 @@ describe("pictures", () => {
   });
 });
 
-import { pictureFrames, resolveFrames } from "@tc/base";
+import { pictureFrames, promptFor, resolveFrames } from "@tc/base";
 import { sceneKeyFallbacks, sceneFileName } from "@tc/core";
 
 describe("main picture and close-ups", () => {
   const pair = { type: "blowjob", location: "storage", participants: [{ id: "wife", role: "wife" }, { id: "p1", role: "patron" }], tags: { outfit: "uniform" } };
   const lookup = (have: string[]) => (d: { type: string; location: string; participants: { id: string; role: string }[]; tags?: Record<string, string> }) =>
     sceneKeyFallbacks(d).map(sceneFileName).find((k) => have.includes(k)) ?? null;
-  it("shows the whole scene when the pack has it, and splits into portrait + close-ups when it does not", () => {
+  it("a scene is one picture: the whole one, or her portrait; no close-ups of the act are asked for", () => {
     const s = engine.init(5, { base: { preset: "ordinary" } });
     const f = pictureFrames(s, pair);
     expect(f.portrait?.type).toBe("portrait");
     expect(f.portrait?.tags?.face).toBeTruthy();
-    expect(f.inserts.map((i) => i.type)).toEqual(["insert_blowjob"]);
-    expect(f.inserts[0]!.tags?.face).toBeUndefined();
+    expect(f.inserts).toEqual([]);
     expect(resolveFrames(f, lookup(["blowjob__any"]))).toEqual({ main: "blowjob__any", inserts: [], split: false });
-    expect(resolveFrames(f, lookup(["portrait__any", "insert_blowjob__any"]))).toEqual({ main: "portrait__any", inserts: ["insert_blowjob__any"], split: true });
-    expect(resolveFrames(f, lookup(["portrait__any"]))).toEqual({ main: "portrait__any", inserts: [], split: true });
+    expect(resolveFrames(f, lookup(["portrait__any", "insert_blowjob__any"]))).toEqual({ main: "portrait__any", inserts: [], split: true });
     expect(resolveFrames(f, lookup(["insert_blowjob__any"]))).toBe(null);
   });
-  it("builds a group from the close-ups of pairs, three at most", () => {
-    const s0 = engine.init(5, { base: { preset: "ordinary" } });
-    const s = structuredClone(s0);
+  it("a whole picture and her portrait carry nothing the eye cannot tell at that distance", () => {
+    const s = structuredClone(engine.init(5, { base: { preset: "ordinary" } }));
     const b = bs(s);
-    const ids = ["g1", "g2"];
-    const sex = content.acts.find((a) => a.id === "sex")!;
-    const bj = content.acts.find((a) => a.id === "blowjob")!;
-    b.encounter = { ...(b.encounter ?? {}), patron: ids[0]!, act: "sex", loc: "storage", men: [{ patron: ids[1]!, slot: "mouth", act: "blowjob" }] } as never;
-    const f = pictureFrames(s, { type: "group_spitroast", location: "storage", participants: [{ id: "wife", role: "wife" }, { id: ids[0]!, role: "patron" }, { id: ids[1]!, role: "patron2" }], tags: { men: "2" } });
-    expect(f.inserts.map((i) => i.type)).toEqual([`insert_${sex.scene}`, `insert_${bj.scene}`]);
-    expect(f.inserts.every((i) => i.participants[0]!.role === "patron")).toBe(true);
-    expect(f.portrait?.tags?.men).toBeUndefined();
+    b.patrons.g1 = { ...(Object.values(b.patrons)[0] ?? ({} as never)), id: "g1", size: 40 } as never;
+    b.heroine.cum = { face: 30, inside: 30 };
+    b.heroine.body.vagina = { stretch: 80, peak: 80, perm: 60 };
+    b.heroine.sore = { vagina: 90 };
+    const f = pictureFrames(s, { type: "patron_sex", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }, { id: "g1", role: "patron" }], tags: {} });
+    for (const d of [f.full, f.portrait!]) for (const k of ["size", "size2", "size3", "marks", "gape", "sore"]) expect(d.tags?.[k]).toBeUndefined();
+    expect(f.full.tags?.outfit).toBeTruthy();
+    // no scene is "never shown whole" any more, and the sauna has no scene of its own
+    expect(content.scenes.some((x) => (x as { split?: boolean }).split)).toBe(false);
+    expect(content.scenes.some((x) => x.id === "sauna_massage") || content.acts.some((x) => x.id === "sauna_massage")).toBe(false);
+  });
+  it("prompts: her towel in the sauna, the toy's size in a whole scene, a LoRA of the scene's own", () => {
+    const her = { id: "wife", role: "wife" };
+    const sauna = promptFor({ type: "kissing", location: "cafe.sauna", participants: [her, { id: "g", role: "patron" }], tags: { outfit: "towel", face: "happy" } });
+    expect(sauna.positive).toContain("naked towel");
+    const big = promptFor({ type: "dildo_him", location: "home.bedroom", participants: [her, { id: "husband", role: "husband" }], tags: { outfit: "lingerie", tsize: "4" } });
+    expect(big.positive).toContain("gigantic dildo");
+    expect(big.lora).toEqual({ file: "tc_femdom-1000", weight: 0.6 });
+    expect(big.positive.startsWith("tc_femdom, ")).toBe(true);
+    expect(promptFor({ type: "group_spitroast", location: "cafe.lounge", participants: [her, { id: "a", role: "patron" }, { id: "b", role: "patron2" }], tags: { men: "2" } }).lora?.file).toBe("tc_groups");
+    expect(promptFor({ type: "talk", location: "home.bedroom", participants: [her, { id: "husband", role: "husband" }], tags: {} }).lora).toBeUndefined();
+    // the back view for a toy behind, another composition for the biggest; her hair where her head is in the close-up
+    const a2 = promptFor({ type: "detail_toy_a", location: "any", participants: [her], tags: { tsize: "2" } });
+    const a4 = promptFor({ type: "detail_toy_a", location: "any", participants: [her], tags: { tsize: "4" } });
+    expect(a2.positive).toContain("top-down bottom-up");
+    expect(a4.positive).toContain("squatting");
+    expect(a4.positive).not.toContain("top-down bottom-up");
+    expect(promptFor({ type: "detail_phone_ear", location: "any", participants: [her], tags: {} }).positive).toContain("long straight hair");
+    expect(promptFor({ type: "detail_wet", location: "any", participants: [her], tags: {} }).positive).not.toContain("long straight hair");
   });
 });
 

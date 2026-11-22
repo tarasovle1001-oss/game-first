@@ -27,6 +27,16 @@ export interface ScenePrompt {
   negative: string;
   /** slots of prompt.yaml this picture needs that are still empty */
   empty: string[];
+  /** a LoRA of this scene's own (prompt.yaml: loras): the generator loads it on top of its usual ones; its file name is the trigger word, already first in `positive` */
+  lora?: { file: string; weight: number };
+}
+
+/** The LoRA a scene or a close-up is drawn with, if it has one: by its id, or by a prefix written with a star (group_*). */
+export function loraOf(type: string): { file: string; weight: number } | undefined {
+  const exact = P.loras[type];
+  if (exact) return exact;
+  const star = Object.keys(P.loras).filter((k) => k.endsWith("*") && type.startsWith(k.slice(0, -1))).sort((a, b) => b.length - a.length)[0];
+  return star ? P.loras[star] : undefined;
 }
 
 /** The act a layout draws, if it is one: by the layout acts.yaml names, else by its own id (the bed uses act ids). */
@@ -66,7 +76,7 @@ const SIZE_TAG: Record<string, string> = { patron: "size", patron2: "size2", pat
 
 type Role = "wife" | "husband" | "patron" | "patron2" | "patron3" | "watcher";
 /** Who a figure is: always an adult, then the card - the anchor, the look, the body. */
-function who(cast: Cast, role: string, closeUp = false, exposed = false): string[] {
+function who(cast: Cast, role: string, closeUp = false, exposed = false, head = false): string[] {
   const card = cast[role as Role];
   const adult = role === "wife" ? "adult woman, mature female" : "adult man, mature male";
   if (!card) return [adult];
@@ -74,8 +84,10 @@ function who(cast: Cast, role: string, closeUp = false, exposed = false): string
   const penis = exposed ? card.nude : role === "wife" ? "" : card.clothes; // a man not shown bare is drawn dressed
   // a faceless close-up keeps the body and the skin of the card, not the face, hair or jewellery that would pull a face in
   // a man's close-up has its own masculine words (body hair, his skin): his slim, soft, pale card alone reads as a woman's
-  if (closeUp && card.closeup) return [adult, card.closeup, penis];
-  if (closeUp) return [adult, card.appearance.split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), card.body, penis];
+  // a close-up with her head in it (the phone at her ear, a banknote tucked in, her face): her hair too, or it comes out anyone's
+  const hair = head ? card.appearance.split(",").map((w) => w.trim()).filter((w) => /hair|bangs|hime cut/.test(w)).join(", ") : "";
+  if (closeUp && card.closeup) return [adult, card.closeup, hair, penis];
+  if (closeUp) return [adult, card.appearance.split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), hair, card.body, penis];
   return [adult, card.anchor.trim() ? `(${card.anchor.trim()}:${card.strength.toFixed(1)})` : "", card.appearance, card.body, penis];
 }
 
@@ -89,7 +101,10 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   // a free close-up has no layout: its words are one line, plus a line for each tag it carries
   const isDetail = desc.type.startsWith("detail_");
   const detailId = isDetail ? desc.type.slice(7) : "";
-  const detailMain = isDetail ? (P.details[detailId] ?? "") : "";
+  // a close-up can have another composition for one value of a tag ("toy_a@tsize.4"), and extra words for one ("toy_v+tsize.3")
+  const tagKeys = Object.entries(t).map(([k, v]) => `${k}.${v}`);
+  const swapped = tagKeys.map((k) => P.details[`${detailId}@${k}`]).find(Boolean);
+  const detailMain = isDetail ? [swapped ?? P.details[detailId] ?? "", ...tagKeys.map((k) => P.details[`${detailId}+${k}`] ?? "")].filter(Boolean).join(", ") : "";
   // a dressed close-up (a bulge, a stain) does not take the size words: they name a penis and undress him; his size shows as the bulge
   const dressedDetail = isDetail && !!P.penis_unless && new RegExp(P.penis_unless, "i").test(detailMain);
   const detailWords = isDetail ? [detailMain, ...Object.entries(t).filter(([k]) => !(dressedDetail && k === "size")).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
@@ -130,7 +145,7 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   const roomWords = (W.room[desc.location] ?? desc.location).split(",").map((w) => w.trim());
   const room = isDetail ? P.style.detail : [`(${roomWords[0]}:1.2)`, ...roomWords.slice(1)].join(", ");
   const shared = booru
-    ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, ...fired.flatMap((r) => (r.add ? [r.add] : [])), t.fin ? W.fin[t.fin] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
+    ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, ...fired.flatMap((r) => (r.add ? [r.add] : [])), t.fin ? W.fin[t.fin] : undefined, t.tsize !== undefined ? P.details[`tsize.${t.tsize}`] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
     : join([
         P.style.prefix,
         counts,
@@ -157,7 +172,7 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
       regions[role] = join([role === "wife" ? "female hand" : "male hand", (card?.appearance ?? "").split(",").map((w) => w.trim()).filter((w) => /skin|tan/.test(w)).join(", "), role === "wife" ? "wedding ring" : ""]);
       continue;
     }
-    regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed), role === "wife" ? her : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
+    regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed, isDetail && role === "wife" && P.detail_head.includes(detailId)), role === "wife" ? her : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
   const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.3), (multiple boys:1.3)" : men === 0 ? "1boy, male focus" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? ""), drawn.includes("wife") ? wearWords(t, sceneWords, cast.wife).negative : undefined]);
@@ -167,5 +182,6 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   // what one figure asks for (his pale skin) must not be forbidden by another figure's card
   const asked = new Set(positive.split(",").map((w) => w.trim().replace(/^\((.*):[\d.]+\)$/, "$1").toLowerCase()));
   const neg = negative.split(", ").filter((w) => !asked.has(w.trim().replace(/^\((.*):[\d.]+\)$/, "$1").toLowerCase())).join(", ");
-  return { key, rules: fired.map((r) => r.note), file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive, negative: neg, empty };
+  const lora = loraOf(desc.type);
+  return { key, rules: fired.map((r) => r.note), file: `${sceneFileName(key)}.png`, layout: desc.type, shared, regions, positive: lora ? `${lora.file.replace(/-\d+$/, "")}, ${positive}` : positive, negative: neg, empty, ...(lora ? { lora } : {}) };
 }
