@@ -2,7 +2,7 @@
 // otherwise the nearest one of the same scene (base: systems/packfind.ts), and the mannequin when there is none.
 import { sceneKey } from "@tc/core";
 import type { SceneDesc } from "@tc/core";
-import { packIndex, packLayout } from "@tc/base";
+import { packIndex, packLayout, variantOf } from "@tc/base";
 import type { Hit, PackIndex, PictureFrames } from "@tc/base";
 
 /** Pack pictures by file stem; each variant keeps its file name (`stem~3.png`) so a note can point at it. */
@@ -127,24 +127,27 @@ export const hasExact = (file: string) => !!pictures.get(file)?.length || drawn.
 
 /** A picture on screen and where it came from: the key shown, the key the scene asked for, the file and its variant. */
 export type Shot = { url: string; key: string; exact: boolean; asked: string; desc: SceneDesc; file: string; variant: number; source: "pack" | "gen" };
-function shotOf(hit: Hit, pick: number): Shot {
+function shotOf(hit: Hit, salt: string): Shot {
   const base = { key: hit.key, exact: hit.exact, asked: sceneKey(hit.desc), desc: hit.desc };
   const urls = pictures.get(hit.stem);
   if (urls?.length) {
-    const variant = Math.abs(pick) % urls.length;
+    const variant = variantOf(hit.desc, salt, urls.length);
     return { ...base, url: urls[variant]!.url, file: urls[variant]!.name, variant, source: "pack" };
   }
   return { ...base, url: drawn.get(hit.stem)!, file: `${hit.stem}.png`, variant: 0, source: "gen" };
 }
-/** What to put on screen for a scene: the main picture and zero to three close-ups beside it. Null = draw the mannequin. */
-export function layoutFor(frames: PictureFrames, pick: number): { main: Shot; inserts: Shot[]; split: boolean } | null {
+/**
+ * What to put on screen for a scene: the main picture and zero to three close-ups beside it. Null = draw the mannequin.
+ * `salt` (the game's seed and the day) picks between variants: the picture changes when the scene does, not on every move.
+ */
+export function layoutFor(frames: PictureFrames, salt: string): { main: Shot; inserts: Shot[]; split: boolean } | null {
   if (pictures.size === 0 && drawn.size === 0) return null;
   index ??= packIndex([...pictures.keys(), ...drawn.keys()]);
   const got = packLayout(index, frames);
-  return got && { main: shotOf(got.main, pick), inserts: got.inserts.map((h, i) => shotOf(h, pick + 1 + i)), split: got.split };
+  return got && { main: shotOf(got.main, salt), inserts: got.inserts.map((h) => shotOf(h, salt)), split: got.split };
 }
 // What is on screen right now, for a playtest note (F2): the big picture first, then the close-ups beside it.
-export type OnScreen = { where: "here" | "away"; pick: number; split: boolean; frames: { slot: "main" | "insert"; shot: Shot }[] };
+export type OnScreen = { where: "here" | "away"; pick: string; split: boolean; frames: { slot: "main" | "insert"; shot: Shot }[] };
 let onScreen: OnScreen | null = null;
 export const setOnScreen = (next: OnScreen | null) => void (onScreen = next);
 export const getOnScreen = () => onScreen;

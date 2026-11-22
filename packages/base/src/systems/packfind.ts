@@ -105,3 +105,15 @@ export function packLayout(index: PackIndex, frames: PictureFrames): { main: Hit
   const cap = portrait ? Math.min(M().wholeCap, portrait.cost) : M().wholeCap;
   return resolveFrames<Hit>(frames, find(cap)) ?? resolveFrames<Hit>(frames, find(Infinity));
 }
+
+/**
+ * Which of a picture's variants to show. The same scene (what is asked, who is in it) on the same day is the same
+ * picture, however many moves pass: a picture shows the state, and the state has not changed. `salt`: the game and the day.
+ */
+export function variantOf(desc: SceneDesc, salt: string, count: number): number {
+  if (count <= 1) return 0;
+  const text = `${salt}|${sceneKey(desc)}|${desc.participants.map((p) => p.id).join("+")}`;
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return (h >>> 0) % count;
+}

@@ -19,7 +19,7 @@ export const WATCHERS = [
 ];
 
 /** A pack picture: alone, or her portrait with up to three close-ups beside it. A click on a close-up brings it to the middle. */
-export function Photo({ main, inserts, alt, veiled, wide, children, where = "here", pick = 0, split = false }: { main: Shot; inserts: Shot[]; alt: string; veiled?: boolean; wide?: boolean; children?: React.ReactNode; where?: "here" | "away"; pick?: number; split?: boolean }) {
+export function Photo({ main, inserts, alt, veiled, wide, children, where = "here", pick = "", split = false }: { main: Shot; inserts: Shot[]; alt: string; veiled?: boolean; wide?: boolean; children?: React.ReactNode; where?: "here" | "away"; pick?: string; split?: boolean }) {
   const [front, setFront] = useState<string | null>(null);
   const shots = [main, ...inserts];
   const big = shots.find((x) => x.key === front) ?? main;
@@ -48,7 +48,8 @@ export function Photo({ main, inserts, alt, veiled, wide, children, where = "her
 
 export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { scene: SceneDesc | null; watch?: boolean }) {
   const clear = !!open || !!watch; // the picture is not blurred; numbers still need `open`
-  const pick = state.time.day * 7 + state.turn;
+  // which variant of a picture: by the game and the day, never by the move - the same state shows the same picture
+  const pick = `${state.seed}:${state.time.day}`;
   useGen();
   const card = bs(state).heroine.card;
   const frames = scene ? pictureFrames(state, scene) : null;

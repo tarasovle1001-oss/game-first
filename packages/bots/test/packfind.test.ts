@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findPicture, packIndex, packLayout } from "@tc/base";
+import { findPicture, packIndex, packLayout, variantOf } from "@tc/base";
 import type { PictureFrames } from "@tc/base";
 import type { SceneDesc } from "@tc/core";
 
@@ -43,5 +43,15 @@ describe("the nearest picture of a pack", () => {
     expect(got.main).toMatchObject({ exact: true, stem: "portrait__wife__cafe.bar__face=happy,outfit=modest" });
     const kitchen = d("idle", "cafe.kitchen", { face: "happy", outfit: "modest" });
     expect(packLayout(index, { full: kitchen, portrait: d("portrait", "cafe.kitchen", { face: "happy", outfit: "modest" }), inserts: [], details: [] })!.main.stem).toBe("idle__wife__cafe.kitchen__outfit=modest");
+  });
+  it("the same scene on the same day is the same variant; another day or another guest may differ", () => {
+    const scene = d("patron_sex", "cafe.staff", { size: "3" }, pair);
+    const today = variantOf(scene, "7:3", 8);
+    expect(variantOf(structuredClone(scene), "7:3", 8)).toBe(today);
+    const days = new Set(Array.from({ length: 12 }, (_, day) => variantOf(scene, `7:${day}`, 8)));
+    expect(days.size).toBeGreaterThan(3);
+    const guests = new Set(Array.from({ length: 12 }, (_, i) => variantOf({ ...scene, participants: [...her, { id: `p${i}`, role: "patron" }] }, "7:3", 8)));
+    expect(guests.size).toBeGreaterThan(3);
+    expect(variantOf(scene, "7:3", 1)).toBe(0);
   });
 });
