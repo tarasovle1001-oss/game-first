@@ -62,7 +62,7 @@ const HUSBANDS: { id: string; title: string; make: () => Strategy }[] = [
   { id: "push", title: "муж толкает", make: pusher },
 ];
 const WIVES = content.presets.map((p) => p.id);
-const WIFE_RU: Record<string, string> = { faithful: "верная", ordinary: "обычная", curious: "любопытная", hungry: "голодная" };
+const WIFE_RU: Record<string, string> = { faithful: "верная", ordinary: "обычная", bookish: "начитанная", curious: "любопытная", hungry: "голодная" };
 type Scenario = { id: string; title: string; preset: string; husband: string; make: () => Strategy };
 // SET=playtest: only the three games of docs/PLAYTEST.md; otherwise every wife with every husband
 const ONLY = process.env.ONLY?.split(","); // ONLY=hungry/neutral,ordinary/push: just these games

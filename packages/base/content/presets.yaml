@@ -10,6 +10,11 @@
   traits: { openness: 30, confidence: 45, fidelity: 80, honesty: 70, libido: 45 }
   sizeTaste: 20
   latents: []
+# looks ordinary; has read her share of books about big men, and bed with her husband bores her
+- id: bookish
+  traits: { openness: 32, confidence: 45, fidelity: 75, honesty: 65, libido: 58 }
+  sizeTaste: 55
+  latents: [size_queen, disappointed]
 - id: curious
   traits: { openness: 50, confidence: 55, fidelity: 60, honesty: 55, libido: 60 }
   sizeTaste: 30
