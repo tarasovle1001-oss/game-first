@@ -730,6 +730,7 @@ export function registerMarriage(api: ModApi) {
   const startSecond = (ctx: Ctx, act: string, hers: number) => {
     const n = bs(ctx.state).night!;
     n.rounds = (n.rounds ?? 0) + 1;
+    if (n.rest?.hers) n.herCame = true; // the second round starts from zero; that she has come tonight stays
     n.rest = undefined;
     n.fin = undefined;
     n.sex = { act, his: 0, hers: clamp(hers), came: 0, turns: 0, top: false, skirt: true, pleasure: 0, bored: 0, asks: null, ignored: 0, out: false, byHand: false, looseSaid: true, soft: true };
@@ -1074,7 +1075,7 @@ export function registerMarriage(api: ModApi) {
       if (state.time.phase !== "night" || !n?.rest || n.sex || n.herAsleep !== undefined || state.where[HUSBAND] !== state.where[WIFE]) return [];
       const out: { type: string; payload: Record<string, string> }[] = [];
       if (n.rest.wants) out.push({ type: REST, payload: { do: "give", act: n.rest.wants } });
-      else if (!n.rest.hers) out.push({ type: REST, payload: { do: "for_her" } });
+      else if (!n.rest.hers && !n.herCame) out.push({ type: REST, payload: { do: "for_her" } }); // "you haven't yet" only if she really has not
       out.push({ type: REST, payload: { do: "hold" } });
       return out;
     },

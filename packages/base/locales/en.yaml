@@ -2970,7 +2970,7 @@ log.her.browse.toys.bigger.1: "\"And these - who are they even for? Can anybody 
 log.her.browse.toys.bigger.2: "\"I am a long way from those. But nobody forbids looking.\""
 log.her.browse.toys.notyet.1: "\"Just looking. I don't need this. Probably.\""
 log.her.browse.toys.notyet.2: "\"I have a husband. What would I want this for.\" She still picks the box up, reads it and puts it back."
-log.her.browse.toys.dear: "\"{toy}, {price}. Not today. I'll have to put some tips aside.\""
+log.her.browse.toys.dear: "\"That one - {toy}, {price}. Not today. I'll have to put some tips aside.\""
 log.bed.compare.say.1: "\"Don't be hurt. After today I can hardly feel you.\" She says it calmly, still moving."
 log.bed.compare.say.2: "\"Are you in already? Sorry. It's just that this afternoon there was... a different size. I can still feel it.\""
 log.bed.compare.say.3: "She strokes your cheek: \"You're a good one. But I'm going to compare now. He was much thicker.\""
