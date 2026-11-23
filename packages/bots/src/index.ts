@@ -61,6 +61,15 @@ export const lovingStrategy: Strategy = (actions, state, roll) => {
     if (sex.came > 0) return pick("finish") ?? pick("faster")!;
     return (sex.his > sex.hers ? pick("slower") : pick("keep"))!;
   }
+  // the stage after: the attentive one gives her what she asks for most nights, sees to her sometimes, otherwise holds her
+  const rest = actions.filter((a) => a.type === "base/rest");
+  if (rest.length) {
+    const give = rest.find((a) => a.payload?.do === "give");
+    if (give) return roll() < 0.7 ? give : rest.find((a) => a.payload?.do === "hold")!;
+    const forHer = rest.find((a) => a.payload?.do === "for_her");
+    if (forHer && roll() < 0.4) return forHer;
+    return rest.find((a) => a.payload?.do === "hold")!;
+  }
   // he asks once a night; after a "no" or after the first time he lets her sleep
   const first = (bs(state).night?.asks ?? 0) === 0;
   return (first ? actions.find((a) => a.type === "base/night-act" && a.payload?.act === "sex") : undefined) ?? (roll() < 0.3 ? actions.find((a) => a.type === "base/night-self") : undefined) ?? awayStrategy(actions, state, roll);

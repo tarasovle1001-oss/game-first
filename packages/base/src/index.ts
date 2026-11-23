@@ -210,7 +210,7 @@ export { PREP_WAIT, DAY_STOP, passPrep } from "./systems/day";
 export { TASTES, TASTE_LATENT } from "./systems/setup";
 export { STRIP, bareOf, bareMargin, dressOf, eyesOn } from "./systems/dress";
 export { HIS_ACTS, hisActOpen } from "./systems/marriage";
-export { AFTER, NIGHT_DECLINE, NIGHT_SELF, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
+export { AFTER, NIGHT_DECLINE, NIGHT_SELF, REST, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
 export { installment, LOAN_PAY } from "./systems/loan";
 export { ORDER } from "./systems/manners";
 export { husbandSees, husbandIn, husbandNextTo } from "./systems/places";

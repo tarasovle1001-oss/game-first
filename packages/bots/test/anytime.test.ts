@@ -282,17 +282,79 @@ describe("he is done and she is not", () => {
       const ask = engine.listActions(s).find((a) => a.type === "base/night-act" && a.payload?.act === "sex");
       if (!ask) continue;
       s = engine.dispatch(s, ask);
-      for (let i = 0; i < 60 && bs(s).night?.sex && !bs(s).night!.sex!.soft; i++) s = engine.dispatch(s, { type: "base/bed", payload: { do: "keep" } });
-      if (!bs(s).night?.sex?.soft) continue;
+      for (let i = 0; i < 60 && bs(s).night?.sex; i++) s = engine.dispatch(s, { type: "base/bed", payload: { do: "keep" } });
+      // at night she does not just carry on: she asks, and it is his to answer (the stage after)
+      const wants = bs(s).night?.rest?.wants;
+      if (!wants) continue;
+      const give = engine.listActions(s).find((a) => a.type === "base/rest" && a.payload?.do === "give");
+      expect(give?.payload?.act).toBe(wants);
+      expect(engine.listActions(s).some((a) => a.type === "base/rest" && a.payload?.do === "hold")).toBe(true);
+      s = engine.dispatch(s, give!);
+      expect(bs(s).night!.sex!.soft).toBe(true);
       seen++;
       expect(SOFT_ACTS).toContain(bs(s).night!.sex!.act);
       const switches = engine.listActions(s).filter((a) => a.type === "base/bed" && typeof a.payload?.act === "string");
       for (const a of switches) expect(SOFT_ACTS).toContain(a.payload!.act);
       for (let i = 0; i < 40 && bs(s).night?.sex; i++) s = engine.dispatch(s, { type: "base/bed", payload: { do: "keep" } });
       expect(bs(s).night?.sex ?? null).toBeNull();
+      expect(bs(s).night!.rest?.wants).toBeUndefined(); // she does not ask twice in a row
       expect(engine.checkInvariants(s), JSON.stringify(engine.checkInvariants(s))).toEqual([]);
     }
     expect(seen).toBeGreaterThan(0);
+  });
+  it("holding her instead of what she asked for is a no: he owes her, and she may see to herself", () => {
+    let seen = 0;
+    for (let seed = 1; seed <= 30 && seen === 0; seed++) {
+      let s = engine.init(seed);
+      while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
+      s = structuredClone(s);
+      const b = bs(s);
+      Object.assign(b.heroine.marriage, { desire: 95, resent: 0 });
+      b.heroine.arousal = 70;
+      b.heroine.mood = 90;
+      b.husband.minutes = 3;
+      b.approach = null;
+      s.where.wife = s.where.husband!;
+      const ask = engine.listActions(s).find((a) => a.type === "base/night-act" && a.payload?.act === "sex");
+      if (!ask) continue;
+      s = engine.dispatch(s, ask);
+      for (let i = 0; i < 60 && bs(s).night?.sex; i++) s = engine.dispatch(s, { type: "base/bed", payload: { do: "keep" } });
+      if (!bs(s).night?.rest?.wants) continue;
+      seen++;
+      // the ending did not decide for her what the night left her with
+      expect(s.log.slice(-6).some((e) => e.key.startsWith("log.husband.finishes_herself"))).toBe(false);
+      const owed = bs(s).owes ?? 0;
+      const resent = bs(s).heroine.marriage.resent;
+      s = engine.dispatch(s, { type: "base/rest", payload: { do: "hold" } });
+      expect(bs(s).night!.rest).toBeUndefined();
+      expect(bs(s).owes ?? 0).toBeGreaterThan(owed);
+      expect(bs(s).heroine.marriage.resent).toBeGreaterThan(resent);
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+  it("a night that went well ends in the stage after: hold her, or once more", () => {
+    let s = engine.init(3);
+    while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
+    s = structuredClone(s);
+    const b = bs(s);
+    Object.assign(b.heroine.marriage, { desire: 95, resent: 0 });
+    b.heroine.arousal = 90;
+    b.heroine.traits.libido = 20; // one is enough for her
+    b.husband.minutes = 30;
+    b.husband.size = 16;
+    b.approach = null;
+    s.where.wife = s.where.husband!;
+    s = engine.dispatch(s, { type: "base/night-act", payload: { act: "sex" } });
+    for (let i = 0; i < 80 && bs(s).night?.sex; i++) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/bed" && a.payload?.do === "finish") ?? { type: "base/bed", payload: { do: "keep" } });
+    const rest = bs(s).night!.rest!;
+    expect(rest.his).toBe(true);
+    if (!rest.wants) {
+      expect(engine.listActions(s).some((a) => a.type === "base/night-act")).toBe(true); // once more is always there to try
+      s = engine.dispatch(s, { type: "base/rest", payload: { do: "hold" } });
+      expect(bs(s).night!.scene).toBe("him_hug");
+      expect(engine.currentScene(s)!.type).toBe("him_hug");
+    }
+    expect(engine.checkInvariants(s)).toEqual([]);
   });
 });
 

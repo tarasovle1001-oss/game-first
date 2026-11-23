@@ -103,7 +103,14 @@ wear:                 # what she has on outside the shift, by situation
   home: homewear
 bedroom:              # which act is what in bed with him. Order matters: it is the order of the menu and of her choices
   # what he can ask for at night; each needs a text "action.night.<id>" and a picture layout named after the act
-  ask: [kiss, grinding, mutual_touching, cunnilingus, sex, anal, rimming_him, prostate, dildo_him, pegging, fisting_him, ignore_handjob, facesitting, edging, cleanup, chastity, toy_on_her, masturbate_show, footjob, spank_him, tease_denial, thigh_ride, titfuck]
+  ask: [kiss, mutual_touching, cunnilingus, blowjob, sex, riding, anal, sixty_nine, handjob, grinding, thigh_ride, titfuck, footjob, fingering, breast_play, toy_on_her, masturbate_show, facesitting, rimming_him, prostate, dildo_him, pegging, fisting_him, ignore_handjob, edging, tease_denial, spank_him, chastity, cleanup]
+  # how the long list is laid out on the screen: the plain things on top, the rest in folded blocks (an act in no block goes to the last one)
+  menu:
+    main: [kiss, mutual_touching, cunnilingus, blowjob, sex]
+    groups:
+      poses: [riding, anal, sixty_nine, handjob, grinding, thigh_ride, titfuck, footjob, join_dp, join_two_mouths, join_hold, join_after]
+      for_her: [fingering, breast_play, rimming_her, toy_on_her, masturbate_show, facesitting]
+      she_leads: [rimming_him, prostate, dildo_him, pegging, fisting_him, ignore_handjob, edging, tease_denial, spank_him, chastity, cleanup]
   # what she may offer instead of what he asked for; the "hard" ones only from a wife who has the upper hand
   counter: [cunnilingus, rimming_her]
   counterHard: [prostate, dildo_him, pegging, fisting_him]

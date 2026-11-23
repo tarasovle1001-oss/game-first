@@ -79,7 +79,7 @@ export function passNight(ctx: Ctx, minutes: number) {
     for (const hook of nightHooks) hook(ctx);
     if (!bs(ctx.state).night) return;
   }
-  if (!n.herAsleep && !n.up && !n.sex && !n.wants && !b.complaint && !b.approach && (n.minute ?? 0) >= R.herBedtime) {
+  if (!n.herAsleep && !n.up && !n.sex && !n.rest && !n.wants && !b.complaint && !b.approach && (n.minute ?? 0) >= R.herBedtime) {
     n.herAsleep = n.minute;
     if (n.scene === "night_awake") n.scene = "sleeping";
     ctx.log("log.night.her_asleep");

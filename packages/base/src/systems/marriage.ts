@@ -5,7 +5,7 @@ import { actOf, content } from "../content";
 import { confidenceOf, earlyChance, softChance } from "./nerve";
 import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import { fitOf, orgasm, pleasureFor, sizeStage, useBody } from "./body";
+import { entersZone, fitOf, orgasm, pleasureFor, sizeStage, useBody } from "./body";
 import { resolveSized } from "./taking";
 import { owe, toneOf, whyTonight } from "./hernight";
 import { think } from "./mind";
@@ -30,6 +30,8 @@ export const BED_SAVE = "base/bed-save";
 export const NIGHT_DECLINE = "base/night-decline";
 export const NIGHT_SELF = "base/night-self";
 export const AFTER = "base/after";
+/** What he does once it is over: give her what she asks for, see to her, or just hold her. */
+export const REST = "base/rest";
 export const UPSTAIRS = "base/upstairs";
 /** What he can pull her away from work for. */
 export const UPSTAIRS_ACTS = IN_BED.upstairs;
@@ -138,7 +140,10 @@ export function registerMarriage(api: ModApi) {
   /** The words of her "no": by its reason; right after they were at it, it is "not again already", whatever the rows say. */
   const refuseLine = (state: GameState) => {
     const b = bs(state);
-    const key = refusalKey("log.husband.refuse", b.proposals.at(-1)?.rows ?? []);
+    const last = b.proposals.at(-1);
+    const found = refusalKey("log.husband.refuse", last?.rows ?? []);
+    // "that is not my thing" is not what a wife says to her own husband about the plain things: there it is the mood
+    const key = found.endsWith(".not_her") && IN_BED.menu.main.includes(last?.act ?? "") ? "log.husband.refuse.mood" : found;
     const plain = key === "log.husband.refuse" || key.endsWith(".cold") || key.endsWith(".mood") || key.endsWith(".plain");
     return plain && (b.night?.had ?? 0) > 0 ? "log.husband.refuse.again" : key;
   };
@@ -191,7 +196,7 @@ export function registerMarriage(api: ModApi) {
     b.night!.scene = b.night!.third && !JOIN_ACTS.includes(actId) ? "join_husband" : actId === "sex" ? "sex" : actId; // with a guest in it there are three of them in the picture, whatever he does
     // the first time he is inside her tonight, what she feels of him is said (or thought)
     const act = actById(actId);
-    const zone = act.zones.includes("anus") ? "anus" : act.zones.includes("vagina") ? "vagina" : null;
+    const zone = entersZone(act); // his tongue or his fingers are not "him inside her"
     if (zone && !sex.looseSaid) {
       const ratio = b.husband.size / fitOf(ctx.state, zone);
       const level = ratio < 0.42 ? 3 : ratio < 0.6 ? 2 : ratio < 0.85 ? 1 : 0; // about 65, 33 and 10 on the stretch scale for an average husband
@@ -296,6 +301,8 @@ export function registerMarriage(api: ModApi) {
       const act = actById(action.payload!.act as string);
       const before = b.night!.asks ?? 0;
       b.night!.asks = before + 1;
+      b.night!.rest = undefined; // whatever was left open after the last time, this is his answer to it
+      b.night!.fin = undefined;
       const wanted = b.night!.wants === true;
       b.night!.wants = false;
       const countered = b.night!.counter === act.id;
@@ -619,8 +626,17 @@ export function registerMarriage(api: ModApi) {
       b.heroine.frustration = clamp(b.heroine.frustration + (sex.came > 0 ? 0 : 12));
       ctx.log(b.heroine.marriage.desire >= B.reward.lovingDesire ? "log.bed.soft.kind" : "log.bed.soft");
       ctx.emit("bed:ended", { act: sex.act, came: sex.came > 0, outcome: "went_soft", turns: sex.turns });
-      if (carryOn(ctx, sex)) return true;
-      if (ctx.state.time.phase !== "night") backToWork(ctx, sex.turns);
+      // he went soft: she may still ask him for what needs none of that
+      const night = ctx.state.time.phase === "night";
+      const more = wantsMore(ctx, sex);
+      if (more) {
+        ctx.log(`log.bed.second.${more.more ? "more" : "need"}.t${toneOf(ctx.state)}`, { act: `act.${more.act}` });
+        if (night) b.night!.rest = { his: false, hers: sex.came > 0, act: sex.act, wants: more.act, hersAt: sex.hers };
+        else startSecond(ctx, more.act, sex.hers);
+        return true;
+      }
+      if (night) b.night!.rest = { his: false, hers: sex.came > 0, act: sex.act, hersAt: sex.hers };
+      else backToWork(ctx, sex.turns);
       return true;
     }
     // locked up and getting nothing done for her: she says what she wants instead
@@ -663,48 +679,85 @@ export function registerMarriage(api: ModApi) {
 
   /** He comes (or stops). What it leaves her with depends on how far she got and on who she is. */
   /** He is finished and she is not: sometimes she does not let him off. The scene goes on with what needs no erection. */
-  const carryOn = (ctx: Ctx, was: { hers: number; came: number; out: boolean; soft?: boolean; turns: number }): boolean => {
+  const wantsMore = (ctx: Ctx, was: { hers: number; came: number; out: boolean; soft?: boolean; turns: number }): { act: string; more: boolean } | null => {
     const b = bs(ctx.state);
     const h = b.heroine;
     const A = B.after;
-    if (!b.night || b.night.sex || was.soft || was.out || h.marriage.resent >= A.maxResent) return false;
+    if (!b.night || was.soft || was.out || h.marriage.resent >= A.maxResent) return null;
     const S2 = content.intimacy.her.second;
     const rounds = b.night.rounds ?? 0;
     if (was.came > 0) {
       // she has come and can go on: with her libido one is not always enough (with guests it never is)
-      if (rounds >= S2.maxRounds - 1 || h.energy < S2.energy || !ctx.rng.chance(Math.min(0.9, S2.base + Math.max(0, h.traits.libido - 50) * S2.perLibido))) return false;
+      if (rounds >= S2.maxRounds - 1 || h.energy < S2.energy || !ctx.rng.chance(Math.min(0.9, S2.base + Math.max(0, h.traits.libido - 50) * S2.perLibido))) return null;
     } else {
-      if (was.hers < A.minHers) return false;
-      if (!ctx.rng.chance(Math.min(0.95, A.chance + Math.max(0, h.marriage.desire - 50) * A.perDesire + toneOf(ctx.state) * 0.1))) return false;
+      if (was.hers < A.minHers) return null;
+      if (!ctx.rng.chance(Math.min(0.95, A.chance + Math.max(0, h.marriage.desire - 50) * A.perDesire + toneOf(ctx.state) * 0.1))) return null;
     }
-    b.night.rounds = rounds + 1;
     const pick = SOFT_ACTS.filter((a) => BED_ACTS.includes(a) && hisActOpen(ctx.state, a) && (!HIS_ACTS.includes(a) || b.power >= LEAD.hisActsPower))
       .map((a) => ({ a, r: rewardOf(ctx.state, a, HIS_ACTS.includes(a) ? herFromHis(ctx.state, a) : pleasureFor(ctx.state, actById(a), b.husband.size)) }))
       .sort((x, y) => y.r - x.r || x.a.localeCompare(y.a))[0];
-    if (!pick) return false;
-    b.night.sex = { act: pick.a, his: 0, hers: clamp(was.hers), came: 0, turns: 0, top: false, skirt: true, pleasure: 0, bored: 0, asks: null, ignored: 0, out: false, byHand: false, looseSaid: true, soft: true };
-    setAct(ctx, pick.a);
-    ctx.log(`log.bed.second.${was.came > 0 ? "more" : "need"}.t${toneOf(ctx.state)}`, { act: `act.${pick.a}` });
-    ctx.emit("bed:continued", { act: pick.a });
-    return true;
+    return pick ? { act: pick.a, more: was.came > 0 } : null;
+  };
+  /** The scene goes on with what needs nothing of him: she asked for it, or he offered. */
+  const startSecond = (ctx: Ctx, act: string, hers: number) => {
+    const n = bs(ctx.state).night!;
+    n.rounds = (n.rounds ?? 0) + 1;
+    n.rest = undefined;
+    n.fin = undefined;
+    n.sex = { act, his: 0, hers: clamp(hers), came: 0, turns: 0, top: false, skirt: true, pleasure: 0, bored: 0, asks: null, ignored: 0, out: false, byHand: false, looseSaid: true, soft: true };
+    setAct(ctx, act);
+    ctx.emit("bed:continued", { act });
+  };
+  /** She asked for more and did not get it: one more thing he owes her, and she may see to herself next to him. */
+  const restRefused = (ctx: Ctx, quiet = false) => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const r = b.night!.rest!;
+    b.night!.rest = undefined;
+    feel(ctx, 0, content.intimacy.her.second.refusedResent);
+    if (!quiet) ctx.log(`log.bed.second.refused.t${toneOf(ctx.state)}`);
+    owe(ctx, "refused");
+    if (!r.hers && (h.traits.libido >= H.finishesHerselfAtLibido || h.arousal >= 60)) {
+      b.night!.scene = "finishing_herself";
+      b.night!.fin = undefined;
+      h.satisfied = 60;
+      changeHeroine(ctx, "arousal", -h.arousal * 0.6, "finished herself");
+      ctx.log("log.husband.finishes_herself", undefined, quiet ? ["unseen"] : undefined);
+    } else if (!r.hers) h.frustration = clamp(h.frustration + 8);
   };
   /** The end of what she kept him at: she got there, or she gave up on it. */
   const afterEnds = (ctx: Ctx) => {
     const b = bs(ctx.state);
     const sex = b.night!.sex!;
     b.night!.sex = null;
-    b.night!.scene = sex.came > 0 ? "sleeping" : "left_wanting";
+    b.night!.scene = sex.came > 0 ? "him_hug" : "left_wanting"; // "sleeping" is for when she is asleep
     if (sex.came > 0) feel(ctx, 2.5, -2.5);
     else b.heroine.frustration = clamp(b.heroine.frustration + 8);
-    ctx.log(sex.came > 0 ? "log.bed.after.came" : "log.bed.after.gave_up");
+    // that she came has just been said (she_comes): the second line about the same orgasm read as two of them
+    if (sex.came === 0) ctx.log("log.bed.after.gave_up");
     ctx.emit("bed:ended", { act: sex.act, came: sex.came > 0, outcome: "after", turns: sex.turns });
     if (ctx.state.time.phase !== "night") backToWork(ctx, sex.turns);
+    else b.night!.rest = { his: false, hers: sex.came > 0, act: sex.act, hersAt: sex.hers };
   };
+  /**
+   * It is over. At night what comes next is a stage of its own (`night.rest`): who came, what she asks for, and his answer -
+   * he gives it, sees to her, holds her, starts again, or sleeps. By day and mid-shift there is no time for that: she just keeps him at it.
+   */
   const finish = (ctx: Ctx, how: "auto" | "choice" | "stop") => {
-    const was = { ...bs(ctx.state).night!.sex! };
-    finishScene(ctx, how);
-    if (how !== "stop" && carryOn(ctx, was)) return;
-    if (ctx.state.time.phase !== "night") backToWork(ctx, was.turns);
+    const live = bs(ctx.state).night!.sex!;
+    const was = { ...live };
+    const night = ctx.state.time.phase === "night";
+    const more = how !== "stop" ? wantsMore(ctx, was) : null;
+    finishScene(ctx, how, !!more && night && was.came === 0);
+    const n = bs(ctx.state).night;
+    if (more && n) {
+      ctx.log(`log.bed.second.${more.more ? "more" : "need"}.t${toneOf(ctx.state)}`, { act: `act.${more.act}` });
+      if (night) n.rest = { his: true, hers: live.came > 0, act: was.act, wants: more.act, hersAt: was.hers };
+      else startSecond(ctx, more.act, was.hers);
+      return;
+    }
+    if (night && n && !n.sex) n.rest = { his: how !== "stop", hers: live.came > 0, act: was.act, hersAt: was.hers };
+    if (!night) backToWork(ctx, was.turns);
   };
   /** Mid-shift: the scene object belongs to the night, and the floor has been waiting. */
   const backToWork = (ctx: Ctx, turns: number) => {
@@ -726,7 +779,7 @@ export function registerMarriage(api: ModApi) {
     ctx.log(here === "public" ? "log.here.back.public" : here ? "log.here.back" : "log.upstairs.back");
     runUnattended(ctx, minutes);
   };
-  const finishScene = (ctx: Ctx, how: "auto" | "choice" | "stop") => {
+  const finishScene = (ctx: Ctx, how: "auto" | "choice" | "stop", defer = false) => {
     const b = bs(ctx.state);
     const h = b.heroine;
     const sex = b.night!.sex!;
@@ -735,7 +788,7 @@ export function registerMarriage(api: ModApi) {
     b.night!.sex = null;
     if (how === "stop") {
       // nobody finished: he just stopped
-      b.night!.scene = sex.came > 0 ? "sleeping" : "left_wanting";
+      b.night!.scene = sex.came > 0 ? "him_hug" : "left_wanting";
       if (sex.came === 0 && sex.hers >= 40) {
         feel(ctx, -1, 1);
         changeHeroine(ctx, "mood", -2, "stopped");
@@ -785,6 +838,11 @@ export function registerMarriage(api: ModApi) {
       changeHeroine(ctx, "arousal", 12, "left wanting");
       changeHeroine(ctx, "mood", -4, "left wanting");
       ctx.log("log.husband.too_soon");
+    } else if (defer) {
+      // she is about to ask him for more: what this night leaves her with is decided by his answer, not here
+      outcome = "left_wanting";
+      b.night!.scene = "left_wanting";
+      ctx.log("log.husband.came_first");
     } else {
       feel(ctx, premature ? -1.5 : -1, premature ? 2 : 1.5);
       changeHeroine(ctx, "mood", -3, "left wanting");
@@ -910,7 +968,8 @@ export function registerMarriage(api: ModApi) {
       sex.his = LEAD.holdAt;
       if (!sex.heldSaid) {
         sex.heldSaid = true;
-        ctx.log("log.bed.lead.hold");
+        // "I am not done" is for what she is getting something out of; when it is all being done to him, she is just making him wait
+        ctx.log(HIS_ACTS.includes(sex.act) ? "log.bed.lead.hold.his" : "log.bed.lead.hold");
       }
       return void turn(ctx, 0, r.hers * 1.4);
     }
@@ -977,6 +1036,68 @@ export function registerMarriage(api: ModApi) {
     },
   });
 
+  api.actions.register({
+    id: REST,
+    labelKey: "action.rest",
+    describe: (a) => ({ key: `action.rest.${a.payload!.do}`, ...(a.payload!.act ? { params: { act: `act.${a.payload!.act}` } } : {}) }),
+    enumerate(state) {
+      const n = bs(state).night;
+      if (state.time.phase !== "night" || !n?.rest || n.sex || n.herAsleep !== undefined || state.where[HUSBAND] !== state.where[WIFE]) return [];
+      const out: { type: string; payload: Record<string, string> }[] = [];
+      if (n.rest.wants) out.push({ type: REST, payload: { do: "give", act: n.rest.wants } });
+      else if (!n.rest.hers) out.push({ type: REST, payload: { do: "for_her" } });
+      out.push({ type: REST, payload: { do: "hold" } });
+      return out;
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const r = b.night!.rest!;
+      const what = action.payload!.do as string;
+      if (what === "give") {
+        feel(ctx, 0.5, -0.5);
+        ctx.log("log.bed.gives", { act: `act.${r.wants}` });
+        return void startSecond(ctx, r.wants!, r.hersAt);
+      }
+      if (what === "for_her") {
+        // he offers without being asked: she takes it if there is anything left in her to take it with
+        const A = B.after;
+        const pick = IN_BED.givesHer.filter((a) => hisActOpen(ctx.state, a)).map((a) => ({ a, r: rewardOf(ctx.state, a, pleasureFor(ctx.state, actById(a), b.husband.size)) })).sort((x, y) => y.r - x.r || x.a.localeCompare(y.a))[0];
+        if (!pick || h.marriage.resent >= A.maxResent || (r.hersAt < A.minHers / 2 && h.arousal < 30)) {
+          b.night!.rest = undefined;
+          feel(ctx, 0.5, 0);
+          return void ctx.log("log.bed.rest.for_her.no");
+        }
+        feel(ctx, 1, -1);
+        ctx.log("log.bed.rest.for_her", { act: `act.${pick.a}` });
+        return void startSecond(ctx, pick.a, Math.max(r.hersAt, h.arousal * 0.4));
+      }
+      // he holds her: after a good night it is the rest of it, after her asking it is a no
+      if (r.wants) {
+        ctx.log("log.bed.rest.hold.no");
+        return void restRefused(ctx);
+      }
+      b.night!.rest = undefined;
+      b.night!.fin = undefined;
+      b.night!.after = undefined;
+      b.night!.scene = "him_hug";
+      feel(ctx, r.hers ? 1 : 0.5, -0.5);
+      changeHeroine(ctx, "mood", r.hers ? 2 : 1, "husband");
+      ctx.log(r.hers ? "log.bed.rest.hold" : "log.bed.rest.hold.plain");
+    },
+  });
+  // the stage after does not last: a few minutes of his silence are an answer too, and then she can sleep
+  onNightMinute((ctx) => {
+    const n = bs(ctx.state).night;
+    if (!n?.rest || n.sex) return;
+    n.rest.age = (n.rest.age ?? 0) + 1;
+    if (n.rest.age < B.restMinutes) return;
+    if (n.rest.wants) restRefused(ctx);
+    else n.rest = undefined;
+  });
+  // he fell asleep on what she asked for
+  api.events.on("phase:exit", (ctx, e) => void (e.payload!.phase === "night" && bs(ctx.state).night?.rest?.wants && restRefused(ctx, true)), 20);
+
   const bedOptions = (state: GameState): { type: string; payload: Record<string, string> }[] => {
       const sex = bs(state).night?.sex;
       if (!sex) return [];
@@ -995,7 +1116,7 @@ export function registerMarriage(api: ModApi) {
       dos.push("give_lead");
       const out = dos.map((d) => ({ type: BED, payload: { do: d } as Record<string, string> }));
       if (sex.asks && sex.asks !== "finish") out.unshift({ type: BED, payload: { do: "give", act: sex.asks } });
-      if (sex.his >= B.cumAt) for (const where of FINISH[sex.act] ?? ["inside"]) out.push({ type: BED, payload: { do: "finish", where } });
+      if (sex.his >= B.cumAt) for (const where of FINISH[sex.act] ?? ["self"]) out.push({ type: BED, payload: { do: "finish", where } });
       for (const to of BED_ACTS) if (to !== sex.act && hisActOpen(state, to)) out.push({ type: BED, payload: { do: "switch", to } });
       out.push({ type: BED, payload: { do: "stop" } });
       return out;
@@ -1206,7 +1327,12 @@ export function registerMarriage(api: ModApi) {
           break;
         case "finish": {
           // where he finishes is a small thing she either likes or puts up with
-          let where = (action.payload!.where as string) ?? "inside";
+          let where = (action.payload!.where as string) ?? "self";
+          if (where === "self") {
+            // nothing of his lands anywhere on her: her finger in him, her foot, his own hand - the act has its own ending
+            finish(ctx, "choice");
+            break;
+          }
           const Fn = content.intimacy.finish;
           const hh = b.heroine;
           // she has her own mind about it

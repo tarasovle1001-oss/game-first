@@ -168,6 +168,8 @@ describe("the husband's bad nights", () => {
       let st = engine.dispatch(s, { type: NIGHT_ACT, payload: { act: "sex" } });
       let turns = 0;
       for (; bs(st).night?.sex && !bs(st).night!.sex!.soft && turns < 200; turns++) st = engine.dispatch(st, { type: BED, payload: { do: "keep" } }); // how long he lasts, not what she makes of it afterwards
+      // if she asks him for more and he only holds her, that is the answer the night ends on
+      if (bs(st).night?.rest?.wants) st = engine.dispatch(st, { type: "base/rest", payload: { do: "hold" } });
       return { turns, st, before: s };
     };
     const starved = turnsWith(8);

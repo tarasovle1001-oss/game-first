@@ -19,6 +19,7 @@ const SECTION: Record<string, string> = {
   [ABOUT]: "about", [STANCE]: "about", [PROMISE]: "about", [PRESS]: "sex",
 };
 // things that take the whole column until he answers, and things happening in front of him that he may answer
+const REST = "base/rest";
 const SITUATION = new Set<string>([ANSWER, PERMIT, DEAL, HEAR, CAUGHT_STOP, CAUGHT_WATCH]);
 const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE, REACT, "base/door"]);
 /** "May and may not", one kind of thing at a time. */
@@ -60,7 +61,7 @@ function Item({ hot, title, sub, right, mark, onClick, tone, disabled }: { hot?:
 
 export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; lang: Lang; act(a: Action): void }) {
   const [path, setPath] = useState<Path>({ at: "root" });
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   // where the menu stood on each step: stepping back in time puts it back there too
   const trail = useRef(new Map<number, Path>());
   const lastTurn = useRef(state.turn);
@@ -97,7 +98,8 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   const herSecs = SECTIONS.filter((g) => withHer.some((a) => sectionOf(a) === g));
   const herName = b.heroine.name ?? t("role.wife");
   const herNear = state.where[WIFE] === state.where[HUSBAND];
-  const other = all.filter((a) => !isWait(a) && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && !SITUATION.has(a.type) && !atDoor(a) && !URGENT.has(a.type) && sectionOf(a) === undefined);
+  const other = all.filter((a) => !isWait(a) && a.type !== CORE_ADVANCE && a.type !== CORE_MOVE && a.type !== BED && a.type !== REST && !SITUATION.has(a.type) && !atDoor(a) && !URGENT.has(a.type) && sectionOf(a) === undefined);
+  const rest = all.filter((a) => a.type === REST);
   const groups = [...other.reduce((map, a) => map.set(a.type, [...(map.get(a.type) ?? []), a]), new Map<string, Action[]>())];
   const direct = groups.filter(([, list]) => list.length < 3).flatMap(([, list]) => list);
   const folders = groups.filter(([, list]) => list.length >= 3);
@@ -119,11 +121,16 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
 
   // what the digits mean right now, top to bottom on the screen
   const sceneActs = bed.filter((a) => !a.payload?.to && !CLOTHES.has(a.payload?.do as string));
-  const sceneSwitch = bed.filter((a) => a.payload?.to);
+  // the long list of what they can do: the plain things, then folded blocks (content: intimacy.bedroom.menu)
+  const MENU = content.intimacy.bedroom.menu;
+  const groupIds = Object.keys(MENU.groups);
+  const groupOf = (actId: string) => (MENU.main.includes(actId) ? null : (groupIds.find((g) => MENU.groups[g]!.includes(actId)) ?? groupIds[groupIds.length - 1]!));
+  const switchAll = bed.filter((a) => a.payload?.to);
+  const switchMain = switchAll.filter((a) => groupOf(a.payload!.to as string) === null);
+  const sceneSwitch = [...switchMain, ...switchAll.filter((a) => openGroup !== null && groupOf(a.payload!.to as string) === openGroup)];
   const sceneClothes = bed.filter((a) => !a.payload?.to && CLOTHES.has(a.payload?.do as string));
   // "sex" is a long list: the plain things on top, the rest folded under "more"
-  const PLAIN = new Set(["kiss", "grinding", "mutual_touching", "cunnilingus", "sex", "anal"]);
-  const isMore = (a: Action) => a.type === "base/night-act" && !PLAIN.has(a.payload?.act as string);
+  const isMore = (a: Action) => a.type === "base/night-act" && groupOf(a.payload?.act as string) !== null;
   const inSec = here.at === "her" && here.sec ? withHer.filter((a) => sectionOf(a) === here.sec && a.type !== TELL && a.type !== ALLOW) : [];
   const folded = here.at === "her" && here.sec === "sex" ? inSec.filter(isMore) : [];
   const listed: Action[] =
@@ -132,7 +139,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
       : bed.length > 0
         ? [...sceneActs, ...sceneSwitch, ...sceneClothes]
         : here.at === "her" && here.sec
-          ? [...inSec.filter((a) => !folded.includes(a)), ...(moreOpen ? folded : [])]
+          ? [...inSec.filter((a) => !folded.includes(a)), ...folded.filter((a) => groupOf(a.payload!.act as string) === openGroup)]
           : here.at === "group"
             ? (folders.find(([type]) => type === here.type)?.[1] ?? [])
             : [];
@@ -141,6 +148,11 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
   const goToHer = !herNear ? all.find((a) => a.type === CORE_MOVE && a.actor === HUSBAND && a.payload?.to === state.where[WIFE]) : undefined;
   // root cards that take a letter: her, then the plain actions, then the folders
   const rootCards: (() => void)[] = [];
+  // the stage after comes first on the screen, so it takes the first letters
+  if (b.night?.rest) {
+    for (const a of rest) rootCards.push(() => act(a));
+    if (rest.length > 0 && herSecs.includes("sex")) rootCards.push(() => setPath({ at: "her", sec: "sex" }));
+  }
   if (withHer.length > 0) rootCards.push(() => setPath({ at: "her", sec: null }));
   else if (goToHer && phase !== "summary") rootCards.push(() => act(goToHer));
   for (const a of direct) rootCards.push(() => act(a));
@@ -245,9 +257,19 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
         )}
         {sceneActs.map((a, i) => item(a, i, a.payload?.do === "finish" ? "strong" : undefined))}
         {sceneSwitch.length > 0 && <div className="m-section">{t("ui.bed.switch")}</div>}
-        {sceneSwitch.map((a, i) => (
+        {switchMain.map((a, i) => (
           <Item key={`s${i}`} hot={num(sceneActs.length + i)} title={t(`act.${a.payload!.to}`)} onClick={() => act(a)} />
         ))}
+        {groupIds.map((g) => {
+          const inG = switchAll.filter((a) => groupOf(a.payload!.to as string) === g);
+          if (inG.length === 0) return null;
+          return (
+            <div key={g}>
+              <Item title={`${t(`ui.bed.group.${g}`)} · ${inG.length}`} tone="quiet" right={openGroup === g ? "▾" : "▸"} onClick={() => setOpenGroup(openGroup === g ? null : g)} />
+              {openGroup === g && inG.map((a, i) => <Item key={`g${i}`} hot={num(sceneActs.length + switchMain.length + i)} title={t(`act.${a.payload!.to}`)} onClick={() => act(a)} />)}
+            </div>
+          );
+        })}
         {sceneClothes.length > 0 && <div className="m-section">{t("ui.bed.clothes")}</div>}
         <div className="m-chips">
           {sceneClothes.map((a, i) => (
@@ -325,8 +347,16 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
           </div>
         )}
         {listed.filter((a) => !folded.includes(a)).map((a, i) => item(a, i))}
-        {folded.length > 0 && <Item title={`${t("ui.menu.more")} · ${folded.length}`} tone="quiet" right={moreOpen ? "▾" : "▸"} onClick={() => setMoreOpen(!moreOpen)} />}
-        {moreOpen && folded.map((a, i) => item(a, listed.length - folded.length + i))}
+        {groupIds.map((g) => {
+          const inG = folded.filter((a) => groupOf(a.payload!.act as string) === g);
+          if (inG.length === 0) return null;
+          return (
+            <div key={g}>
+              <Item title={`${t(`ui.bed.group.${g}`)} · ${inG.length}`} tone="quiet" right={openGroup === g ? "▾" : "▸"} onClick={() => setOpenGroup(openGroup === g ? null : g)} />
+              {openGroup === g && inG.map((a, i) => item(a, listed.length - inG.length + i))}
+            </div>
+          );
+        })}
         {tail(true)}
       </div>
     );
@@ -374,6 +404,20 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
               </button>
             ))}
           </div>
+        </div>
+      )}
+      {rest.length > 0 && b.night?.rest && (
+        <div>
+          <div className="m-section">{t("ui.rest.title")}</div>
+          <div className="m-context small">
+            {t(b.night.rest.his && b.night.rest.hers ? "ui.rest.both" : b.night.rest.his ? "ui.rest.his" : b.night.rest.hers ? "ui.rest.hers" : "ui.rest.none")}
+            {b.night.rest.wants && <div className="bad">{t("ui.rest.wants", { act: t(`act.${b.night.rest.wants}`) })}</div>}
+          </div>
+          {rest.map((a, i) => (
+            <Item key={`r${i}`} hot={hot()} tone={a.payload?.do === "give" ? "strong" : undefined} title={label(a)} onClick={() => act(a)} />
+          ))}
+          {herSecs.includes("sex") && <Item hot={hot()} title={t("ui.rest.again")} sub={t("ui.rest.again.hint")} right="›" onClick={() => setPath({ at: "her", sec: "sex" })} />}
+          <div className="muted small">{t("ui.rest.sleep")}</div>
         </div>
       )}
       {withHer.length > 0 ? (

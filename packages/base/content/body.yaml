@@ -57,6 +57,7 @@ take:
 
 bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
   minutesPerTurn: 1
+  restMinutes: 15        # the stage after: how long what she asked for stays open before his silence is his answer
   startHis: 15
   hisRate: 10       # per turn, for a husband who lasts 12 minutes
   hisRateSex: 13
@@ -97,8 +98,8 @@ his: # the husband's own body, for what she does to him
   fitBase: 9          # cm he takes comfortably at the start
   fitPerStretch: 0.14
   tooBig: 3           # a toy this much above his fit hurts more than it pleases
-  ruinedRelief: 15    # a ruined one takes only this much off how much he wants
-  wetRelief: 20       # so does one in his sleep
+  ruinedRelief: 6     # a ruined one takes only this much off how much he wants
+  wetRelief: 8        # so does one in his sleep
   powerPerPegging: 2
   peggingHerBase: 40  # what it gives her, plus her power over him
   peggingHerPerPower: 0.4
