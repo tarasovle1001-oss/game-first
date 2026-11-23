@@ -150,9 +150,9 @@ poses:
   her_rest: { scene: "medium shot, calm resting atmosphere, soft light", wife: "lying on side, relaxed posture, eyes closed or resting", husband: "standing nearby, watching her quietly" }
   her_dress: { scene: "medium shot, bedroom framing, soft lighting", wife: "standing, dressing posture, looking down at clothes", husband: "sitting nearby, watching her" }
   her_shop_toy: { scene: "cowboy shot, shop shelves behind her", wife: "standing at a shelf, holding a dildo in both hands at chest height, looking at it, weighing it, blush" }
-  caught_him_surprised: { scene: "medium shot, doorway framing, caught in the act", husband: "sitting on the edge of the bed, pants down, hand on his penis, startled, looking at the door", wife: "standing in the doorway, hand on the door, wide eyes, hand over mouth" }
-  caught_him_pity: { scene: "medium shot, doorway framing, caught in the act", husband: "sitting on the edge of the bed, pants down, hand on his penis, ashamed, looking down", wife: "standing in the doorway, arms crossed, tired disappointed look, slight frown" }
-  caught_him_playful: { scene: "medium shot, doorway framing, caught in the act", husband: "sitting on the edge of the bed, pants down, hand on his penis, embarrassed", wife: "leaning on the door frame, smirk, one eyebrow raised, finger on her lips" }
+  caught_him_surprised: { scene: "cowboy shot, doorway framing, she has just opened the door", wife: "standing in the doorway, hand on the door, wide eyes, hand over mouth, looking at viewer" }
+  caught_him_pity: { scene: "cowboy shot, doorway framing, she has just opened the door", wife: "standing in the doorway, arms crossed, tired disappointed look, slight frown, looking down at viewer" }
+  caught_him_playful: { scene: "cowboy shot, doorway framing, she has just opened the door", wife: "leaning on the door frame, smirk, one eyebrow raised, finger on her lips, looking at viewer" }
   bath_walkin: { scene: "medium shot, bathroom framing, surprised atmosphere", wife: "standing in shower, one hand covering chest, other covering groin, surprised look", husband: "standing in doorway, looking at her" }
   bath_together: { scene: "medium shot, close intimate shower framing", wife: "standing, arms around his neck and shoulder, looking at him", husband: "standing, hands on her hips and butt, looking at her" }
   flash: { scene: "medium shot, wide angle, room with seated guests, bold framing", wife: "standing, open posture, looking toward guests", patron: "sitting, looking at her", patron2: "sitting, looking at her" }
@@ -503,9 +503,9 @@ tags:
   her_rest: "lying, on side, on bed, pillow hug, closed eyes, tired, relaxed, legs together, full body, from side"
   her_dress: "dressing, standing, underwear, man sitting on bed, looking at another, cowboy shot"
   her_shop_toy: "1girl, solo, sex shop, standing, holding dildo, (holding sex toy:1.2), looking at object, blush, parted lips, shelves, cowboy shot"
-  caught_him_surprised: "hetero, walk-in, caught, male masturbation, man sitting on bed, pants down, small penis, woman standing in doorway, surprised, wide-eyed, covering mouth, clothed female, cowboy shot"
-  caught_him_pity: "hetero, walk-in, caught, male masturbation, man sitting on bed, pants down, small penis, embarrassed, woman standing in doorway, crossed arms, disappointed, frown, looking down at another, clothed female, cowboy shot"
-  caught_him_playful: "hetero, walk-in, caught, male masturbation, man sitting on bed, pants down, small penis, blush, woman leaning on doorframe, smirk, raised eyebrow, finger to mouth, naughty face, clothed female, cowboy shot"
+  caught_him_surprised: "1girl, solo, standing in doorway, open door, hand on door, surprised, wide-eyed, covering mouth, looking at viewer, pov, cowboy shot"
+  caught_him_pity: "1girl, solo, standing in doorway, open door, crossed arms, disappointed, frown, half-closed eyes, looking down, looking at viewer, pov, cowboy shot"
+  caught_him_playful: "1girl, solo, leaning on doorframe, open door, smirk, raised eyebrow, finger to mouth, naughty face, looking at viewer, pov, cowboy shot"
   bath_walkin: "walk-in, showering, bathroom, nude, wet, covering breasts, covering crotch, surprised, man standing in doorway, cowboy shot"
   bath_together: "hetero, showering, bathroom, nude, wet, hug, arms around neck, hands on another's hips, steam, cowboy shot"
   flash: "flashing, exhibitionism, lifting own clothes, breasts out, nipples, standing, men sitting at table, staring, blush, embarrassed, cowboy shot"

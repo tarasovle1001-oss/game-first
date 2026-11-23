@@ -221,11 +221,11 @@ export function registerAlone(api: ModApi) {
       changeConfidence(ctx, A.confidence, "caught");
       ctx.log(hard ? "log.alone.caught.hand.hard" : "log.alone.caught.hand");
     }
-    // the picture of the moment: him on the bed, her in the doorway - the pose is the same, what differs is her face.
-    // She joined him: that has a picture of its own (set above).
+    // the picture of the moment is her alone in the doorway: the pose is the same, what differs is her face.
+    // What he was doing stays in the close-up beside it (below). She joined him: that has a picture of its own (set above).
     if (!joined) {
       const mood = toy ? (hard || (warm && h.traits.openness >= A.toy.joinOpenness) ? "playful" : "pity") : warm && !hard ? "playful" : hard ? "pity" : "surprised";
-      glance(ctx, `caught_him_${mood}`, ctx.state.where[HUSBAND], [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }], toy ? { tsize: String(sizeClass(toy.size)) } : undefined);
+      glance(ctx, `caught_him_${mood}`, ctx.state.where[HUSBAND], [{ id: WIFE, role: "wife" }]);
     }
     detail(ctx, { id: toy ? "toy_him" : "him_alone", who: HUSBAND, tags: toy ? { tsize: String(sizeClass(toy.size)), who: "self" } : {} });
     ctx.emit("husband:caught_alone", { toy: !!toy });

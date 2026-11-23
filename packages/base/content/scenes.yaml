@@ -620,16 +620,13 @@
     - { role: wife, pose: lie_back, x: 0, y: 0, flip: false, armR: { to: wife.groin }, armL: { to: wife.chest } }
 - id: caught_him_surprised
   figures:
-    - { role: husband, pose: sit, x: -28, y: 0, flip: false, torso: 80, head: 60, armR: { to: self.groin, dx: 2 }, armL: [-70, -60] }
-    - { role: wife, pose: stand, x: 52, y: 0, flip: true, torso: 90, head: 96, armR: [-50, 40] }
+    - { role: wife, pose: stand, x: 0, y: 0, flip: false, torso: 90, head: 96, armR: [-50, 40] }
 - id: caught_him_pity
   figures:
-    - { role: husband, pose: sit, x: -28, y: 0, flip: false, torso: 80, head: 60, armR: { to: self.groin, dx: 2 }, armL: [-70, -60] }
-    - { role: wife, pose: stand, x: 52, y: 0, flip: true, torso: 90, head: 96, armR: [-50, 40] }
+    - { role: wife, pose: stand, x: 0, y: 0, flip: false, torso: 90, head: 96, armR: [-50, 40] }
 - id: caught_him_playful
   figures:
-    - { role: husband, pose: sit, x: -28, y: 0, flip: false, torso: 80, head: 60, armR: { to: self.groin, dx: 2 }, armL: [-70, -60] }
-    - { role: wife, pose: stand, x: 52, y: 0, flip: true, torso: 90, head: 96, armR: [-50, 40] }
+    - { role: wife, pose: stand, x: 0, y: 0, flip: false, torso: 90, head: 96, armR: [-50, 40] }
 - id: her_shop_toy
   figures:
     - { role: wife, pose: stand, x: 0, y: 0, flip: false, torso: 90, head: 92, armR: [-30, -100], armL: [-45, -95] }
