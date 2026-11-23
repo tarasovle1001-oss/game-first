@@ -167,7 +167,10 @@ export function registerHerSide(api: ModApi) {
     if (e.payload!.phase !== "night" || b.approach || b.complaint || b.retroDay === ctx.state.time.day) return;
     const tonight = b.proposals.filter((r) => r.day === ctx.state.time.day && r.patron !== HUSBAND && r.verdict !== "refuse" && b.patrons[r.patron] && actById(r.act).tier >= 2);
     // what he did not see and she is ashamed of, she keeps to herself while she hides things
-    const sayable = tonight.filter((r) => r.seen || b.mode !== "hidden" || actById(r.act).tier < 5 || (h.marriage.trust ?? 50) >= 55);
+    // (NTR): up to a touch she tells; past it the chance falls with every step and with her honesty - most of it he learns from traces
+    const T2 = content.terms.ask;
+    const tells = (tier: number) => tier <= T2.upToTierHidden || ctx.rng.chance(Math.pow((h.traits.honesty / 100) * T2.tellPerTier, tier - T2.upToTierHidden));
+    const sayable = tonight.filter((r) => r.seen || b.mode !== "hidden" || tells(actById(r.act).tier));
     const top = sayable.sort((x, y) => actById(y.act).tier - actById(x.act).tier)[0];
     if (!top) return;
     b.retroDay = ctx.state.time.day;

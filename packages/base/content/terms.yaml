@@ -45,7 +45,8 @@ ask:                  # she asks him before she does it
   fromTier: 2
   trust: 50           # while she hides things she needs to trust him this much to ask at all
   honesty: 50
-  upToTierHidden: 4
+  tellPerTier: 0.75   # hidden: what he did not see she brings up at night with chance (honesty/100) ^ (tier - 2) times this per tier above a touch
+  upToTierHidden: 2   # while she hides things (NTR) she asks only up to a touch, and only when she does not want it; past that she does it quietly or says no herself
   perDay: 3
   yes: { trust: 2, tenderness: 2 }
   later: { resent: 0.5 }
@@ -53,6 +54,8 @@ ask:                  # she asks him before she does it
   explain: { resent: -1.5, trust: 2 }
   because: { resent: 2, anger: 8, trust: -3 }
   relent: { trust: 1, delight: 3 }
+  polite: { trust: 1 }   # "be polite with the guests, that is all I ask": she reads it her own way
+  politeRead: 0.5       # how far her own lean (openness against fidelity) moves what she thinks he allows
   reluctant: { fidelity: 55, upToTier: 4, chance: 0.5, yes: { resent: 1, trust: -1 }, yesTakes: { trust: 1 }, no: { tenderness: 4, trust: 2 }, later: { trust: 1 } } # a decent wife who does not want it also comes to him: what is she to do about this man
 stance:               # where he stands on one man, said after something happened
   free: { consent: 12 }

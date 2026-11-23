@@ -191,7 +191,7 @@ export function registerCouple(api: ModApi) {
         else if (top.seen || b.mode === "open") {
           ctx.log("log.talk.tonight.told", { name: `@name:${b.patrons[top.patron]?.name ?? ""}`, act: `act.${top.act}` });
           changeHeroine(ctx, "arousal", b.mode === "open" ? 4 : 0, "telling");
-        } else if (h.traits.honesty + ((h.marriage.trust ?? 60) - 50) * content.mind.trust.confess >= T.confessAtHonesty && tier <= T.confessUpToTier) {
+        } else if (h.traits.honesty + ((h.marriage.trust ?? 60) - 50) * content.mind.trust.confess >= T.confessAtHonesty && tier <= T.confessUpToTier && (tier <= content.terms.ask.upToTierHidden || ctx.rng.chance(Math.pow((h.traits.honesty / 100) * content.terms.ask.tellPerTier, tier - content.terms.ask.upToTierHidden)))) {
           // she owns up to the lighter things herself
           ctx.log("log.talk.tonight.confess", { name: `@name:${b.patrons[top.patron]?.name ?? ""}`, act: `act.${top.act}` });
           b.expect[top.act] = b.expect[top.act] ?? 0; // now it is on the table: his answer is next

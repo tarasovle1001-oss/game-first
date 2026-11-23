@@ -236,11 +236,25 @@ export function registerTerms(api: ModApi) {
     },
   });
   /** She came to him not wanting it: "we need the money", "no, and you don't have to", "you decide". */
-  const reluctantAnswer = (ctx: Ctx, patron: string, act: string, say: "yes" | "later" | "no") => {
+  const reluctantAnswer = (ctx: Ctx, patron: string, act: string, say: "yes" | "later" | "no" | "polite") => {
     const b = bs(ctx.state);
     const h = b.heroine;
     const R = T.ask.reluctant;
     const v = b.shift?.visits.find((x) => x.patron === patron);
+    if (say === "polite") {
+      // neither a yes nor a no: she hears in it what she is inclined to hear - a closed, faithful wife "no need to put up with it",
+      // an open one "he does not mind". The next time it is her own call.
+      said(ctx, "told.permit.polite.reluctant", { what: `act.${act}` });
+      const lean = (h.traits.openness - h.traits.fidelity) * T.ask.politeRead;
+      b.expect[act] = clamp((b.expect[act] ?? E.unknown) + lean, -100, 100);
+      (b.askFree = b.askFree ?? []).push(`${ctx.state.time.day}:${patron}:${act}`);
+      if (b.askFree.length > 20) b.askFree.shift();
+      if (v) v.cooldownUntil = 0;
+      fx(ctx, T.ask.polite, "asked");
+      ctx.log(`log.ask.reluctant.polite.${lean >= 0 ? "lets" : "holds"}`);
+      ctx.emit("couple:permit", { say, act, patron, tone: "reluctant" });
+      return;
+    }
     said(ctx, `told.permit.${say}.reluctant`, { what: `act.${act}` });
     if (say === "yes") {
       // "put up with it, we need the money": she hears that it is allowed, and that he asked it of her
@@ -279,8 +293,9 @@ export function registerTerms(api: ModApi) {
     const reluctant = verdict !== "eager" && h.traits.fidelity >= A.reluctant.fidelity && h.traits.honesty >= A.honesty;
     if (verdict === "refuse" && (!reluctant || act.tier > A.reluctant.upToTier || !ctx.rng.chance(A.reluctant.chance))) return false;
     if (Math.abs(expectOf(ctx.state, act.id)) >= A.maxSure || b.patrons[p.id]?.memory.stance === "free") return false;
-    // in the open she always asks; while she hides things only for the milder ones, and only if she trusts him
-    if (b.mode === "hidden" && (act.tier > A.upToTierHidden || h.traits.honesty < A.honesty || trustOf(ctx.state) < A.trust)) return false;
+    // in the open she always asks. While she hides things she comes to him only with what she does not want, and only up to a touch:
+    // past that it is hers alone - she does it without a word, or says no herself. What she wants she does not ask leave for.
+    if (b.mode === "hidden" && (!reluctant || act.tier > A.upToTierHidden || h.traits.honesty < A.honesty || trustOf(ctx.state) < A.trust)) return false;
     // he has to be somewhere she can walk to
     if (ctx.state.where[HUSBAND]?.startsWith("town.")) return false;
     b.ask = { patron: p.id, act: act.id, tick: b.shift?.tick ?? 0, ...(reluctant ? { tone: "reluctant" } : {}) };
@@ -329,13 +344,13 @@ export function registerTerms(api: ModApi) {
       if (!b.ask) return [];
       const name = b.patrons[b.ask.patron]?.name ?? 0;
       const tone = b.ask.tone === "reluctant" ? 1 : 0;
-      return ["yes", "later", "no"].map((say) => ({ type: PERMIT, payload: { say, name, act: b.ask!.act, ...(tone ? { tone } : {}) } }));
+      return ["yes", "later", "no", ...(tone ? ["polite"] : [])].map((say) => ({ type: PERMIT, payload: { say, name, act: b.ask!.act, ...(tone ? { tone } : {}) } }));
     },
-    accepts: (state, a) => (bs(state).askWhy ? ["explain", "because", "relent"] : bs(state).ask ? ["yes", "later", "no"] : []).includes(a.payload?.say as string),
+    accepts: (state, a) => (bs(state).askWhy ? ["explain", "because", "relent"] : bs(state).ask ? ["yes", "later", "no", ...(bs(state).ask!.tone ? ["polite"] : [])] : []).includes(a.payload?.say as string),
     apply(ctx, action) {
       const b = bs(ctx.state);
       const A = T.ask;
-      const say = action.payload!.say as "yes" | "later" | "no" | "explain" | "because" | "relent";
+      const say = action.payload!.say as "yes" | "later" | "no" | "polite" | "explain" | "because" | "relent";
       if (b.askWhy) {
         const { act } = b.askWhy;
         b.askWhy = undefined;
@@ -347,7 +362,7 @@ export function registerTerms(api: ModApi) {
       }
       const { patron, act, tone } = b.ask!;
       b.ask = undefined;
-      if (tone === "reluctant") return void reluctantAnswer(ctx, patron, act, say as "yes" | "later" | "no");
+      if (tone === "reluctant") return void reluctantAnswer(ctx, patron, act, say as "yes" | "later" | "no" | "polite");
       const v = b.shift?.visits.find((x) => x.patron === patron);
       const want = verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { act, partner: patron, loc: HALL, offer: 0, pressure: 0 }).total);
       said(ctx, `told.permit.${say}`, { what: `act.${act}` });
