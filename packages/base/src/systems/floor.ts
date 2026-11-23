@@ -82,6 +82,7 @@ export function registerFloor(api: ModApi) {
       if (sh.momentsSeen?.includes(`${p.id}:${m.id}`)) return false;
       if (m.hers && !(p.memory.affinity >= (m.likeAffinity ?? F.moments.likeAffinity) && h.traits.openness >= (m.needOpen ?? 0))) return false; // her own move: only when she is up for it
       if (m.reveals && p.memory.sizeKnown) return false;
+      if (m.perEvening !== undefined && (sh.momentsSeen ?? []).filter((x) => x.endsWith(`:${m.id}`)).length >= m.perEvening) return false; // once an evening is an event, three times is a habit
       if (w.regular !== undefined && w.regular !== p.regular) return false;
       if (w.newcomer && p.memory.visits > 1) return false;
       if (w.approach && w.approach !== p.approach) return false;

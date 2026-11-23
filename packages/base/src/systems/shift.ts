@@ -43,7 +43,7 @@ export const interrupt = (ctx: Ctx) => {
   if (sh) sh.interrupt = true;
 };
 
-const wantsOrder = (v: Visit) => !v.group && v.out === undefined && (v.served === 0 || v.sinceOrder >= ORDER_EVERY);
+const wantsOrder = (v: Visit) => !v.group && v.out === undefined && !(v.at?.startsWith("hotel.") && (v.roomOrders ?? 0) >= content.balance.hotel.roomOrders) && (v.served === 0 || v.sinceOrder >= ORDER_EVERY);
 
 /** Where a guest's seat is tonight: the hall, or another room he has taken his drink to. */
 export const seatOf = (v: Visit) => v.at ?? HALL;
@@ -206,6 +206,7 @@ function serve(ctx: Ctx) {
         const p = b.patrons[v.patron];
         const linger = ctx.rng.int(bal.attend.linger[0], bal.attend.linger[1]) + Math.max(0, p?.memory.affinity ?? 0) * bal.attend.perAffinity;
         attendTo(ctx, there, bal.serveMinutes + linger, "serve", v.patron);
+        if (there.startsWith("hotel.")) v.roomOrders = (v.roomOrders ?? 0) + 1;
         ctx.log(`log.attend.serve.${there.startsWith("hotel.") ? "room" : there === "cafe.sauna" ? "sauna" : "other"}`, { name: `@name:${p?.name ?? ""}`, room: `loc.${there}` }, husbandSees(ctx.state, HALL) || husbandSees(ctx.state, there) || b.mode === "open" ? undefined : ["unseen"]);
       }
     }

@@ -36,7 +36,10 @@ export function registerRoam(api: ModApi) {
       // only a man who has his drink and is not about to want the next one, and who is going to stay a while yet
       if (busy || v.served === 0 || v.sinceOrder > ORDER_EVERY - longest - 3 || v.stay <= longest + 2 || ctx.state.where[v.patron] !== HALL) continue;
       if (!ctx.rng.chance(Ro.chancePerMinute)) continue;
-      const place = ctx.rng.weighted(Ro.places.filter((x) => x.to !== "cafe.lounge" || !sh.group).map((x) => ({ item: x, weight: x.weight })));
+      const open = Ro.places.filter((x) => (x.to !== "cafe.lounge" || !sh.group) && (v.went?.[x.id] === undefined || sh.tick - v.went[x.id]! >= x.gap));
+      if (open.length === 0) continue;
+      const place = ctx.rng.weighted(open.map((x) => ({ item: x, weight: x.weight })));
+      (v.went = v.went ?? {})[place.id] = sh.tick;
       v.away = { to: place.to, until: sh.tick + ctx.rng.int(place.minutes[0], place.minutes[1]) };
       const seen = ctx.state.where[HUSBAND] === HALL || husbandSees(ctx.state, HALL);
       ctx.state.where[v.patron] = place.to;

@@ -10,6 +10,7 @@ import { actById } from "./encounters";
 import { expectOf, nudge } from "./expectations";
 import { changeHeroine } from "./heroine";
 import { HALL } from "./places";
+import { hasLine } from "./voice";
 
 export const ANSWER = "base/answer-her";
 const A = content.manners.talk.her;
@@ -179,7 +180,9 @@ export function registerHerSide(api: ModApi) {
     asked[top.act] = ctx.state.time.day;
     b.retroDay = ctx.state.time.day;
     b.approach = { kind: "retro", patron: top.patron, public: false, act: top.act };
-    ctx.log("log.approach.retro", { name: `@name:${b.patrons[top.patron]!.name}`, act: `act.${top.act}` });
+    // in her own words where they are written ("I sat on his lap"), not the name of the act off the menu
+    if (hasLine(`told.her.${top.act}`)) ctx.log("log.approach.retro.told", { name: `@name:${b.patrons[top.patron]!.name}`, told: `told.her.${top.act}` });
+    else ctx.log("log.approach.retro", { name: `@name:${b.patrons[top.patron]!.name}`, act: `act.${top.act}` });
   }, 80);
   api.actions.register({
     id: ANSWER,

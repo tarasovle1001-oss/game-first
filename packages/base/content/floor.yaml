@@ -29,8 +29,8 @@ moments:              # small things at a table; none of them is an "act"
     - { id: toasts_her, when: { minDrunk: 20 }, likeAffinity: -100, good: { mood: 2, pride: 2 } }
     - { id: asks_closing, when: { minInterest: 50 }, good: { arousal: 2, affinity: 1, longing: 2 }, bad: { annoy: 2 } }
     # weight: how much likelier than an ordinary moment; shows: the close-up beside the picture (default: he took it out)
-    - { id: notices_bulge, when: { minInterest: 20 }, likeAffinity: -100, reveals: true, weight: 3, shows: bulge, good: { arousal: 3, heat: 4 } } # nobody shows her anything: she simply cannot not see it
-    - { id: shows_her, when: { minInterest: 35 }, needOpen: 35, weight: 3, likeAffinity: 0, reveals: true, good: { arousal: 3, heat: 5 }, bad: { annoy: 4, shame: 3 } } # under the table, for her eyes only: now she knows what he has
+    - { id: notices_bulge, when: { minInterest: 20 }, likeAffinity: -100, reveals: true, weight: 3, perEvening: 1, shows: bulge, good: { arousal: 3, heat: 4 } } # nobody shows her anything: she simply cannot not see it
+    - { id: shows_her, when: { minInterest: 35 }, needOpen: 35, weight: 3, perEvening: 1, likeAffinity: 0, reveals: true, good: { arousal: 3, heat: 5 }, bad: { annoy: 4, shame: 3 } } # under the table, for her eyes only: now she knows what he has
     - { id: touches_him, when: { minInterest: 30 }, needOpen: 55, likeAffinity: 30, hers: true, good: { arousal: 2, heat: 12, affinity: 1 } } # her hand brushes his lap in passing: her move, so only when she is up for it
     - { id: sings_along, when: { minDrunk: 35 }, likeAffinity: -100, good: { mood: 2 } }
 deal:                 # a guest with money goes to the husband first
@@ -147,7 +147,7 @@ roam: # guests get up and walk about: nobody sits in plain view the whole evenin
   meet: { chance: 0.35, interest: 50, affinity: 30, openness: 45, arousal: 35, extra: 5 } # he steps out to the toilet or the stairs and she goes after him: from there it is the hall mode, the two of them
   sauna: { chance: 0.05, minutes: [30, 60], orderAfter: 10, bareHeat: 45, bareDrunk: 40, likeOpenness: 45, arousal: 4 } # per guest per ten minutes: he takes his drink into the sauna; worked up or drunk, the towel does not stay on
   places:
-    - { id: toilet, to: cafe.toilet, weight: 5, minutes: [3, 6] }
-    - { id: bar, to: cafe.bar, weight: 3, minutes: [2, 5] }
-    - { id: call, to: hotel.landing, weight: 2, minutes: [3, 6] }   # a phone call on the stairs
-    - { id: peek, to: cafe.lounge, weight: 1, minutes: [4, 7] }     # a look into the small hall, when it is empty (long enough to be seen on the map)
+    - { id: toilet, to: cafe.toilet, weight: 5, minutes: [3, 6], gap: 150 } # gap: not the same errand again sooner than this many minutes
+    - { id: bar, to: cafe.bar, weight: 3, minutes: [2, 5], gap: 60 }
+    - { id: call, to: hotel.landing, weight: 2, minutes: [3, 6], gap: 120 }   # a phone call on the stairs
+    - { id: peek, to: cafe.lounge, weight: 1, minutes: [4, 7], gap: 240 }     # a look into the small hall, when it is empty (long enough to be seen on the map)

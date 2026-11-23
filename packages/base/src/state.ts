@@ -136,6 +136,8 @@ export interface Visit {
   pushed?: boolean; // the husband nudged her toward him tonight
   crossed?: number; // times he would not take a no tonight
   dealt?: boolean; // he has already been to the husband about her tonight
+  went?: Record<string, number>; // the minute of his last errand of each kind (toilet, bar, a call): not the same one again at once
+  roomOrders?: number; // orders a lodger has had brought up to his room tonight
 }
 
 /** The two of them in bed, turn by turn. */
