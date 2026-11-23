@@ -95,8 +95,12 @@ export function registerRoam(api: ModApi) {
   });
   // a guest who had stepped out and is now with her somewhere is no longer "away": he is where the scene is
   api.events.on("encounter:started", (ctx, e) => {
-    const v = bs(ctx.state).shift?.visits.find((x) => x.patron === e.payload!.patron);
-    if (v?.away && bs(ctx.state).shift?.meet?.patron !== v.patron) v.away = undefined;
+    const sh = bs(ctx.state).shift;
+    const v = sh?.visits.find((x) => x.patron === e.payload!.patron);
+    if (!v?.away) return;
+    // a meet elsewhere is off once something else took him (a deal led him to the staff room)
+    if (sh!.meet?.patron === v.patron && e.payload!.loc !== sh!.meet.to) sh!.meet = undefined;
+    if (sh!.meet?.patron !== v.patron) v.away = undefined;
   });
   api.invariants.add("roam", (s) => {
     const sh = bs(s).shift;

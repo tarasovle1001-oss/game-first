@@ -244,10 +244,20 @@ function herMorning(ctx: Ctx) {
   // 2. a toy, when her husband is not enough: never much bigger than she can take, always bigger than the last one
   const biggest = Math.max(0, ...D.shop.toys.filter((t) => b.toys.includes(t.id)).map((t) => t.size));
   const fit = fitOf(ctx.state, "vagina");
-  const toy = D.shop.toys
-    .slice()
-    .sort((x, y) => y.size - x.size)
-    .find((t) => !b.toys.includes(t.id) && t.size > biggest && t.size <= fit + D.shop.toyStretchAbove && b.purse >= t.price);
+  // curious about the back way and nothing small enough for it in the drawer: this time a small one for there
+  // (the ladder there starts much lower; once it opens, the toys she has for the front follow it up)
+  const backFit = fitOf(ctx.state, "anus") + D.shop.toyStretchAbove;
+  const backBest = Math.max(0, ...D.shop.toys.filter((t) => b.toys.includes(t.id) && t.size <= backFit).map((t) => t.size));
+  const forBack =
+    b.toys.length > 0 && (h.prefs?.anal ?? 50) >= D.shop.solo.analCuriousFrom && backBest < fitOf(ctx.state, "anus") + 2
+      ? D.shop.toys.filter((t) => !b.toys.includes(t.id) && t.size > backBest && t.size <= backFit && b.purse >= t.price).sort((x, y) => y.size - x.size)[0]
+      : undefined;
+  const toy =
+    forBack ??
+    D.shop.toys
+      .slice()
+      .sort((x, y) => y.size - x.size)
+      .find((t) => !b.toys.includes(t.id) && t.size > biggest && t.size <= fit + D.shop.toyStretchAbove && b.purse >= t.price);
   if (toy && (h.marriage.resent >= 20 || h.sizeTaste >= 25 || h.traits.libido >= 65)) {
     b.purse -= toy.price;
     b.toys.push(toy.id);

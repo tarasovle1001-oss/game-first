@@ -83,6 +83,9 @@ shop:                 # in town; she also buys for herself from her purse
     curious: { sizeTaste: 45, chance: 0.2, seen: 0.25 } # she buys one (or the next size) out of curiosity too: per morning, with a taste for size from this; `seen` is added once she has seen a man far bigger than her husband
     fantasy: { openness: 0.7, fidelity: 0.5, sizeTaste: 0.8, fingersShare: 0.6 } # what a session moves in her when she thinks of someone who is not her husband (with fingers only: this share)
     analChance: 0.35 # how often it is the back way, once she has a taste for it
+    analTaughtAt: 6      # stretch there from which it is hers (was 15: out of reach on her own)
+    analCuriousFrom: 45  # her anal taste at setup from which she tries it on her own with a small toy
+    analCuriousShare: 1.0 # ...this share of analChance (scaled by that taste: 50 -> x1, 80 -> x1.6)
   gigolo: { price: 250, size: 40, minutes: 40, fidelityBelow: 45, sizeTasteFrom: 45, chance: 0.5, suspicion: 4 }
   affair: { fidelityBelow: 50, affinity: 30, chance: 0.3, minutes: 120, suspicion: 3 } # an afternoon "with a friend" with a lover who has her number
   herOutfitMargin: 5  # she buys an outfit herself once her openness is this close to it

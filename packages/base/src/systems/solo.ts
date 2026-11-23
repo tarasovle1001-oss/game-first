@@ -72,7 +72,11 @@ export function registerSolo(api: ModApi) {
     if (ctx.state.where[HUSBAND] === BED) return; // not with him in the room
     const h = b.heroine;
     // the back way is for a woman who likes it, or whom a husband has taught to
-    const anal = (h.tastes.acts.anal ?? 0) > 0 || h.body.anus.stretch >= 15 ? ctx.rng.chance(So.analChance) : false;
+    // ...or one curious about it from the start (her anal taste at setup): rarer, and only with a toy small enough for there.
+    // Without this the back never opened at all: guests need it to take them, and only acts there taught her the taste
+    const taught = (h.tastes.acts.anal ?? 0) > 0 || h.body.anus.stretch >= So.analTaughtAt;
+    const curious = (h.prefs?.anal ?? 50) >= So.analCuriousFrom && owned(b).some((t) => t.size <= fitOf(ctx.state, "anus") + content.day.shop.toyStretchAbove);
+    const anal = taught ? ctx.rng.chance(So.analChance) : curious ? ctx.rng.chance(So.analChance * So.analCuriousShare * ((h.prefs?.anal ?? 50) / 50)) : false;
     b.solo.zone = anal ? "anus" : "vagina";
     b.solo.started = ctx.state.time.minute;
     b.soloDay = ctx.state.time.day;
