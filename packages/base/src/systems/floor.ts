@@ -256,13 +256,13 @@ export function registerFloor(api: ModApi) {
     sh.visits = sh.visits.filter((v) => !v.group);
     if (g.rounds === 0) {
       addReputation(ctx, -2 * Gr.restlessReputation);
-      ctx.log("log.group.leave.nothing");
+      ctx.log(`log.group.leave.nothing${g.sauna ? ".sauna" : ""}`);
       return;
     }
     addMoney(ctx, g.bill, "group");
     sh.income += g.bill;
     b.today.income += g.bill;
-    ctx.log("log.group.leave", { bill: g.bill, n: g.size });
+    ctx.log(`log.group.leave${g.sauna ? ".sauna" : ""}`, { bill: g.bill, n: g.size });
   };
   /** The company is sent off at the door, or left standing there until it leaves. */
   const turnAway = (ctx: Ctx, waited: boolean) => {
@@ -283,7 +283,7 @@ export function registerFloor(api: ModApi) {
     g.ignored = (g.ignored ?? 0) + 1;
     g.heat = clamp(g.heat - 5);
     if (g.ignored >= 2) addReputation(ctx, -1);
-    ctx.log(g.ignored >= 2 ? "log.group.ignored.again" : waited ? "log.group.ignored.waited" : "log.group.ignored");
+    ctx.log(`${g.ignored >= 2 ? "log.group.ignored.again" : waited ? "log.group.ignored.waited" : "log.group.ignored"}${g.sauna ? ".sauna" : ""}`);
   };
   /** How worked up the company is shows in every one of them. */
   const warmMembers = (ctx: Ctx) => {

@@ -3940,3 +3940,8 @@ log.caught.watch.flustered: "You stay in the doorway. She sees you, pulls away f
 "log.caught.watch.flustered#2": "She catches your eye and loses her head: \"It's not... I'll just...\" {name} zips up and edges out past you."
 log.caught.watch.frozen: "You stay in the doorway. She sees you and freezes. Her face goes blank and even. {name} doesn't stop, and she doesn't stop him."
 "log.caught.watch.frozen#2": "She meets your eyes and turns to stone. Not a word, not a move towards you. Only {name} goes on as if you weren't there."
+log.group.leave.sauna: "The company from the sauna pays and leaves, steamed and loud: {bill}."
+log.group.leave.nothing.sauna: "The company leaves the sauna without ever getting anything. They will remember this evening."
+log.group.ignored.sauna: "They shout from the sauna for more. You pretend not to hear."
+log.group.ignored.waited.sauna: "In the sauna they never got their tray. It has gone quieter and meaner in there."
+log.group.ignored.again.sauna: "In the sauna they sit with empty glasses again. Someone says loudly that he won't come here any more."
