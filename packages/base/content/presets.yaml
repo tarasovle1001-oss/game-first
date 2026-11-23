@@ -18,6 +18,7 @@
 # for an NTR game (hidden mode): modest and faithful to look at, but she lies easily, is curious about size, and a drink loosens her;
 # what she does she does behind his back, and it thrills her
 - id: shy_curious
+  noRandomLatents: true   # a designed playtest character: only the three sides below, nothing rolled on top
   traits: { openness: 26, confidence: 38, fidelity: 72, honesty: 30, libido: 62 }
   sizeTaste: 45
   latents: [guilt_thrill, tipsy_loose, size_queen]

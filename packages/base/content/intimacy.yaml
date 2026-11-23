@@ -22,6 +22,7 @@ lead:                 # she runs the scene
   lickPower: 40
   power: 2            # what an ending on her terms adds to her power
 her:                  # who she is in bed with him, by her power over him (0..100): how she speaks, why she starts, what he owes her
+  cruelFrom: 12       # her power over him from which a cruel streak starts to show
   tones: [25, 50, 75] # power from which she no longer asks but suggests, says, orders
   powerFrom: { early: 3, leftWanting: 1.5, pestering: 2, declined: 1.5, guest: 1.2 } # power she gains, in any mode: he is over too soon, she is left wanting, he keeps asking, he turns her down; and each day she has had a man bigger than him
   owes:               # what he owes her: every failure is counted, and collected when she has the say

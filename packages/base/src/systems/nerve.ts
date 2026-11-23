@@ -1,6 +1,7 @@
 // His own body in bed: how sure of himself he is, and how long he has gone without.
 // Both pile up. A bad night makes the next one likelier to go wrong; a long stretch without makes him quick,
 // and sooner or later it ends in his sleep. None of it depends on her: it can happen with a wife who adores him.
+import { cruelNow } from "./hernight";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -66,7 +67,7 @@ export function registerNerve(api: ModApi) {
     if (failed) {
       changeConfidence(ctx, outcome === "went_soft" ? N.confidence.soft : N.confidence.early, outcome);
       // how she takes it is hers: a wife who holds the reins lets him feel it, a warm one does not let him sink
-      const hard = b.power >= N.react.hardPower || h.latents.cruel_streak !== undefined;
+      const hard = b.power >= N.react.hardPower || cruelNow(b);
       const warm = !hard && h.marriage.desire >= N.react.warmDesire && h.marriage.resent < N.react.warmMaxResent;
       if (hard) {
         b.power = clamp(b.power + N.react.power);

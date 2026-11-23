@@ -1,5 +1,6 @@
 // Guests try their luck with her, she answers through one formula.
 // Every row of that formula is named and visible; mods add rows with api.formulas.addFactor(CONSENT_FORMULA, ...).
+import { cruelNow } from "./hernight";
 import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
 import { actById, actOf, content } from "../content";
 import { outcomeOf, refusalWhy, setOutcome } from "./voice";
@@ -779,7 +780,7 @@ export function registerEncounters(api: ModApi) {
   row("pity", 38, (s, _i, _a, p) => {
     const b = bs(s);
     const h = her(s);
-    if (p || b.denied < 2 || h.marriage.resent >= 40 || b.power >= 30 || h.latents.cruel_streak !== undefined) return null;
+    if (p || b.denied < 2 || h.marriage.resent >= 40 || b.power >= 30 || cruelNow(b)) return null;
     return Math.min(c.pityMax, (b.denied - 1) * c.pity) * (h.marriage.desire / 100) || null;
   });
   row("resent", 38, (s, _i, _a, p) => (p ? null : -her(s).marriage.resent * c.resent));

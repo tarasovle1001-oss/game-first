@@ -9,6 +9,9 @@ const Hn = content.intimacy.her;
 /** 0..3: she asks, suggests, says, orders. From her power over him. */
 export const toneOf = (state: GameState) => Hn.tones.filter((from) => bs(state).power >= from).length;
 
+/** The cruel streak sleeps until she has some hold on him: a shy wife with no say does not sneer at him on day three because of a trait she has not grown into. */
+export const cruelNow = (b: { power: number; heroine: { latents: Record<string, true> } }) => b.heroine.latents.cruel_streak !== undefined && b.power >= Hn.cruelFrom;
+
 /** One more thing he owes her. Said aloud once she has any say; before that it is only a thought. */
 export function owe(ctx: Ctx, why: "early" | "wanting" | "pestering" | "declined" | "refused" | "more" | "soft") {
   const b = bs(ctx.state);

@@ -10,7 +10,7 @@ import { actById } from "./encounters";
 import { expectOf, nudge } from "./expectations";
 import { changeHeroine } from "./heroine";
 import { HALL } from "./places";
-import { toneOf } from "./hernight";
+import { toneOf, cruelNow } from "./hernight";
 import { hasLine } from "./voice";
 
 export const ANSWER = "base/answer-her";
@@ -78,7 +78,7 @@ const remark = (ctx: Ctx) => {
   const b = bs(ctx.state);
   const h = b.heroine;
   const aloud = b.mode === "open" || h.traits.honesty >= A.remarkHonesty;
-  const cruel = b.mode === "open" && (b.power >= 30 || h.latents.cruel_streak !== undefined);
+  const cruel = b.mode === "open" && (b.power >= 30 || cruelNow(b));
   const say = (id: string, key: string, spoken = aloud) => {
     b.remarked.push(id);
     ctx.log(spoken ? key : `${key}.thought`, undefined, spoken ? undefined : ["unseen"]);

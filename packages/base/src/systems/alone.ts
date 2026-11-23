@@ -1,6 +1,7 @@
 // What he does by himself: with his hand, or with a toy on himself. It is played a few minutes at a time, like a scene in bed:
 // faster, slower, deeper, what he thinks about - until he finishes or stops. Every move she may open the door;
 // what she makes of it is hers.
+import { cruelNow } from "./hernight";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -174,7 +175,7 @@ export function registerAlone(api: ModApi) {
     if (!around || !ctx.rng.chance(S.caughtPerTurn)) return false;
     const toy = al.toy ? content.day.shop.toys.find((t) => t.id === al.toy) ?? null : null;
     b.alone = undefined;
-    const hard = b.power >= A.hardPower || h.latents.cruel_streak !== undefined;
+    const hard = b.power >= A.hardPower || cruelNow(b);
     const warm = h.marriage.desire >= A.warmDesire && h.marriage.resent < A.warmMaxResent;
     if (toy) {
       // what he does to himself there tells her something about who can do what to whom

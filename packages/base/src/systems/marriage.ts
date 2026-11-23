@@ -7,7 +7,7 @@ import { hasLine, outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { entersZone, fitOf, orgasm, pleasureFor, sizeStage, useBody } from "./body";
 import { resolveSized } from "./taking";
-import { owe, toneOf, whyTonight } from "./hernight";
+import { owe, toneOf, whyTonight, cruelNow } from "./hernight";
 import { think } from "./mind";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
 import type { ConsentInput } from "./encounters";
@@ -255,7 +255,7 @@ export function registerMarriage(api: ModApi) {
     for (const why of actById(actId).motives ?? []) {
       if (why === "affection") motive += h.marriage.desire * R.affection;
       if (why === "giving" && (h.latents.oral_fixation !== undefined || h.latents.submissive !== undefined)) motive += R.giving;
-      if (why === "power") motive += b.power * R.power + (h.latents.cruel_streak !== undefined ? R.cruel : 0);
+      if (why === "power") motive += b.power * R.power + (cruelNow(b) ? R.cruel : 0);
     }
     return clamp(Math.max(pleasure, pleasure * 0.6 + motive));
   };
@@ -330,10 +330,10 @@ export function registerMarriage(api: ModApi) {
       if (verdict === "refuse") {
         // not what he asked for, but she has her own idea of what he is good for tonight
         const C = content.body.bed.counter;
-        const leads = b.power >= C.power || h.latents.cruel_streak !== undefined || (h.traits.confidence >= C.confidence && h.sizeTaste >= C.sizeTaste);
+        const leads = b.power >= C.power || cruelNow(b) || (h.traits.confidence >= C.confidence && h.sizeTaste >= C.sizeTaste);
         const inside = act.zones.includes("vagina") || act.zones.includes("anus");
         if (leads && inside && h.marriage.resent < C.maxResent && ctx.rng.chance(C.chance)) {
-          const hard = b.power >= C.peggingPower || h.latents.cruel_streak !== undefined;
+          const hard = b.power >= C.peggingPower || cruelNow(b);
           const options = [...IN_BED.counter, ...(hard ? IN_BED.counterHard.filter((a) => hisActOpen(ctx.state, a)) : [])];
           // a wife who still asks rather than tells does not order him down there: she asks for his mouth, quietly
           const meek = toneOf(ctx.state) < 2;
@@ -506,7 +506,7 @@ export function registerMarriage(api: ModApi) {
       b.night!.scene = "by_hand";
       b.husband.spentDay = ctx.state.time.day;
       b.denied = -1;
-      const mocks = b.mode === "open" && (b.power >= 30 || h.latents.cruel_streak !== undefined);
+      const mocks = b.mode === "open" && (b.power >= 30 || cruelNow(b));
       if (mocks) b.power = clamp(b.power + 2);
       const kind = h.marriage.desire >= content.body.bed.reward.lovingDesire;
       feel(ctx, mocks ? -0.5 : 0, 0); // she does not think less of him for it unless she was already looking down
@@ -675,7 +675,7 @@ export function registerMarriage(api: ModApi) {
     }
     // a wife who has a taste for it, or holds the reins, now and then wants to be the one doing it to him
     const hh = b.heroine;
-    if (!sex.lead && !sex.asks && !sex.out && !FEMDOM.has(sex.act) && sex.turns >= 2 && (b.power >= 20 || hh.latents.cruel_streak !== undefined || (hh.tastes.acts.pegging ?? 0) > 0 || (hh.tastes.acts.prostate ?? 0) > 0)) {
+    if (!sex.lead && !sex.asks && !sex.out && !FEMDOM.has(sex.act) && sex.turns >= 2 && (b.power >= 20 || cruelNow(b) || (hh.tastes.acts.pegging ?? 0) > 0 || (hh.tastes.acts.prostate ?? 0) > 0)) {
       const cand = ["prostate", "dildo_him", "pegging"].filter((a) => hisActOpen(ctx.state, a));
       if (cand.length > 0 && ctx.rng.chance(0.05 + b.power * 0.002)) {
         sex.asks = ctx.rng.pick(cand);
@@ -907,7 +907,7 @@ export function registerMarriage(api: ModApi) {
     const h = b.heroine;
     const sex = b.night!.sex!;
     const inside = sex.act === "sex" || sex.act === "riding" || sex.act === "anal";
-    const cruel = h.latents.cruel_streak !== undefined;
+    const cruel = cruelNow(b);
     let where = FINISH[sex.act]?.[0] ?? "on_her";
     let how = "plain";
     if (!HIS_ACTS.includes(sex.act) && sex.act !== "rimming_him") {
@@ -960,7 +960,7 @@ export function registerMarriage(api: ModApi) {
       return void turn(ctx, 3, B.undress);
     }
     // what is best for her right now, including what she may decide he takes
-    const own = (a: string) => !HIS_ACTS.includes(a) || b.power >= LEAD.hisActsPower || h.latents.cruel_streak !== undefined;
+    const own = (a: string) => !HIS_ACTS.includes(a) || b.power >= LEAD.hisActsPower || cruelNow(b);
     const now = rewardOf(ctx.state, sex.act, sex.pleasure);
     // she does not do the same thing twice in one scene, and she does not always reach for the same favourite:
     // among what is better than now she picks by how much better, and now and then she simply takes them to something ordinary
@@ -1010,7 +1010,7 @@ export function registerMarriage(api: ModApi) {
     const b = bs(ctx.state);
     const sex = b.night?.sex;
     if (!sex || ctx.state.time.phase !== "night") return;
-    const cruel = b.heroine.latents.cruel_streak !== undefined;
+    const cruel = cruelNow(b);
     // she came to play, or to collect: the scene is hers from the start, in any mode
     const hers = b.night?.why === "play" || b.night?.why === "punish";
     if (!hers) {
@@ -1301,7 +1301,7 @@ export function registerMarriage(api: ModApi) {
         }
         case "moan": {
           // he lets her hear it: a woman who holds the reins likes that, a gentle one is touched by it
-          const hard = b.power >= 25 || b.heroine.latents.cruel_streak !== undefined;
+          const hard = b.power >= 25 || cruelNow(b);
           changeHeroine(ctx, "arousal", hard ? 5 : 2, "his moans");
           if (hard) b.power = clamp(b.power + 0.5);
           ctx.log(`log.bed.fd.moan.${hard ? "hard" : "soft"}`);
@@ -1315,7 +1315,7 @@ export function registerMarriage(api: ModApi) {
           const owned = content.day.shop.toys.filter((t) => b.toys.includes(t.id)).sort((x, y) => x.size - y.size);
           const now = sex.act === "prostate" ? K.fingerSize : (toyForHim(ctx.state).toy?.size ?? 0);
           const next = owned.find((t) => t.size > now);
-          const willing = b.power >= 15 || b.heroine.marriage.desire >= 50 || b.heroine.latents.cruel_streak !== undefined;
+          const willing = b.power >= 15 || b.heroine.marriage.desire >= 50 || cruelNow(b);
           if (!willing) {
             ctx.log("log.bed.fd.more.no");
             if (sex.lead) herTurn(ctx);
@@ -1339,7 +1339,7 @@ export function registerMarriage(api: ModApi) {
         }
         case "beg_gentle": {
           // "easy...": a fond wife slows down; one who enjoys it does not
-          const hard = b.power >= 40 || b.heroine.latents.cruel_streak !== undefined;
+          const hard = b.power >= 40 || cruelNow(b);
           if (hard) b.power = clamp(b.power + 1);
           ctx.log(`log.bed.fd.gentle.${hard ? "no" : "ok"}`);
           if (sex.lead && hard) herTurn(ctx);

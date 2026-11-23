@@ -1,5 +1,6 @@
 // The cage as a state of his, not a moment in bed: once it is on, it stays on by day and by night until she takes it off.
 // While it is on he has nothing to enter her with: only what needs nothing of him is possible, and none of it ends for him.
+import { cruelNow } from "./hernight";
 import type { GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -14,7 +15,7 @@ export const cagedDays = (state: GameState): number | null => {
 };
 export const isCaged = (state: GameState) => !!bs(state).husband.caged;
 /** She likes holding the key: a wife with power over him, or with that streak in her. */
-const keeper = (state: GameState) => bs(state).power >= Cg.keepPower || bs(state).heroine.latents.cruel_streak !== undefined;
+const keeper = (state: GameState) => bs(state).power >= Cg.keepPower || cruelNow(bs(state));
 
 export function registerCage(api: ModApi) {
   // it goes on in bed, by her hand
