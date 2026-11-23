@@ -177,6 +177,8 @@ export const consentSchema = z
         skipMargin: z.number(),
         herRate: z.number(),
         stayLimit: z.number().int().positive(),
+        bodyWhyEvery: z.number().int().min(0),
+        wornAsks: z.number().min(0).max(1),
         endBelow: z.number(),
         continueChance: z.number().min(0).max(1),
         likeChance: z.number().min(0).max(1),

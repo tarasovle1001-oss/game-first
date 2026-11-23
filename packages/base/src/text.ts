@@ -40,6 +40,8 @@ const STEMS: Record<string, string> = { Пётр: "Петр", Павел: "Па�
 const PREP: Record<string, Case> = {
   к: "dat", ко: "dat", у: "gen", от: "gen", для: "gen", без: "gen", до: "gen", из: "gen", после: "gen", возле: "gen", около: "gen", мимо: "gen", против: "gen",
   с: "ins", со: "ins", за: "ins", перед: "ins", над: "ins", под: "ins", рядом: "ins", между: "ins", на: "acc", про: "acc", через: "acc", о: "prep", об: "prep",
+  // a couple of verbs that take him as their object ("берёт Дениса за руку", "позволяет Игорю")
+  берёт: "acc", позволяет: "dat",
 };
 const NOUN_GEN = ["столу", "столика", "столик", "столиком", "стола", "стол", "номер", "номере", "комнату", "комнате", "куртку", "взгляд", "руку", "рука", "руке", "ладонь", "пальцы", "колени", "коленях", "бугор", "член", "голос", "плечо", "шею", "лицо", "дверь"];
 export function declineName(name: string, c: Case): string {

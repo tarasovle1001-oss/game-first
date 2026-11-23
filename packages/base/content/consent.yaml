@@ -64,6 +64,8 @@ scene: # a thing with a guest runs minute by minute; every so often he tries to 
   skipMargin: 12            # she is this far past "gladly": he reads it and skips a step
   herRate: 2.2              # her meter per minute at pleasure 60
   stayLimit: 2              # changes she refuses before she ends it herself
+  wornAsks: 0.35            # and while that is fresh the men around ask this much less: they saw
+  bodyWhyEvery: 45          # once she has said her body is done, the next "no" for that reason goes without the line for this many minutes
   endBelow: 15              # ...or at once, if what he asks is this far below "maybe"
   continueChance: 0.5       # he has finished and still has it in him: chance he wants more
   likeChance: 0.6           # he steers toward what he likes rather than simply the next step

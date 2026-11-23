@@ -343,7 +343,16 @@ export function advanceEncounter(ctx: Ctx) {
 /** When it is her body that says no (worn out, sore, no strength), the log says so: otherwise a late-evening "no" reads like a change of heart. */
 function bodyWhy(ctx: Ctx, rows: { id: string; value: number }[], name: string, tags?: string[]) {
   const why = refusalWhy(rows);
-  if (["worn", "tired", "sore"].includes(why)) ctx.log(`log.refuse.why.${why}`, { name }, tags);
+  if (["worn", "tired", "sore"].includes(why) && bodySay(ctx)) ctx.log(`log.refuse.why.${why}`, { name }, tags);
+}
+
+/** Late in an evening every second man still asks; that she is done is said once, then she just shakes her head for a while. */
+function bodySay(ctx: Ctx): boolean {
+  const sh = bs(ctx.state).shift;
+  if (!sh) return true;
+  if (sh.bodySaid !== undefined && sh.tick - sh.bodySaid < S.bodyWhyEvery) return false;
+  sh.bodySaid = sh.tick;
+  return true;
 }
 
 function accept(ctx: Ctx, v: Visit, p: Patron, asked: ConsentInput, verdict: Verdict, hers = false) {
@@ -491,8 +500,9 @@ function refuse(ctx: Ctx, v: Visit, p: Patron, input: ConsentInput) {
   // past the lightest things a "no" has a reason, and it shows
   const last = b.proposals.at(-1);
   if (act.tier >= 2 && last && last.patron === p.id && last.act === act.id) {
-    const why = `log.refuse.why.${refusalWhy(last.rows)}`;
-    if (content.locales.ru?.[why] !== undefined) ctx.log(why, { name: `@name:${p.name}` }, seen ? undefined : ["unseen"]);
+    const reason = refusalWhy(last.rows);
+    const why = `log.refuse.why.${reason}`;
+    if (content.locales.ru?.[why] !== undefined && (!["worn", "tired", "sore"].includes(reason) || bodySay(ctx))) ctx.log(why, { name: `@name:${p.name}` }, seen ? undefined : ["unseen"]);
   }
   setOutcome(ctx, "away", p.id, seen);
 
@@ -629,6 +639,7 @@ export function runProposals(ctx: Ctx) {
   herOwnMove(ctx);
   if (b.encounter) return;
   let spoke = 0;
+  const worn = sh.bodySaid !== undefined && sh.tick - sh.bodySaid < S.bodyWhyEvery ? S.wornAsks : 1;
   for (const v of eligible) {
     if (spoke >= content.consent.proposalsPerTick) break;
     const p = b.patrons[v.patron]!;
@@ -636,7 +647,7 @@ export function runProposals(ctx: Ctx) {
     // the man she went to see, or who called her in, speaks up straight away; the others as at any table
     const first = sh.attend?.patron === v.patron && !sh.attend.asked;
     if (first) sh.attend!.asked = true;
-    else if (!ctx.rng.chance((perHour * content.balance.shift.minutesPerTick) / 60 * (room === HALL ? 1 : S.roomAsks))) continue;
+    else if (!ctx.rng.chance((perHour * content.balance.shift.minutesPerTick) / 60 * (room === HALL ? 1 : S.roomAsks) * worn)) continue;
     const input = nextProposal(ctx.state, ctx.engine, v, (len) => ctx.rng.int(0, len - 1));
     if (!input) continue;
     const act = actById(input.act);

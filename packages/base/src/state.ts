@@ -233,6 +233,7 @@ export interface Shift {
   herMoves?: number; // times she started something with a guest herself tonight
   wifeFreeAt?: number; // minute she is done with the order in her hands
   restUntil?: number; // minute before which nobody takes her off the floor
+  bodySaid?: number; // minute she last said it is her body that says no (worn, tired, sore): not again for a while
   upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight
