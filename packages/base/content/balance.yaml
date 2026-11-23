@@ -54,7 +54,7 @@ hotel: # two rooms upstairs
   returningChance: 0.5  # a known face rather than a stranger
   nights: [1, 3]
   comesDownAtTick: 4
-  life: { upChance: 0.05, upMinutes: [30, 80], outChance: 0.04, outMinutes: [40, 90], askChance: 0.05, askMinutes: [5, 10] } # per ten minutes: a lodger goes up to his room or out for a walk; while he is up she looks in to ask if he needs anything
+  life: { upChance: 0.03, upMinutes: [30, 80], outChance: 0.015, outMinutes: [40, 90], askChance: 0.05, askMinutes: [5, 10] } # per ten minutes: a lodger goes up to his room or out for a walk; while he is up she looks in to ask if he needs anything
   towels: { stayChance: 0.35, stayOpenness: 45, staySuspicion: 10, bellAfter: [5, 20], decideAfter: 8, heardSuspicion: 10, knockSuspicion: 5, interest: 45, chance: 0.4, maxTier: 6, hoursAffinity: 35, hoursChance: 0.6, hoursEnergy: 8, hoursSuspicion: 4, hoursPower: 3 } # after closing he rings down for towels; she takes them up
   roomOrders: 2         # orders brought up to his room in one evening; for the next he comes down
   morningChance: 0.4    # she looks in on a lodger in the morning, alone
