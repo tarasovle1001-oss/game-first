@@ -207,8 +207,9 @@ export function registerPhone(api: ModApi) {
   api.events.on("encounter:started", (ctx, e) => {
     const b = bs(ctx.state);
     const { intimate, witnessed, patron } = e.payload as { intimate: boolean; witnessed: boolean; patron: string };
-    if (!intimate || witnessed || b.mode !== "hidden") return;
+    if (!intimate || witnessed || b.mode !== "hidden" || b.dialDay === ctx.state.time.day) return;
     if (!ctx.rng.chance(P.buttDialChance)) return;
+    b.dialDay = ctx.state.time.day;
     const style = b.husband.style;
     b.suspicion = clamp(b.suspicion + P.buttDial * content.secrecy.styleFactor[style]);
     ctx.log(`log.phone.buttdial.${style}`);

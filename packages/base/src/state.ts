@@ -17,6 +17,7 @@ export interface Heroine {
   // body, per zone, 0..100: `stretch` is what she takes today, `perm` what is hers for good (absent in old saves: see permOf), `peak` the highest ever
   body: Record<Zone, { stretch: number; peak: number; perm?: number }>;
   seenSize?: number; // cm: the biggest she has seen or had (her bar)
+  tookToday?: { day: number; vagina?: number; anus?: number }; // the biggest that went in today, by place: the same size is not a new try an hour later
   lastBig?: { day: number; size: number }; // the last time someone (or something) bigger than her husband was in her
   wantSize?: number; // cm: a size she tried and could not take - what she is working toward
   skills: Record<string, number>; // act id -> 0..100
@@ -247,6 +248,7 @@ export interface Shift {
   attend?: { loc: string; until: number; why: string; patron?: string; asked?: boolean }; // she is in another room with the guests there (a round, a drink to the sauna, a look in on a lodger): the hall mode runs there
   awaySince?: number; // he is out in town: the minute he left (0 = he was not back by opening)
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
+  noTimeAt?: number; // the minute "no time to tidy up" was last said
   after?: { loc: string; patron: string; until: number }; // the minutes after a hidden scene: she is alone there, putting herself right
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
   groupAt?: number; // minute a company walks in
@@ -292,6 +294,7 @@ export interface BaseState {
   power: number; // her power over him, 0..100, grows once it is open
   owes?: number; // what he owes her in bed: failures she has counted and not yet collected
   owedDay?: number; // the day the last one was added
+  dialDay?: number; // the day her phone last dialled him by accident: once a day is a slip, three times is a signal
   owedNight?: number; // the day he was charged for leaving her wanting: if he sees to her the same night, that one is taken back
   toneSaid?: number; // the highest tone (0..3) the morning after has already shown
   denied: number; // nights in a row he got nothing

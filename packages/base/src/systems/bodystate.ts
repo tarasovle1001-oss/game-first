@@ -159,7 +159,8 @@ export function registerBodyState(api: ModApi) {
     // a full room pulls her straight back; a quick-witted woman finds the minute anyway
     const busy = sh.visits.filter((v) => v.waited > 5).length >= 2;
     if (busy && ctx.rng.chance(clamp(I.marks.skipChance - (attrOf(ctx.state, "wit") - 50) * 0.004, 0, 1))) {
-      ctx.log("log.marks.no_time", undefined, ["unseen"]);
+      if (sh.noTimeAt === undefined || sh.tick - sh.noTimeAt > 20) ctx.log("log.marks.no_time", undefined, ["unseen"]); // said once, not after every man
+      sh.noTimeAt = sh.tick;
       return;
     }
     const minutes = marks.length * I.marks.cleanPerMark + (mussed ? I.marks.cleanAfter : 0);

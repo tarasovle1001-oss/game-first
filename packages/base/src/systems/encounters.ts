@@ -336,13 +336,16 @@ export function advanceEncounter(ctx: Ctx) {
   ctx.log("log.enc.stays", { name, act: `act.${next.id}`, now: `act.${enc.act}` }, tags);
 }
 
-function accept(ctx: Ctx, v: Visit, p: Patron, asked: ConsentInput, verdict: Verdict) {
+function accept(ctx: Ctx, v: Visit, p: Patron, asked: ConsentInput, verdict: Verdict, hers = false) {
   const b = bs(ctx.state);
   // she said yes; whether a man his size gets in is another matter. If not, they find a way round it.
   const warmth = b.encounter?.patron === p.id ? b.encounter.warm : undefined;
   const wanted = actById(asked.act);
   const zoneIn = entersZone(wanted);
+  // what is said about the try belongs after "he leads her off", not before it: the lines are held back until then
+  const sizeFrom = ctx.state.log.length;
   const settled = settleSize(ctx, wanted, p.size, p.name, { warm: zoneIn ? (warmth?.[zoneIn] ?? 0) : 0, tags: husbandSees(ctx.state, asked.loc) || b.mode === "open" ? undefined : ["unseen"] });
+  const sizeLines = ctx.state.log.splice(sizeFrom);
   const input = settled.act.id === asked.act ? asked : { ...asked, act: settled.act.id };
   const act = settled.act;
   const eager = verdict === "eager";
@@ -444,7 +447,8 @@ function accept(ctx: Ctx, v: Visit, p: Patron, asked: ConsentInput, verdict: Ver
   const tags = seen || b.mode === "open" ? undefined : ["unseen"];
   // routine small talk with a familiar face is not worth a log line every hour
   // where it happens is said once, when it starts, not with every new thing they do
-  if (act.place === "private" && !running && !leaving) ctx.log(input.loc === HALL ? "log.enc.here" : "log.enc.away", { name: `@name:${p.name}`, room: `loc.${input.loc}` }, tags);
+  if (act.place === "private" && !running && !leaving) ctx.log(input.loc === HALL ? "log.enc.here" : hers ? "log.enc.away.hers" : "log.enc.away", { name: `@name:${p.name}`, room: `loc.${input.loc}` }, tags);
+  ctx.state.log.push(...sizeLines);
   if (!isLight(act) || first || verdict !== "eager")
     ctx.log(variantKey(`log.act.${act.id}.${verdict}`, (n) => ctx.rng.int(0, n - 1)), { name: `@name:${p.name}`, room: `loc.${input.loc}`, tip }, tags);
   ctx.emit("encounter:started", { patron: p.id, act: act.id, loc: input.loc, verdict, witnessed: seen, came, tier: act.tier, intimate: isIntimate(act), switched: running !== null });
@@ -551,7 +555,7 @@ function herOwnMove(ctx: Ctx) {
   if (b.proposals.length > PROPOSAL_HISTORY) b.proposals.shift();
   p.memory.interest = clamp(p.memory.interest + H.interest);
   ctx.log(`log.her.starts.${actById(pick.input.act).tier <= 2 ? "light" : isIntimate(actById(pick.input.act)) ? "takes" : "close"}`, { name: `@name:${p.name}` }, seen || b.mode === "open" ? undefined : ["unseen"]);
-  accept(ctx, v, p, pick.input, "eager");
+  accept(ctx, v, p, pick.input, "eager", true); // it was her who took him by the wrist: "he leads her off" would say the opposite
   if (seen) sh.interrupt = true;
   ctx.emit("her:started", { patron: p.id, act: pick.input.act, seen });
 }

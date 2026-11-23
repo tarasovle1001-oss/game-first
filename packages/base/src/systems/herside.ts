@@ -66,6 +66,8 @@ const approach = (ctx: Ctx) => {
   if (b.shift) b.shift.interrupt = true;
   const name = what.patron && b.patrons[what.patron] ? `@name:${b.patrons[what.patron]!.name}` : "";
   ctx.log(`log.approach.${what.kind}${pub && what.kind !== "harassed" ? ".public" : ""}`, { name });
+  // she came to her husband about this man: whatever he wants, she is not going anywhere with him tonight
+  if (what.kind === "harassed") for (const v of b.shift?.visits ?? []) if (v.patron === what.patron) v.blocked = true;
   if (what.kind === "tease") detail(ctx, { id: "touch_bulge", who: HUSBAND });
   ctx.emit("her:approached", { kind: what.kind });
 };

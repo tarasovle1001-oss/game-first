@@ -57,6 +57,7 @@ function tryJoin(ctx: Ctx, enc: Encounter, id: string, bonus: number): boolean {
   const watched = sh.tick - (enc.crowdSince?.[id] ?? sh.tick);
   const tags = husbandSees(ctx.state, enc.loc) || b.mode === "open" ? undefined : ["unseen"];
   const name = `@name:${p.name}`;
+  let noFit = false; // she would have, and it did not go in: that is not a "no"
   for (const [slot, act] of JOIN_ACTS) {
     if (taken.has(slot)) continue;
     const input: ConsentInput = { act, partner: id, loc: enc.loc, offer: 0, pressure: (enc.men?.length ?? 0) * C.joinPressure };
@@ -68,7 +69,10 @@ function tryJoin(ctx: Ctx, enc: Encounter, id: string, bonus: number): boolean {
     if (verdict === "refuse") continue;
     // she would; whether he fits there is another matter - if not, he looks for another place
     const into = entersZone(actById(act));
-    if (into && settleSize(ctx, actById(act), p.size, p.name, { warm: enc.warm?.[into] ?? 0, tags, noInstead: true }).act.id !== act) continue;
+    if (into && settleSize(ctx, actById(act), p.size, p.name, { warm: enc.warm?.[into] ?? 0, tags, noInstead: true }).act.id !== act) {
+      noFit = true;
+      continue;
+    }
     enc.men = [...(enc.men ?? []), { patron: id, slot, act }];
     enc.crowd = (enc.crowd ?? []).filter((x) => x !== id);
     enc.pleasure = clamp(enc.pleasure * C.joinerRate);
@@ -94,8 +98,8 @@ function tryJoin(ctx: Ctx, enc: Encounter, id: string, bonus: number): boolean {
   const v = sh.visits.find((x) => x.patron === id);
   if (v) v.heat = clamp((v.heat ?? 0) + C.refusedHeat);
   enc.crowd = (enc.crowd ?? []).filter((x) => x !== id);
-  annoy(ctx, 4, "guests");
-  ctx.log("log.crowd.join.no", { name }, tags);
+  if (!noFit) annoy(ctx, 4, "guests");
+  ctx.log(noFit ? "log.crowd.join.nofit" : "log.crowd.join.no", { name }, tags);
   ctx.emit("crowd:refused", { patron: id });
   return false;
 }

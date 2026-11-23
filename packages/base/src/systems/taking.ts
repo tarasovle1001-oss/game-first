@@ -27,13 +27,17 @@ export function insteadOf(ctx: Ctx): Act {
 export function settleSize(ctx: Ctx, act: Act, size: number, name: number | string, opts: { warm?: number; tags?: string[]; quiet?: boolean; noInstead?: boolean } = {}): { act: Act; take: Take } {
   const zone = entersZone(act);
   if (!zone) return { act, take: "fits" };
+  const h = bs(ctx.state).heroine;
+  const day = ctx.state.time.day;
+  // what went in today goes in today: the same man in another pose is not a new try, and "more than ever" is said once
+  if (h.tookToday?.day === day && (h.tookToday[zone] ?? 0) >= size) return { act, take: "fits" };
   const steps = stepsAbove(ctx.state, zone, size);
   const take = tryTake(ctx, zone, size, opts.warm ?? 0);
   if (take === "fits") return { act, take };
-  const h = bs(ctx.state).heroine;
   const who = { name: `@name:${name}`, act: `act.${act.id}`, steps };
   ctx.emit("body:take", { zone, take, size, stage: sizeStage(size), steps });
   if (take === "took") {
+    h.tookToday = { ...(h.tookToday?.day === day ? h.tookToday : { day }), [zone]: Math.max(h.tookToday?.day === day ? (h.tookToday[zone] ?? 0) : 0, size) };
     if (!opts.quiet) ctx.log(`log.take.took.${ctx.rng.int(1, 3)}`, who, opts.tags);
     think(ctx, steps >= 2 ? "thought.take.took.far" : "thought.take.took", true);
     return { act, take };
