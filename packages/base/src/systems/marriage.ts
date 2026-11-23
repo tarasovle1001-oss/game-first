@@ -3,7 +3,7 @@
 import type { Ctx, GameState, ModApi, SceneDesc } from "@tc/core";
 import { actOf, content } from "../content";
 import { confidenceOf, earlyChance, softChance } from "./nerve";
-import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
+import { hasLine, outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { entersZone, fitOf, orgasm, pleasureFor, sizeStage, useBody } from "./body";
 import { resolveSized } from "./taking";
@@ -162,6 +162,19 @@ export function registerMarriage(api: ModApi) {
     if (b.proposals.length > 12) b.proposals.shift();
     setOutcome(ctx, outcomeOf(verdict), HUSBAND);
     return verdict;
+  };
+  /** What a change of act is, bodily: from where he was to where he is going. A line for it, if there is one, goes before the act is named. */
+  const kindOf = (actId: string): string => {
+    const a = actById(actId);
+    if (HIS_ACTS.includes(actId)) return "his";
+    if (entersZone(a)) return "inside";
+    if (IN_BED.givesHer.includes(actId)) return "on_her";
+    if (a.zones.includes("mouth")) return "her_mouth";
+    return "hands";
+  };
+  const moveLine = (ctx: Ctx, from: string, to: string, who: "he" | "she") => {
+    const key = `log.bed.move.${who}.${kindOf(from)}.${kindOf(to)}`;
+    if (kindOf(from) !== kindOf(to) && hasLine(key)) ctx.log(key);
   };
   /** She takes over by pushing him onto his back: plain sex becomes her on top, so that she does not "switch" to where she already is. */
   const onTop = (ctx: Ctx) => {
@@ -949,6 +962,7 @@ export function registerMarriage(api: ModApi) {
     if (best && (sex.switched ?? 0) < 3) {
       sex.switched = (sex.switched ?? 0) + 1;
       tried.push(best.a);
+      moveLine(ctx, sex.act, best.a, "she");
       setAct(ctx, best.a);
       ctx.log("log.bed.lead.switch", { act: `act.${best.a}` });
       return void turn(ctx, 2, 3);
@@ -1375,6 +1389,7 @@ export function registerMarriage(api: ModApi) {
             ctx.log("log.bed.switch.no", { act: `act.${to}` });
             turn(ctx, 0, -6);
           } else {
+            moveLine(ctx, sex.act, to, "he");
             setAct(ctx, to);
             ctx.log("log.bed.switch.yes", { act: `act.${to}` });
             turn(ctx, 2, 2);

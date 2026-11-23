@@ -278,6 +278,7 @@ export interface BaseState {
   encounter: Encounter | null;
   proposals: ProposalRecord[]; // newest last, short history
   husband: Husband;
+  heard?: number; // how he has taken what she told him so far, -100..100: scolding teaches her to keep quiet
   mode: Mode;
   suspicion: number; // 0..100, only matters while hidden
   power: number; // her power over him, 0..100, grows once it is open
