@@ -556,7 +556,7 @@ export function registerMarriage(api: ModApi) {
     void zone;
     const tight = inside ? tightness(state, sex.act) : 1;
     const skill = h.skills[sex.act] ?? 0;
-    let his = (inside ? B.hisRateSex : B.hisRate) * (12 / b.husband.minutes) * tight * (1 + skill / 150) * (act.id === "cunnilingus" ? 0.25 : 1);
+    let his = (inside ? B.hisRateSex : B.hisRate) * (12 / b.husband.minutes) * tight * (1 + skill / 150) * (IN_BED.untouched.includes(act.id) ? B.givingRate : 1);
     if (b.husband.caged && content.body.cage.through.includes(sex.act)) his *= content.body.cage.throughRate;
     // she has checked out: what needs her hands or her moving simply stops, the rest goes on without her
     if (sex.out) his = NEEDS_HER.has(sex.act) ? 0 : his * 0.7;
@@ -592,6 +592,7 @@ export function registerMarriage(api: ModApi) {
       his += Rp.his;
     }
     sex.his = clamp(sex.his + his);
+    if (IN_BED.untouched.includes(sex.act) && !sex.byHand) sex.his = Math.min(sex.his, Math.max(B.givingCap, sex.his - his)); // nothing touches him: it builds and stays there
     sex.hers = clamp(sex.hers + hers);
     // he goes over in the first moves: it is over before she gets there, never both at once
     if (sex.his >= 100 && sex.turns <= 2 && !sex.lead) sex.hers = Math.min(sex.hers, 99);
@@ -602,6 +603,11 @@ export function registerMarriage(api: ModApi) {
       // "clenching around you" is for when he is in her; from his mouth or his hand it is another line
       ctx.log(sex.act === "rimming_her" ? "log.bed.her.rimming_her" : entersZone(actById(sex.act)) ? "log.bed.she_comes" : "log.bed.she_comes.out");
       if (sex.act === "rimming_her") b.night!.scene = "came_rimming_her";
+    }
+    if (!sex.soft && !sex.lead && !sex.byHand && IN_BED.untouched.includes(sex.act) && sex.came >= B.givingComes) {
+      ctx.log("log.bed.end.enough_her");
+      afterEnds(ctx);
+      return true;
     }
     if (sex.soft && HIS_ACTS.includes(sex.act)) {
       // soft or not, what is done to him from behind still gets him there: no erection needed for that

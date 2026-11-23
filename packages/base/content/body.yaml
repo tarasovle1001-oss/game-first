@@ -62,6 +62,9 @@ bed: # the bedroom scene, turn by turn; each of them has a pleasure meter 0..100
   startHis: 15
   hisRate: 10       # per turn, for a husband who lasts 12 minutes
   hisRateSex: 13
+  givingRate: 0.25  # share of that while nothing touches him: his mouth or hands on her, her toy, her show
+  givingCap: 85     # and it stops here: worked up, but nothing to come from
+  givingComes: 2    # she has come this many times from it: she stops him herself, and the stage after is his
   hersRate: 8
   faster: [1.5, 0.5]  # multipliers [his, hers]
   slower: [0.5, 1.5]

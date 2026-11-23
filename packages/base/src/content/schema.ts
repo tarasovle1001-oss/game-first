@@ -299,6 +299,9 @@ export const bodySchema = z
         startHis: z.number(),
         hisRate: z.number(), // per turn for a husband who lasts 12 minutes
         hisRateSex: z.number(),
+        givingRate: z.number(),
+        givingCap: z.number(),
+        givingComes: z.number(),
         hersRate: z.number(),
         faster: z.tuple([z.number(), z.number()]), // multipliers [his, hers]
         slower: z.tuple([z.number(), z.number()]),
@@ -780,7 +783,7 @@ export const intimacySchema = z
     dress: z.object({ lowMood: z.number(), lowMoodStep: z.number(), fearStep: z.number(), wantStep: z.number(), wishStep: z.number() }).strict(),
     wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string() }).strict(),
     bedroom: z
-      .object({ ask: ids, menu: z.object({ main: ids, groups: z.record(z.string(), ids) }).strict(), counter: ids, counterHard: ids, his: ids, needsToy: ids, upstairs: ids, join: ids, switchTo: ids, ownEnd: ids, herPleasure: nums, herPleasureDefault: z.number(), fixedPleasure: nums, finish: z.record(z.string(), ids), pullOut: ids, soft: ids, givesHer: ids, needsHer: ids })
+      .object({ ask: ids, menu: z.object({ main: ids, groups: z.record(z.string(), ids) }).strict(), counter: ids, counterHard: ids, his: ids, needsToy: ids, upstairs: ids, join: ids, switchTo: ids, ownEnd: ids, herPleasure: nums, herPleasureDefault: z.number(), fixedPleasure: nums, finish: z.record(z.string(), ids), pullOut: ids, soft: ids, givesHer: ids, untouched: ids, needsHer: ids })
       .strict(),
   })
   .strict();

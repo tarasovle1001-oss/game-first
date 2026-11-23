@@ -147,5 +147,7 @@ bedroom:              # which act is what in bed with him. Order matters: it is 
   soft: [facesitting, cleanup, chastity, toy_on_her, masturbate_show, spank_him, thigh_ride, cunnilingus, fingering, rimming_her, breast_play, mutual_touching, prostate, dildo_him, pegging, fisting_him]
   # he is the one doing something for her: whether he is hard does not matter
   givesHer: [cunnilingus, rimming_her, fingering, breast_play]
+  # nothing touches him in these: he gets worked up and does not come from it
+  untouched: [cunnilingus, rimming_her, fingering, breast_play, toy_on_her, masturbate_show]
   # she has to be doing something for these: they stop when she is out of it
   needsHer: [handjob, blowjob, riding, sixty_nine, rimming_him, prostate, dildo_him, pegging, fisting_him, grinding, mutual_touching]
