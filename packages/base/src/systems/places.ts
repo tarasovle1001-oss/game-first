@@ -11,6 +11,8 @@ export const ticks = (minutes: number) => Math.max(1, Math.round(minutes / sb.mi
 /** The doors opened this many minutes before the usual hour: the evening is that much longer. */
 export const ticksDone = (shift: { tick: number; closed?: boolean; early?: number } | null) => !shift || shift.closed === true || shift.tick >= TICKS_PER_SHIFT + Math.round((shift.early ?? 0) / sb.minutesPerTick);
 /** "18:40" from a minute of the day. */
+/** The day as the player reads it: the number goes up when he wakes, so the morning sums already belong to the new day (the clock itself never runs back). */
+export const shownDay = (state: { time: { day: number; phase: string } }) => state.time.day + (state.time.phase === "summary" ? 1 : 0);
 export const clockText = (minute: number) => {
   const m = ((minute % 1440) + 1440) % 1440;
   return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;

@@ -12,7 +12,7 @@ import type { ConsentInput } from "./encounters";
 import { changeHeroine } from "./heroine";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
-import { canDo, himOf, wakeMinute } from "./rhythm";
+import { canDo, himOf } from "./rhythm";
 
 export const DAY_DO = "base/day";
 export const BUY = "base/buy";
@@ -128,7 +128,7 @@ export function passPrep(ctx: Ctx, minutes: number) {
   if (!day || ctx.state.time.phase !== "prep") return;
   for (let i = 0; i < minutes && day.left > 0; i++) {
     day.left -= 1;
-    ctx.state.time.minute = opening - day.left;
+    ctx.state.time.minute = Math.max(ctx.state.time.minute, opening - day.left); // never back: see shift.ts
     // run dry, either of them simply lies down for an hour
     if (!day.busy && himOf(ctx.state).energy <= 0 && !b.night && !inTown(ctx.state.where[HUSBAND])) {
       day.busy = { id: "nap", left: Math.min(D.rhythm.quiet.minutes, day.left) };
@@ -250,7 +250,7 @@ function herMorning(ctx: Ctx) {
     if (out.came) lover.memory.orgasms += 1;
     b.day!.herOut = true;
     b.day!.left = Math.max(0, b.day!.left - A.minutes); // she is back late: the afternoon is shorter for both
-    ctx.state.time.minute = opening - b.day!.left;
+    ctx.state.time.minute = Math.max(ctx.state.time.minute, opening - b.day!.left);
     if (hidden) {
       b.secretActsToday += 1;
       b.suspicion = clamp(b.suspicion + A.suspicion * content.secrecy.styleFactor[b.husband.style]);
@@ -413,9 +413,10 @@ export function registerDay(api: ModApi) {
       if (e.payload!.phase !== "prep") return;
       const b = bs(ctx.state);
       // the first day starts at noon; after that the day is as long as he made it by getting up
-      const left = ctx.state.time.day > 1 ? Math.max(60, opening - wakeMinute(ctx.state)) : D.minutes;
+      // (the clock was set for the morning a moment ago: the afternoon is what is left of it until opening)
+      const left = ctx.state.time.day > 1 ? Math.max(60, opening - ctx.state.time.minute) : D.minutes;
       b.day = { left, done: [], arrivals: 0 };
-      ctx.state.time.minute = opening - left;
+      ctx.state.time.minute = Math.max(ctx.state.time.day > 1 ? ctx.state.time.minute : 0, opening - left);
       if (ctx.state.time.day > 1) herMorning(ctx);
       herNext(ctx);
     },

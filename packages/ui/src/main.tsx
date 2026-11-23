@@ -1,7 +1,7 @@
 import type { PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { tracer, resetTracer, bs, husbandSees, cardFolder } from "@tc/base";
+import { tracer, resetTracer, bs, husbandSees, cardFolder, shownDay } from "@tc/base";
 import type { HeroineCard } from "@tc/base";
 import { loadGame, saveGame, sceneKey } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
@@ -29,7 +29,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "37";
+const BUILD = "38";
 const RESUME_KEY = "test-city.resume";
 const JOURNAL_KEY = "test-city.journal";
 /**
@@ -205,7 +205,7 @@ function App() {
     if (!text) return;
     const b = bs(state);
     const h = b.heroine;
-    const line = `[${BUILD}] день ${state.time.day}, ${clockOf(state)}, ${t(`base.phase.${state.time.phase}`)} | после: ${lastWhat || "-"} | она: энергия ${Math.round(h.energy)}, настроение ${Math.round(h.mood)}, возбуждение ${Math.round(h.arousal)}, открытость ${Math.round(h.traits.openness)}, верность ${Math.round(h.traits.fidelity)}, неудовл. ${Math.round(h.frustration)} | деньги ${b.money}, долг ${b.debt}, репутация ${Math.round(b.reputation)} | seed ${state.seed}, ход ${state.turn}${journal ? `, запись ${journal.actions.length}` : ""}\n${picNote(h.card ? cardFolder(h.card) : undefined).map((l) => `  ${l}\n`).join("")}  ${text}`;
+    const line = `[${BUILD}] день ${shownDay(state)}, ${clockOf(state)}, ${t(`base.phase.${state.time.phase}`)} | после: ${lastWhat || "-"} | она: энергия ${Math.round(h.energy)}, настроение ${Math.round(h.mood)}, возбуждение ${Math.round(h.arousal)}, открытость ${Math.round(h.traits.openness)}, верность ${Math.round(h.traits.fidelity)}, неудовл. ${Math.round(h.frustration)} | деньги ${b.money}, долг ${b.debt}, репутация ${Math.round(b.reputation)} | seed ${state.seed}, ход ${state.turn}${journal ? `, запись ${journal.actions.length}` : ""}\n${picNote(h.card ? cardFolder(h.card) : undefined).map((l) => `  ${l}\n`).join("")}  ${text}`;
     const next = [...notes, line];
     setNotes(next);
     try {
@@ -285,7 +285,7 @@ function App() {
       setBookmarksState(list);
     });
   const addBookmark = () =>
-    setBookmarks([...bookmarks, { id: Date.now(), label: `${t("ui.day.short", { day: state.time.day })} ${clockOf(state)} · ${t(`base.phase.${state.time.phase}`)}${lastWhat ? ` · ${lastWhat}` : ""}`, save: saveGame(state, engine), journal }].slice(-BOOKMARKS_MAX));
+    setBookmarks([...bookmarks, { id: Date.now(), label: `${t("ui.day.short", { day: shownDay(state) })} ${clockOf(state)} · ${t(`base.phase.${state.time.phase}`)}${lastWhat ? ` · ${lastWhat}` : ""}`, save: saveGame(state, engine), journal }].slice(-BOOKMARKS_MAX));
   const goBookmark = (bm: Bookmark) =>
     guard(() => {
       setPast([]);

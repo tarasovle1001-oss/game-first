@@ -15,6 +15,7 @@ let turns = 0;
 for (const preset of content.presets.map((p) => p.id))
   for (let seed = 1; seed <= Number(seeds); seed++) {
     let s = engine.init(seed * 7 + 1, { base: { preset, mode: seed % 2 ? "open" : "hidden" } });
+    let lastAbs = 0;
     let r = seed * 2654435761;
     const rnd = () => ((r = (r * 1664525 + 1013904223) >>> 0), r / 2 ** 32);
     while (s.time.day <= Number(days)) {
@@ -42,6 +43,10 @@ for (const preset of content.presets.map((p) => p.id))
       for (const e of s.log.slice(Math.min(before, s.log.length - 1) === before ? before : Math.max(0, s.log.length - 5))) bump(shown, e.key);
       const b = bs(s);
       if (!Number.isFinite(b.money) || !Number.isFinite(b.heroine.arousal)) problems.push(`NaN after ${label(a)} day ${s.time.day}`);
+      // one clock for the whole game: it never runs back, whatever stage begins
+      const abs = (s.time.day - 1) * 1440 + s.time.minute;
+      if (abs < lastAbs) problems.push(`clock back after ${label(a)}: now ${s.time.phase} ${Math.floor((s.time.minute % 1440) / 60)}h`);
+      lastAbs = abs;
     }
   }
 const obj = (m: Map<string, number>) => Object.fromEntries([...m.entries()].sort());

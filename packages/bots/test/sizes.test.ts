@@ -162,3 +162,26 @@ describe("he walks in a minute too late (23.11)", () => {
     expect(bs(marks).suspicion).toBe(100);
   });
 });
+
+describe("one clock for the whole game (23.11)", () => {
+  it("never runs back, whatever stage begins: afternoon, evening, night, the morning sums, the next day", () => {
+    for (const seed of [2, 9]) {
+      const eng = createEngine([baseMod]);
+      let s = eng.init(seed);
+      let last = 0;
+      let rnd = seed;
+      for (let i = 0; i < 2500 && s.time.day <= 4; i++) {
+        const acts = eng.listActions(s);
+        rnd = (rnd * 1103515245 + 12345) % 2147483648;
+        // mostly whatever is offered, now and then the next stage: scenes by day, early doors, late nights all happen
+        const pick = rnd % 7 === 0 ? (acts.find((a) => a.type === "core/advance") ?? acts[0]!) : acts[rnd % acts.length]!;
+        const phase = s.time.phase;
+        s = eng.dispatch(s, pick);
+        const abs = (s.time.day - 1) * 1440 + s.time.minute;
+        expect(abs, `${pick.type} ${phase} -> ${s.time.phase}, day ${s.time.day}`).toBeGreaterThanOrEqual(last);
+        last = abs;
+      }
+      expect(s.time.day).toBeGreaterThan(2);
+    }
+  });
+});

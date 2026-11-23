@@ -178,7 +178,7 @@ export { CONSENT_FORMULA, groupScene, nextProposal, verdictOf } from "./systems/
 export type { ConsentInput } from "./systems/encounters";
 export { PHASES } from "./systems/places";
 export { TIP_FORMULA, WAIT, WAIT_MINUTES, visitOf } from "./systems/shift";
-export { clockText, TICKS_PER_SHIFT, HALL } from "./systems/places";
+export { clockText, shownDay, TICKS_PER_SHIFT, HALL } from "./systems/places";
 export type { TipInput } from "./systems/shift";
 export { BUY_SUPPLIES, REPAY_DEBT, addMoney, addReputation } from "./systems/economy";
 export { changeHeroine } from "./systems/heroine";

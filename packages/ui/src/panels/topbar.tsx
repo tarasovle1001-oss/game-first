@@ -1,4 +1,4 @@
-import { weekdayOf, himOf, bs, clockText, content, installment } from "@tc/base";
+import { weekdayOf, himOf, bs, clockText, shownDay, content, installment } from "@tc/base";
 import { Common } from "./common";
 
 // ---------------------------------------------------------------- top bar
@@ -12,7 +12,7 @@ export function TopBar({ state, t, onMoney }: Common & { onMoney?: () => void })
         <span className="big">{clockText(state.time.minute)}</span>
         <span className="accent">{t(`base.phase.${state.time.phase}`)}</span>
         <span className="muted">
-          {t("ui.day", { day: state.time.day })}, {t(`weekday.${weekdayOf(state)}`).toLowerCase()}
+          {t("ui.day", { day: shownDay(state) })}, {t(`weekday.${weekdayOf(state)}`).toLowerCase()}
           {b.weather ? ` · ${t(`weather.${b.weather}`).split(",")[0]!.toLowerCase()}` : ""}
         </span>
       </div>

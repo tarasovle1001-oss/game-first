@@ -307,7 +307,8 @@ function herOwnGlass(ctx: Ctx) {
 function tick(ctx: Ctx) {
   const sh = bs(ctx.state).shift!;
   sh.tick += 1;
-  ctx.state.time.minute = bal.opensAt * 60 - (sh.early ?? 0) + sh.tick * bal.minutesPerTick;
+  // one clock for the whole game: a stage reads it and moves it on, never back (a scene may have run it a few minutes ahead)
+  ctx.state.time.minute = Math.max(ctx.state.time.minute, bal.opensAt * 60 - (sh.early ?? 0) + sh.tick * bal.minutesPerTick);
   advanceEncounter(ctx);
   arrive(ctx);
   runProposals(ctx); // guests try their luck before she gets back to work
@@ -362,13 +363,16 @@ export function registerShift(api: ModApi) {
   api.events.on("phase:enter", (ctx, e) => {
     const phase = e.payload!.phase as string;
     const b = bs(ctx.state);
-    if (phase === "prep") ctx.state.time.minute = ctx.state.time.day > 1 ? wakeMinute(ctx.state) : clock.prep;
+    // the morning is the same moment the night ended at (the day number has just gone up by one): he wakes when he wakes, the clock does not jump back to it
+    if (phase === "prep") ctx.state.time.minute = ctx.state.time.day > 1 ? Math.max(wakeMinute(ctx.state), ctx.state.time.minute - 1440) : clock.prep;
     if (phase === "night") b.nightStart = Math.max(ctx.state.time.minute, (bal.opensAt + 1) * 60); // the clock simply goes on from closing time
-    if (phase === "summary") ctx.state.time.minute = wakeMinute(ctx.state); // the sums are done over breakfast
+    if (phase === "summary") ctx.state.time.minute = Math.max(ctx.state.time.minute, 1440 + wakeMinute(ctx.state)); // the sums are done over breakfast: the next morning, on the same clock the night ran on
     if (phase === "shift") {
       const early = b.openEarly?.day === ctx.state.time.day ? b.openEarly.minutes : 0;
-      ctx.state.time.minute = bal.opensAt * 60 - early;
-      b.shift = { ...(early ? { early } : {}), tick: 0, visits: [], income: 0, tips: 0, served: 0, turnedAway: 0, moment: null, interrupt: false, stockWarned: false };
+      // the afternoon ran past opening time (a scene, a late walk back): the evening starts from where the clock is, not from 17:00 again
+      const late = Math.max(0, ctx.state.time.minute - (bal.opensAt * 60 - early));
+      ctx.state.time.minute = Math.max(ctx.state.time.minute, bal.opensAt * 60 - early);
+      b.shift = { ...(early ? { early } : {}), tick: late, visits: [], income: 0, tips: 0, served: 0, turnedAway: 0, moment: null, interrupt: false, stockWarned: false };
       ctx.state.where[WIFE] = "cafe.bar";
       ctx.emit("shift:start");
     }
