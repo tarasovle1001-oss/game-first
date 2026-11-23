@@ -509,7 +509,7 @@ export function registerMarriage(api: ModApi) {
       const kind = h.marriage.desire >= content.body.bed.reward.lovingDesire;
       feel(ctx, mocks ? -0.5 : 0, 0); // she does not think less of him for it unless she was already looking down
       ctx.log(mocks ? "log.night.self.mock" : kind ? "log.night.self.kind" : `log.night.self.ignored.${ctx.rng.int(1, 3)}`);
-      ctx.emit("bed:ended", { act: "self", came: false, outcome: "by_hand", turns: 0 });
+      ctx.emit("bed:ended", { act: "self", came: false, outcome: "by_hand", turns: 0, alone: true }); // she said no herself: nothing is owed for this
     },
   });
 
@@ -742,7 +742,7 @@ export function registerMarriage(api: ModApi) {
     b.night!.rest = undefined;
     feel(ctx, 0, content.intimacy.her.second.refusedResent);
     if (!quiet) ctx.log(`log.bed.second.refused.t${toneOf(ctx.state)}`);
-    owe(ctx, "refused");
+    owe(ctx, r.hers ? "more" : "refused"); // she came and wanted more, or she never got there: not the same grudge
     if (!r.hers && (h.traits.libido >= H.finishesHerselfAtLibido || h.arousal >= 60)) {
       b.night!.scene = "finishing_herself";
       b.night!.fin = undefined;
@@ -856,7 +856,7 @@ export function registerMarriage(api: ModApi) {
       outcome = "came";
       b.night!.scene = sex.act === "rimming_her" ? "came_rimming_her" : oral ? "cunnilingus" : "sex";
       feel(ctx, oral ? 2 : 3, -3);
-      ctx.log(earlier ? (entersZone(act) ? "log.bed.end.after_her" : "log.bed.end.after_her.out") : `log.husband.${oral ? "oral" : "sex"}.came`);
+      ctx.log(earlier ? (entersZone(act) ? "log.bed.end.after_her" : NEEDS_HER.has(sex.act) && !sex.out ? "log.bed.end.after_her.hers" : "log.bed.end.after_her.out") : `log.husband.${oral ? "oral" : "sex"}.came`);
     } else if (sex.turns === 0 || (premature && sex.his >= 100 && sex.turns <= 1)) {
       outcome = "too_soon";
       b.night!.scene = "came_too_soon_foreplay";

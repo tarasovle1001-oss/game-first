@@ -121,6 +121,7 @@ export function nightUp(ctx: Ctx, all = false) {
     up.decideAt = (all ? up.leaveAt : (n.minute ?? 0)) + H.towels.decideAfter;
     ctx.state.where[WIFE] = up.room;
     n.wants = false;
+    n.rest = undefined; // whatever she was asking him for goes with her out of the door: it was not him who said no
     n.herAsleep = undefined;
     if (!all) {
       up.seen = true;

@@ -292,6 +292,7 @@ export interface BaseState {
   power: number; // her power over him, 0..100, grows once it is open
   owes?: number; // what he owes her in bed: failures she has counted and not yet collected
   owedDay?: number; // the day the last one was added
+  owedNight?: number; // the day he was charged for leaving her wanting: if he sees to her the same night, that one is taken back
   toneSaid?: number; // the highest tone (0..3) the morning after has already shown
   denied: number; // nights in a row he got nothing
   secretKnows: boolean; // he found out and she does not know that he knows

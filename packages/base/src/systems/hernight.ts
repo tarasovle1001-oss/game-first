@@ -10,7 +10,7 @@ const Hn = content.intimacy.her;
 export const toneOf = (state: GameState) => Hn.tones.filter((from) => bs(state).power >= from).length;
 
 /** One more thing he owes her. Said aloud once she has any say; before that it is only a thought. */
-export function owe(ctx: Ctx, why: "early" | "wanting" | "pestering" | "declined" | "refused") {
+export function owe(ctx: Ctx, why: "early" | "wanting" | "pestering" | "declined" | "refused" | "more" | "soft") {
   const b = bs(ctx.state);
   if ((b.owes ?? 0) >= Hn.owes.max) return;
   b.owes = (b.owes ?? 0) + 1;
@@ -36,14 +36,24 @@ export function registerHerNight(api: ModApi) {
   // his failures are counted, and each gives her a little more say - in any mode
   api.events.on("bed:ended", (ctx, e) => {
     const b = bs(ctx.state);
-    const { outcome, came } = e.payload as { outcome: string; came: boolean };
+    const { outcome, came, alone } = e.payload as { outcome: string; came: boolean; alone?: boolean };
+    if (alone) return; // he saw to himself after her "no": that was her choice
     const P = Hn.powerFrom;
     if (outcome === "too_soon" || outcome === "premature") {
       b.power = clamp(b.power + P.early);
       owe(ctx, "early");
     } else if (!came && ["left_wanting", "faked", "finished_herself", "by_hand", "went_soft"].includes(outcome)) {
       b.power = clamp(b.power + P.leftWanting);
-      if (outcome !== "faked") owe(ctx, "wanting");
+      if (outcome !== "faked") {
+        const had = b.owes ?? 0;
+        owe(ctx, outcome === "went_soft" ? "soft" : "wanting");
+        if ((b.owes ?? 0) > had) b.owedNight = ctx.state.time.day;
+      }
+    } else if (came && b.owedNight === ctx.state.time.day && (b.owes ?? 0) > 0) {
+      // he did not leave it at that: what was charged an hour ago is taken back
+      b.owes = b.owes! - 1;
+      b.owedNight = undefined;
+      ctx.log("log.owes.made_up", { n: b.owes }, b.power >= Hn.owes.punishPower ? undefined : ["unseen", "thought"]);
     }
   });
   api.events.on("husband:refused", (ctx) => {
