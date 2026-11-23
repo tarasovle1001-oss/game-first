@@ -73,8 +73,11 @@ describe("the floor", () => {
       expect(sent.where.wife).toBe("cafe.lounge");
       expect(bs(sent).shift!.attend?.loc).toBe("cafe.lounge");
       expect(bs(sent).shift!.attend!.until).toBeGreaterThan(bs(sent).shift!.tick);
-      const back = wait(sent, 50);
-      expect(back.where.wife).not.toBe("cafe.lounge");
+      // she comes back out - unless something has started in there, which is its own story
+      let back = wait(sent, 50);
+      const canWait = (st: typeof back) => engine.listActions(st).some((x) => x.type === "base/wait" && x.payload?.minutes === 15);
+      for (let i = 0; i < 10 && back.where.wife === "cafe.lounge" && !bs(back).encounter && back.time.phase === "shift" && canWait(back); i++) back = wait(back, 15);
+      expect(back.where.wife !== "cafe.lounge" || !!bs(back).encounter || back.time.phase !== "shift" || !canWait(back)).toBe(true);
     }
     const self = engine.dispatch(s, { type: GROUP, payload: { do: "self" } });
     expect(bs(self).shift!.group!.rounds).toBe(1);

@@ -115,8 +115,22 @@ function arrive(ctx: Ctx) {
   const pop = fameOf(ctx.state);
   const share = pop <= 50 ? f0 + ((f50 - f0) * pop) / 50 : f50 + ((f100 - f50) * (pop - 50)) / 50;
   const perTick = ((bal.arrivalsPerHour * bal.minutesPerTick) / 60) * share * (1 + (b.day?.arrivals ?? 0) + b.gossip * content.secrecy.gossip.arrivals);
-  const count = Math.floor(perTick) + (ctx.rng.chance(perTick % 1) ? 1 : 0);
+  // Guests come at a pace, not by a fresh roll every minute: the same number over an evening, but neither "one guest all night"
+  // nor "six at the door at once" (playtest 26). The gap to the next one is drawn around the average.
+  sh.arriveAcc = (sh.arriveAcc ?? 0.6 + ctx.rng.float() * 0.4) + perTick; // the doors open: the first one is not long in coming
+  let count = 0;
+  while (sh.arriveAcc >= (sh.arriveNext ?? 1)) {
+    sh.arriveAcc -= sh.arriveNext ?? 1;
+    sh.arriveNext = bal.arrivalGap[0] + ctx.rng.float() * (bal.arrivalGap[1] - bal.arrivalGap[0]);
+    count++;
+  }
+  // a place nobody knows yet does not have a full hall at once: the next ones come when a table frees up
+  const atOnce = Math.round(bal.atOnce[0] + (Math.min(100, pop) / 100) * (bal.atOnce[1] - bal.atOnce[0]));
   for (let i = 0; i < count; i++) {
+    if (hallVisits(sh.visits).length >= Math.min(atOnce, bal.seats) && hallVisits(sh.visits).length < bal.seats) {
+      sh.arriveAcc += (sh.arriveNext ?? 1) * 0.5; // he comes back a little later
+      continue;
+    }
     if (hallVisits(sh.visits).length >= bal.seats) {
       sh.turnedAway += 1;
       b.today.turnedAway += 1;

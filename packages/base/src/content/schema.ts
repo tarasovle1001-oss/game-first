@@ -72,7 +72,7 @@ export const balanceSchema = z
         lastArrivalBefore: z.number().int().min(0),
         billFactorFull: z.number().min(0),
         work: z.object({ minutes: z.array(z.number().int().positive()), takeAfter: z.number(), cleanPerMinute: z.number(), energyPerHour: z.number(), choreEvery: z.number().int().positive(), chores: z.number().int().positive() }).strict(),
-        arrivalsPerHour: z.number().min(0), // expected new guests per hour, before the flow share
+        arrivalGap: z.tuple([z.number(), z.number()]), atOnce: z.tuple([z.number(), z.number()]), arrivalsPerHour: z.number().min(0), // expected new guests per hour, before the flow share
         flow: z.tuple([z.number(), z.number(), z.number()]), // share of it at service 0, 50, 100
         stayMinutes: range,
         billFactor: z.number().positive(),

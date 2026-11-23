@@ -20,7 +20,7 @@ const SECTION: Record<string, string> = {
 };
 // things that take the whole column until he answers, and things happening in front of him that he may answer
 const REST = "base/rest";
-const SITUATION = new Set<string>([ANSWER, PERMIT, DEAL, HEAR, CAUGHT_STOP, CAUGHT_WATCH]);
+const SITUATION = new Set<string>([ANSWER, PERMIT, DEAL, HEAR, CAUGHT_STOP, CAUGHT_WATCH, "base/watch"]);
 const URGENT = new Set<string>([REACT_STOP, REACT_APPROVE, REACT, "base/door"]);
 /** "May and may not", one kind of thing at a time. */
 const ALLOW_GROUPS: [string, string[]][] = [

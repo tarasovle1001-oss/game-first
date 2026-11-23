@@ -1,6 +1,6 @@
 // The night at home: him and her. Goes through the same consent formula as any guest,
 // and through the same body rules, so a husband who does little for her shows up in the numbers.
-import type { Ctx, GameState, ModApi } from "@tc/core";
+import type { Ctx, GameState, ModApi, SceneDesc } from "@tc/core";
 import { actOf, content } from "../content";
 import { confidenceOf, earlyChance, softChance } from "./nerve";
 import { outcomeOf, refusalKey, setOutcome, slurTags } from "./voice";
@@ -16,7 +16,7 @@ import { HALL, TICKS_PER_SHIFT } from "./places";
 import { runUnattended } from "./shift";
 import { passPrep } from "./day";
 
-import { himOf, onNightMinute, tired } from "./rhythm";
+import { himOf, onNightMinute, passNight, tired } from "./rhythm";
 import { glance } from "./glance";
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
@@ -32,6 +32,8 @@ export const NIGHT_SELF = "base/night-self";
 export const AFTER = "base/after";
 /** What he does once it is over: give her what she asks for, see to her, or just hold her. */
 export const REST = "base/rest";
+/** She is seeing to herself next to him in the small hours: the player watches (whether or not the husband is awake). */
+export const WATCH = "base/watch";
 export const UPSTAIRS = "base/upstairs";
 /** What he can pull her away from work for. */
 export const UPSTAIRS_ACTS = IN_BED.upstairs;
@@ -1390,12 +1392,92 @@ export function registerMarriage(api: ModApi) {
     if (!n || n.smallDone || n.smallAt === undefined || (n.minute ?? 0) < n.smallAt || n.herAsleep === undefined || n.sex || n.up) return;
     smallHours(ctx);
   });
-  api.events.on("phase:exit", (ctx, e) => void (e.payload!.phase === "night" && !bs(ctx.state).night?.smallDone && smallHours(ctx)), 10); // before sleep takes the edge off
+  api.events.on("phase:exit", (ctx, e) => void (e.payload!.phase === "night" && !bs(ctx.state).night?.smallDone && smallHours(ctx, true)), 10); // before sleep takes the edge off
   api.events.on("phase:enter", (ctx, e) => {
     const n = bs(ctx.state).night;
     if (e.payload!.phase === "night" && n) n.smallAt = R0.herBedtime + ctx.rng.int(30, 200);
   }, -6);
-  const smallHours = (ctx: Ctx) => {
+  /** What her night session comes to: the same bookkeeping whether anyone watched or not. `cut`: she stopped before she got there. */
+  const selfDone = (ctx: Ctx, toyId: string | undefined, noticed: boolean, cut = false) => {
+    const b = bs(ctx.state);
+    const h = b.heroine;
+    const S = content.day.shop;
+    const toy = S.toys.find((t) => t.id === toyId);
+    if (cut) {
+      h.frustration = clamp(h.frustration + 3);
+      return;
+    }
+    if (toy) {
+      useBody(ctx, actById("sex"), toy.size);
+      h.satisfied = S.toySatisfied;
+      h.frustration = clamp(h.frustration - 20);
+      h.orgasms += 1;
+      h.arousal = clamp(h.arousal * 0.2);
+      h.sizeTaste = clamp(h.sizeTaste + Math.max(0, toy.size - b.husband.size) * 0.5);
+      ctx.emit("night:self", { noticed, toy: toy.id });
+      return;
+    }
+    h.satisfied = 60;
+    h.arousal = clamp(h.arousal * 0.4);
+    ctx.emit("night:self", { noticed });
+  };
+  const watchEnd = (ctx: Ctx, how: "end" | "leave" | "quiet") => {
+    const n = bs(ctx.state).night;
+    const w = n?.watch;
+    if (!n || !w) return;
+    n.watch = undefined;
+    if (how !== "quiet") ctx.log(`log.night.watch.${how}${w.toy ? ".toy" : ""}`, w.toy ? { toy: `toy.${w.toy}` } : undefined);
+    selfDone(ctx, w.toy, w.awake);
+    // what he lay there watching stays with him
+    if (w.step > 0) himOf(ctx.state).arousal = clamp(himOf(ctx.state).arousal + 6 * w.step);
+  };
+  api.actions.register({
+    id: WATCH,
+    labelKey: "action.watch",
+    describe: (a) => ({ key: `action.watch.${a.payload!.do}` }),
+    enumerate(state) {
+      const w = bs(state).night?.watch;
+      if (state.time.phase !== "night" || !w) return [];
+      return [...(w.step < 3 ? ["look"] : []), ...(w.awake ? ["join"] : []), "leave"].map((d) => ({ type: WATCH, payload: { do: d } }));
+    },
+    apply(ctx, action) {
+      const b = bs(ctx.state);
+      const h = b.heroine;
+      const w = b.night!.watch!;
+      const what = action.payload!.do as string;
+      if (what === "look") {
+        w.step += 1;
+        ctx.log(`log.night.watch.look.${w.step}${w.toy ? ".toy" : ""}`, w.toy ? { toy: `toy.${w.toy}` } : undefined);
+        if (w.step === 2) think(ctx, (h.seenSize ?? 0) > b.husband.size + 6 ? "thought.solo.fantasy.seen" : "thought.solo.fantasy", true);
+        passNight(ctx, 5);
+        if (w.step >= 3 && bs(ctx.state).night?.watch) watchEnd(ctx, "end");
+        return;
+      }
+      if (what === "join") {
+        // he lets her know he is awake and reaches for her: caught, she either pulls him in or goes cold
+        const takes = h.marriage.desire >= content.body.night.wants.desire && h.marriage.resent < content.manners.talk.complainAt;
+        b.night!.watch = undefined;
+        if (takes) {
+          b.night!.wants = true;
+          b.night!.scene = "wants_him";
+          changeHeroine(ctx, "arousal", 8, "caught");
+          ctx.log("log.night.watch.join.yes");
+        } else {
+          selfDone(ctx, w.toy, true, true);
+          b.night!.scene = "cold_back";
+          ctx.log("log.night.watch.join.no");
+        }
+        return;
+      }
+      watchEnd(ctx, "leave");
+    },
+  });
+  // whatever else he does, she finishes what she started
+  api.events.on("bed:started", (ctx) => watchEnd(ctx, "quiet"), 5);
+  api.events.on("phase:exit", (ctx, e) => void (e.payload!.phase === "night" && watchEnd(ctx, "quiet")), 5);
+  api.events.on("watch:skip", (ctx) => watchEnd(ctx, "leave"));
+
+  const smallHours = (ctx: Ctx, late = false) => {
       const b = bs(ctx.state);
       if (b.night) b.night.smallDone = true;
       const h = b.heroine;
@@ -1435,22 +1517,21 @@ export function registerMarriage(api: ModApi) {
         const toy = S.toys
           .filter((t) => b.toys.includes(t.id) && t.size <= fitOf(ctx.state, "vagina") + S.toyStretchAbove)
           .sort((x, y) => y.size - x.size)[0];
-        if (toy) {
-          useBody(ctx, actById("sex"), toy.size);
-          h.satisfied = S.toySatisfied;
-          h.frustration = clamp(h.frustration - 20);
-          h.orgasms += 1;
-          h.arousal = clamp(h.arousal * 0.2);
-          h.sizeTaste = clamp(h.sizeTaste + Math.max(0, toy.size - b.husband.size) * 0.5);
-          ctx.log(open || wakes ? "log.night.toy.heard" : "log.night.toy", { toy: `toy.${toy.id}` }, tags);
-          glance(ctx, "her_solo", BEDROOM, [{ id: WIFE, role: "wife" }], { toy: "vagina" });
-          ctx.emit("night:self", { noticed: open || wakes, toy: toy.id });
+        // While the night is still going it is a scene the player watches, whether the husband is awake (he can join, or turn over)
+        // or asleep (then only the player sees it: playtest 26, "sleep until something happens" slept through all of it).
+        if (!late && ctx.state.time.phase === "night" && b.night && ctx.state.where[HUSBAND] === BEDROOM) {
+          const aware = open || wakes;
+          b.night.watch = { ...(toy ? { toy: toy.id } : {}), step: 0, awake: aware };
+          ctx.log(`log.night.watch.start.${aware ? "awake" : "asleep"}`);
           return;
         }
-        h.satisfied = 60;
-        h.arousal = clamp(h.arousal * 0.4);
+        if (toy) {
+          ctx.log(open || wakes ? "log.night.toy.heard" : "log.night.toy", { toy: `toy.${toy.id}` }, tags);
+          glance(ctx, "her_solo", BEDROOM, [{ id: WIFE, role: "wife" }], { toy: "vagina" });
+          return void selfDone(ctx, toy.id, open || wakes);
+        }
         ctx.log(open || wakes ? "log.night.self.heard" : "log.night.self", undefined, tags);
-        ctx.emit("night:self", { noticed: open || wakes });
+        selfDone(ctx, undefined, open || wakes);
       }
   };
 
@@ -1470,9 +1551,10 @@ export function registerMarriage(api: ModApi) {
   api.scenes.register({
     id: "base.night",
     priority: 20,
-    match(state) {
+    match(state): SceneDesc | null {
       const b = bs(state);
       if (!b.night || (state.time.phase !== "night" && !b.night.sex) || state.where[HUSBAND] !== state.where[WIFE]) return null;
+      if (b.night.watch) return { type: "her_solo", location: state.where[HUSBAND]!, participants: [{ id: WIFE, role: "wife" }], ...(b.night.watch.toy ? { tags: { toy: "vagina" } } : {}) };
       const fin = b.night.fin && !b.night.sex ? `fin_${b.night.fin}` : "";
       return {
         // once she is asleep the night is a sleeping picture, whatever came before it

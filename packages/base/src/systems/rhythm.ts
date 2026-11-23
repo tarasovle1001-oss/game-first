@@ -182,6 +182,7 @@ export function registerRhythm(api: ModApi) {
     const b = bs(ctx.state);
     const n = b.night!;
     const morning = 1440 + R.wake[0]! * 60;
+    if (n.watch) ctx.emit("watch:skip"); // he turns over and sleeps: she finishes without him
     n.himAsleep = true;
     const before = ctx.state.log.length;
     ctx.log("log.sleep.step");
@@ -197,6 +198,7 @@ export function registerRhythm(api: ModApi) {
       const fresh = ctx.state.log.slice(before + 1);
       if (minutes === Infinity && fresh.some((e) => !e.tags?.includes("minor") && (!e.tags?.includes("unseen") || b.viewAll === true) && e.key !== "log.night.her_asleep")) break;
       if (now.sex || bs(ctx.state).complaint || bs(ctx.state).approach) break;
+      if (now.watch) break; // she has started something next to him: the player gets to see it, awake or not
     }
     const n2 = bs(ctx.state).night;
     if (n2) n2.himAsleep = false;
@@ -206,6 +208,7 @@ export function registerRhythm(api: ModApi) {
       ctx.emit("core:setPhase", { phase: "summary", newDay: false });
       return;
     }
+    if (n2?.watch && !n2.watch.awake) return; // he sleeps on; what is on the screen is for the player
     ctx.log("log.sleep.woke", { time: clockText(ctx.state.time.minute) });
   };
   api.events.on(
