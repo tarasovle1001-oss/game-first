@@ -10,6 +10,7 @@ import { actById } from "./encounters";
 import { expectOf, nudge } from "./expectations";
 import { changeHeroine } from "./heroine";
 import { HALL } from "./places";
+import { toneOf } from "./hernight";
 import { hasLine } from "./voice";
 
 export const ANSWER = "base/answer-her";
@@ -151,7 +152,8 @@ export function registerHerSide(api: ModApi) {
     const b = bs(ctx.state);
     if (!b.approach) return;
     feel(ctx, 0, A.ignoredResent);
-    ctx.log(`log.approach.ignored.${b.approach.kind}`);
+    // the night has gone on since she asked (she slept, went up, saw to herself): said now, the line would land after all of that
+    if (ctx.state.time.phase !== "night") ctx.log(`log.approach.ignored.${b.approach.kind}`);
     b.approach = null;
   });
   api.events.on("encounter:started", (ctx) => {
@@ -183,7 +185,8 @@ export function registerHerSide(api: ModApi) {
     b.retroDay = ctx.state.time.day;
     b.approach = { kind: "retro", patron: top.patron, public: false, act: top.act };
     // in her own words where they are written ("I sat on his lap"), not the name of the act off the menu
-    if (hasLine(`told.her.${top.act}`)) ctx.log("log.approach.retro.told", { name: `@name:${b.patrons[top.patron]!.name}`, told: `told.her.${top.act}` });
+    // a wife who has the say does not ask whether she did right: she tells him and waits for what he has to say
+    if (hasLine(`told.her.${top.act}`)) ctx.log(toneOf(ctx.state) >= 2 ? "log.approach.retro.told.sure" : "log.approach.retro.told", { name: `@name:${b.patrons[top.patron]!.name}`, told: `told.her.${top.act}` });
     else ctx.log("log.approach.retro", { name: `@name:${b.patrons[top.patron]!.name}`, act: `act.${top.act}` });
   }, 80);
   api.actions.register({
