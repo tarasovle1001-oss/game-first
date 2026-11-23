@@ -1,6 +1,7 @@
 // What is agreed between the two of them. What he says he wants from her today; what he allows and forbids,
 // one thing at a time; what she asks him before she does it; where he stands on a particular man; dares;
 // talking over what happened; promises that are kept or not; pushing after a "no".
+import { hasLine } from "./voice";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -304,7 +305,9 @@ export function registerTerms(api: ModApi) {
     v.retry = act.id;
     v.cooldownUntil = (b.shift?.tick ?? 0) + 10;
     if (b.shift) b.shift.interrupt = true;
-    ctx.log(reluctant ? "log.ask.her.reluctant" : "log.ask.her", { name: `@name:${p.name}`, act: `act.${act.id}` });
+    // in her own words where they are written ("wants me on his lap"), not the name off the menu
+    const own = hasLine(`ask.her.${act.id}`);
+    ctx.log(`log.ask.her${reluctant ? ".reluctant" : ""}${own ? ".own" : ""}`, { name: `@name:${p.name}`, act: own ? `ask.her.${act.id}` : `act.${act.id}` });
     ctx.emit("her:asked", { patron: p.id, act: act.id });
     return true;
   };

@@ -549,7 +549,7 @@ function herOwnMove(ctx: Ctx) {
   const drawn = (p: Patron) =>
     p.memory.affinity + (h.tastes.types[p.type] ?? 0) * 0.5 + (h.latents.new_faces !== undefined && p.memory.visits <= 1 ? H.traitPull : 0) + (h.latents.likes_rough !== undefined && p.approach === "push" ? H.traitPull : 0) + (h.latents.size_queen !== undefined && p.memory.sizeKnown ? Math.min(30, (sizeStage(p.size) - sizeStage(b.husband.size)) * 4) : 0);
   const best = sh.visits
-    .filter((v) => !v.blocked && (!v.away || room !== HALL) && v.out === undefined && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && (v.served > 0 || v.group) && roomOfGuest(ctx.state, v.patron) === room)
+    .filter((v) => !v.blocked && b.ask?.patron !== v.patron && (!v.away || room !== HALL) && v.out === undefined && sh.tick >= (v.cooldownUntil ?? 0) && b.patrons[v.patron] && (v.served > 0 || v.group) && roomOfGuest(ctx.state, v.patron) === room)
     .map((v) => ({ v, p: b.patrons[v.patron]!, pull: drawn(b.patrons[v.patron]!) }))
     .filter((x) => x.pull >= H.pullFrom)
     .sort((x, y) => y.pull - x.pull || x.p.id.localeCompare(y.p.id))[0];
@@ -618,7 +618,7 @@ export function runProposals(ctx: Ctx) {
   const room = herRoom(ctx.state);
   // a man speaks up once he has been here a moment; the keener ones go first
   const eligible = sh.visits
-    .filter((v) => !v.blocked && (!v.away || room !== HALL) && v.out === undefined && (v.served > 0 || v.waited > 0 || v.group) && roomOfGuest(ctx.state, v.patron) === room)
+    .filter((v) => !v.blocked && b.ask?.patron !== v.patron /* she has gone to ask her husband about him: nothing with him until there is an answer */ && (!v.away || room !== HALL) && v.out === undefined && (v.served > 0 || v.waited > 0 || v.group) && roomOfGuest(ctx.state, v.patron) === room)
     .sort((a, c) => b.patrons[c.patron]!.memory.interest - b.patrons[a.patron]!.memory.interest || a.patron.localeCompare(c.patron));
   herOwnMove(ctx);
   if (b.encounter) return;
