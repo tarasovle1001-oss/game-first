@@ -131,7 +131,7 @@ export function passPrep(ctx: Ctx, minutes: number) {
     ctx.state.time.minute = Math.max(ctx.state.time.minute, opening - day.left); // never back: see shift.ts
     // run dry, either of them simply lies down for an hour
     if (!day.busy && himOf(ctx.state).energy <= 0 && !b.night && !inTown(ctx.state.where[HUSBAND])) {
-      day.busy = { id: "nap", left: Math.min(D.rhythm.quiet.minutes, day.left) };
+      day.busy = { id: "nap", left: Math.min(D.rhythm.collapse.minutes, day.left) }; // run into the ground he sleeps for hours, not for one
       ctx.log("log.quiet.him");
     }
     if (b.heroine.energy <= 0 && !b.night && !day.herOut && !["quiet", "away"].includes(day.her?.task ?? "")) {

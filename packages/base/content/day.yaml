@@ -97,7 +97,8 @@ rhythm:               # the day around the clock: sleep, his own state, the bath
   wake: [9, 10, 12]   # he may sleep till; the first is the default
   herWake: 9
   energyPerHour: { him: 12, her: 12 }
-  sleep: { fullAfter: 4, shortShare: 0.6 } # the first hours of sleep give back this share of an hour each: 4 to 9 is ~ 41, 2 to 10 is ~ 77
+  collapse: { after: 2, minutes: 240, energy: 40 } # with nothing left for this many ten-minute steps he drops and sleeps this long (the hall is hers meanwhile); what it gives back
+  sleep: { fullAfter: 4, shortShare: 0.45 } # the first hours of sleep give back this share of an hour each: 4 to 9 is ~ 41, 2 to 10 is ~ 77
   energyCost: 0.75    # everything that tires either of them costs this share of its listed price (one knob for "energy runs out too fast")
   quiet: { minutes: 60, her: 22 } # at zero energy in the afternoon either of them lies down: for how long, and what it gives her (his is the nap)
   herBedtime: 60      # minutes after midnight she is asleep, if nothing keeps her up

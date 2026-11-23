@@ -106,7 +106,7 @@ export function seat(ctx: Ctx, patron: Patron, known: boolean, opts: { at?: stri
   });
   ctx.state.where[patron.id] = opts.at ?? HALL;
   // "nods to her like an old acquaintance" is for a man who has been here before, not for a lodger coming down on his first evening
-  if (!opts.quiet) ctx.log(known && patron.memory.visits > 1 ? "log.patron.returns" : known ? "log.patron.down" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
+  if (!opts.quiet) ctx.log(known && patron.memory.visits > 1 ? "log.patron.returns" : known ? "log.patron.down" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` }, sh.asleepHim ? ["unseen"] : undefined); // asleep upstairs he does not see who comes in
   if (patron.rich && !opts.quiet) ctx.log("log.patron.rich", { name: `@name:${patron.name}` });
   ctx.emit("patron:arrived", { id: patron.id, returning: known });
   interrupt(ctx);
@@ -277,6 +277,24 @@ export function passShift(ctx: Ctx, minutes: number) {
   const sh = bs(ctx.state).shift;
   if (!sh) return;
   for (let i = 0, n = ticks(minutes); i < n && !ticksDone(sh); i++) tick(ctx);
+}
+
+/** He has run himself into the ground: he drops and sleeps for hours, and the evening goes on without him. True if it happened. */
+function sleepItOff(ctx: Ctx): boolean {
+  const b = bs(ctx.state);
+  const sh = b.shift;
+  if (!sh?.collapse || b.night || b.caught || b.reaction) return false;
+  const C = content.day.rhythm.collapse;
+  sh.collapse = false;
+  sh.dry = 0;
+  sh.asleepHim = true;
+  ctx.state.where[HUSBAND] = "home.bedroom";
+  ctx.log("log.him.collapse", { hours: Math.round(C.minutes / 60) });
+  for (let i = 0, n = ticks(C.minutes); i < n && !ticksDone(sh); i++) tick(ctx);
+  sh.asleepHim = false;
+  changeHim(ctx, "energy", C.energy, "collapse");
+  ctx.log(ticksDone(sh) ? "log.him.collapse.closed" : "log.him.collapse.woke", { time: clockText(ctx.state.time.minute) });
+  return true;
 }
 
 /** Time passes while nobody is minding the floor: the guests wait, then the evening catches up. */
@@ -472,6 +490,7 @@ export function registerShift(api: ModApi) {
         // "an hour" is an hour only while nobody needs his word: a company at the door, her question, a guest with money stop it
         const now = waitingOnHim(ctx.state);
         if (now && now !== before) break;
+        if (sleepItOff(ctx)) break;
       }
     },
   });
@@ -559,6 +578,7 @@ export function registerShift(api: ModApi) {
         if (untilEvent && sh.interrupt) break;
         const now = waitingOnHim(ctx.state);
         if (now && now !== before) break;
+        if (sleepItOff(ctx)) break;
       }
     },
   });

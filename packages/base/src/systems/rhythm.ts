@@ -291,20 +291,18 @@ export function registerRhythm(api: ModApi) {
   });
   api.events.on("shift:tick", (ctx) => {
     const b = bs(ctx.state);
+    const sh = b.shift;
+    if (sh?.asleepHim) return; // out cold upstairs: nothing costs him anything, and he sees nothing
     const was = tired(ctx.state);
     changeHim(ctx, "energy", -R.him.shiftPerTick, "shift");
     if (!was && tired(ctx.state)) ctx.log("log.him.tired");
-    // nothing left at all: he goes up and lies down, and gets it back for as long as he stays there
-    const sh = b.shift;
-    if (sh && himOf(ctx.state).energy <= 0 && !sh.hisQuiet && !b.night && !b.caught && !b.reaction) {
-      sh.hisQuiet = true;
-      sh.interrupt = true;
-      ctx.state.where[HUSBAND] = "home.bedroom";
-      ctx.log("log.quiet.him.shift");
-    } else if (sh?.hisQuiet) {
-      if (ctx.state.where[HUSBAND] === "home.bedroom" && himOf(ctx.state).energy < 60) changeHim(ctx, "energy", R.him.shiftPerTick + R.quiet.her / 6, "quiet hour");
-      else sh.hisQuiet = false;
-    }
+    // nothing left at all, and he stays on his feet anyway: a couple of steps like that and he drops for hours
+    // (decided 23.11: at least four, and the hall is hers meanwhile)
+    if (sh && himOf(ctx.state).energy <= 0 && !b.night && !b.caught && !b.reaction) {
+      sh.dry = (sh.dry ?? 0) + 1;
+      if (sh.dry === 1) ctx.log("log.him.dry");
+      if (sh.dry >= R.collapse.after) sh.collapse = true;
+    } else if (sh) sh.dry = 0;
     // what he watches does not leave him cold
     if (b.reaction || b.caught) changeHim(ctx, "arousal", R.him.arousal.watch, "watching");
     else if ((b.heroine.bare ?? "none") !== "none" && husbandSees(ctx.state, ctx.state.where[WIFE] ?? "")) changeHim(ctx, "arousal", R.him.arousal.bare, "her bare");

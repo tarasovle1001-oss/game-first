@@ -469,6 +469,7 @@ export const daySchema = z
         herWake: z.number().int(),
         energyPerHour: z.object({ him: z.number(), her: z.number() }).strict(),
     sleep: z.object({ fullAfter: z.number(), shortShare: z.number() }).strict(), energyCost: z.number().positive(),
+    collapse: z.object({ after: z.number().int().positive(), minutes: z.number().int().positive(), energy: z.number() }).strict(),
     quiet: z.object({ minutes: z.number().int().positive(), her: z.number() }).strict(),
         herBedtime: z.number().int(), // minutes after midnight she falls asleep if nothing keeps her up
         wakeHer: z.object({ consent: z.number(), annoy: z.number(), mood: z.number(), tiredEnergy: z.number(), warmDesire: z.number() }).strict(),

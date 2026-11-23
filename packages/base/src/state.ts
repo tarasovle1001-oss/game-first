@@ -243,7 +243,9 @@ export interface Shift {
   meet?: { patron: string; to: string; until: number; act: string }; // she went after a guest who stepped out
   show?: { type: string; until: number; patron?: string }; // a short thing on the floor that is the picture for a few minutes
   marksGuests?: boolean;
-  hisQuiet?: boolean; // he has gone up to lie down in the middle of the evening
+  dry?: number; // ten-minute steps he has been on his feet with nothing left
+  collapse?: boolean; // ...long enough: he drops at the next step of whatever he is doing (shift.ts: sleepItOff)
+  asleepHim?: boolean; // he is out cold upstairs: the evening goes on without him
   quietUntil?: number; // she went up to lie down: the minute she is back
   attend?: { loc: string; until: number; why: string; patron?: string; asked?: boolean }; // she is in another room with the guests there (a round, a drink to the sauna, a look in on a lodger): the hall mode runs there
   awaySince?: number; // he is out in town: the minute he left (0 = he was not back by opening)
