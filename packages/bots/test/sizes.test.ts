@@ -132,3 +132,33 @@ describe("the long goal: buying the place (23.11)", () => {
     expect(bs(s).today.rent).toBe(0);
   });
 });
+
+describe("he walks in a minute too late (23.11)", () => {
+  it("finds her alone putting herself right: suspicion, not proof - unless it is still on her", () => {
+    const eng = createEngine([baseMod]);
+    let s = eng.init(5);
+    for (let i = 0; i < 400 && s.time.phase !== "shift"; i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
+    const run = (cum: boolean) => {
+      let t = structuredClone(s);
+      const move = eng.listActions(t).find((a) => a.type === "core/move" && String(a.payload?.to).startsWith("cafe."))!;
+      const to = move.payload!.to as string;
+      bs(t).mode = "hidden";
+      bs(t).encounter = null;
+      bs(t).suspicion = 0;
+      t.where.wife = to;
+      const who = Object.keys(bs(t).patrons)[0]!;
+      bs(t).shift!.after = { loc: to, patron: who, until: bs(t).shift!.tick + 3 };
+      if (cum) bs(t).heroine.cum = { face: 30 };
+      t = eng.dispatch(t, move);
+      return t;
+    };
+    const plain = run(false);
+    expect(plain.log.some((e) => e.key.startsWith("log.after.found."))).toBe(true);
+    expect(bs(plain).suspicion).toBeGreaterThan(0);
+    expect(bs(plain).suspicion).toBeLessThan(100);
+    expect(bs(plain).shift!.after).toBeUndefined();
+    const marks = run(true);
+    expect(marks.log.some((e) => e.key.startsWith("log.after.found.marks"))).toBe(true);
+    expect(bs(marks).suspicion).toBe(100);
+  });
+});

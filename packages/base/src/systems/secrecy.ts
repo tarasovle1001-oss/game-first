@@ -92,6 +92,24 @@ export function registerSecrecy(api: ModApi) {
     const { id, from, to } = e.payload as { id: string; from: string; to: string };
     if (id !== HUSBAND || b.mode !== "hidden") return;
     const enc = b.encounter;
+    const af = b.shift?.after;
+    if (af && !enc && to === af.loc && b.shift!.tick < af.until && ctx.state.where[WIFE] === af.loc) {
+      // too late to catch them, early enough to see her putting herself right: no proof, unless it is still on her
+      const A = content.secrecy.afterFind;
+      const h = b.heroine;
+      const marks = Object.keys(h.cum ?? {}).length > 0;
+      b.shift!.after = undefined;
+      b.shift!.interrupt = true;
+      const how = marks ? "marks" : h.traits.openness >= A.brazenOpenness ? "brazen" : "plain";
+      ctx.log(`log.after.found.${how}`, { name: `@name:${b.patrons[af.patron]?.name ?? ""}` });
+      if (marks) {
+        b.secretKnows = true;
+        b.suspicion = 100;
+      } else b.suspicion = clamp(b.suspicion + A.suspicion * (content.secrecy.styleFactor[b.husband.style] ?? 1));
+      changeHeroine(ctx, "mood", A.mood, "caught");
+      ctx.emit("after:found", { patron: af.patron, marks });
+      return;
+    }
     if (b.caught && enc && from === enc.loc) {
       // he backed out before they noticed: now he knows, and she does not know that he does
       b.caught = null;
@@ -168,7 +186,9 @@ export function registerSecrecy(api: ModApi) {
     const { loc, act } = e.payload as { loc: string; act: string };
     const sh = b.shift;
     if (b.mode === "hidden" && sh && loc !== HALL && isIntimate(actById(act)) && ctx.state.where[WIFE] === loc) {
-      sh.awayUntil = Math.max(sh.awayUntil ?? 0, sh.tick + 4);
+      const A = content.secrecy.afterFind;
+      sh.awayUntil = Math.max(sh.awayUntil ?? 0, sh.tick + A.minutes);
+      sh.after = { loc, patron: (e.payload as { patron: string }).patron, until: sh.tick + A.minutes };
       ctx.log("log.enc.apart", undefined, ["unseen"]);
     }
   });

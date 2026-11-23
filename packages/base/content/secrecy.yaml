@@ -6,6 +6,7 @@ heardNextDoor: 6      # he was next door and heard something
 oddTips: 3            # the tips do not match the evening
 oddTipsShare: 0.45    # tips above this share of the sales look odd
 guiltyLook: 4         # at home she cannot look him in the eye; the more honest she is, the more it shows
+afterFind: { minutes: 4, suspicion: 30, mood: -4, brazenOpenness: 55 } # he walks in on her alone in the minutes after: what he sees is not proof, unless it is still on her
 tracePerSecretAct: 4  # traces of what he did not see, counted at the end of the day
 fadePerDay: 0.5
 confrontAt: 60        # suspicion at which he may confront her at night

@@ -362,6 +362,7 @@ export const secrecySchema = z
     oddTips: z.number(), // tips do not match the evening
     oddTipsShare: z.number(), // tips above this share of the sales look odd
     guiltyLook: z.number(), // at home she cannot look him in the eye (the more honest she is, the more it shows)
+    afterFind: z.object({ minutes: z.number().int(), suspicion: z.number(), mood: z.number(), brazenOpenness: z.number() }).strict(),
     tracePerSecretAct: z.number(), // traces of what he did not see, counted at the end of the day
     fadePerDay: z.number(),
     confrontAt: z.number(), // suspicion at which he may confront her at night

@@ -247,6 +247,7 @@ export interface Shift {
   attend?: { loc: string; until: number; why: string; patron?: string; asked?: boolean }; // she is in another room with the guests there (a round, a drink to the sauna, a look in on a lodger): the hall mode runs there
   awaySince?: number; // he is out in town: the minute he left (0 = he was not back by opening)
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
+  after?: { loc: string; patron: string; until: number }; // the minutes after a hidden scene: she is alone there, putting herself right
   momentsSeen?: string[]; // "patron:moment" that already happened tonight
   groupAt?: number; // minute a company walks in
   group?: { pending?: number; ignored?: number; kind: string; size: number; lead: string; until: number; heat: number; nextTray: number; rounds: number; bill: number; wants?: number; herOut?: number; sauna?: boolean; did?: string; steps?: number; round?: { start: number; at: number; beat: number } }; // the company in the back room; round = she is in there and it has not come to anything yet
