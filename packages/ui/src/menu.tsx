@@ -29,7 +29,7 @@ const ALLOW_GROUPS: [string, string[]][] = [
   ["cum", ["cum_mouth", "cum_face", "cum_body", "cum_inside"]],
 ];
 /** Shown behind the money in the top bar and inside the phone, not here. */
-const ELSEWHERE = new Set(["base/tip-share", "base/repay-debt", "base/call-wife", "base/phone-peek"]);
+const ELSEWHERE = new Set(["base/tip-share", "base/repay-debt", "base/call-wife", "base/phone-peek", "base/serve"]); // (an order is taken under the guest in the list)
 const CLOTHES = new Set(["top", "skirt", "panties_aside", "panties_off", "naked"]);
 const SECTIONS = ["chat", "touch", "sex", "ask", "want", "dare", "allow", "about"] as const;
 const LETTERS = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l"];

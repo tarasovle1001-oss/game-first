@@ -29,7 +29,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "36";
+const BUILD = "37";
 const RESUME_KEY = "test-city.resume";
 const JOURNAL_KEY = "test-city.journal";
 /**
@@ -510,7 +510,7 @@ function App() {
           <HerCard {...common} />
           {(b.shift || Object.keys(b.lodgers).length > 0) && (
             <div className="house-guests">
-              <GuestsTab {...common} />
+              <GuestsTab {...common} onAct={act} />
               {b.shift && <div className="muted small today">{t("ui.today.line", { n: b.shift.served, tips: b.shift.tips })}</div>}
             </div>
           )}

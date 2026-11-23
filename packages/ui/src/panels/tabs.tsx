@@ -1,6 +1,8 @@
 import { shownCm } from "@tc/base";
 import { cagedDays, confidenceOf, dryOf, fameOf, fameTier, trustOf, himOf, worryOf, bs, clockText, content, expectLevel, fitOf, toneOf, permOf, sizeStage, HUSBAND, patronName, renderParams, WIFE, husbandSees, sizeClass, actOf } from "@tc/base";
 import type { Patron } from "@tc/base";
+import type { Action } from "@tc/core";
+import { engine } from "../game";
 import type { Lang, T } from "../game";
 import { Bar, Common } from "./common";
 import { WhyLine } from "./scene";
@@ -209,8 +211,10 @@ export function PatronRow({ p, t, lang }: { p: Patron; t: T; lang: Lang }) {
   );
 }
 
-export function GuestsTab({ state, t, lang, open }: Common) {
+export function GuestsTab({ state, t, lang, open, onAct }: Common & { onAct?(a: Action): void }) {
   const b = bs(state);
+  // the order is taken where the guest is listed: a full orange plate when he can serve it himself right now
+  const serves = onAct ? engine.listActions(state).filter((a) => a.type === "base/serve") : [];
   const present = b.shift?.visits ?? [];
   const regulars = Object.values(b.patrons)
     .filter((p) => p.regular && !present.some((v) => v.patron === p.id))
@@ -252,7 +256,20 @@ export function GuestsTab({ state, t, lang, open }: Common) {
           <div key={v.patron}>
             <PatronRow p={b.patrons[v.patron]!} t={t} lang={lang} />
             <div className="small muted" style={{ marginLeft: 8 }}>
-              {b.encounter?.patron === v.patron ? t("ui.guest.withher") : v.served === 0 || v.sinceOrder >= content.balance.shift.orderEveryMinutes ? <span className="order-plate">{t("ui.guest.waiting")}</span> : t("ui.guest.served", { n: v.served })}
+              {b.encounter?.patron === v.patron ? t("ui.guest.withher") : v.served === 0 || v.sinceOrder >= content.balance.shift.orderEveryMinutes ? (
+                (() => {
+                  const serve = serves.find((a) => a.payload?.patron === v.patron);
+                  return serve ? (
+                    <button className="order-plate can" onClick={() => onAct!(serve)}>
+                      {t("ui.order.take")}
+                    </button>
+                  ) : (
+                    <span className="order-plate">{t("ui.guest.waiting")}</span>
+                  );
+                })()
+              ) : (
+                t("ui.guest.served", { n: v.served })
+              )}
             </div>
             {(v.waited > 0 || (b.patrons[v.patron]!.memory.tier >= 3 && (b.patrons[v.patron]!.likes?.length ?? 0) > 0)) && (
               <div className={`small ${v.waited >= content.balance.shift.maxWaitMinutes * 0.6 ? "bad" : "muted"}`} style={{ marginLeft: 8 }}>
