@@ -299,7 +299,7 @@ export function registerCouple(api: ModApi) {
     enumerate(state) {
       const b = bs(state);
       const id = guestInView(state);
-      if (!id) return [];
+      if (!id || b.night?.sex) return []; // in the middle of it with his own wife he is not sorting out guests
       const visit = b.shift!.visits.find((v) => v.patron === id)!;
       const name = b.patrons[id]!.name;
       const dos = ["throw_out"];
