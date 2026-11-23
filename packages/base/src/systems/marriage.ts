@@ -335,10 +335,12 @@ export function registerMarriage(api: ModApi) {
         if (leads && inside && h.marriage.resent < C.maxResent && ctx.rng.chance(C.chance)) {
           const hard = b.power >= C.peggingPower || h.latents.cruel_streak !== undefined;
           const options = [...IN_BED.counter, ...(hard ? IN_BED.counterHard.filter((a) => hisActOpen(ctx.state, a)) : [])];
-          const offer = options[ctx.rng.int(0, options.length - 1)]!;
+          // a wife who still asks rather than tells does not order him down there: she asks for his mouth, quietly
+          const meek = toneOf(ctx.state) < 2;
+          const offer = meek ? "cunnilingus" : options[ctx.rng.int(0, options.length - 1)]!;
           b.night!.counter = offer;
           b.night!.scene = "wants_him";
-          ctx.log(`log.night.counter.${offer}`);
+          ctx.log(meek ? "log.night.counter.soft" : `log.night.counter.${offer}`);
           ctx.emit("husband:countered", { asked: act.id, offer });
           return;
         }

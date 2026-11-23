@@ -1,5 +1,6 @@
 // The floor during the evening: the small things that happen at the tables, a guest with money who goes to
 // the husband first, a company that takes the back room, sitting down with a guest, joining her.
+import { hasLine } from "./voice";
 import { detail, glance } from "./glance";
 import { changeConfidence } from "./nerve";
 import type { Ctx, GameState, ModApi } from "@tc/core";
@@ -138,7 +139,9 @@ export function registerFloor(api: ModApi) {
     b.deal = { patron: p.id, act: act.id, price: priceOf(p, act.id), tick: b.shift!.tick };
     v.cooldownUntil = b.shift!.tick + D.expires;
     b.shift!.interrupt = true;
-    ctx.log(`log.deal.asks${act.tier >= 7 ? ".hour" : ""}`, { name: `@name:${p.name}`, act: `act.${act.id}`, price: b.deal.price });
+    // in his own words where they are written, not the name of the act off the menu
+    const own = act.tier < 7 && hasLine(`deal.his.${act.id}`);
+    ctx.log(`log.deal.asks${act.tier >= 7 ? ".hour" : own ? ".own" : ""}`, { name: `@name:${p.name}`, act: own ? `deal.his.${act.id}` : `act.${act.id}`, price: b.deal.price });
     ctx.emit("deal:asked", { patron: p.id, act: act.id, price: b.deal.price });
     return true;
   };

@@ -105,7 +105,8 @@ export function seat(ctx: Ctx, patron: Patron, known: boolean, opts: { at?: stri
     rounds: 0,
   });
   ctx.state.where[patron.id] = opts.at ?? HALL;
-  if (!opts.quiet) ctx.log(known ? "log.patron.returns" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
+  // "nods to her like an old acquaintance" is for a man who has been here before, not for a lodger coming down on his first evening
+  if (!opts.quiet) ctx.log(known && patron.memory.visits > 1 ? "log.patron.returns" : known ? "log.patron.down" : "log.patron.arrives", { name: `@name:${patron.name}`, type: `patron.type.${patron.type}` });
   if (patron.rich && !opts.quiet) ctx.log("log.patron.rich", { name: `@name:${patron.name}` });
   ctx.emit("patron:arrived", { id: patron.id, returning: known });
   interrupt(ctx);
