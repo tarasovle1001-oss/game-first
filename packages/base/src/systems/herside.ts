@@ -169,7 +169,7 @@ export function registerHerSide(api: ModApi) {
     // what he did not see and she is ashamed of, she keeps to herself while she hides things
     // (NTR): up to a touch she tells; past it the chance falls with every step and with her honesty - most of it he learns from traces
     const T2 = content.terms.ask;
-    const tells = (tier: number) => tier <= T2.upToTierHidden || ctx.rng.chance(Math.pow((h.traits.honesty / 100) * T2.tellPerTier, tier - T2.upToTierHidden));
+    const tells = (tier: number) => (tier <= T2.upToTierHidden ? h.traits.honesty >= T2.honesty || ctx.rng.chance(h.traits.honesty / T2.honesty / 2) : ctx.rng.chance(Math.pow((h.traits.honesty / 100) * T2.tellPerTier, tier - T2.upToTierHidden)));
     const sayable = tonight.filter((r) => r.seen || b.mode !== "hidden" || tells(actById(r.act).tier));
     const top = sayable.sort((x, y) => actById(y.act).tier - actById(x.act).tier)[0];
     if (!top) return;

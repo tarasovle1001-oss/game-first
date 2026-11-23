@@ -3895,3 +3895,7 @@ log.night.watch.leave: "You close your eyes. The bed goes on rocking for a while
 log.night.watch.leave.toy: "You close your eyes. You hear the drawer slide out and back in. Then silence."
 log.night.watch.join.yes: "You put a palm on her hip. She flinches, freezes - and pulls your hand herself to where hers was."
 log.night.watch.join.no: "You put a palm on her hip. She freezes. \"Sleep,\" she says without turning round, and pulls the blanket up."
+preset.shy_curious: "Shy and curious"
+preset.shy_curious.about: "Quiet and faithful to look at. Lies easily, is curious about size, a glass makes her bolder. What she does, she does behind your back. For NTR: pick the hidden marriage."
+action.nap: "Take a nap upstairs (45 min)"
+log.shift.nap: "You go upstairs and lie down without undressing. The floor is hers. Voices and the clink of dishes come up from below."

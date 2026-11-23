@@ -15,6 +15,12 @@
   traits: { openness: 32, confidence: 45, fidelity: 75, honesty: 65, libido: 58 }
   sizeTaste: 55
   latents: [size_queen, disappointed]
+# for an NTR game (hidden mode): modest and faithful to look at, but she lies easily, is curious about size, and a drink loosens her;
+# what she does she does behind his back, and it thrills her
+- id: shy_curious
+  traits: { openness: 26, confidence: 38, fidelity: 72, honesty: 30, libido: 62 }
+  sizeTaste: 45
+  latents: [guilt_thrill, tipsy_loose, size_queen]
 - id: curious
   traits: { openness: 50, confidence: 55, fidelity: 60, honesty: 55, libido: 60 }
   sizeTaste: 30

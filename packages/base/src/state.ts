@@ -65,7 +65,7 @@ export interface Husband {
   energy?: number; // 0..100
   mood?: number; // 0..100
   arousal?: number; // 0..100
-  washed?: string; // "day:phase" he last washed
+  napped?: string; washed?: string; // "day:phase" he last washed
   caged?: { day: number; asked?: number };
   ruinedTurn?: number; // the move she ruined it for him on
   wetSecret?: number; // the day of a wet dream she slept through: his to tell or to keep // the cage is on since this day; the day he last asked to have it off

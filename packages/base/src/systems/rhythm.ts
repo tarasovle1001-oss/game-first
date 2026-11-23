@@ -14,6 +14,7 @@ import { passPrep } from "./day";
 export const SLEEP = "base/sleep";
 export const NIGHT_WAIT = "base/night-wait";
 export const WASH = "base/wash";
+export const NAP = "base/nap";
 export const SEND_WASH = "base/send-wash";
 export const WASH_TOGETHER = "base/wash-together";
 export const BATH_DO = "base/bath-do";
@@ -320,13 +321,29 @@ export function registerRhythm(api: ModApi) {
   const quiet = (state: GameState) => {
     const b = bs(state);
     if (state.time.phase === "prep") return !!b.day && !b.day.busy && b.day.left > R.bath.washMinutes;
+    // in the evening too: she holds the floor while he takes a quarter of an hour for himself upstairs
+    if (state.time.phase === "shift") return !!b.shift && !b.night && !b.encounter && !b.ask && !b.approach && !b.complaint && !b.caught && !b.reaction;
     return state.time.phase === "night" && !!b.night && !b.night.sex && !b.complaint;
   };
   const stamp = (state: GameState) => `${state.time.day}:${state.time.phase}`;
   const spend = (ctx: Ctx, minutes: number) => {
     if (ctx.state.time.phase === "prep") passPrep(ctx, minutes);
+    else if (ctx.state.time.phase === "shift") ctx.emit("shift:pass", { minutes });
     else passNight(ctx, minutes);
   };
+  // An hour on the bed in the middle of the evening: the floor is hers meanwhile.
+  api.actions.register({
+    id: NAP,
+    labelKey: "action.nap",
+    enumerate: (state) => (state.time.phase === "shift" && quiet(state) && state.where[HUSBAND] === "home.bedroom" && state.where[WIFE] !== "home.bedroom" && bs(state).husband.napped !== stamp(state) ? [{ type: NAP }] : []),
+    apply(ctx) {
+      const h = bs(ctx.state).husband;
+      h.napped = stamp(ctx.state);
+      changeHim(ctx, "energy", R.bath.napEnergy, "nap");
+      ctx.log("log.shift.nap");
+      spend(ctx, R.bath.napMinutes);
+    },
+  });
   api.actions.register({
     id: WASH,
     labelKey: "action.wash",

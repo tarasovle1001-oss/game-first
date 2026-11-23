@@ -120,7 +120,7 @@ rhythm:               # the day around the clock: sleep, his own state, the bath
     mood: { came: 4, refused: -3, talkLow: 0.7, talkHigh: 1.15, toHer: 0.1 }
   # debt is counted over the loan they started with
   worry: { cashBelow: 150, debtFrom: 400, mood: -3, hardDebt: 1500, hardMood: -6, herShare: 0.6 }
-  bath: { steps: { minutes: 4, soap: 4, closer: 7, hers: 12, closerDesire: 40, hersDesire: 55 }, washMinutes: 15, washMood: 2, washEnergy: 7, sendMinutes: 20, sendAnnoy: 3, walkIn: { margin: 30, arousal: 8, annoy: 8 } }
+  bath: { steps: { minutes: 4, soap: 4, closer: 7, hers: 12, closerDesire: 40, hersDesire: 55 }, washMinutes: 15, washMood: 2, washEnergy: 7, napMinutes: 45, napEnergy: 18, sendMinutes: 20, sendAnnoy: 3, walkIn: { margin: 30, arousal: 8, annoy: 8 } }
 world:                # the week and the sky: more people on some days, fewer on others
   weekdays: [0, -0.1, 0, 0, 0.05, 0.25, 0.2]   # Sunday first: share added to the evening's flow
   weather:

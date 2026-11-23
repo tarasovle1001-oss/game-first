@@ -483,7 +483,7 @@ export const daySchema = z
           })
           .strict(),
         worry: z.object({ cashBelow: z.number(), debtFrom: z.number(), mood: z.number(), hardDebt: z.number(), hardMood: z.number(), herShare: z.number() }).strict(),
-        bath: z.object({ washMinutes: z.number().int(), steps: z.object({ minutes: z.number().int(), soap: z.number(), closer: z.number(), hers: z.number(), closerDesire: z.number(), hersDesire: z.number() }).strict(), washMood: z.number(), washEnergy: z.number(), sendMinutes: z.number().int(), sendAnnoy: z.number(), walkIn: z.object({ margin: z.number(), arousal: z.number(), annoy: z.number() }).strict() }).strict(),
+        bath: z.object({ washMinutes: z.number().int(), steps: z.object({ minutes: z.number().int(), soap: z.number(), closer: z.number(), hers: z.number(), closerDesire: z.number(), hersDesire: z.number() }).strict(), washMood: z.number(), washEnergy: z.number(), napMinutes: z.number(), napEnergy: z.number(), sendMinutes: z.number().int(), sendAnnoy: z.number(), walkIn: z.object({ margin: z.number(), arousal: z.number(), annoy: z.number() }).strict() }).strict(),
       })
       .strict(),
   })

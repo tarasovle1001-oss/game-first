@@ -264,6 +264,13 @@ function depart(ctx: Ctx) {
   if (sh.moment && !staying.some((v) => v.patron === sh.moment!.patron)) sh.moment = null;
 }
 
+/** Time passes in the evening while he is busy with himself upstairs (a shower, a nap): she minds the floor, as when he waits. */
+export function passShift(ctx: Ctx, minutes: number) {
+  const sh = bs(ctx.state).shift;
+  if (!sh) return;
+  for (let i = 0, n = ticks(minutes); i < n && !ticksDone(sh); i++) tick(ctx);
+}
+
 /** Time passes while nobody is minding the floor: the guests wait, then the evening catches up. */
 export function runUnattended(ctx: Ctx, minutes: number) {
   const sh = bs(ctx.state).shift;
@@ -341,6 +348,7 @@ function tick(ctx: Ctx) {
 const TEN = ticks(10);
 
 export function registerShift(api: ModApi) {
+  api.events.on("shift:pass", (ctx, e) => passShift(ctx, e.payload!.minutes as number));
   const clock = content.balance.clock;
   api.events.on("phase:enter", (ctx, e) => {
     const phase = e.payload!.phase as string;
