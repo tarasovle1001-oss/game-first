@@ -32,6 +32,7 @@ export interface Heroine {
   /** For each mark: true while it is only her husband's. */
   cumHis?: Record<string, boolean>;
   sore?: Record<string, number>; // soreness by zone, 0..100
+  looseAt?: { level: number; day: number }; // when it was last said how little she feels of her husband, and which line
   spent?: number; // how much of today her body has already given, 0..100: every intimate act adds to it, the night takes it off
   /** How she looks after something: flushed, sweat, hair, clothes - minutes left. */
   after?: Record<string, number>;
@@ -278,6 +279,7 @@ export interface BaseState {
   encounter: Encounter | null;
   proposals: ProposalRecord[]; // newest last, short history
   husband: Husband;
+  retroAsked?: Record<string, number>; // the day she last brought each kind of thing up in the evening
   heard?: number; // how he has taken what she told him so far, -100..100: scolding teaches her to keep quiet
   mode: Mode;
   suspicion: number; // 0..100, only matters while hidden

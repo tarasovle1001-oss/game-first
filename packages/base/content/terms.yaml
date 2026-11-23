@@ -46,6 +46,7 @@ ask:                  # she asks him before she does it
   trust: 50           # while she hides things she needs to trust him this much to ask at all
   honesty: 50
   heard: { right: 12, further: 16, yours: 4, dont: -18 } # what each of his answers to "did I do right?" adds to how safe it is to tell him things (-100..100)
+  retroEvery: 6       # days before she brings the same kind of thing up again in the evening
   heardShare: 0.3     # that, times this, counts as honesty when she decides whether to bring something up
   tellPerTier: 0.75   # hidden: what he did not see she brings up at night with chance (honesty/100) ^ (tier - 2) times this per tier above a touch
   upToTierHidden: 2   # while she hides things (NTR) she asks only up to a touch, and only when she does not want it; past that she does it quietly or says no herself

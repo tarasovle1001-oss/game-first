@@ -215,8 +215,12 @@ export function registerMarriage(api: ModApi) {
     if (zone && !sex.looseSaid) {
       const ratio = b.husband.size / fitOf(ctx.state, zone);
       const level = ratio < 0.42 ? 3 : ratio < 0.6 ? 2 : ratio < 0.85 ? 1 : 0; // about 65, 33 and 10 on the stretch scale for an average husband
-      if (level > 0) {
+      // said when it changes, and then only now and then: the same line every night reads as a stuck record
+      const said = b.heroine.looseAt;
+      const fresh = !said || said.level !== level || ctx.state.time.day - said.day >= content.body.take.looseEvery;
+      if (level > 0 && fresh) {
         sex.looseSaid = true;
+        b.heroine.looseAt = { level, day: ctx.state.time.day };
         ctx.log(`log.bed.loose.${level}`, undefined, level < 3 ? ["unseen"] : undefined); // the last one she says aloud
       }
       // what goes through her head about it: the drink, the man from this afternoon, or simply what she now knows others have
@@ -225,7 +229,7 @@ export function registerMarriage(api: ModApi) {
       const knows = sizeStage(h.seenSize ?? 0) - sizeStage(b.husband.size) >= 2;
       const crossed = level === 0 && knows && ctx.rng.chance(content.body.take.bedThought);
       if (level === 0 && knows) sex.looseSaid = true; // one roll a night, not one per act
-      if (level > 0 || crossed) {
+      if ((level > 0 && fresh) || crossed) {
         sex.looseSaid = true;
         if (today && b.mode === "open" && level > 0) ctx.log(`log.bed.compare.say.${ctx.rng.int(1, 3)}`);
         else think(ctx, today ? "thought.bed.compare" : level > 0 && h.drunk >= 30 ? "thought.bed.small.drunk" : level > 0 ? "thought.bed.small" : "thought.bed.knows", level > 0);
@@ -372,10 +376,10 @@ export function registerMarriage(api: ModApi) {
         looseSaid: false,
         ...(b.husband.spentDay === ctx.state.time.day || b.husband.caged ? { soft: true } : {}),
       };
-      setAct(ctx, act.id);
       // a yes she had to talk herself into does not look like one she was waiting for
       const start = verdict === "hesitant" ? "log.bed.start.hesitant" : "log.bed.start";
       ctx.log(start, { act: `act.${act.id}` }, slurTags(ctx.state, start));
+      setAct(ctx, act.id); // after the line that starts it: what she feels of him comes second
       ctx.emit("bed:started", { act: act.id });
     },
   });
@@ -595,7 +599,8 @@ export function registerMarriage(api: ModApi) {
       sex.came += 1;
       sex.hers = B.afterOrgasm;
       orgasm(ctx);
-      ctx.log(sex.act === "rimming_her" ? "log.bed.her.rimming_her" : "log.bed.she_comes");
+      // "clenching around you" is for when he is in her; from his mouth or his hand it is another line
+      ctx.log(sex.act === "rimming_her" ? "log.bed.her.rimming_her" : entersZone(actById(sex.act)) ? "log.bed.she_comes" : "log.bed.she_comes.out");
       if (sex.act === "rimming_her") b.night!.scene = "came_rimming_her";
     }
     if (sex.soft && HIS_ACTS.includes(sex.act)) {
@@ -845,7 +850,7 @@ export function registerMarriage(api: ModApi) {
       outcome = "came";
       b.night!.scene = sex.act === "rimming_her" ? "came_rimming_her" : oral ? "cunnilingus" : "sex";
       feel(ctx, oral ? 2 : 3, -3);
-      ctx.log(earlier ? "log.bed.end.after_her" : `log.husband.${oral ? "oral" : "sex"}.came`);
+      ctx.log(earlier ? (entersZone(act) ? "log.bed.end.after_her" : "log.bed.end.after_her.out") : `log.husband.${oral ? "oral" : "sex"}.came`);
     } else if (sex.turns === 0 || (premature && sex.his >= 100 && sex.turns <= 1)) {
       outcome = "too_soon";
       b.night!.scene = "came_too_soon_foreplay";
@@ -1197,6 +1202,7 @@ export function registerMarriage(api: ModApi) {
           sex.asks = null;
           sex.ignored = 0;
           sex.bored = 0;
+          moveLine(ctx, sex.act, to, "he");
           setAct(ctx, to);
           feel(ctx, 0.5, -0.5);
           ctx.log("log.bed.gives", { act: `act.${to}` });

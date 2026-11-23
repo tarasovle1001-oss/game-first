@@ -172,8 +172,11 @@ export function registerHerSide(api: ModApi) {
     const honesty = clamp(h.traits.honesty + (b.heard ?? 0) * T2.heardShare);
     const tells = (tier: number) => (tier <= T2.upToTierHidden ? honesty >= T2.honesty || ctx.rng.chance(honesty / T2.honesty / 2) : ctx.rng.chance(Math.pow((honesty / 100) * T2.tellPerTier, tier - T2.upToTierHidden)));
     const sayable = tonight.filter((r) => r.seen || b.mode !== "hidden" || tells(actById(r.act).tier));
-    const top = sayable.sort((x, y) => actById(y.act).tier - actById(x.act).tier)[0];
+    // what he has already answered about (or left unanswered yesterday) she does not bring up again
+    const asked = (b.retroAsked = b.retroAsked ?? {});
+    const top = sayable.filter((r) => asked[r.act] === undefined || ctx.state.time.day - asked[r.act]! >= content.terms.ask.retroEvery).sort((x, y) => actById(y.act).tier - actById(x.act).tier)[0];
     if (!top) return;
+    asked[top.act] = ctx.state.time.day;
     b.retroDay = ctx.state.time.day;
     b.approach = { kind: "retro", patron: top.patron, public: false, act: top.act };
     ctx.log("log.approach.retro", { name: `@name:${b.patrons[top.patron]!.name}`, act: `act.${top.act}` });

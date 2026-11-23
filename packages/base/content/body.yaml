@@ -52,6 +52,7 @@ take:
   tasteSeen: 2       # taste for size gained when a man shows her more than she has ever seen
   tasteHandled: 0.12  # ...and each time she has one in her hand or mouth that she could not take
   bedThought: 0.25   # a night with her husband after she has seen what others have: how often it crosses her mind even when he still fits
+  looseEvery: 4       # how little she feels of her husband is said when it changes, and otherwise once in this many days
   giant: { fromDay: 6, chance: 0.03, size: [40, 48] } # a rare guest past everyone else: word of him gets round
   ladder: { start: 30, perFame: 0.2 } # the biggest an ordinary guest can be: grows with how well known the place is
 
