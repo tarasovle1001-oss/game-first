@@ -311,7 +311,8 @@ function tick(ctx: Ctx) {
     sh.quietUntil = undefined;
     changeHeroine(ctx, "energy", content.day.rhythm.quiet.her, "quiet hour");
     ctx.log("log.quiet.her.back");
-  } else if (sh.quietUntil === undefined && hq.heroine.energy <= 0 && !hq.encounter && !hq.night && !hq.approach && !hq.ask && (sh.awayUntil ?? 0) <= sh.tick && sh.tick < TICKS_PER_SHIFT - 30) {
+  } else if (sh.quietUntil === undefined && !sh.quietDone && hq.heroine.energy <= 0 && !hq.encounter && !hq.night && !hq.approach && !hq.ask && (sh.awayUntil ?? 0) <= sh.tick && sh.tick < TICKS_PER_SHIFT - 30) {
+    sh.quietDone = true; // once an evening: after that she stays on her feet and says no to what takes strength
     sh.quietUntil = sh.tick + content.day.rhythm.quiet.minutes;
     sh.awayUntil = sh.quietUntil;
     ctx.state.where[WIFE] = "home.bedroom";

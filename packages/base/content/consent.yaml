@@ -102,7 +102,8 @@ away: { base: 10, perHour: 4, max: 18, honesty: 0.5 } # he is out in town during
 money: 0.3       # per unit of money offered, scaled by how badly they need it
 moneyCap: 30     # the money row never weighs more than this
 pressure: 0.25   # he insists: his persistence against her confidence
-tired: 15        # she has no energy left
+tired: 15        # she has no energy left (below 20)
+tiredPer: 3    # and this much more for every point under 20: nearly empty, she says no rather than falls over an hour later
 frustrated: 0.2  # per point of piled-up frustration, with guests, from tier 3
 satisfied: 0.25  # per point of "just had her fill", intimate acts only
 size: 2.2        # per cm of his size above what she takes comfortably, scaled by her taste for size

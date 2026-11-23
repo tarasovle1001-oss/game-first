@@ -89,6 +89,7 @@ fatigue:              # her whole body, on top of each zone: how much of this sh
   per: 0.9            # per point above that
   enoughAt: 72        # "she has had enough for today": nothing intimate with a guest any more
   enough: 45
+  past: 5             # and this much more per point past that: the most eager woman runs out of body at eight or nine
   night: 0.1          # share left in the morning
   thoughtAt: 55
 marks:                # what is left on her and who notices

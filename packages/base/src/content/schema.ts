@@ -211,6 +211,7 @@ export const consentSchema = z
     money: z.number(),
     pressure: z.number(),
     tired: z.number(),
+    tiredPer: z.number(),
     frustrated: z.number(), // per point of piled-up frustration, with guests
     satisfied: z.number(), // she has just had her fill
     size: z.number(), // per cm of his size above what she takes comfortably, intimate acts only
@@ -780,7 +781,7 @@ export const intimacySchema = z
     after: z.object({ willingOpenness: z.number(), reversePower: z.number(), done: nums, reversed: nums, refused: nums }).strict(),
     talk: z.object({ sayMine: nums, sayMineLaugh: nums, sayMinePower: z.number(), lookAtMe: nums }).strict(),
     zones: z.object({ perMinute: z.number(), perOversize: z.number(), mouth: z.number(), slickCuts: z.number(), slickArousal: z.number(), slickConsent: z.number(), fade: z.number(), night: z.number(), consentFrom: z.number(), consent: z.number(), enoughAt: z.number(), enough: z.number(), thoughtAt: z.number() }).strict(),
-    fatigue: z.object({ perAct: z.number(), perMinute: z.number(), husbandShare: z.number(), from: z.number(), per: z.number(), enoughAt: z.number(), enough: z.number(), night: z.number(), thoughtAt: z.number() }).strict(),
+    fatigue: z.object({ perAct: z.number(), perMinute: z.number(), husbandShare: z.number(), from: z.number(), per: z.number(), enoughAt: z.number(), enough: z.number(), past: z.number(), night: z.number(), thoughtAt: z.number() }).strict(),
     marks: z.object({ visible: z.array(z.string()), guests: nums, husbandSuspicion: z.number(), husbandOpen: z.record(z.string(), nums), cleanPerMark: z.number(), cleanAfter: z.number(), skipChance: z.number() }).strict(),
     dress: z.object({ lowMood: z.number(), lowMoodStep: z.number(), fearStep: z.number(), wantStep: z.number(), wishStep: z.number() }).strict(),
     wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string() }).strict(),

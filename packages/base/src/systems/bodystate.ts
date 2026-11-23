@@ -131,7 +131,7 @@ export function registerBodyState(api: ModApi) {
       const spent = bs(state).heroine.spent ?? 0;
       if (a.tier < 5 || spent <= F.from) return null;
       const share = partner === HUSBAND ? F.husbandShare : 1;
-      return -Math.round((spent >= F.enoughAt ? F.enough : (spent - F.from) * F.per) * share * 10) / 10;
+      return -Math.round((spent >= F.enoughAt ? F.enough + (spent - F.enoughAt) * F.past : (spent - F.from) * F.per) * share * 10) / 10;
     },
   });
   api.formulas.addFactor<ConsentInput>(CONSENT_FORMULA, {
