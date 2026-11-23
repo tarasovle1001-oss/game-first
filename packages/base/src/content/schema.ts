@@ -41,6 +41,7 @@ export const balanceSchema = z
   .object({
     start: z.object({ money: z.number(), debt: z.number().min(0), reputation: z.number().min(0).max(100), stock: z.number().int().min(0) }).strict(),
     rentPerDay: z.number().min(0),
+    buyout: z.object({ price: z.number().positive(), fromDay: z.number().int(), reputation: z.number() }).strict(),
     rentGrowthPerWeek: z.number().min(0),
     // what she keeps of the tips men leave her: the options offered, the default, and how each sits with her (mood per day)
     purse: z.object({ shares: z.array(z.number().min(0).max(1)).min(1), start: z.number().min(0).max(1), moodAtNone: z.number(), moodAtAll: z.number(), actTipScale: z.number().min(0) }).strict(),

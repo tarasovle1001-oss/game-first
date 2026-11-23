@@ -3945,3 +3945,6 @@ log.group.leave.nothing.sauna: "The company leaves the sauna without ever gettin
 log.group.ignored.sauna: "They shout from the sauna for more. You pretend not to hear."
 log.group.ignored.waited.sauna: "In the sauna they never got their tray. It has gone quieter and meaner in there."
 log.group.ignored.again.sauna: "In the sauna they sit with empty glasses again. Someone says loudly that he won't come here any more."
+action.buyout: "Buy the cafe from the landlord: {price}"
+log.buyout.offer: "The landlord comes for the rent and, in passing, names a price: {price} - and the cafe is yours, with the rooms upstairs. With no debts left to him. The sum is such that at first you laugh."
+log.buyout.done: "You sign the papers. The cafe is yours: no more rent. She looks at the sign outside for a long time, as if seeing it for the first time."

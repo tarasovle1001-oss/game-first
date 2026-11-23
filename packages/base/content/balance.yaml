@@ -6,6 +6,7 @@ start:
   stock: 30
 rentPerDay: 560
 rentGrowthPerWeek: 40 # the landlord puts it up every week
+buyout: { price: 60000, fromDay: 5, reputation: 6 } # the long goal: buy the place from the landlord - no more rent, ever. He names the price once they have been here a few days
 purse: # tips the men leave her for more than coffee: part goes into her purse, the rest into the till
   shares: [0, 0.25, 0.5, 1] # what the husband can let her keep
   start: 0.5

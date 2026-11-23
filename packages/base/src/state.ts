@@ -267,6 +267,8 @@ export interface BaseState {
   daysPlayed: number;
   money: number;
   debt: number;
+  ownsPlace?: boolean; // they bought the cafe from the landlord: no rent any more
+  buyoutTold?: boolean; // the landlord has named his price
   reputation: number; // 0..100
   stock: number; // servings left
   purse: number; // her own money

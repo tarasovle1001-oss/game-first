@@ -110,3 +110,25 @@ describe("what moves her with no man touching her (23.11)", () => {
     expect(found).toBeGreaterThan(0);
   });
 });
+
+describe("the long goal: buying the place (23.11)", () => {
+  it("the landlord names his price after a few days; with the money and no debt it can be bought, and the rent stops", () => {
+    const eng = createEngine([baseMod]);
+    let s = eng.init(3);
+    for (let i = 0; i < 4000 && s.time.day < content.balance.buyout.fromDay + 1; i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
+    expect(bs(s).buyoutTold).toBe(true);
+    for (let i = 0; i < 200 && s.time.phase !== "prep"; i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
+    s = structuredClone(s);
+    s.where.husband = "town.square";
+    expect(eng.listActions(s).some((a) => a.type === "base/buyout")).toBe(false); // not with this purse
+    bs(s).money = content.balance.buyout.price + 100;
+    bs(s).debt = 0;
+    const buy = eng.listActions(s).find((a) => a.type === "base/buyout");
+    expect(buy).toBeDefined();
+    s = eng.dispatch(s, buy!);
+    expect(bs(s).ownsPlace).toBe(true);
+    expect(bs(s).money).toBe(100);
+    for (let i = 0; i < 600 && s.time.phase !== "summary"; i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
+    expect(bs(s).today.rent).toBe(0);
+  });
+});

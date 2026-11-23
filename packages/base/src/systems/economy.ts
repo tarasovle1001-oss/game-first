@@ -1,6 +1,6 @@
 import type { Ctx, ModApi, GameState } from "@tc/core";
 import { content } from "../content";
-import { bs, clamp, emptyLedger } from "../state";
+import { bs, clamp, emptyLedger, HUSBAND } from "../state";
 import { HALL, husbandSees } from "./places";
 
 export const BUY_SUPPLIES = "base/buy-supplies";
@@ -8,8 +8,9 @@ export const REPAY_DEBT = "base/repay-debt";
 export const TIP_SHARE = "base/tip-share";
 const REPAY_STEP = 100;
 
-/** Today's rent: the landlord puts it up a little every week. */
-export const rentOf = (state: GameState) => content.balance.rentPerDay + Math.floor((state.time.day - 1) / 7) * content.balance.rentGrowthPerWeek;
+export const BUYOUT = "base/buyout";
+/** Today's rent: the landlord puts it up a little every week. Nothing once the place is theirs. */
+export const rentOf = (state: GameState) => (bs(state).ownsPlace ? 0 : content.balance.rentPerDay + Math.floor((state.time.day - 1) / 7) * content.balance.rentGrowthPerWeek);
 
 /** All money moves go through here so that mods can react to money:changed. */
 export function addMoney(ctx: Ctx, amount: number, reason: string) {
@@ -130,6 +131,23 @@ export function registerEconomy(api: ModApi) {
     if (sh?.stolen) ctx.log("log.trouble.theft", { taken: sh.stolen });
   });
 
+  api.actions.register({
+    id: BUYOUT,
+    labelKey: "action.buyout",
+    describe: () => ({ key: "action.buyout", params: { price: bal.buyout.price } }),
+    enumerate(state) {
+      const b = bs(state);
+      return state.time.phase === "prep" && b.buyoutTold && !b.ownsPlace && b.debt <= 0 && b.money >= bal.buyout.price && state.where[HUSBAND] === "town.square" ? [{ type: BUYOUT }] : [];
+    },
+    apply(ctx) {
+      const b = bs(ctx.state);
+      addMoney(ctx, -bal.buyout.price, "buyout");
+      b.ownsPlace = true;
+      b.reputation = Math.min(100, b.reputation + bal.buyout.reputation);
+      ctx.log("log.buyout.done");
+      ctx.emit("place:bought", {});
+    },
+  });
   // Day summary: rent and interest land when the summary phase starts.
   api.events.on("phase:enter", (ctx, e) => {
     if (e.payload!.phase !== "summary") return;
@@ -140,7 +158,12 @@ export function registerEconomy(api: ModApi) {
     const rent = rentOf(ctx.state);
     b.today.rent = rent;
     addMoney(ctx, -rent, "rent");
-    if (ctx.state.time.day % 7 === 0 && bal.rentGrowthPerWeek > 0) ctx.log("log.rent.up", { rent: rent + bal.rentGrowthPerWeek });
+    if (!b.ownsPlace && ctx.state.time.day % 7 === 0 && bal.rentGrowthPerWeek > 0) ctx.log("log.rent.up", { rent: rent + bal.rentGrowthPerWeek });
+    // the landlord names his price once: from then on it is the thing to save for
+    if (!b.ownsPlace && !b.buyoutTold && ctx.state.time.day >= bal.buyout.fromDay) {
+      b.buyoutTold = true;
+      ctx.log("log.buyout.offer", { price: bal.buyout.price });
+    }
     const t = b.today;
     ctx.log("log.summary", {
       income: t.income,
