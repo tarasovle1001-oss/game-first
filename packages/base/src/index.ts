@@ -182,7 +182,7 @@ export { clockText, TICKS_PER_SHIFT, HALL } from "./systems/places";
 export type { TipInput } from "./systems/shift";
 export { BUY_SUPPLIES, REPAY_DEBT, addMoney, addReputation } from "./systems/economy";
 export { changeHeroine } from "./systems/heroine";
-export { renderLog, renderParams, patronName } from "./text";
+export { renderLog, renderParams, patronName, declineName, declineRu } from "./text";
 export { fitOf, pleasureFromSize } from "./systems/body";
 export { BED, BED_ACTS, NIGHT_ACT, NIGHT_ACTS } from "./systems/marriage";
 export { CAUGHT_STOP, CAUGHT_WATCH, CONFRONT } from "./systems/secrecy";

@@ -38,3 +38,26 @@ describe("picture block of a playtest note", () => {
     expect(note).toContain("| away");
   });
 });
+
+import { declineName, declineRu } from "@tc/base";
+describe("Russian: a guest's name takes its case after a preposition", () => {
+  it("declines by the ending, with the two names that lose a vowel", () => {
+    expect(declineName("Феликс", "dat")).toBe("Феликсу");
+    expect(declineName("Павел", "gen")).toBe("Павла");
+    expect(declineName("Пётр", "ins")).toBe("Петром");
+    expect(declineName("Николай", "gen")).toBe("Николая");
+    expect(declineName("Дмитрий", "prep")).toBe("Дмитрии");
+    expect(declineName("Игорь", "dat")).toBe("Игорю");
+    expect(declineName("Никита", "acc")).toBe("Никиту");
+    expect(declineName("Лука", "gen")).toBe("Луки");
+    expect(declineName("Бруно", "dat")).toBe("Бруно");
+  });
+  it("reads the finished line: only a known name right after a word that asks for a case", () => {
+    expect(declineRu("Она поднимается к Феликс с заказом.")).toBe("Она поднимается к Феликсу с заказом.");
+    expect(declineRu("У Павел звонит телефон.")).toBe("У Павла звонит телефон.");
+    expect(declineRu("Сегодня с Адам было...")).toBe("Сегодня с Адамом было...");
+    expect(declineRu("Наклоняясь к столу Даниил, она смотрит.")).toBe("Наклоняясь к столу Даниила, она смотрит.");
+    expect(declineRu("Феликс уходит к себе. Она смотрит на Борис.")).toBe("Феликс уходит к себе. Она смотрит на Бориса.");
+    expect(declineRu("Она идёт к Номер 2.")).toBe("Она идёт к Номер 2."); // not a name
+  });
+});
