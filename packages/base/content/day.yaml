@@ -21,7 +21,7 @@ activities:           # each once a day; at: cafe = at home, or the one place in
 herDay:               # her own afternoon: one task after another, each in its room
   walkToTown: 10      # minutes between the cafe and the square
   walkInTown: 3
-  shopping: { minutes: 60, tryOn: 6, mood: 2 } # she comes to the shops with him: how long she stays, how much trying things on eases the openness an outfit needs, what the outing is worth
+  shopping: { boldOpenness: 50, minutes: 60, tryOn: 6, mood: 2 } # she comes to the shops with him: how long she stays, how much trying things on eases the openness an outfit needs, what the outing is worth
   awayMinutes: 150    # when she is out on her own
   trips: [town.shops, town.market, town.gym] # where she goes on an errand, or says she goes
   tripChance: 0.22    # per change of task, once a day

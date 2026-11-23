@@ -10,14 +10,18 @@ rooms:
     tags: [town, public]
     map: { x: 0, y: 2, w: 1, h: 1 }
   - id: town.shops
-    links: [town.square]
+    links: [town.square, town.sexshop]
     tags: [town, public]
     map: { x: 3, y: 2, w: 1, h: 1 }
   - id: town.gym
     links: [town.square]
     tags: [town, public]
     map: { x: 4, y: 2, w: 1, h: 1 }
+  - id: town.sexshop        # a door further down the same street: toys are bought here, not among the dresses
+    links: [town.shops]
+    tags: [town, public]
+    map: { x: 5, y: 2, w: 1, h: 1 }
   - id: town.far            # "somewhere in town": where she is when she is out on her own. Nobody walks there
     links: []
     tags: [town]
-    map: { x: 5, y: 2, w: 1, h: 1 }
+    map: { x: 6, y: 2, w: 1, h: 1 }

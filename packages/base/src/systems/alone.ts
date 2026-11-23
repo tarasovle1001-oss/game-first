@@ -177,6 +177,7 @@ export function registerAlone(api: ModApi) {
     b.alone = undefined;
     const hard = b.power >= A.hardPower || cruelNow(b);
     const warm = h.marriage.desire >= A.warmDesire && h.marriage.resent < A.warmMaxResent;
+    let joined = false;
     if (toy) {
       // what he does to himself there tells her something about who can do what to whom
       b.power = clamp(b.power + A.toy.power);
@@ -209,6 +210,7 @@ export function registerAlone(api: ModApi) {
         b.husband.spentDay = ctx.state.time.day;
         ctx.emit("husband:came_touch", { from: "alone" });
         ctx.log("log.alone.joined");
+        joined = true;
         glance(ctx, "by_hand", ctx.state.where[HUSBAND], [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }]);
         ctx.emit("husband:joined_alone", {});
       }
@@ -218,6 +220,12 @@ export function registerAlone(api: ModApi) {
       if (hard) b.power = clamp(b.power + 1);
       changeConfidence(ctx, A.confidence, "caught");
       ctx.log(hard ? "log.alone.caught.hand.hard" : "log.alone.caught.hand");
+    }
+    // the picture of the moment: him on the bed, her in the doorway - the pose is the same, what differs is her face.
+    // She joined him: that has a picture of its own (set above).
+    if (!joined) {
+      const mood = toy ? (hard || (warm && h.traits.openness >= A.toy.joinOpenness) ? "playful" : "pity") : warm && !hard ? "playful" : hard ? "pity" : "surprised";
+      glance(ctx, `caught_him_${mood}`, ctx.state.where[HUSBAND], [{ id: WIFE, role: "wife" }, { id: HUSBAND, role: "husband" }], toy ? { tsize: String(sizeClass(toy.size)) } : undefined);
     }
     detail(ctx, { id: toy ? "toy_him" : "him_alone", who: HUSBAND, tags: toy ? { tsize: String(sizeClass(toy.size)), who: "self" } : {} });
     ctx.emit("husband:caught_alone", { toy: !!toy });

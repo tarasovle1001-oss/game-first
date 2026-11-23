@@ -4,7 +4,7 @@ import { glance } from "./glance";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
-import { fitOf } from "./body";
+import { fitOf, sizeClass } from "./body";
 import { resolveSized } from "./taking";
 import { addMoney, addReputation } from "./economy";
 import { actById, CONSENT_FORMULA, verdictOf } from "./encounters";
@@ -88,13 +88,15 @@ function herNext(ctx: Ctx) {
   // once a day she may have an errand of her own in town: the shops, the market, the gym. This one is what it looks like
   if (day.her && !day.tripped && day.left > D.herDay.tripMinutes[1] + 60 && (b.wantsToy || ctx.rng.chance(D.herDay.tripChance))) {
     day.tripped = true;
-    const to = b.wantsToy ? "town.shops" : ctx.rng.pick(D.herDay.trips); // with something to buy she goes on purpose
+    const to = b.wantsToy ? SEXSHOP : ctx.rng.pick(D.herDay.trips); // with something to buy she goes on purpose
     day.her = { task: "away", left: ctx.rng.int(D.herDay.tripMinutes[0], D.herDay.tripMinutes[1]) };
     // she says it to his face only if he is there to hear it; otherwise he finds a note
     const told = ctx.state.where[HUSBAND] === ctx.state.where[WIFE];
     ctx.state.where[WIFE] = to;
-    day.browse = to === "town.shops";
-    ctx.log(told ? "log.her.trip" : "log.her.trip.note", { where: `loc.${to}` });
+    day.browse = to === "town.shops" || to === SEXSHOP;
+    // where she says she is going: while she hides things, that shop is simply "the shops"
+    const says = to === SEXSHOP && b.mode === "hidden" ? "town.shops" : to;
+    ctx.log(told ? "log.her.trip" : "log.her.trip.note", { where: `loc.${says}` });
     return;
   }
   const options = D.herDay.tasks.filter((t) => t.id !== day.her?.task);
@@ -171,6 +173,21 @@ export function passPrep(ctx: Ctx, minutes: number) {
  * She has been round the shops on her own. Mostly she only looks: at a dress a step bolder than hers, at the window of
  * the shop with the toys. What catches her eye depends on what is on her mind; now and then she comes back with a box.
  */
+const SEXSHOP = "town.sexshop";
+/** The toy she would pick next: a step up from what she has and takes, within what she could work up to. */
+function nextToy(state: GameState) {
+  const b = bs(state);
+  const fit = fitOf(state, "vagina");
+  const biggest = Math.max(0, ...D.shop.toys.filter((t) => b.toys.includes(t.id)).map((t) => t.size));
+  return D.shop.toys
+    .slice()
+    .sort((x, y) => x.size - y.size)
+    .find((t) => !b.toys.includes(t.id) && t.size > Math.max(biggest, fit - 1) && t.size >= D.shop.solo.firstSize && t.size <= fit + D.shop.toyStretchAbove);
+}
+/** She stands at the shelf with one in her hands, weighing it: the picture of that moment. */
+function holdsToy(ctx: Ctx, size: number) {
+  glance(ctx, "her_shop_toy", SEXSHOP, [{ id: WIFE, role: "wife" }], { tsize: String(sizeClass(size)) });
+}
 function browse(ctx: Ctx) {
   const b = bs(ctx.state);
   const h = b.heroine;
@@ -516,6 +533,25 @@ export function registerDay(api: ModApi) {
         ctx.log("log.day.left_her");
       }
     }
+    // he walks into that shop and she is there, at the shelf: she had not said where exactly she was going
+    if (e.payload!.to === SEXSHOP && ctx.state.where[WIFE] === SEXSHOP && day.her?.task === "away" && !day.metAtShop) {
+      day.metAtShop = true;
+      const h = bs(ctx.state).heroine;
+      const toy = nextToy(ctx.state);
+      ctx.log(h.traits.openness >= D.herDay.shopping.boldOpenness ? "log.sexshop.meets.bold" : "log.sexshop.meets.shy");
+      if (bs(ctx.state).mode === "hidden") bs(ctx.state).suspicion = clamp(bs(ctx.state).suspicion + 3);
+      if (toy) holdsToy(ctx, toy.size);
+    }
+    // out shopping together and he turns into that door: she comes in with him, or stands outside until he asks twice
+    if (e.payload!.to === SEXSHOP && day.her?.task === "shopping" && ctx.state.where[WIFE] === "town.shops") {
+      const h = bs(ctx.state).heroine;
+      ctx.state.where[WIFE] = SEXSHOP;
+      const bold = h.traits.openness >= D.herDay.shopping.boldOpenness;
+      ctx.log(bold ? "log.sexshop.together.bold" : "log.sexshop.together.shy");
+      changeHeroine(ctx, "arousal", bold ? 4 : 2, "the shop");
+      const toy = nextToy(ctx.state);
+      if (toy) holdsToy(ctx, toy.size);
+    }
     // she said she would be here, and she is not
     if (day.herOut && day.cover === e.payload!.to && !day.coverSeen && bs(ctx.state).mode === "hidden") {
       day.coverSeen = true;
@@ -563,6 +599,9 @@ export function registerDay(api: ModApi) {
       if (state.where[HUSBAND] === "town.shops") {
         const bag = (b.bag ?? []).map((x) => x.id);
         for (const o of content.outfits) if (!b.owned.includes(o.id) && !bag.includes(o.id) && b.money >= o.price) out.push({ type: BUY, payload: { kind: "outfit", id: o.id, cost: o.price } });
+      }
+      if (state.where[HUSBAND] === SEXSHOP) {
+        const bag = (b.bag ?? []).map((x) => x.id);
         for (const t of D.shop.toys) if (!b.toys.includes(t.id) && !bag.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
       }
       if (inTown(state.where[HUSBAND])) for (const u of D.upgrades) if (!b.upgrades.includes(u.id) && canPay(state, u.cost)) out.push({ type: BUY, payload: { kind: "upgrade", id: u.id, cost: u.cost } });
@@ -575,7 +614,10 @@ export function registerDay(api: ModApi) {
         const price = kind === "outfit" ? content.outfits.find((x) => x.id === id)!.price : D.shop.toys.find((x) => x.id === id)!.price;
         addMoney(ctx, -price, kind);
         // she is there to see it and try it on, or it goes home in a bag until he gives it to her
-        if (ctx.state.where[WIFE] === ctx.state.where[HUSBAND]) present(ctx, kind, id, true);
+        if (ctx.state.where[WIFE] === ctx.state.where[HUSBAND]) {
+          present(ctx, kind, id, true);
+          if (kind === "toy") holdsToy(ctx, D.shop.toys.find((x) => x.id === id)!.size); // she turns the box over in her hands
+        }
         else {
           (b.bag = b.bag ?? []).push({ kind, id });
           ctx.log(`log.buy.${kind}.bag`, { [kind]: `${kind}.${id}` });

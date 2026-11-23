@@ -432,7 +432,7 @@ export const daySchema = z
     ),
     herDay: z
       .object({
-        walkToTown: z.number().int().positive(), shopping: z.object({ minutes: z.number().int().positive(), tryOn: z.number(), mood: z.number() }).strict(), walkInTown: z.number().int().positive(), awayMinutes: z.number().int().positive(), trips: z.array(id).min(1), tripChance: z.number().min(0).max(1), tripMinutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), notThereSuspicion: z.number(),
+        walkToTown: z.number().int().positive(), shopping: z.object({ boldOpenness: z.number(), minutes: z.number().int().positive(), tryOn: z.number(), mood: z.number() }).strict(), walkInTown: z.number().int().positive(), awayMinutes: z.number().int().positive(), trips: z.array(id).min(1), tripChance: z.number().min(0).max(1), tripMinutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), notThereSuspicion: z.number(),
         tasks: z.array(z.object({ id, loc: id, minutes: z.tuple([z.number().int().positive(), z.number().int().positive()]), clean: z.number().optional(), her: z.record(z.enum(["mood", "energy", "arousal"]), z.number()).optional() }).strict()).min(2),
       })
       .strict(),

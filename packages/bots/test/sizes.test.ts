@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseMod, bs, content, fitOf, permOf, sizeStage, stepsAbove, takeChance, ticksDone, TICKS_PER_SHIFT } from "@tc/base";
+import { baseMod, bs, content, fitOf, permOf, pictureFrames, pictureScene, sizeStage, stepsAbove, takeChance, ticksDone, TICKS_PER_SHIFT } from "@tc/base";
 import { createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 import { awayStrategy, ownerStrategy } from "../src";
@@ -197,5 +197,33 @@ describe("closing time is not a wall (23.11)", () => {
     expect(ticksDone({ tick: end + grace - 1, hold: true })).toBe(false);
     expect(ticksDone({ tick: end + grace, hold: true })).toBe(true);
     expect(ticksDone({ tick: 10, closed: true, hold: true })).toBe(true);
+  });
+});
+
+describe("the toy shop is a place of its own (23.11)", () => {
+  it("he finds her there at the shelf: a line, and the picture of her holding one - in street clothes", () => {
+    const eng = createEngine([baseMod]);
+    let s = structuredClone(eng.init(4));
+    const go = (to: string) => {
+      const a = eng.listActions(s).find((x) => x.type === "core/move" && x.payload?.to === to);
+      expect(a, to).toBeDefined();
+      s = structuredClone(eng.dispatch(s, a!));
+    };
+    go("town.square");
+    go("town.shops");
+    // toys are not sold among the dresses any more
+    expect(eng.listActions(s).some((a) => a.type === "base/buy" && a.payload?.kind === "toy")).toBe(false);
+    bs(s).day!.her = { task: "away", left: 60 };
+    s.where.wife = "town.sexshop";
+    bs(s).money = 5000;
+    go("town.sexshop");
+    expect(s.log.some((e) => e.key.startsWith("log.sexshop.meets."))).toBe(true);
+    expect(eng.listActions(s).some((a) => a.type === "base/buy" && a.payload?.kind === "toy")).toBe(true);
+    const desc = pictureScene(eng, s)!;
+    expect(desc.type).toBe("her_shop_toy");
+    expect(desc.location).toBe("town.sexshop");
+    const frames = pictureFrames(s, desc);
+    expect(frames.full.tags?.outfit).toBe("street");
+    expect(frames.full.tags?.tsize).toBeDefined();
   });
 });
