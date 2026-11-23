@@ -36,12 +36,15 @@ export function registerSolo(api: ModApi) {
     if (!wants) return;
     const next = S.toys.filter((t) => !b.toys.includes(t.id) && t.size > biggest && t.size >= So.firstSize && t.size <= fit + S.toyStretchAbove).sort((x, y) => x.size - y.size)[0];
     if (!next || b.purse < next.price) return;
-    b.purse -= next.price;
-    b.toys.push(next.id);
-    b.herToys = [...(b.herToys ?? []), next.id];
-    ctx.log("log.solo.bought", { toy: `toy.${next.id}`, price: next.price }, b.mode === "hidden" ? ["unseen"] : undefined);
-    detail(ctx, { id: "toy_drawer", who: WIFE, tags: { tsize: String(sizeClass(next.size)) }, secret: b.mode === "hidden" });
-    ctx.emit("solo:bought", { toy: next.id, price: next.price });
+    // she does not have it the moment she wakes up: today she finds an hour to go to the shops for it (day.ts: her trip, browse)
+    b.wantsToy = true;
+  });
+  api.events.on("her:bought", (ctx, e) => {
+    if (e.payload!.kind !== "toy") return;
+    const b = bs(ctx.state);
+    b.wantsToy = false;
+    const toy = S.toys.find((t) => t.id === e.payload!.id);
+    if (toy) detail(ctx, { id: "toy_drawer", who: WIFE, tags: { tsize: String(sizeClass(toy.size)) }, secret: b.mode === "hidden" });
   });
 
   // In the afternoon she shuts herself in for a while: the decision is taken in the morning, the time is hers.

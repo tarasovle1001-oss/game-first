@@ -15,7 +15,8 @@ const add = (d: number, k: string, n = 1) => void (perDay[d]![k] = (perDay[d]![k
 const KIND = (key: string): string | null => {
   if (/^log\.take\.(took|partial|failed|never)/.test(key)) return key.split(".")[2]!.replace(/#.*/, "");
   if (key.startsWith("log.take.instead")) return "instead";
-  if (key.startsWith("log.solo.") || key.startsWith("log.night.self") || key.startsWith("log.night.toy")) return key.includes("bought") ? "bought" : "solo";
+  if (key.startsWith("log.her.buys.toy")) return "bought";
+  if (key.startsWith("log.solo.") || key.startsWith("log.night.self") || key.startsWith("log.night.toy") || key.startsWith("log.night.watch.start")) return "solo";
   if (key.startsWith("log.her.browse")) return "browse";
   if (key.startsWith("log.moment.shows_her")) return "shown";
   if (key.startsWith("log.ask.her")) return key.includes("reluctant") ? "ask-" : "ask+";

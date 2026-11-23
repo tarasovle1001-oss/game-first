@@ -86,9 +86,9 @@ function herNext(ctx: Ctx) {
     return;
   }
   // once a day she may have an errand of her own in town: the shops, the market, the gym. This one is what it looks like
-  if (day.her && !day.tripped && day.left > D.herDay.tripMinutes[1] + 60 && ctx.rng.chance(D.herDay.tripChance)) {
+  if (day.her && !day.tripped && day.left > D.herDay.tripMinutes[1] + 60 && (b.wantsToy || ctx.rng.chance(D.herDay.tripChance))) {
     day.tripped = true;
-    const to = ctx.rng.pick(D.herDay.trips);
+    const to = b.wantsToy ? "town.shops" : ctx.rng.pick(D.herDay.trips); // with something to buy she goes on purpose
     day.her = { task: "away", left: ctx.rng.int(D.herDay.tripMinutes[0], D.herDay.tripMinutes[1]) };
     // she says it to his face only if he is there to hear it; otherwise he finds a note
     const told = ctx.state.where[HUSBAND] === ctx.state.where[WIFE];
@@ -181,7 +181,7 @@ function browse(ctx: Ctx) {
   const want = h.wantSize ?? 0;
   // the shop with the toys draws her by how much size is on her mind, how badly she is left wanting, and what she failed to take
   const pull = B.toysBase + h.sizeTaste * B.perTaste + h.frustration * B.perFrustration + (want > fit ? B.failed : 0);
-  if (ctx.rng.chance(Math.min(B.toysMax, pull))) {
+  if (b.wantsToy || ctx.rng.chance(Math.min(B.toysMax, pull))) {
     const biggest = Math.max(0, ...D.shop.toys.filter((t) => b.toys.includes(t.id)).map((t) => t.size));
     const next = D.shop.toys
       .slice()
@@ -189,7 +189,7 @@ function browse(ctx: Ctx) {
       .find((t) => !b.toys.includes(t.id) && t.size > Math.max(biggest, fit - 1) && t.size >= D.shop.solo.firstSize && t.size <= fit + D.shop.toyStretchAbove);
     ctx.log(`log.her.browse.toys.${ctx.rng.int(1, 3)}`, undefined, tags);
     if (!next) return ctx.log(`log.her.browse.toys.bigger.${ctx.rng.int(1, 2)}`, undefined, ["unseen", "thought"]);
-    const keen = want > fit || h.frustration >= D.shop.solo.buyAt / 2 || h.sizeTaste >= B.buyTaste;
+    const keen = b.wantsToy || want > fit || h.frustration >= D.shop.solo.buyAt / 2 || h.sizeTaste >= B.buyTaste;
     if (!keen) return ctx.log(`log.her.browse.toys.notyet.${ctx.rng.int(1, 2)}`, undefined, ["unseen", "thought"]);
     if (b.purse < next.price) return ctx.log("log.her.browse.toys.dear", { toy: `toy.${next.id}`, price: next.price }, ["unseen", "thought"]);
     b.purse -= next.price;
