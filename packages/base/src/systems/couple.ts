@@ -17,7 +17,7 @@ import { detail, glance } from "./glance";
 /** His hands on her outside of bed: which picture each is. Words are the "talk" picture. */
 const TOUCH_SCENE: Record<string, string> = {
   hug: "him_hug", hold_hand: "him_hug", shoulders: "him_hug", stroke_hair: "him_hug", cuddle: "him_hug", carry_bed: "him_hug",
-  kiss_her: "him_kiss", guide_hand: "him_kiss", grab_ass: "him_grope", fondle_breast: "him_grope", under_skirt: "him_grope",
+  kiss_her: "him_kiss", guide_hand: "him_guide_hand", grab_ass: "him_grab_ass", fondle_breast: "him_grope", under_skirt: "him_under_skirt",
 };
 export const TALK = "base/talk";
 export const TELL = "base/tell";

@@ -337,7 +337,9 @@ const D = content.floor.details;
 /** His hands on her, by the picture it happens in: which parts get a close-up. */
 const GROPE: Record<string, string[]> = {
   patron_touching: ["grope_thigh"], patron_moment_sit_on_lap: ["grope_butt"], patron_groping: ["grope_breast", "grope_under"], patron_lap_dance: ["grope_butt"],
-  him_grope: ["grope_breast", "grope_butt"],
+  him_grope: ["grope_breast"],
+  him_grab_ass: ["grope_butt"],
+  him_under_skirt: ["grope_under"],
 };
 /** She is showing herself: the parts in close-up. */
 const SHOWS = new Set(["flash", "walk_naked", "striptease", "body_shot", "masturbate_show"]);
@@ -357,7 +359,7 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const sizeOf = (id: string | undefined) => (id === HUSBAND ? b.husband.size : id ? b.patrons[id]?.size : undefined);
   const classOf = (id: string | undefined) => sizeClass(sizeOf(id) ?? 0);
   const roleOf = (id: string | undefined) => (id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron");
-  const add = (id: string, who: string, tags: Record<string, string> = {}) => void (out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: "any", participants: [{ id: who, role: roleOf(who) }], tags })); // no room in a close-up: one file serves every room
+  const add = (id: string, who: string, tags: Record<string, string> = {}) => void (D.drop.includes(id) || out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: "any", participants: [{ id: who, role: roleOf(who) }], tags })); // no room in a close-up: one file serves every room
   const aroused = (b.husband.arousal ?? 0) >= D.himArousal;
   // him in his trousers: plain, locked up, locked up and leaking - one close-up, three looks
   const cage: Record<string, string> = b.husband.caged ? { cage: aroused ? "leak" : "1" } : {};
@@ -375,7 +377,7 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   for (const d of freshDetails(state)) {
     if (d.secret && !openly) continue;
     const who = d.who ?? WIFE;
-    add(d.id, who, { ...(who !== WIFE && sizeOf(who) !== undefined ? { size: String(classOf(who)) } : {}), ...(who === HUSBAND ? cage : {}), ...(d.tags ?? {}) });
+    add(d.id, who, { ...(who !== WIFE && who !== HUSBAND && sizeOf(who) !== undefined ? { size: String(classOf(who)) } : {}), ...(who === HUSBAND ? cage : {}), ...(d.tags ?? {}) });
   }
   const act = content.acts.find((a) => a.scene === desc.type);
   const intimate = !!content.scenes.find((x) => x.id === desc.type)?.figures.some((f) => f.penis) || act?.place === "private";
@@ -386,13 +388,14 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
     const id = act?.id ?? desc.type.replace(/^patron_/, "");
     const fin = desc.tags?.fin;
     if (man && THROAT.has(id) && big) add("throat_bulge", WIFE, { size: String(classOf(man)) });
-    if (man && FRONT.has(id)) {
+    // the section through her is for a guest: with her husband there is nothing in it worth an accent
+    if (guest && FRONT.has(id)) {
       if (big) add("belly_bulge", WIFE, { size: String(classOf(man)) });
       add("xray_v", WIFE, { size: String(classOf(man)), ...(fin === "inside" ? { fin: "1" } : {}) });
     }
-    if (man && BACK.has(id)) add("xray_a", WIFE, { size: String(classOf(man)), ...(fin === "anus" ? { fin: "1" } : {}) });
+    if (guest && BACK.has(id)) add("xray_a", WIFE, { size: String(classOf(man)), ...(fin === "anus" ? { fin: "1" } : {}) });
     // her hand on him, bare: on a guest her ring is in the picture
-    if (man && BY_HAND.has(id)) add("touch_bare", man, { size: String(classOf(man)), ...(man !== HUSBAND ? { ring: "1" } : {}) });
+    if (man && BY_HAND.has(id)) add("touch_bare", man, man !== HUSBAND ? { size: String(classOf(man)), ring: "1" } : {});
     if (TOY_HIM.has(id)) add("toy_him", HUSBAND, { who: "her" });
     if (has("husband") && b.husband.caged) add("him_cage", HUSBAND, aroused ? { leak: "1" } : {});
     return out;

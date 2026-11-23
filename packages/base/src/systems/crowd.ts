@@ -248,7 +248,14 @@ export function registerCrowd(api: ModApi) {
     const seen = husbandSees(ctx.state, enc.loc) || b.mode === "open";
     const tags = seen ? undefined : ["unseen"];
     const name = `@name:${p.name}`;
-    const options = cumPlaces(ctx, content.look.marks.byAct[enc.act] ?? ["body"]);
+    // his mouth on her, his fingers in her, his hands on her breasts: nothing of his was near her - he does not "pull out and come on her belly".
+    // Worked up by what he was doing, he sees to himself; nothing lands on her.
+    if (!content.look.marks.byAct[enc.act]) {
+      ctx.log("log.fin.self", { name }, tags);
+      ctx.emit("encounter:finished_self", { patron: p.id, act: enc.act });
+      return true;
+    }
+    const options = cumPlaces(ctx, content.look.marks.byAct[enc.act]!);
     // a pushy man, or one who likes it that way, goes for her face when he can
     const wantsFace = (p.approach === "push" || (v.drunk ?? 0) >= 60) && options.includes("face");
     let place = wantsFace ? "face" : ctx.rng.pick(options);

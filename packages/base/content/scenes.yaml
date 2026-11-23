@@ -602,6 +602,19 @@
   figures:
     - { role: wife, pose: stand, x: 5, y: 0, flip: false, torso: 92, head: 96, armR: { to: husband.handR, dy: 3 }, armL: [-80, -70] }
     - { role: husband, pose: stand, x: -8, y: 0, flip: false, torso: 86, head: 74, armR: { to: wife.chest, dx: 4 }, armL: { to: wife.butt, dx: 2 } }
+# his hands on her outside of bed, each its own picture (playtest 26: one picture of hands on her breasts stood for all three)
+- id: him_grab_ass
+  figures:
+    - { role: wife, pose: stand, x: 5, y: 0, flip: false, torso: 92, head: 96, armR: [-80, -70], armL: [-80, -70] }
+    - { role: husband, pose: stand, x: -8, y: 0, flip: false, torso: 86, head: 74, armR: { to: wife.butt, dx: 2 }, armL: { to: wife.butt, dx: -2 } }
+- id: him_under_skirt
+  figures:
+    - { role: wife, pose: stand, x: 5, y: 0, flip: false, torso: 92, head: 96, armR: { to: husband.handR, dy: 3 }, armL: [-80, -70] }
+    - { role: husband, pose: stand, x: -8, y: 0, flip: false, torso: 86, head: 74, armR: { to: wife.groin, dx: 2 }, armL: { to: wife.butt, dx: 2 } }
+- id: him_guide_hand
+  figures:
+    - { role: wife, pose: stand, x: 5, y: 0, flip: false, torso: 92, head: 96, armR: { to: husband.groin }, armL: [-80, -70] }
+    - { role: husband, pose: stand, x: -8, y: 0, flip: false, torso: 86, head: 74, armR: { to: wife.handR, dy: 2 }, armL: [-80, -70] }
 - id: her_solo
   figures:
     - { role: wife, pose: lie_back, x: 0, y: 0, flip: false, armR: { to: wife.groin }, armL: { to: wife.chest } }
