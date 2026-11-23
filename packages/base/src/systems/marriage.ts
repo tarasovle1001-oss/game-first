@@ -1523,7 +1523,9 @@ export function registerMarriage(api: ModApi) {
       const lovers = Object.values(b.patrons)
         .filter((p) => (p.memory.hasNumber && p.memory.tier >= 7) || (upstairs(p.id) && p.memory.tier >= content.balance.hotel.nightVisitTier))
         .sort((x, y) => y.memory.affinity - x.memory.affinity || x.id.localeCompare(y.id));
-      if (lovers.length > 0 && h.traits.fidelity < N.slipOutFidelityBelow && ctx.rng.chance(N.slipOutChance)) {
+      // worn out she sleeps: "I am wrung out" to him and then up the stairs to another would be a lie the game tells, not she
+      const worn = (h.spent ?? 0) >= content.intimacy.fatigue.enoughAt;
+      if (lovers.length > 0 && !worn && h.traits.fidelity < N.slipOutFidelityBelow && ctx.rng.chance(N.slipOutChance)) {
         const p = lovers[0]!;
         const out = resolveSized(ctx, actById("sex"), { size: p.size, minutes: 30 }, p.name);
         p.memory.acts.sex = (p.memory.acts.sex ?? 0) + 1;
