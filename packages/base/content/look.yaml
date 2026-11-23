@@ -102,6 +102,21 @@ words:
       top: "towel around waist, breasts out"
       lift: "open towel"
       negative: "dress, apron, shirt, swimsuit, bikini"
+    # out of the house she is not in her work dress: pictures only (look.ts: shownOutfit), her wardrobe and what guests see are not touched
+    street:
+      tags: "(beige coat:1.2), trench coat, open coat, (white sweater:1.1), blue jeans, ankle boots, handbag"
+      core: "(beige coat:1.2), trench coat, blue jeans"
+      top: "open coat, sweater lift, breasts out"
+      lift: "pants pull"
+      under: plain
+      negative: "apron, dress, pantyhose, school uniform, maid"
+    sport:
+      tags: "(black sports bra:1.2), (grey leggings:1.2), yoga pants, midriff, sneakers, sweat"
+      core: "(black sports bra:1.2), (grey leggings:1.2)"
+      top: "sports bra lift, breasts out"
+      lift: "leggings pull"
+      under: cotton
+      negative: "dress, apron, skirt, pantyhose, high heels, coat"
     # what the pictures said before the outfit stayed known when partly off (old keys in packs)
     topless: { tags: topless }
     bottomless: { tags: bottomless }

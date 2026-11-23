@@ -64,7 +64,7 @@ export function describeScene(state: GameState, open = false): SceneWords {
   const partner = sex ? HUSBAND : enc && seen ? enc.patron : (b.shift?.moment?.patron ?? null);
   const heroine: string[] = ["1girl"];
   const bare = bareOf(state);
-  const wear: Record<string, string> = { outfit: dressOf(state), ...(bare !== "none" ? { bare } : {}) };
+  const wear: Record<string, string> = { outfit: shownOutfit(state), ...(bare !== "none" ? { bare } : {}) };
   if (bare !== "all" && bare !== "bottom") {
     if (h.panties && h.panties !== "on") wear.under = h.panties;
     if (h.skirtUp) wear.skirt = "up";
@@ -130,6 +130,13 @@ export function describeScene(state: GameState, open = false): SceneWords {
  * Coarse on purpose - levels, not numbers - so one picture covers a stretch of play. Order = most important
  * first; a pack that lacks the exact picture drops tags from the end of this list (see sceneKeyFallbacks).
  */
+/** What she is drawn in: in town it is street clothes, in the gym sportswear - not the work dress with the apron (pictures only). */
+const shownOutfit = (state: GameState): string => {
+  const worn = dressOf(state);
+  const loc = state.where[WIFE] ?? "";
+  if (worn === "naked" || !loc.startsWith("town.")) return worn;
+  return loc === "town.gym" ? "sport" : "street";
+};
 export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "phase", "crowd", "face", "tsize", "under", "skirt", "toy", "cage"];
 /**
  * What a whole picture and her portrait do not show (the picture pass of 22.11 looked: a guest's size class, the marks on
@@ -182,7 +189,7 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
   if (roles.get("husband") === HUSBAND && b.husband.caged && intimate) out.cage = "1";
   if (!roles.has("wife")) return out;
   const bare = bareOf(state);
-  out.outfit = dressOf(state);
+  out.outfit = shownOutfit(state);
   if (bare !== "none") out.bare = bare;
   if (bare !== "all" && bare !== "bottom") {
     if (h.panties && h.panties !== "on") out.under = h.panties;
