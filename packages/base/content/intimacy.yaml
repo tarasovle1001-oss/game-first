@@ -81,6 +81,16 @@ zones:                # each zone: soreness 0..100 on top of stretch
   enoughAt: 80        # "she has had enough": acts in that zone are off
   enough: 40
   thoughtAt: 60
+fatigue:              # her whole body, on top of each zone: how much of this she has in her for one day (decided 23.11: 6-7 a day at the peak, as her own limit)
+  perAct: 10          # every intimate act (her hand on him and further), with anyone
+  perMinute: 0.15     # and what it lasted
+  husbandShare: 0.5   # the marriage bed takes less out of her
+  from: 30            # from here it starts to speak against the next one
+  per: 0.9            # per point above that
+  enoughAt: 72        # "she has had enough for today": nothing intimate with a guest any more
+  enough: 45
+  night: 0.1          # share left in the morning
+  thoughtAt: 55
 marks:                # what is left on her and who notices
   visible: [face, chest, hands, body, thighs]
   guests: { interest: 2, heat: 6, gossip: 1.5 }       # per ten minutes she walks the floor like that

@@ -5,7 +5,7 @@ import { baseMod, bs, lovingStrategy, actById } from "../packages/base/src/probe
 import { createEngine } from "../packages/core/src";
 import type { Action, GameState } from "../packages/core/src";
 
-const [seedsArg, daysArg, preset = "bookish", answer = "no"] = process.argv.slice(2);
+const [seedsArg, daysArg, preset = "bookish", answer = "no", his] = process.argv.slice(2); // his: JSON of the husband setup, e.g. '{"size":6,"minutes":8}'
 const seeds = Number(seedsArg ?? 8);
 const days = Number(daysArg ?? 14);
 const engine = createEngine([baseMod]);
@@ -34,7 +34,7 @@ const KIND = (key: string): string | null => {
   return null;
 };
 for (let seed = 1; seed <= seeds; seed++) {
-  let s: GameState = engine.init(seed * 101, { base: { preset, mode: "hidden" } as never });
+  let s: GameState = engine.init(seed * 101, { base: { preset, mode: "hidden", ...(his ? { husband: JSON.parse(his) } : {}) } as never });
   let last = "";
   const key = (e: GameState["log"][number]) => `${e.turn}|${e.key}|${JSON.stringify(e.params ?? {})}`;
   for (let turn = 0; s.time.day <= days && turn < days * 500; turn++) {
@@ -55,7 +55,7 @@ for (let seed = 1; seed <= seeds; seed++) {
       perDay[d]!.open = (perDay[d]!.open ?? 0) + h.traits.openness / 1;
       perDay[d]!.fid = (perDay[d]!.fid ?? 0) + h.traits.fidelity;
       perDay[d]!.n = (perDay[d]!.n ?? 0) + 1;
-      perDay[d]!.stretch = (perDay[d]!.stretch ?? 0) + (h.zones?.vagina?.perm ?? 0);
+      perDay[d]!.stretch = (perDay[d]!.stretch ?? 0) + (h.body.vagina.perm ?? 0);
     }
   }
 }

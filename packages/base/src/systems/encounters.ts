@@ -125,7 +125,9 @@ export function nextProposal(state: GameState, engine: EngineView, v: Visit, rol
     // nobody plans it, one glass simply makes the next one likelier
     const Al = content.consent.alcohol;
     const tipsy = b.heroine.drunk >= Al.othersFrom && b.heroine.drunk < Al.othersUpTo && v.tier >= 0 && tier >= 1 && roll(100) < Al.othersChance;
-    const drink = (p.approach === "drink" && tier >= 1 && b.heroine.drunk < Al.buyerUpTo && v.tier >= 0 && roll(10) < 4) || tipsy;
+    // ...and any man who likes her may stand her one now and then (anyoneBuys, percent): drink is what moves an evening along
+    const treats = p.approach !== "drink" && tier >= 1 && b.heroine.drunk < Al.buyerUpTo && v.tier >= 0 && roll(100) < Al.anyoneBuys;
+    const drink = (p.approach === "drink" && tier >= 1 && b.heroine.drunk < Al.buyerUpTo && v.tier >= 0 && roll(10) < 4) || tipsy || treats;
     if (!drink && options.length === 0) return null; // nothing on that step he can ask for (what there is would not fit)
     act = drink ? actById("drink") : options[roll(options.length)]!;
   }

@@ -67,18 +67,21 @@ shop:                 # in town; she also buys for herself from her purse
   toySatisfied: 80
   solo: # her own drawer: what she buys and uses by herself
     at: 15          # frustration from which she shuts herself in before opening
-    idleBase: 0.04  # with a toy in the drawer: chance a day that she uses it without being driven to it...
-    idlePerLibido: 0.004 # ...plus this per point of her libido (a quiet wife about twice a week, a hungry one every other day)
+    window: [0.45, 0.85] # when in the afternoon: between these shares of it still ahead (early, before he thinks of opening)
+    idleBase: 0.1   # with a toy in the drawer: chance a day that she uses it without being driven to it...
+    idlePerLibido: 0.006 # ...plus this per point of her libido (a quiet wife about twice a week, a hungry one every other day)
     idlePerFrustration: 0.006 # ...plus this per point of frustration, below "at"
     train: 0.35     # ...and this when there is a size she tried and could not take: she works toward it
-    fingersShare: 0.6 # with no toy yet she still does it with her fingers, this share as often
+    fingersShare: 0.8 # with no toy yet she still does it with her fingers, this share as often
     minutes: [20, 40] # how long she is behind the bedroom door
     watchOpenness: 65 # he walks in: from this openness (or warm and worked up, or in the open) she goes on and lets him look
     interrupted: { resent: 1, mood: -3 } # otherwise she shouts that she is changing, and is cross for a while
-    buyAt: 20       # frustration from which she buys her first one; half of it is enough for the next size
+    buyAt: 12       # frustration from which she buys her first one; half of it is enough for the next size
     firstSize: 11   # nothing smaller is worth her money
     outgrown: 2     # she wants the next size once she takes comfortably within this many cm of her biggest
     relief: 25      # frustration a session with a toy takes off (half with fingers only)
+    curious: { sizeTaste: 45, chance: 0.2, seen: 0.25 } # she buys one (or the next size) out of curiosity too: per morning, with a taste for size from this; `seen` is added once she has seen a man far bigger than her husband
+    fantasy: { openness: 0.7, fidelity: 0.5, sizeTaste: 0.8, fingersShare: 0.6 } # what a session moves in her when she thinks of someone who is not her husband (with fingers only: this share)
     analChance: 0.35 # how often it is the back way, once she has a taste for it
   gigolo: { price: 250, size: 40, minutes: 40, fidelityBelow: 45, sizeTasteFrom: 45, chance: 0.5, suspicion: 4 }
   affair: { fidelityBelow: 50, affinity: 30, chance: 0.3, minutes: 120, suspicion: 3 } # an afternoon "with a friend" with a lover who has her number

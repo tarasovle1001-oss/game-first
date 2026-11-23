@@ -17,6 +17,7 @@ import { changeHim } from "./rhythm";
 
 const I = content.intimacy;
 const Z = I.zones;
+const F = content.intimacy.fatigue;
 const ZONES: Zone[] = ["vagina", "anus", "mouth"];
 
 export const soreOf = (state: GameState, zone: Zone) => bs(state).heroine.sore?.[zone] ?? 0;
@@ -38,6 +39,14 @@ function wear(ctx: Ctx, actId: string, size: number, minutes: number) {
     h.sore = { ...(h.sore ?? {}), [zone]: clamp(before + gain) };
     if (before < Z.thoughtAt && h.sore[zone]! >= Z.thoughtAt) think(ctx, `thought.sore.${zone}`);
   }
+}
+/** What an intimate act takes out of her for the rest of the day. */
+function tire(ctx: Ctx, actId: string, minutes: number, share: number, counts = true) {
+  if (actById(actId).tier < 5) return;
+  const h = bs(ctx.state).heroine;
+  const before = h.spent ?? 0;
+  h.spent = clamp(before + ((counts ? F.perAct : 0) + minutes * F.perMinute) * share);
+  if (before < F.thoughtAt && h.spent >= F.thoughtAt) think(ctx, "thought.worn");
 }
 /** The marks on her that anyone can see and that are not her husband's. */
 export const foreignMarks = (state: GameState): string[] => {
@@ -76,10 +85,14 @@ export function registerBodyState(api: ModApi) {
     const { patron, act, minutes } = e.payload as { patron: string; act: string; minutes: number };
     const p = bs(ctx.state).patrons[patron];
     if (p && actById(act).place === "private") wear(ctx, act, p.size, Math.max(3, minutes));
+    if (p) tire(ctx, act, Math.max(3, minutes), 1, false);
   });
+  // one encounter is several things done one after another: each of them counts
+  api.events.on("encounter:started", (ctx, e) => tire(ctx, e.payload!.act as string, 0, 1));
   api.events.on("bed:ended", (ctx, e) => {
     const { act, turns } = e.payload as { act: string; turns: number };
     if (act !== "self") wear(ctx, act, bs(ctx.state).husband.size, turns * content.body.bed.minutesPerTurn);
+    if (act !== "self") tire(ctx, act, turns * content.body.bed.minutesPerTurn, F.husbandShare);
   });
   const fade = (ctx: Ctx, tens: number) => {
     const h = bs(ctx.state).heroine;
@@ -91,6 +104,7 @@ export function registerBodyState(api: ModApi) {
     if (e.payload!.phase !== "prep") return;
     const h = bs(ctx.state).heroine;
     for (const z of ZONES) if (h.sore?.[z]) h.sore[z] = Math.round(h.sore[z]! * Z.night * 10) / 10;
+    if (h.spent) h.spent = Math.round(h.spent * F.night * 10) / 10;
     h.cumHis = {};
   });
   api.formulas.addFactor<ConsentInput>(CONSENT_FORMULA, {
@@ -105,6 +119,19 @@ export function registerBodyState(api: ModApi) {
         else if (s > Z.consentFrom) total -= (s - Z.consentFrom) * Z.consent;
       }
       return total ? Math.round(total * 10) / 10 : null;
+    },
+  });
+  // Her whole body has a day's worth of this in it and no more: what keeps a busy evening at six or seven, not twenty.
+  api.formulas.addFactor<ConsentInput>(CONSENT_FORMULA, {
+    id: "consent.worn",
+    labelKey: "factor.consent.worn",
+    order: 19.5,
+    eval: (state, { act, partner }) => {
+      const a = actById(act);
+      const spent = bs(state).heroine.spent ?? 0;
+      if (a.tier < 5 || spent <= F.from) return null;
+      const share = partner === HUSBAND ? F.husbandShare : 1;
+      return -Math.round((spent >= F.enoughAt ? F.enough : (spent - F.from) * F.per) * share * 10) / 10;
     },
   });
   api.formulas.addFactor<ConsentInput>(CONSENT_FORMULA, {

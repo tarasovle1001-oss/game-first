@@ -32,6 +32,7 @@ export interface Heroine {
   /** For each mark: true while it is only her husband's. */
   cumHis?: Record<string, boolean>;
   sore?: Record<string, number>; // soreness by zone, 0..100
+  spent?: number; // how much of today her body has already given, 0..100: every intimate act adds to it, the night takes it off
   /** How she looks after something: flushed, sweat, hair, clothes - minutes left. */
   after?: Record<string, number>;
   panties?: "on" | "aside" | "off";

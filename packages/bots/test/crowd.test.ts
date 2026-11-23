@@ -53,9 +53,13 @@ describe("it does not stay between two people", () => {
     expect(sceneKey(engine.currentScene(s)!)).toContain("crowd");
   });
   it("a man who has watched long enough asks for a part of her that is free; with two on her the picture says so", () => {
+    // which evening it happens on is a matter of the dice: the first seed where someone does join
     let s = scene(1, "blowjob");
-    for (let i = 0; i < 40 && menOf(s).length === 0 && bs(s).encounter; i++) s = wait(s, 1);
-    if (!bs(s).encounter) return;
+    for (let seed = 1; seed <= 12; seed++) {
+      s = scene(seed, "blowjob");
+      for (let i = 0; i < 40 && menOf(s).length === 0 && bs(s).encounter; i++) s = wait(s, 1);
+      if (menOf(s).length > 0) break;
+    }
     expect(menOf(s).length).toBeGreaterThan(0);
     expect(menOf(s)[0]!.slot).not.toBe("mouth");
     expect(describeScene(s, true).prompt).toMatch(/threesome|gangbang/);

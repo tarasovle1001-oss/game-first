@@ -97,7 +97,7 @@ jumpPerTier: 14  # per tier he tries to skip with her
 witnesses: 0.15   # other guests can see, scaled by how closed she is
 companyPerMan: 2.5 # a company in the back room or the sauna: per other man of his there, they egg him on
 husbandWatching: 38 # her husband is in the room
-alcohol: { selfFrom: 25, selfPer: 0.35, buyerUpTo: 55, othersFrom: 30, othersUpTo: 65, othersChance: 10 } # from selfFrom another glass is easier (per point above); a drinking guest buys while she is under buyerUpTo; once she is tipsy any guest may offer one (othersChance %)
+alcohol: { selfFrom: 25, selfPer: 0.35, buyerUpTo: 55, anyoneBuys: 12, othersFrom: 30, othersUpTo: 65, othersChance: 10 } # from selfFrom another glass is easier (per point above); a drinking guest buys while she is under buyerUpTo; once she is tipsy any guest may offer one (othersChance %)
 away: { base: 10, perHour: 4, max: 18, honesty: 0.5 } # he is out in town during the evening: the place is hers; more the longer he has been gone, less for an honest wife
 money: 0.3       # per unit of money offered, scaled by how badly they need it
 moneyCap: 30     # the money row never weighs more than this

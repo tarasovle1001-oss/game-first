@@ -15,7 +15,7 @@ sizeTasteGain: 1.5    # taste for size gained per orgasm with someone bigger tha
 night: # what she does when she lies awake wanting more
   maxAsks: 4              # how many times a night he can reach for her before she is simply asleep
   againPenalty: 8         # taken off her answer for every time he has already asked tonight
-  withoutPerLibido: 0.16  # frustration gained per point of her libido on a day without a single release (it fades by 2 a day on its own)
+  withoutPerLibido: 0.22  # frustration gained per point of her libido on a day without a single release (it fades by 2 a day on its own)
   restlessArousal: 40     # she cannot sleep above this arousal if nobody satisfied her tonight
   selfChance: 0.6         # she slips into the bathroom and takes care of herself
   slipOutChance: 0.35     # ...or goes to a lover, if there is a man she has slept with and has his number

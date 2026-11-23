@@ -333,7 +333,9 @@ describe("he is done and she is not", () => {
     expect(seen).toBeGreaterThan(0);
   });
   it("a night that went well ends in the stage after: hold her, or once more", () => {
-    let s = engine.init(3);
+    let seen = 0;
+    for (let seed = 1; seed <= 20 && seen === 0; seed++) {
+    let s = engine.init(seed);
     while (s.time.phase !== "night") s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "core/advance") ?? engine.listActions(s).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(s)[0]!);
     s = structuredClone(s);
     const b = bs(s);
@@ -346,8 +348,9 @@ describe("he is done and she is not", () => {
     s.where.wife = s.where.husband!;
     s = engine.dispatch(s, { type: "base/night-act", payload: { act: "sex" } });
     for (let i = 0; i < 80 && bs(s).night?.sex; i++) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/bed" && a.payload?.do === "finish") ?? { type: "base/bed", payload: { do: "keep" } });
-    const rest = bs(s).night!.rest!;
-    expect(rest.his).toBe(true);
+    const rest = bs(s).night?.rest;
+    if (!rest?.his) continue; // she said no tonight, or he lost it: another evening
+    seen++;
     if (!rest.wants) {
       expect(engine.listActions(s).some((a) => a.type === "base/night-act")).toBe(true); // once more is always there to try
       s = engine.dispatch(s, { type: "base/rest", payload: { do: "hold" } });
@@ -355,6 +358,8 @@ describe("he is done and she is not", () => {
       expect(engine.currentScene(s)!.type).toBe("him_hug");
     }
     expect(engine.checkInvariants(s)).toEqual([]);
+    }
+    expect(seen).toBeGreaterThan(0);
   });
 });
 

@@ -2,6 +2,7 @@ import { detail } from "./glance";
 import { sizeClass } from "./body";
 import type { Ctx, ModApi } from "@tc/core";
 import { content } from "../content";
+import { think } from "./mind";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import { fitOf, useBody } from "./body";
 import { actById } from "./encounters";
@@ -29,7 +30,9 @@ export function registerSolo(api: ModApi) {
     const biggest = mine[mine.length - 1]?.size ?? 0;
     const fit = Math.max(fitOf(ctx.state, "vagina"), biggest ? 0 : So.firstSize);
     // none yet and she is wanting; or what she has no longer does anything for her
-    const wants = biggest === 0 ? h.frustration >= So.buyAt : fit >= biggest - So.outgrown && h.frustration >= So.buyAt / 2;
+    // ...or she is simply curious about a size: what she has read about, seen in a man's trousers, or tried and could not take
+    const curious = h.sizeTaste >= So.curious.sizeTaste && ctx.rng.chance(So.curious.chance + ((h.seenSize ?? 0) > b.husband.size + 6 ? So.curious.seen : 0));
+    const wants = biggest === 0 ? h.frustration >= So.buyAt || curious : fit >= biggest - So.outgrown && (h.frustration >= So.buyAt / 2 || curious);
     if (!wants) return;
     const next = S.toys.filter((t) => !b.toys.includes(t.id) && t.size > biggest && t.size >= So.firstSize && t.size <= fit + S.toyStretchAbove).sort((x, y) => x.size - y.size)[0];
     if (!next || b.purse < next.price) return;
@@ -52,13 +55,16 @@ export function registerSolo(api: ModApi) {
     // ...and a size she could not take is something to work on
     const drive = So.idleBase + h.traits.libido * So.idlePerLibido + h.frustration * So.idlePerFrustration + ((h.wantSize ?? 0) > fitOf(ctx.state, "vagina") && owned(b).length > 0 ? So.train : 0);
     if (h.frustration < So.at && !(owned(b).length > 0 ? ctx.rng.chance(drive) : ctx.rng.chance(drive * So.fingersShare))) return;
-    // some time in the afternoon, when she has a moment
-    b.solo = { at: ctx.rng.int(30, Math.max(31, b.day.left - So.minutes[1])), zone: "vagina" };
+    // some time in the afternoon, when she has a moment: the minute is picked on the first tick, once the length of the afternoon is known
+    // (picked here it always came out as "half an hour before opening", and a husband who opens early never left her that half hour)
+    b.solo = { at: -1, zone: "vagina" };
   });
   api.events.on("prep:tick", (ctx) => {
     const b = bs(ctx.state);
     const day = b.day;
-    if (!b.solo || b.solo.started !== undefined || !day || day.left > b.solo.at) return;
+    if (!b.solo || b.solo.started !== undefined || !day) return;
+    if (b.solo.at < 0) b.solo.at = Math.round(day.left * (So.window[0] + ctx.rng.float() * (So.window[1] - So.window[0])));
+    if (day.left > b.solo.at) return;
     if (!day.her || ["away", "with_you", "shopping", "quiet", "wash"].includes(day.her.task) || day.herOut || b.night) return;
     if (ctx.state.where[HUSBAND] === BED) return; // not with him in the room
     const h = b.heroine;
@@ -119,8 +125,17 @@ export function registerSolo(api: ModApi) {
       ctx.emit("solo:did", { zone, cut: true });
       return;
     }
+    // who she thinks of: once she has seen what other men have, not always her husband. That is how a faithful wife moves with no man touching her.
+    const seenBig = (h.seenSize ?? 0) > b.husband.size + 6;
+    const fantasy = seenBig || h.sizeTaste >= So.curious.sizeTaste ? (toy ? 1 : So.fantasy.fingersShare) : 0;
+    if (fantasy > 0) {
+      h.traits.openness = clamp(h.traits.openness + So.fantasy.openness * fantasy);
+      h.traits.fidelity = clamp(h.traits.fidelity - So.fantasy.fidelity * fantasy);
+      h.sizeTaste = clamp(h.sizeTaste + So.fantasy.sizeTaste * fantasy);
+      think(ctx, seenBig ? "thought.solo.fantasy.seen" : "thought.solo.fantasy", true);
+    }
     if (!toy) {
-      // only her fingers: it takes the edge off and changes nothing in her
+      // only her fingers: it takes the edge off and changes nothing in her body
       h.frustration = clamp(h.frustration - So.relief / 2);
       h.orgasms += 1;
       changeHeroine(ctx, "arousal", -h.arousal * 0.5, "alone");

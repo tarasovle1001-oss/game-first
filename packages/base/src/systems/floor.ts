@@ -16,6 +16,7 @@ import type { Emotion } from "./mind";
 import { generatePatron } from "./patrons";
 import { HALL, husbandSees } from "./places";
 import { sizeShown } from "./taking";
+import { sizeClass } from "./body";
 import { changeHim } from "./rhythm";
 import { attendTo, endAttend, leave as leaveVisit, runUnattended, seat } from "./shift";
 
@@ -95,7 +96,7 @@ export function registerFloor(api: ModApi) {
       return true;
     });
     if (fits.length === 0) return;
-    const m = ctx.rng.pick(fits);
+    const m = ctx.rng.weighted(fits.map((x) => ({ item: x, weight: x.weight ?? 1 })));
     sh.momentsSeen = [...(sh.momentsSeen ?? []), `${p.id}:${m.id}`];
     // the same thing lands differently from a man she likes, and on a woman who is up for it
     const well = !!m.good && p.memory.affinity >= (m.likeAffinity ?? F.moments.likeAffinity) && h.traits.openness >= (m.needOpen ?? 0);
@@ -108,7 +109,7 @@ export function registerFloor(api: ModApi) {
     if (m.reveals) {
       p.memory.sizeKnown = true;
       sizeShown(ctx, p.size);
-      detail(ctx, { id: "guest_flash", who: p.id, secret: !seen });
+      detail(ctx, { id: m.shows ?? "guest_flash", who: p.id, secret: !seen, ...(m.shows === "bulge" ? { tags: { size: String(sizeClass(p.size)) } } : {}) });
     }
     if (m.hers) detail(ctx, { id: "touch_bulge", who: p.id, secret: !seen });
     glance(ctx, MOMENT_SCENE[m.id] ?? "patron_chatting", HALL, [{ id: WIFE, role: "wife" }, { id: p.id, role: "patron" }]);

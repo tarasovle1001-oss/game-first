@@ -28,7 +28,9 @@ moments:              # small things at a table; none of them is an "act"
     - { id: argues_bill, when: { maxGenerosity: 30 }, likeAffinity: 200, bad: { mood: -3, annoy: 2 } }
     - { id: toasts_her, when: { minDrunk: 20 }, likeAffinity: -100, good: { mood: 2, pride: 2 } }
     - { id: asks_closing, when: { minInterest: 50 }, good: { arousal: 2, affinity: 1, longing: 2 }, bad: { annoy: 2 } }
-    - { id: shows_her, when: { minInterest: 45 }, needOpen: 35, likeAffinity: 0, reveals: true, good: { arousal: 3, heat: 5 }, bad: { annoy: 4, shame: 3 } } # under the table, for her eyes only: now she knows what he has
+    # weight: how much likelier than an ordinary moment; shows: the close-up beside the picture (default: he took it out)
+    - { id: notices_bulge, when: { minInterest: 20 }, likeAffinity: -100, reveals: true, weight: 3, shows: bulge, good: { arousal: 3, heat: 4 } } # nobody shows her anything: she simply cannot not see it
+    - { id: shows_her, when: { minInterest: 35 }, needOpen: 35, weight: 3, likeAffinity: 0, reveals: true, good: { arousal: 3, heat: 5 }, bad: { annoy: 4, shame: 3 } } # under the table, for her eyes only: now she knows what he has
     - { id: touches_him, when: { minInterest: 30 }, needOpen: 55, likeAffinity: 30, hers: true, good: { arousal: 2, heat: 12, affinity: 1 } } # her hand brushes his lap in passing: her move, so only when she is up for it
     - { id: sings_along, when: { minDrunk: 35 }, likeAffinity: -100, good: { mood: 2 } }
 deal:                 # a guest with money goes to the husband first

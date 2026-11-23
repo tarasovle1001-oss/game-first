@@ -70,3 +70,43 @@ describe("the ladder of sizes", () => {
     expect(tries).toBeGreaterThan(0);
   });
 });
+
+describe("what moves her with no man touching her (23.11)", () => {
+  const eng = createEngine([baseMod]);
+  it("her body has a day's worth of it and no more: the reserve fills with every intimate act and speaks against the next", () => {
+    const s = structuredClone(eng.init(11));
+    const b = bs(s);
+    const partner = Object.keys(b.patrons)[0] ?? "p1";
+    const row = () => eng.evaluate("base/consent", s, { act: "blowjob", partner, loc: "cafe.staff", offer: 0, pressure: 0 }).rows.find((r) => r.id === "consent.worn")?.value ?? 0;
+    expect(row()).toBe(0);
+    b.heroine.spent = 50;
+    const some = row();
+    expect(some).toBeLessThan(0);
+    b.heroine.spent = 80;
+    expect(row()).toBeLessThan(some);
+    // small talk and a hand on her waist cost nothing
+    expect(eng.evaluate("base/consent", s, { act: "flirt", partner, loc: "cafe.hall", offer: 0, pressure: 0 }).rows.some((r) => r.id === "consent.worn")).toBe(false);
+  });
+  it("she finds her hour in the afternoon even when he opens early: the minute is picked from the real length of the day", () => {
+    let found = 0;
+    for (let seed = 1; seed <= 12 && found === 0; seed++) {
+      let s = structuredClone(eng.init(seed, { base: { preset: "bookish" } as never }));
+      for (let i = 0; i < 400 && !(s.time.day === 1 && s.time.phase === "night"); i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
+      s = structuredClone(s);
+      bs(s).heroine.frustration = 60;
+      // into the next afternoon
+      for (let i = 0; i < 400 && s.time.phase !== "prep"; i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
+      if (s.time.phase !== "prep" || !bs(s).solo) continue;
+      const left = bs(s).day!.left;
+      for (let i = 0; i < 60 && s.time.phase === "prep" && bs(s).solo?.started === undefined; i++) {
+        const wait = eng.listActions(s).find((a) => a.type === "base/prep-wait" && a.payload?.minutes === 15);
+        if (!wait) break;
+        s = eng.dispatch(s, wait);
+      }
+      if (bs(s).solo?.started === undefined) continue;
+      found++;
+      expect(bs(s).solo!.at).toBeGreaterThan(left * 0.4); // well before the doors open
+    }
+    expect(found).toBeGreaterThan(0);
+  });
+});
