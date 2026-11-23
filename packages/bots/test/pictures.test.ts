@@ -118,8 +118,7 @@ describe("19c: the long evening, his own body, the cage", () => {
     s = engine.dispatch(s, { type: DOORS, payload: { do: "close" } });
     const closedAt = s.time.minute;
     expect(closedAt).toBeLessThan((content.balance.shift.opensAt + content.balance.shift.hours) * 60);
-    s = engine.dispatch(s, { type: CORE_ADVANCE });
-    expect(s.time.phase).toBe("night");
+    expect(s.time.phase).toBe("night"); // locking up is what starts the night: nothing to click through
     expect(bs(s).nightStart).toBe(closedAt);
     expect(engine.checkInvariants(s)).toEqual([]);
   });

@@ -16,9 +16,14 @@ const wait = (minutes: number) => ({ type: WAIT, payload: { minutes } });
 const canAdvance = (s: GameState) => engine.listActions(s).some((a) => a.type === CORE_ADVANCE);
 /** Moves to the next phase, waiting through shift ticks when the phase cannot be left yet. */
 const nextPhase = (s: GameState) => {
-  while (!canAdvance(s)) s = engine.dispatch(s, wait(60));
+  // the evening ends by itself: waiting it out is how one gets to the night
+  if (s.time.phase === "shift") {
+    while (s.time.phase === "shift") s = engine.dispatch(s, wait(60));
+    return s;
+  }
   return engine.dispatch(s, advance);
 };
+const shiftEnd = (s: GameState) => s.log.filter((e) => e.key === "log.shift.end").at(-1)!.params as { served: number; income: number; tips: number };
 
 describe("day cycle", () => {
   it("walks phases and rolls the day over", () => {
@@ -134,8 +139,8 @@ describe("shift and economy", () => {
   it("guests arrive, get served, pay, and are gone after closing", () => {
     let s = nextPhase(engine.init(3));
     const moneyBefore = s.mods.base.money;
-    while (!canAdvance(s)) s = engine.dispatch(s, wait(10));
-    expect(s.mods.base.shift.served).toBeGreaterThan(0);
+    while (s.time.phase === "shift") s = engine.dispatch(s, wait(10));
+    expect(shiftEnd(s).served).toBeGreaterThan(0);
     expect(s.mods.base.money).toBeGreaterThan(moneyBefore);
     s = engine.dispatch(s, advance);
     expect(s.mods.base.shift).toBeNull();

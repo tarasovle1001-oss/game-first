@@ -401,7 +401,15 @@ function tick(ctx: Ctx) {
     sh.fin = undefined;
     sh.show = undefined;
     sh.moment = null;
+    lockUp(ctx);
   }
+}
+/** The evening is over: the night begins by itself, the way the evening began when the afternoon ran out. Nothing to click through. */
+function lockUp(ctx: Ctx) {
+  const sh = bs(ctx.state).shift;
+  if (!sh || sh.ended || ctx.state.time.phase !== "shift") return;
+  sh.ended = true;
+  nextPhase(ctx);
 }
 const TEN = ticks(10);
 
@@ -621,6 +629,7 @@ export function registerShift(api: ModApi) {
       if (what === "close") {
         sh.closed = true;
         ctx.log("log.doors.close");
+        lockUp(ctx);
         return;
       }
       sh.doors = what === "shut";

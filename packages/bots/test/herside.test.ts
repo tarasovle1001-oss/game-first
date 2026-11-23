@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ANSWER, baseMod, bs } from "@tc/base";
+import { ANSWER, baseMod, bs, TICKS_PER_SHIFT } from "@tc/base";
 import { CORE_ADVANCE, createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 
@@ -7,11 +7,15 @@ const engine = createEngine([baseMod]);
 const toNight = (s: GameState, tune: (b: ReturnType<typeof bs>) => void): GameState => {
   let st = s;
   for (let i = 0; i < 400 && st.time.phase !== "shift"; i++) st = engine.dispatch(st, { type: CORE_ADVANCE });
-  for (let i = 0; i < 400 && !engine.listActions(st).some((a) => a.type === CORE_ADVANCE); i++) st = engine.dispatch(st, engine.listActions(st).find((a) => a.type === "base/wait" && a.payload?.minutes === 60) ?? engine.listActions(st).find((a) => a.type === "base/wait")!);
+  // up to the last minute of the evening: the night begins by itself with the next one
+  const last = (x: GameState) => TICKS_PER_SHIFT - 1 - bs(x).shift!.tick;
+  for (let i = 0; i < 400 && st.time.phase === "shift" && last(st) > 0; i++) st = engine.dispatch(st, { type: "base/wait", payload: { minutes: last(st) } });
   st = structuredClone(st);
   st.mods.base.approach = null;
   st.mods.base.approached = {};
   tune(bs(st));
+  // he locks up on the spot (leaving the stage by hand still works): what was tuned is met by the night, not by one more minute of the evening
+  bs(st).shift!.closed = true;
   return engine.dispatch(st, { type: CORE_ADVANCE });
 };
 const answers = (s: GameState) => engine.listActions(s).filter((a) => a.type === ANSWER);

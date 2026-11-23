@@ -154,7 +154,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
     if (rest.length > 0 && herSecs.includes("sex")) rootCards.push(() => setPath({ at: "her", sec: "sex" }));
   }
   if (withHer.length > 0) rootCards.push(() => setPath({ at: "her", sec: null }));
-  else if (goToHer && phase !== "summary") rootCards.push(() => act(goToHer));
+  else if (goToHer) rootCards.push(() => act(goToHer));
   for (const a of direct) rootCards.push(() => act(a));
   for (const [type] of folders) rootCards.push(() => setPath({ at: "group", type }));
 
@@ -381,7 +381,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
     <div className="menu2">
       <div className="m-title">{t(`base.phase.${phase}`)}</div>
       <div className="muted small m-hint">
-        {phase === "prep" && b.day?.busy ? t("ui.busy", { what: t(`day.${b.day.busy.id}`), minutes: b.day.busy.left }) : phase === "shift" && waits.length === 0 && advance ? t("ui.closing") : t(`ui.act.hint.${phase}`)}
+        {phase === "prep" && b.day?.busy ? t("ui.busy", { what: t(`day.${b.day.busy.id}`), minutes: b.day.busy.left }) : t(`ui.act.hint.${phase}`)}
       </div>
       {urgent.length > 0 && <div className="m-section warn">{t("ui.urgent")}</div>}
       {urgent.length > 0 && b.reaction && (() => {
@@ -423,7 +423,6 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
       {withHer.length > 0 ? (
         <Item hot={hot()} tone="her" title={herName} sub={t(herNear ? "ui.her.card.near" : "ui.her.card.far")} onClick={() => setPath({ at: "her", sec: null })} />
       ) : (
-        phase !== "summary" &&
         !herNear &&
         (goToHer ? (
           <Item hot={hot()} tone="her" title={t("ui.her.walk", { name: herName, where: t(`loc.${state.where[WIFE]}`) })} sub={t("ui.her.walk.hint")} onClick={() => act(goToHer)} />
@@ -441,7 +440,7 @@ export function ActionMenu({ state, t, lang, act }: { state: GameState; t: T; la
       ))}
       {advance && (
         <button className="primary madvance" onClick={() => act(advance)}>
-          <kbd>↵</kbd> {phase === "night" ? t("action.sleep.default", { hour: content.day.rhythm.wake[0]! }) : label(advance)}
+          <kbd>↵</kbd> {phase === "night" ? t("action.sleep.default", { hour: content.day.rhythm.wake[0]! }) : phase === "prep" ? t("action.wait.opening", { hour: content.balance.shift.opensAt }) : label(advance)}
         </button>
       )}
     </div>

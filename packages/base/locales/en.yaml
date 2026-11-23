@@ -4076,3 +4076,4 @@ log.him.dry: "There is nothing left in you at all. A little longer on your feet 
 log.him.collapse: "Everything goes dark. You barely make it to the bed and fall into sleep. The hall is hers."
 log.him.collapse.woke: "You wake at {time}. Downstairs the evening has gone on all this while - without you."
 log.him.collapse.closed: "You wake at {time}. It is quiet downstairs: she has closed the cafe herself."
+action.wait.opening: "Wait until opening ({hour}:00)"

@@ -292,11 +292,11 @@ describe("where the husband stands", () => {
       moved.mods.base.shift.quietUntil = 9999; // and stays upstairs for the whole of it
       moved.mods.base.shift.awayUntil = 9999;
       s = moved;
-      while (engine.listActions(s).some((a) => a.type === WAIT)) {
+      while (s.time.phase === "shift") {
         const serve = engine.listActions(s).find((a) => a.type === "base/serve");
         s = engine.dispatch(s, serve ?? { type: WAIT, payload: { minutes: 15 } });
       }
-      return bs(s).shift!.served;
+      return (s.log.filter((e) => e.key === "log.shift.end").at(-1)!.params as { served: number }).served;
     };
     expect(evening("cafe.staff")).toBe(0);
     expect(evening("cafe.hall")).toBeGreaterThan(0);

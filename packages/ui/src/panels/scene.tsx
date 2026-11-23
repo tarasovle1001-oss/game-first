@@ -61,7 +61,7 @@ export function ScenePanel({ state, t, lang, scene, open, watch }: Common & { sc
   const wifeShown = !!scene?.participants.some((p) => p.id === WIFE);
   const enc = b.encounter;
   const away: SceneDesc | null =
-    scene && !wifeShown && state.time.phase !== "summary"
+    scene && !wifeShown
       ? enc
         ? { type: actById(enc.act).scene, location: enc.loc, participants: [{ id: WIFE, role: "wife" }, { id: enc.patron, role: "patron" }], tags: {} }
         : { type: "idle", location: state.where[WIFE] ?? "", participants: [{ id: WIFE, role: "wife" }], tags: {} }
