@@ -34,6 +34,7 @@ sizeClasses: [9, 14, 24, 34] # cm, for pictures only (five looks): below the fir
 stages: [8, 11, 14, 17, 20, 23, 26, 30, 34, 38, 43] # cm where steps 2..12 begin
 # Taking a man (or a toy) bigger than her body is used to. Within her step it simply goes; above it, it is a try.
 take:
+  throatOver: 2      # cm above what her throat takes: longer than that she cannot swallow whole, and the line says so (it stretches her a little each time)
   chance: [0.75, 0.45, 0.25, 0.1] # it goes in: one step above what she takes, two, three, four; further - not at all
   arousal: 0.2       # added at arousal 100, taken off at 0
   warm: 0.1          # for everything done to that place earlier in the same scene (fingers, his mouth, a smaller try)...

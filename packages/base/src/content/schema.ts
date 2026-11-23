@@ -284,6 +284,7 @@ export const bodySchema = z
     stages: z.array(z.number()).min(3),
     take: z
       .object({
+        throatOver: z.number(),
         chance: z.array(z.number().min(0).max(1)).min(1), arousal: z.number(), warm: z.number(), warmMax: z.number(), drunk: z.number(), anus: z.number(),
         partial: z.number().min(0).max(1), partialShare: z.number(), share: z.number(), perAct: z.number(), volumeCap: z.number(), keep: z.number().min(0).max(1), fade: z.number().min(0).max(1),
         instead: z.array(id).min(1), fearPerStage: z.number(), tasteSeen: z.number(), tasteHandled: z.number(), bedThought: z.number().min(0).max(1), looseEvery: z.number(),

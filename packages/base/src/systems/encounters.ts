@@ -7,6 +7,7 @@ import type { Act } from "../content/schema";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Encounter, Patron, Verdict, Visit, Zone } from "../state";
 import { entersZone, fitOf, orgasm, pleasureFor, sizeStage, stepsAbove, takeChance, useBody } from "./body";
+import { think } from "./mind";
 import { settleSize } from "./taking";
 import { expectOf } from "./expectations";
 import { addHerTips } from "./economy";
@@ -457,7 +458,11 @@ function accept(ctx: Ctx, v: Visit, p: Patron, asked: ConsentInput, verdict: Ver
   // where it happens is said once, when it starts, not with every new thing they do
   if (act.place === "private" && !running && !leaving) ctx.log(input.loc === HALL ? "log.enc.here" : hers ? "log.enc.away.hers" : "log.enc.away", { name: `@name:${p.name}`, room: `loc.${input.loc}` }, tags);
   for (const line of sizeLines) ctx.log(...line);
-  if (!isLight(act) || first || verdict !== "eager")
+  // a man too long for her throat: she takes what she can, and it is said instead of "to the root"
+  if (act.id === "deepthroat" && p.size > fitOf(ctx.state, "mouth") + content.body.take.throatOver) {
+    ctx.log(`log.throat.partial.${ctx.rng.int(1, 3)}`, { name: `@name:${p.name}` }, tags);
+    think(ctx, "thought.throat.partial");
+  } else if (!isLight(act) || first || verdict !== "eager")
     ctx.log(
       variantKey(`log.act.${act.id}.${verdict}`, (n) => {
         // not the line this act had last time tonight
