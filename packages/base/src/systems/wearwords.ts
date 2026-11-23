@@ -6,7 +6,7 @@ import type { CastCard } from "../content/schema";
 const W = () => content.look.words;
 /** Which part of her an act needs uncovered (from the scene's own words): breasts, her lower half. */
 const TOP_ACT = /\b(paizuri|breasts out|nipples|breast sucking|grabbing (another's )?breast|nipple)\b/i;
-const LOW_ACT = /\b(sex|vaginal|anal|cunnilingus|fingering|pussy|facesitting|sitting on face|anilingus|thigh sex|creampie|spread pussy|masturbation|after sex|dildo)\b/i;
+const LOW_ACT = /\b(sex|vaginal|anal|cunnilingus|fingering|pussy|facesitting|sitting on face|anilingus|thigh sex|creampie|spread pussy|masturbation|after sex|(?<!holding )dildo)\b/i; // a dildo in her hand at the shop shelf does not undress her
 
 export type Outfit = { tags: string; core: string; top: string; lift: string; bra: string; panties: string; negative: string };
 

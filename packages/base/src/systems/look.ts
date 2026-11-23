@@ -223,6 +223,7 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
   return out;
 }
 
+const HIM_ALONE = new Set(["dildo_him", "came_dildo_him", "prostate", "came_prostate", "fisting_him", "came_fisting_him"]);
 /** The scene on screen with her look baked into its tags: the key a pack picture is named after. */
 export function pictureScene(engine: EngineView, state: GameState): SceneDesc | null {
   const desc = engine.currentScene(state);
@@ -232,6 +233,8 @@ export function pictureScene(engine: EngineView, state: GameState): SceneDesc | 
 export const withLook = (state: GameState, desc: SceneDesc): SceneDesc => {
   const tags = { ...lookTags(state, desc), ...(desc.tags ?? {}) };
   for (const k of PORTRAIT_ONLY) delete tags[k];
+  // she is not in these pictures (him alone, at most her hand): her dress and face would only multiply the same picture
+  if (HIM_ALONE.has(desc.type)) for (const k of Object.keys(tags)) if (k !== "tsize") delete tags[k];
   return groupOf(desc, tags);
 };
 

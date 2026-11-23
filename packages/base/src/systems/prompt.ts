@@ -110,13 +110,28 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   const detailWords = isDetail ? [detailMain, ...Object.entries(t).filter(([k]) => !(dressedDetail && k === "size")).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
   // booru tags of the scene (prompt.yaml: tags) lead the prompt; a scene that has them does not use its English pose slots
   // ...and may have extra words for one value of a tag ("group+men.3")
-  const booru = isDetail ? "" : [P.tags[desc.type] ?? "", ...tagKeys.map((k) => P.tags[`${desc.type}+${k}`] ?? "")].map((x) => x.trim()).filter(Boolean).join(", ");
+  // ...or other words in one room ("idle@town.square": walking together in the street, not a waitress at the counter)
+  const sceneTags = P.tags[`${desc.type}@${desc.location}`] ?? P.tags[desc.type] ?? "";
+  // an annoyed face loses to a smile or "flustered" in the scene's own words: those go, and a smile is forbidden
+  const cross = t.face === "annoyed" ? new Set(["flustered", "smile", "light smile", "smirk", "grin", "happy", "laughing"]) : null;
+  const booru = isDetail
+    ? ""
+    : [sceneTags, ...tagKeys.map((k) => P.tags[`${desc.type}+${k}`] ?? "")]
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .join(", ")
+        .split(",")
+        .map((w) => w.trim())
+        .filter((w) => w && !cross?.has(w.replace(/^\((.*):[\d.]+\)$/, "$1")))
+        .join(", ");
   // rules on top of the scene tags (prompt.yaml: rules): by what the tags say and who is in the scene
+  // she is not drawn in this one (him alone with a toy): the rules about her body do not fire
+  const herOut = !!P.only[desc.type] && !P.only[desc.type]!.includes("wife");
   const has = (role: string) => desc.participants.some((p) => (role === "patron" ? p.role.startsWith("patron") : p.role === role));
   // close-ups get the rules too (fluids, no censoring), matched on their own words
   const ruleWords = booru || detailWords;
   const fired = ruleWords
-    ? P.rules.filter((r) => new RegExp(r.when, "i").test(ruleWords) && !(r.unless && new RegExp(r.unless, "i").test(ruleWords)) && (!r.with || has(r.with)) && (!r.without || !has(r.without)))
+    ? P.rules.filter((r) => !(herOut && /pussy|stomach bulge/.test(r.add ?? "")) && new RegExp(r.when, "i").test(ruleWords) && !(r.unless && new RegExp(r.unless, "i").test(ruleWords)) && (!r.with || has(r.with)) && (!r.without || !has(r.without)))
     : [];
   const slots = isDetail ? { scene: detailWords } : booru ? {} : (P.poses[desc.type] ?? {});
   const empty: string[] = [];
@@ -176,7 +191,7 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
     regions[role] = join([...who(cast, role, isDetail, role === "wife" ? herNude : exposed, isDetail && role === "wife" && P.detail_head.includes(detailId)), role === "wife" ? her : [], role === "wife" ? fired.flatMap((r) => (r.her ? [r.her] : [])) : [], size, isDetail || booru ? "" : slot(role)]);
   }
   // one man in the scene: no second one, no crowd of copies
-  const negative = join([P.style.negative, P.negatives[desc.type], ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.3), (multiple boys:1.3)" : men === 0 ? "1boy, male focus" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? ""), drawn.includes("wife") ? wearWords(t, sceneWords, cast.wife).negative : undefined]);
+  const negative = join([P.style.negative, P.negatives[desc.type], cross ? "(smile:1.2), smirk, grin, happy, flustered" : undefined, ...fired.flatMap((r) => (r.negative ? [r.negative] : [])), men === 1 ? "(2boys:1.3), (multiple boys:1.3)" : men === 0 ? "1boy, male focus" : undefined, ...drawn.map((r) => cast[r as Role]?.negative ?? ""), drawn.includes("wife") ? wearWords(t, sceneWords, cast.wife).negative : undefined]);
   // her first, then the room, then the men (with tags the room sits between them, as in the old packs)
   const others = Object.entries(regions).filter(([r]) => r !== "wife").map(([, v]) => v);
   const positive = booru && !isDetail ? join([shared, regions.wife, room, ...others]) : join([shared, ...Object.values(regions)]);

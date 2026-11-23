@@ -226,6 +226,7 @@ details:
   "toy_v+tsize.4": "(stomach bulge:1.2)"
   "toy_drawer": "close-up, (no humans:1.2), sex toy, dildo, drawer, still life"
   "toy_him": "close-up, (anal object insertion:1.3), dildo, male ass, all fours, lower body, from behind"
+  "toy_him+who.her": "(female hand:1.3), (pale hand:1.5), (pale arm:1.4), slender fingers, (black nails:1.2), wedding ring, holding dildo"
   "toy_v": "close-up, (vaginal object insertion:1.3), (dildo:1.2), object insertion, spread legs, female, pussy focus, lower body, pussy juice"
   "tsize.0": "(small dildo:1.3), slim dildo"
   "tsize.1": "dildo"
@@ -397,6 +398,11 @@ tags_wayward:
 # Danbooru tags of each scene (written 19.11, checked against Danbooru tag counts): who does what, the pose, the camera.
 # They lead the prompt; a scene with tags does not use its English pose slots (poses:, kept). Edited in tools/prompt-lab.
 tags:
+  # a room of its own for one scene ("idle@town.square"): replaces the scene's words there
+  idle@town.square: "1girl, 1boy, hetero, walking, side by side, holding bag, couple, smile, outdoors, street, full body"
+  idle@town.market: "1girl, 1boy, hetero, walking, side by side, holding bag, couple, smile, outdoors, market stall, full body"
+  idle@town.shops: "1girl, 1boy, hetero, walking, side by side, holding shopping bag, couple, smile, shopping, full body"
+  idle@town.gym: "1girl, 1boy, standing, gym, sweat, towel around neck, water bottle, light smile, looking at viewer, cowboy shot"
   # heroine builder previews (heroine.yaml: previews): who she is, clearly, without a story around her
   preview_full: "solo, standing, full body, looking at viewer, light smile, hands together, simple pose"
   preview_face: "solo, portrait, close-up, face focus, looking at viewer, light smile, upper body"
@@ -443,15 +449,15 @@ tags:
   riding: "hetero, sex, vaginal, (cowgirl position:1.2), girl on top, straddling, man lying on back, on bed, penis, penetration, hands on another's chest, from side"
   anal: "hetero, (anal:1.2), from behind, doggystyle, all fours, on bed, man kneeling behind, hands on another's hips, penis in ass, looking back, from side"
   rimming_her: "hetero, (anilingus:1.2), licking anus, all fours, ass, from behind, on bed, man kneeling behind, grabbing another's ass, looking back, blush, from side"
-  prostate: "hetero, femdom, (anal fingering:1.3), prostate milking, handjob, man lying on back, spread legs, penis, erection, precum, kneeling, on bed, from side, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3), (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
-  pegging: "hetero, femdom, (strap-on:1.3), (pegging:1.2), girl penetrating man, man on all fours, girl behind man, hands on another's hips, on bed, smirk, from side, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3)"
+  prostate: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.5), (pale arm:1.4), slender fingers, (black nails:1.2), wedding ring, (anal fingering:1.4), index finger in anus, (prostate milking:1.2), (male penetrated:1.2), (solo focus:1.2), male focus, man on all fours, male ass, from behind, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3), (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
+  pegging: "hetero, femdom, (pegging:1.3), strap-on, anal, (black strap-on:1.3), strap-on harness, (from side:1.3), profile, (2people:1.1), full body, man on all fours, (girl kneeling behind him:1.2), hip thrust, hands on another's hips, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3)"
   rimming_him: "hetero, femdom, (anilingus:1.2), licking anus, man on all fours, reach-around, handjob, kneeling, on bed, from side"
-  dildo_him: "hetero, femdom, (dildo:1.3), (anal object insertion:1.2), holding dildo, man on all fours, ass, kneeling, on bed, smirk, from behind, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3)"
-  fisting_him: "hetero, femdom, (anal fisting:1.3), fisting, man lying on back, legs up, spread legs, kneeling, on bed, from side, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3), (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
-  came_prostate: "hetero, femdom, (anal fingering:1.3), prostate milking, handjob, ejaculation, excessive cum, man lying on back, spread legs, kneeling, on bed, from side, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum, (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
-  came_dildo_him: "hetero, femdom, (dildo:1.3), (anal object insertion:1.2), holding dildo, man on all fours, ejaculation, excessive cum, kneeling, on bed, from behind, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum"
-  came_pegging: "hetero, femdom, (strap-on:1.3), (pegging:1.2), girl penetrating man, man on all fours, ejaculation, excessive cum, cum on bed, on bed, from side, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum"
-  came_fisting_him: "hetero, femdom, (anal fisting:1.3), fisting, ejaculation, excessive cum, man lying on back, legs up, spread legs, kneeling, on bed, from side, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum, (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
+  dildo_him: "solo, male focus, close-up, from behind, all fours, ass up, (anal object insertion:1.4), (dildo:1.3), dildo in anus, ass focus, male ass, testicles, arms out of frame, head out of frame, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3)"
+  fisting_him: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.5), (pale arm:1.4), slender fingers, (black nails:1.2), wedding ring, (anal fisting:1.5), (arm in anus:1.3), forearm in anus, wrist deep, (male penetrated:1.2), (solo focus:1.2), male focus, man on all fours, male ass, from behind, (precum:1.5), (precum string:1.4), (precum drip:1.3), precum pool, wet spot, stained sheets, (erection:1.1), glans, leaking, (dripping:1.3), (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
+  came_prostate: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.5), (pale arm:1.4), slender fingers, (black nails:1.2), wedding ring, (anal fingering:1.4), index finger in anus, (prostate milking:1.2), (male penetrated:1.2), (solo focus:1.2), male focus, man on all fours, male ass, from behind, ejaculation, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum, (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
+  came_dildo_him: "solo, male focus, close-up, from behind, all fours, ass up, (anal object insertion:1.4), (dildo:1.3), dildo in anus, ass focus, male ass, testicles, arms out of frame, head out of frame, ejaculation, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum"
+  came_pegging: "hetero, femdom, (pegging:1.3), strap-on, anal, (black strap-on:1.3), strap-on harness, (from side:1.3), profile, (2people:1.1), full body, man on all fours, (girl kneeling behind him:1.2), hip thrust, hands on another's hips, ejaculation, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum"
+  came_fisting_him: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.5), (pale arm:1.4), slender fingers, (black nails:1.2), wedding ring, (anal fisting:1.5), (arm in anus:1.3), forearm in anus, wrist deep, (male penetrated:1.2), (solo focus:1.2), male focus, man on all fours, male ass, from behind, ejaculation, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum, (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
   came_rimming_him: "hetero, femdom, (anilingus:1.2), man on all fours, reach-around, handjob, ejaculation, excessive cum, kneeling, on bed, from side"
   came_rimming_her: "hetero, (anilingus:1.3), (face in ass:1.2), tongue, all fours, top-down bottom-up, ass up, female orgasm, trembling, closed eyes, open mouth, pussy juice, on bed, man kneeling behind, grabbing another's ass, from side, uncensored"
   wants_him: "hetero, girl on top, leaning forward, hands on another's chest, seductive smile, bedroom eyes, man lying on back, on bed, from side"
@@ -502,7 +508,7 @@ tags:
   her_tidy: "cleaning, bent over, table, cloth, solo, cowboy shot"
   her_rest: "lying, on side, on bed, pillow hug, closed eyes, tired, relaxed, legs together, full body, from side"
   her_dress: "dressing, standing, underwear, man sitting on bed, looking at another, cowboy shot"
-  her_shop_toy: "1girl, solo, sex shop, standing, holding dildo, (holding sex toy:1.2), looking at object, blush, parted lips, shelves, cowboy shot"
+  her_shop_toy: "1girl, solo, adult store, standing, holding dildo, (holding toy:1.2), looking at object, blush, parted lips, store shelves, cowboy shot"
   caught_him_surprised: "1girl, solo, standing in doorway, open door, hand on door, surprised, wide-eyed, covering mouth, looking at viewer, pov, cowboy shot"
   caught_him_pity: "1girl, solo, standing in doorway, open door, crossed arms, disappointed, frown, half-closed eyes, looking down, looking at viewer, pov, cowboy shot"
   caught_him_playful: "1girl, solo, leaning on doorframe, open door, smirk, raised eyebrow, finger to mouth, naughty face, looking at viewer, pov, cowboy shot"
@@ -551,10 +557,12 @@ tags:
   him_grope: "hetero, groping, grabbing another's breast, grabbing another's ass, hug from behind, man behind her, standing, blush, looking back, upper body"
   him_grab_ass: "hetero, (grabbing another's ass:1.3), ass grab, hands on ass, from behind, man behind her, standing, looking back, blush, lower body"
   him_under_skirt: "hetero, (hand under skirt:1.3), hand between legs, skirt lift, fingering through clothes, standing, hug from behind, biting own lip, blush, cowboy shot"
-  him_guide_hand: "hetero, (crotch grab:1.2), her hand on his crotch, bulge, hand on another's hand, standing, looking down, blush, clothed, cowboy shot"
+  him_guide_hand: "hetero, (handjob:1.3), (penis grab:1.2), her hand on his penis, open fly, penis out, her other hand on his chest, (arm at side:1.2), his arms at sides, standing, (from side:1.3), profile, facing each other, looking down, blush, clothed female, cowboy shot"
   her_solo: "(female masturbation:1.2), fingering, spread legs, lying on back, on bed, hand on own breast, half-closed eyes, looking at viewer, blush, from above"
 # Extra negative words of a scene, added to the shared negative (tools/prompt-lab).
 negatives:
+  dildo_him: "1girl, female, breasts, pussy, (2boys:1.5), another person, hand, hands, male hand, dry"
+  came_dildo_him: "1girl, female, breasts, pussy, (2boys:1.5), another person, hand, hands, male hand"
   detail_him_bulge: "(male focus:1.2), 2boys, yaoi, androgynous, feminine"
   detail_him_cage: "(male focus:1.2), 2boys, yaoi, androgynous, feminine"
   detail_him_cum_pants: "(male focus:1.2), 2boys, yaoi, androgynous, feminine"
@@ -596,11 +604,10 @@ negatives:
   toy_on_her: "(penis:1.5), erection, (sex:1.4), testicles, man on top, pov, missionary"
   her_rest: "(standing:1.3), hug, kiss, cuddling, sex, nude"
   went_soft: "erection, sex, vaginal, cum, kiss, hug, penetration, girl on top, standing"
-  prostate: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3)"
-  fisting_him: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3)"
-  came_prostate: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3)"
-  came_fisting_him: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3)"
-  dildo_him: "dry"
+  prostate: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3), 1girl, breasts, pussy, male pov"
+  fisting_him: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3), 1girl, breasts, pussy, male pov"
+  came_prostate: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3), 1girl, breasts, pussy, male pov"
+  came_fisting_him: "(tan:1.4), (brown skin:1.4), (dark skin:1.4), tanned arm, (male arm:1.3), 1girl, breasts, pussy, male pov"
   pegging: "dry"
 
 penis_when: "\\b(penis|erection|sex|vaginal|anal|fellatio|handjob|paizuri|footjob|69|ejaculation|cum|facial|creampie|masturbation|precum|pegging|chastity cage|thigh sex|prostate|flaccid|premature ejaculation)\\b"
@@ -609,7 +616,7 @@ penis_unless: "outline|bulge|stain on (his )?pants|through (his )?(pants|trouser
 # Her nude words (cast.yaml: nude) go in only when the scene shows her body: sex, or her own nudity
 her_nude_when: "\\b(penis|sex|vaginal|anal|fellatio|handjob|paizuri|footjob|69|cunnilingus|fingering|masturbation|facesitting|sitting on face|pegging|creampie|cum|nude|nudity|naked|breasts out|flashing|nipples|pussy|ass|panties|topless|bottomless|anilingus|thigh sex|after sex|undressing|showering)\\b"
 # The figures a scene's picture draws (Alexey 19.11: husbands next to her chores look bad - she is alone there).
-only: { her_cook: [wife], her_tidy: [wife], her_rest: [wife] }
+only: { her_cook: [wife], her_tidy: [wife], her_rest: [wife], dildo_him: [husband], came_dildo_him: [husband], prostate: [husband], came_prostate: [husband], fisting_him: [husband], came_fisting_him: [husband] }
 # Rules on top of a scene's tags (Alexey's Wayward filters, 19.11): when the scene's tags match `when` (a regex) and not `unless`,
 # with: the scene has that role (patron = any guest, husband), without: it has not. add -> after the scene tags, her -> her part,
 # negative -> the negative. Fixes for problem scenes that are not switched on yet: claude/gen-fixes.md in the project.

@@ -134,7 +134,7 @@ words:
   mood:             # first match from the top
     - { when: scared, tags: [scared, tears] }
     - { when: angry, tags: [angry, glaring] }
-    - { when: annoyed, tags: [annoyed, frown] }
+    - { when: annoyed, tags: ["(annoyed:1.3)", "(frown:1.2)", glaring, pout] }
     - { when: ashamed, tags: [embarrassed, blush, averting eyes] }
     - { when: guilty, tags: [guilty, looking down] }
     - { when: tender, tags: [gentle smile, soft eyes] }
