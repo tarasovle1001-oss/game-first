@@ -38,6 +38,12 @@ export const visitOf = (state: GameState, patronId: string): Visit | undefined =
   bs(state).shift?.visits.find((v) => v.patron === patronId);
 
 /** Marks the current tick as eventful: "wait until something happens" stops here. */
+/** Somebody is standing in front of him waiting for an answer: who, as one string. A wait of any length stops when this changes. */
+const waitingOnHim = (state: GameState): string => {
+  const b = bs(state);
+  const g = b.shift?.group;
+  return [b.ask ? `ask:${b.ask.patron}:${b.ask.act}` : "", b.approach ? `her:${b.approach.kind}` : "", b.deal ? `deal:${b.deal.patron}` : "", g?.pending !== undefined ? "door" : "", g?.wants !== undefined ? `tray:${g.wants}` : "", b.caught ? "caught" : ""].filter(Boolean).join("|");
+};
 export const interrupt = (ctx: Ctx) => {
   const sh = bs(ctx.state).shift;
   if (sh) sh.interrupt = true;
@@ -412,9 +418,13 @@ export function registerShift(api: ModApi) {
       const untilEvent = action.payload?.until === "event";
       const max = untilEvent ? TICKS_PER_SHIFT : ticks(action.payload!.minutes as number);
       sh.interrupt = false;
+      const before = waitingOnHim(ctx.state);
       for (let i = 0; i < max && !ticksDone(sh); i++) {
         tick(ctx);
         if (untilEvent && sh.interrupt) break;
+        // "an hour" is an hour only while nobody needs his word: a company at the door, her question, a guest with money stop it
+        const now = waitingOnHim(ctx.state);
+        if (now && now !== before) break;
       }
     },
   });
@@ -483,6 +493,7 @@ export function registerShift(api: ModApi) {
       const untilEvent = action.payload?.until === "event";
       const max = untilEvent ? TICKS_PER_SHIFT : ticks(action.payload!.minutes as number);
       sh.interrupt = false;
+      const before = waitingOnHim(ctx.state);
       let busy = 0;
       for (let i = 0; i < max && !ticksDone(sh) && !tired(ctx.state); i++) {
         if (busy > 0) busy -= 1;
@@ -499,6 +510,8 @@ export function registerShift(api: ModApi) {
         changeHim(ctx, "energy", -Wk.energyPerHour / 60, "work");
         tick(ctx);
         if (untilEvent && sh.interrupt) break;
+        const now = waitingOnHim(ctx.state);
+        if (now && now !== before) break;
       }
     },
   });

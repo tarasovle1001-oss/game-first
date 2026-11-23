@@ -41,7 +41,9 @@ export function registerSecrecy(api: ModApi) {
         b.secretActsToday += 1;
         const { patron, loc } = e.payload as { patron: string; loc: string };
         const name = `@name:${b.patrons[patron]!.name}`;
-        if (husbandSees(ctx.state, HALL)) {
+        // (once, when they go: not at every new thing they do behind the door, and not for a man of the company who was in there already)
+        const inside = (e.payload as { switched?: boolean }).switched || b.shift?.visits.find((v) => v.patron === patron)?.group;
+        if (husbandSees(ctx.state, HALL) && !inside) {
           // he watches them walk off together
           suspect(ctx, S.sawThemLeave);
           ctx.log("log.hint.left_together", { name, room: `loc.${loc}` });
