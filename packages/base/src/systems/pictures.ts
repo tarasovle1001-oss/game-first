@@ -16,7 +16,8 @@ const TASK: Record<string, string> = { cook: "her_cook", tidy: "her_tidy", rest:
 
 export function registerPictures(api: ModApi) {
   // close-ups of things that happen to him and around her, for the move they happen on
-  api.events.on("husband:came_touch", (ctx) => detail(ctx, { id: "him_cum_pants", who: HUSBAND }));
+  // from her touch it ends in his trousers; alone behind a door there are no trousers in it - that has a close-up of its own
+  api.events.on("husband:came_touch", (ctx, e) => detail(ctx, { id: e.payload?.from === "alone" ? "him_came_alone" : "him_cum_pants", who: HUSBAND }));
   api.events.on("husband:wet_dream", (ctx) => detail(ctx, { id: "wet_sheet", who: HUSBAND }));
   api.events.on("floor:moment", (ctx, e) => {
     const id = e.payload!.id as string;

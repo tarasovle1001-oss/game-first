@@ -160,7 +160,8 @@ export function registerAlone(api: ModApi) {
     b.husband.spentDay = ctx.state.time.day;
     ctx.emit("husband:came_touch", { from: "alone" });
     changeHim(ctx, "mood", A.mood, "alone");
-    ctx.log(al.toy ? "log.alone.toy" : "log.alone.hand", al.toy ? { toy: `toy.${al.toy}` } : undefined);
+    // how it ends, not "a quarter of an hour later he puts it back": the scene has been played move by move
+    ctx.log(al.toy ? "log.alone.came.toy" : "log.alone.came.hand", al.toy ? { toy: `toy.${al.toy}` } : undefined);
     ctx.emit("husband:alone", { toy: al.toy ?? "", thought: al.thought ?? "" });
   };
   /** She is in the house and awake: every few minutes she may come looking for him. Returns true when she did. */

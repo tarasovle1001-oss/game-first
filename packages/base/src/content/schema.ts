@@ -350,6 +350,7 @@ export const bodySchema = z
 
 export const secrecySchema = z
   .object({
+    caughtHer: z.object({ composure: z.number(), openness: z.number(), fidelity: z.number(), open: z.number(), likes: z.number(), drunk: z.number(), at: z.array(z.number()).length(3) }).strict(),
     styleFactor: z.object({ naive: z.number(), jealous: z.number(), encouraging: z.number() }).strict(), // how fast each husband gets suspicious
     sawPublicPerTier: z.number(), // he watched something on the floor
     sawThemLeave: z.number(), // he saw her walk off with a guest

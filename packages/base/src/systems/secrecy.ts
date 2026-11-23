@@ -206,12 +206,33 @@ export function registerSecrecy(api: ModApi) {
     enumerate: (state) => (caughtNow(state) ? [{ type: CAUGHT_WATCH }] : []),
     apply(ctx) {
       const b = bs(ctx.state);
-      ctx.log("log.caught.watch", { name: `@name:${b.patrons[b.caught!.patron]!.name}` });
+      const h = b.heroine;
+      const p = b.patrons[b.caught!.patron]!;
+      // He stays in the doorway and she sees him. What she does then is her nerve and her nature, not always "she does not stop":
+      // she burns with shame, loses her head, goes blank, or holds his eye.
+      const C = content.secrecy.caughtHer;
+      const likes = h.latents.exhibitionist !== undefined || h.latents.likes_watched !== undefined || h.latents.guilt_thrill !== undefined;
+      const nerve = (h.attrs?.composure ?? 50) * C.composure + h.traits.openness * C.openness - h.traits.fidelity * C.fidelity + (b.mode === "open" ? C.open : 0) + (likes ? C.likes : 0) + h.drunk * C.drunk;
+      const how = nerve < C.at[0]! ? "mortified" : nerve < C.at[1]! ? "flustered" : nerve < C.at[2]! ? "frozen" : "brazen";
+      ctx.log(how === "brazen" ? "log.caught.watch" : `log.caught.watch.${how}`, { name: `@name:${p.name}` });
       b.caught = null;
       goOpen(ctx, "caught");
-      b.power = clamp(b.power + 10);
-      changeHeroine(ctx, "arousal", 8, "watched");
-      ctx.emit("caught:resolved", { choice: "watch" });
+      if (how === "mortified" || how === "flustered") {
+        // she ends it herself: the guest is out of the door, and it sits on her, not on the husband
+        const visit = b.shift!.visits.find((v) => v.patron === p.id);
+        endEncounter(ctx, true);
+        if (visit) visit.stay = 0;
+        changeHeroine(ctx, "mood", how === "mortified" ? -14 : -8, "caught");
+        h.traits.fidelity = clamp(h.traits.fidelity + (how === "mortified" ? 3 : 1));
+        b.power = clamp(b.power - (how === "mortified" ? 6 : 3));
+      } else if (how === "frozen") {
+        changeHeroine(ctx, "arousal", -6, "watched");
+        b.power = clamp(b.power + 3);
+      } else {
+        b.power = clamp(b.power + 10);
+        changeHeroine(ctx, "arousal", 8, "watched");
+      }
+      ctx.emit("caught:resolved", { choice: "watch", how });
     },
   });
 

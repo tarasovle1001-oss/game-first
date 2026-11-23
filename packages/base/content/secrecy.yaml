@@ -36,3 +36,5 @@ gossip: # what the town says about her, 0..100
   reachesHusband: 0.006 # chance per day, per point, that someone lets him know
   suspicion: 8
   fadePerDay: 1.5
+# he stays in the doorway and she sees him: what she does. nerve = composure x a + openness x b - fidelity x c (+ open marriage, + she likes being seen or the thrill of it, + drink)
+caughtHer: { composure: 0.5, openness: 0.5, fidelity: 0.25, open: 25, likes: 15, drunk: 0.15, at: [15, 30, 48] } # below at[0] mortified, then flustered, then frozen, above at[2] brazen
