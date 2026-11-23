@@ -28,7 +28,7 @@ export const slurTags = (state: GameState, key: string, tags?: string[]): string
 
 // which reason a row of the consent formula stands for, when it is the one that tipped her into "no"
 const WHY: Record<string, string> = {
-  tired: "tired", sore: "sore", resent: "resent", annoyed: "annoyed", fed_up: "annoyed", mood: "mood", satisfied: "sated", asleep: "asleep",
+  tired: "tired", worn: "worn", sore: "sore", resent: "resent", annoyed: "annoyed", fed_up: "annoyed", mood: "mood", satisfied: "sated", asleep: "asleep",
   feelings: "feelings", trust: "trust", desire: "cold", power_denies: "power", act: "not_her", openness: "not_her", taste: "not_her", jump: "too_fast",
   fidelity: "faithful", witnesses: "public", plain_sight: "public", crowd: "public", husband: "husband", expect: "forbidden", stance: "forbidden", directive: "forbidden",
   affinity: "him", stranger: "him", type_taste: "him", drunk_guest: "him", pressure: "pushed", work: "work", size: "size",
