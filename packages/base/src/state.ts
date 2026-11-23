@@ -325,7 +325,7 @@ export interface BaseState {
   solo?: { at: number; zone: string; started?: number; watched?: boolean; done?: boolean }; // today's session: when in the afternoon (minutes left), and how it goes
   lastToy?: { id: string; size: number; zone: string; day: number }; // what she used last, for the picture
   sentUp?: number; // the day he last sent her up to a lodger
-  stayedUp?: { day: number; patron: string; act: string; tells: string }; // she did not come back before morning
+  stayedUp?: { day: number; patron: string; act: string; tells: string; own?: boolean }; // she did not come back before morning
   lodgers: Record<string, { patron: string; nights: number }>; // hotel room -> who stays there
   changed: { from: string; by: string | null } | null; // she changed mid-shift: what she wore before and who asked (null = her own idea)
   gossip: number; // 0..100, what the town says about her

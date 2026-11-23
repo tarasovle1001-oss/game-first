@@ -154,6 +154,15 @@ export function nightUp(ctx: Ctx, all = false) {
     if (tells !== "full") ctx.log("log.send_up.truth", { name, act: `act.${act.id}` }, ["unseen"]);
     return finish();
   }
+  // she went up on her own (the bell, the towels), it went all the way and she was in no hurry to leave: some nights she simply stays
+  if (up.stage === 2 && now >= (up.backAt ?? 0) && up.far && (up.hours ?? 0) >= 1 && !up.knocked && b.heroine.traits.openness >= H.towels.stayOpenness && ctx.rng.chance(H.towels.stayChance)) {
+    n.herAsleep = n.minute ?? 0;
+    b.stayedUp = { day: ctx.state.time.day, patron: up.patron, act: up.act ?? "sex", tells: open ? "full" : "none", own: true };
+    ctx.log("log.send_up.stays", { name }, ["unseen"]);
+    if (!all || up.seen) ctx.log("log.towels.alone");
+    n.up = undefined;
+    return;
+  }
   if (up.stage === 2 && now >= (up.backAt ?? 0)) {
     const gone = Math.max(5, Math.round(((up.backAt ?? 0) - up.leaveAt) / 5) * 5);
     if (!all) ctx.log(up.knocked ? "log.towels.back.knocked" : gone <= 15 ? "log.towels.back.quick" : open ? "log.towels.back.open" : "log.towels.back.long", { minutes: gone, name });
@@ -348,10 +357,10 @@ export function registerHotel(api: ModApi) {
     b.stayedUp = undefined;
     const p = b.patrons[s.patron];
     const name = `@name:${p?.name ?? ""}`;
-    ctx.log(s.tells === "full" ? "log.send_up.morning.full" : "log.send_up.morning.excuse", { name, act: `act.${s.act}` });
+    ctx.log(`log.${s.own ? "towels" : "send_up"}.morning.${s.tells === "full" ? "full" : "excuse"}`, { name, act: `act.${s.act}` });
     if (s.tells !== "full") {
       ctx.log("log.send_up.truth", { name, act: `act.${s.act}` }, ["unseen"]);
-      if (b.mode === "hidden") b.suspicion = Math.min(100, b.suspicion + 4);
+      if (b.mode === "hidden") b.suspicion = Math.min(100, b.suspicion + (s.own ? H.towels.staySuspicion : 4));
     }
   });
   api.events.on("shift:end", (ctx) => {

@@ -4077,3 +4077,8 @@ log.him.collapse: "Everything goes dark. You barely make it to the bed and fall 
 log.him.collapse.woke: "You wake at {time}. Downstairs the evening has gone on all this while - without you."
 log.him.collapse.closed: "You wake at {time}. It is quiet downstairs: she has closed the cafe herself."
 action.wait.opening: "Wait until opening ({hour}:00)"
+log.towels.alone: "She does not come back. Her half of the bed stays cold, and towards morning you fall asleep alone."
+log.towels.morning.full: "In the morning she comes down from his room in nothing but a dressing gown. \"I stayed with {name}. All night.\" She does not apologise and does not look away."
+"log.towels.morning.full#2": "In the morning she comes back from {name}, quietly, shoes in her hand. She sees you are awake. \"Yes. I was with him all night.\""
+log.towels.morning.excuse: "In the morning she is not in bed. She turns up later, already dressed: \"I fell asleep downstairs folding the linen. My back will not straighten now.\""
+"log.towels.morning.excuse#2": "You wake alone. She is in the kitchen, her hair wet from the shower. \"I did not want to wake you. I lay down in the spare room.\""
