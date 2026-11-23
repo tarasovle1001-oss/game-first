@@ -68,6 +68,7 @@ shift:
   minutesPerTick: 1    # the evening is counted in minutes; slow things still run every 10 (event shift:tick)
   seats: 8
   work: { minutes: [15, 60], takeAfter: 8, cleanPerMinute: 0.2, energyPerHour: 5, choreEvery: 25, chores: 5 } # "work the floor": he takes a table that has waited this long, tidies otherwise
+  closingGrace: 45     # a scene still going at closing time is not cut off: the doors stay unlocked this much longer at most, and everybody else is seen out
   lastArrivalBefore: 60 # nobody new comes in during the last minutes before closing
   arrivalGap: [0.55, 1.45] # the gap to the next guest, as a share of the average one: guests come at a pace, not all at once
   atOnce: [4, 8]       # how many sit in the hall at once at fame 0 and at fame 100: the next one waits for a free table

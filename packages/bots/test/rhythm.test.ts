@@ -39,8 +39,8 @@ describe("the day around the clock", () => {
     const night = structuredClone(toNight(7));
     bs(night).husband.energy = 5;
     bs(night).complaint = null;
-    const early = engine.dispatch(engine.dispatch(night, { type: CORE_ADVANCE }), { type: CORE_ADVANCE });
-    const late = engine.dispatch(engine.dispatch(night, { type: SLEEP, payload: { until: 12 } }), { type: CORE_ADVANCE });
+    const early = engine.dispatch(night, { type: CORE_ADVANCE });
+    const late = engine.dispatch(night, { type: SLEEP, payload: { until: 12 } });
     expect(early.time.phase).toBe("prep");
     expect(late.time.phase).toBe("prep");
     expect(himOf(late).energy).toBeGreaterThan(himOf(early).energy);

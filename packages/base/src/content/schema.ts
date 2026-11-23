@@ -70,6 +70,7 @@ export const balanceSchema = z
         hours: z.number().positive(),
         minutesPerTick: z.number().int().positive(),
         seats: z.number().int().positive(),
+        closingGrace: z.number().int().min(0),
         lastArrivalBefore: z.number().int().min(0),
         billFactorFull: z.number().min(0),
         work: z.object({ minutes: z.array(z.number().int().positive()), takeAfter: z.number(), cleanPerMinute: z.number(), energyPerHour: z.number(), choreEvery: z.number().int().positive(), chores: z.number().int().positive() }).strict(),

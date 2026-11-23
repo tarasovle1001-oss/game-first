@@ -303,12 +303,42 @@ function herOwnGlass(ctx: Ctx) {
   ctx.log(bad ? "log.drink.herself.bad" : "log.drink.herself", undefined, seen ? undefined : ["unseen"]);
 }
 
+/**
+ * Two o'clock is not a wall. With nothing going on the last guests are seen out and that is that; a scene that began
+ * before closing is not cut off: everybody else leaves, the two of them finish (in his room, if he has one upstairs).
+ */
+function closingTime(ctx: Ctx) {
+  const b = bs(ctx.state);
+  const sh = b.shift!;
+  const end = TICKS_PER_SHIFT + Math.round((sh.early ?? 0) / bal.minutesPerTick);
+  if (sh.tick < end) return;
+  const enc = b.encounter;
+  if (sh.tick === end) {
+    // everybody not in it is out of the door
+    for (const v of sh.visits) if (v.patron !== enc?.patron && !enc?.men?.some((m) => m.patron === v.patron) && !Object.values(b.lodgers).some((l) => l.patron === v.patron)) v.stay = 0;
+    if (enc) {
+      const seen = husbandSees(ctx.state, enc.loc) || b.mode === "open";
+      const name = `@name:${b.patrons[enc.patron]?.name ?? ""}`;
+      // a man with a room upstairs: she takes it there, behind his own door
+      const own = Object.entries(b.lodgers).find(([, l]) => l.patron === enc.patron)?.[0];
+      if (own && enc.loc !== own && !(enc.men?.length) && ctx.state.where[HUSBAND] !== own) {
+        enc.loc = own;
+        ctx.state.where[WIFE] = own;
+        ctx.state.where[enc.patron] = own;
+        ctx.log("log.closing.upstairs", { name, room: `loc.${own}` }, seen ? undefined : ["unseen"]);
+      } else ctx.log("log.closing.holds", { name }, seen ? undefined : ["unseen"]);
+    }
+  }
+  sh.hold = !!b.encounter;
+}
+
 /** One minute of the evening. Slow things (moods, sobering up, timed arrivals) still run every ten: event "shift:tick". */
 function tick(ctx: Ctx) {
   const sh = bs(ctx.state).shift!;
   sh.tick += 1;
   // one clock for the whole game: a stage reads it and moves it on, never back (a scene may have run it a few minutes ahead)
   ctx.state.time.minute = Math.max(ctx.state.time.minute, bal.opensAt * 60 - (sh.early ?? 0) + sh.tick * bal.minutesPerTick);
+  closingTime(ctx);
   advanceEncounter(ctx);
   arrive(ctx);
   runProposals(ctx); // guests try their luck before she gets back to work
@@ -358,6 +388,18 @@ function tick(ctx: Ctx) {
 const TEN = ticks(10);
 
 export function registerShift(api: ModApi) {
+  // The morning sums are a line in the log, not a stage to click through: once everything that happens "over breakfast"
+  // has been counted, the new day simply begins (same events in the same order as leaving the stage by hand).
+  api.events.on(
+    "phase:enter",
+    (ctx, e) => {
+      if (e.payload!.phase !== "summary") return;
+      ctx.emit("phase:exit", { phase: "summary" });
+      ctx.emit("day:end", { day: ctx.state.time.day });
+      ctx.emit("core:setPhase", { phase: "prep", newDay: true });
+    },
+    -1000,
+  );
   api.events.on("shift:pass", (ctx, e) => passShift(ctx, e.payload!.minutes as number));
   const clock = content.balance.clock;
   api.events.on("phase:enter", (ctx, e) => {
@@ -376,7 +418,7 @@ export function registerShift(api: ModApi) {
       ctx.state.where[WIFE] = "cafe.bar";
       ctx.emit("shift:start");
     }
-    ctx.log("log.phase", { day: ctx.state.time.day, phase: `base.phase.${phase}` });
+    if (phase !== "summary") ctx.log("log.phase", { day: ctx.state.time.day, phase: `base.phase.${phase}` });
     if (phase === "night") ctx.state.where[WIFE] = "home.bedroom";
   }, 100);
 

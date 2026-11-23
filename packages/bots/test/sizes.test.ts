@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseMod, bs, content, fitOf, permOf, sizeStage, stepsAbove, takeChance } from "@tc/base";
+import { baseMod, bs, content, fitOf, permOf, sizeStage, stepsAbove, takeChance, ticksDone, TICKS_PER_SHIFT } from "@tc/base";
 import { createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 import { awayStrategy, ownerStrategy } from "../src";
@@ -128,8 +128,9 @@ describe("the long goal: buying the place (23.11)", () => {
     s = eng.dispatch(s, buy!);
     expect(bs(s).ownsPlace).toBe(true);
     expect(bs(s).money).toBe(100);
-    for (let i = 0; i < 600 && s.time.phase !== "summary"; i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
-    expect(bs(s).today.rent).toBe(0);
+    const day = s.time.day;
+    for (let i = 0; i < 600 && s.time.day === day; i++) s = eng.dispatch(s, eng.listActions(s).find((a) => a.type === "core/advance") ?? eng.listActions(s)[0]!);
+    expect(bs(s).history.at(-1)!.rent).toBe(0);
   });
 });
 
@@ -183,5 +184,18 @@ describe("one clock for the whole game (23.11)", () => {
       }
       expect(s.time.day).toBeGreaterThan(2);
     }
+  });
+});
+
+describe("closing time is not a wall (23.11)", () => {
+  it("a scene still going holds the doors, but never past the grace", () => {
+    const end = TICKS_PER_SHIFT;
+    const grace = content.balance.shift.closingGrace;
+    expect(ticksDone({ tick: end - 1 })).toBe(false);
+    expect(ticksDone({ tick: end })).toBe(true);
+    expect(ticksDone({ tick: end, hold: true })).toBe(false);
+    expect(ticksDone({ tick: end + grace - 1, hold: true })).toBe(false);
+    expect(ticksDone({ tick: end + grace, hold: true })).toBe(true);
+    expect(ticksDone({ tick: 10, closed: true, hold: true })).toBe(true);
   });
 });

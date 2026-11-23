@@ -9,7 +9,12 @@ export const TICKS_PER_SHIFT = Math.round((sb.hours * 60) / sb.minutesPerTick);
 /** Minutes -> ticks, at least one. */
 export const ticks = (minutes: number) => Math.max(1, Math.round(minutes / sb.minutesPerTick));
 /** The doors opened this many minutes before the usual hour: the evening is that much longer. */
-export const ticksDone = (shift: { tick: number; closed?: boolean; early?: number } | null) => !shift || shift.closed === true || shift.tick >= TICKS_PER_SHIFT + Math.round((shift.early ?? 0) / sb.minutesPerTick);
+/** Closing time. A scene that is still going holds the doors a little longer (`hold`, set by the evening's own tick), never past the grace. */
+export const ticksDone = (shift: { tick: number; closed?: boolean; early?: number; hold?: boolean } | null) => {
+  if (!shift || shift.closed === true) return true;
+  const end = TICKS_PER_SHIFT + Math.round((shift.early ?? 0) / sb.minutesPerTick);
+  return shift.tick >= end && (!shift.hold || shift.tick >= end + Math.round(sb.closingGrace / sb.minutesPerTick));
+};
 /** "18:40" from a minute of the day. */
 /** The day as the player reads it: the number goes up when he wakes, so the morning sums already belong to the new day (the clock itself never runs back). */
 export const shownDay = (state: { time: { day: number; phase: string } }) => state.time.day + (state.time.phase === "summary" ? 1 : 0);

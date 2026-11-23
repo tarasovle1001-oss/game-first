@@ -42,6 +42,7 @@ for (let seed = 1; seed <= seeds; seed++) {
     const actions = engine.listActions(s);
     const permit = actions.filter((a) => a.type === "base/permit");
     const pick: Action = permit.length ? (permit.find((a) => a.payload?.say === answer) ?? permit.find((a) => a.payload?.say === "no") ?? permit[0]!) : lovingStrategy(actions, s, () => ((seed * 7919 + turn * 104729) % 1000) / 1000);
+    const dayWas = s.time.day;
     s = engine.dispatch(s, pick);
     const keys = s.log.map(key);
     const from = last ? keys.lastIndexOf(last) + 1 : 0;
@@ -50,9 +51,10 @@ for (let seed = 1; seed <= seeds; seed++) {
       if (k) add(Math.min(days, s.time.day), k);
     }
     last = keys[keys.length - 1] ?? last;
-    if (s.time.phase === "summary") {
+    if (s.time.day !== dayWas) {
+      // a day has just ended (the morning sums are no longer a stage of their own)
       const h = bs(s).heroine;
-      const d = Math.min(days, s.time.day);
+      const d = Math.min(days, dayWas);
       perDay[d]!.open = (perDay[d]!.open ?? 0) + h.traits.openness / 1;
       perDay[d]!.fid = (perDay[d]!.fid ?? 0) + h.traits.fidelity;
       perDay[d]!.n = (perDay[d]!.n ?? 0) + 1;

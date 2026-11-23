@@ -25,11 +25,13 @@ describe("day cycle", () => {
     let s = engine.init(1);
     expect(s.time).toEqual({ day: 1, phase: "prep", minute: DAY1 });
     const seen = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       s = nextPhase(s);
       seen.push(s.time.phase);
     }
-    expect(seen).toEqual(["shift", "night", "summary", "prep"]);
+    // the morning sums are a line in the log, not a stage: the night goes straight into the next day
+    expect(seen).toEqual(["shift", "night", "prep"]);
+    expect(s.log.some((e) => e.key === "log.summary")).toBe(true);
     expect(s.time.day).toBe(2);
     expect(s.mods.base.daysPlayed).toBe(1);
   });
@@ -143,7 +145,7 @@ describe("shift and economy", () => {
     let s = engine.init(3);
     s = { ...s, mods: { ...s.mods, base: { ...s.mods.base, money: 0, stock: 0 } } };
     const debtBefore = s.mods.base.debt;
-    while (s.time.phase !== "summary") s = nextPhase(s);
+    while (s.time.day === 1) s = nextPhase(s); // the sums are done on waking: the new day begins with them counted
     expect(s.mods.base.money).toBe(0);
     expect(s.mods.base.debt).toBeGreaterThan(debtBefore);
   });

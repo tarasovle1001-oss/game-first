@@ -248,6 +248,7 @@ export interface Shift {
   attend?: { loc: string; until: number; why: string; patron?: string; asked?: boolean }; // she is in another room with the guests there (a round, a drink to the sauna, a look in on a lodger): the hall mode runs there
   awaySince?: number; // he is out in town: the minute he left (0 = he was not back by opening)
   awayUntil?: number; // minute until which she is out of reach (behind the back room door)
+  hold?: boolean; // closing time has come and a scene is still going: the evening waits for it (places.ts: ticksDone)
   quietDone?: boolean; // she has already gone up to lie down once tonight
   said?: Record<string, number>; // which variant of an act's line was used last tonight
   noTimeAt?: number; // the minute "no time to tidy up" was last said
