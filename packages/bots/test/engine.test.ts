@@ -5,7 +5,7 @@ const OPENS = content.balance.shift.opensAt * 60; // the tests follow the clock 
 const SHIFT_MINUTES = content.balance.shift.hours * 60;
 const DAY1 = OPENS - 360; // the first afternoon is six hours long
 import { exampleMod, EXAMPLE_FORMULA } from "@tc/mod-example";
-import { CORE_ADVANCE, CORE_MOVE, createEngine, createTranslator, loadGame, saveGame, sceneKey } from "@tc/core";
+import { CORE_ADVANCE, CORE_MOVE, createEngine, createTranslator, loadGame, saveGame, sceneKey, setSaveBuild } from "@tc/core";
 import type { GameState, Mod } from "@tc/core";
 import { WAIT } from "@tc/base";
 
@@ -405,5 +405,18 @@ describe("the night's additions", () => {
     const { s } = play(2, 8);
     const rents = s.mods.base.history.map((h: any) => h.rent);
     expect(rents.at(-1)).toBeGreaterThan(rents[0]);
+  });
+});
+
+describe("a save says which build wrote it (23.11)", () => {
+  it("the build label goes into the save and comes back on load; an old save without it still loads", () => {
+    const s = engine.init(3);
+    setSaveBuild("45");
+    const json = saveGame(s, engine);
+    expect(JSON.parse(json).build).toBe("45");
+    expect(loadGame(json, [baseMod]).build).toBe("45");
+    const old = JSON.parse(json);
+    delete old.build;
+    expect(loadGame(JSON.stringify(old), [baseMod]).build).toBeUndefined();
   });
 });

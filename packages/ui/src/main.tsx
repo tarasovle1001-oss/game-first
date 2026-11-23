@@ -1,9 +1,9 @@
-import type { PointerEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent, ReactNode } from "react";
+import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { tracer, resetTracer, bs, husbandSees, cardFolder, shownDay } from "@tc/base";
 import type { HeroineCard } from "@tc/base";
-import { loadGame, saveGame, sceneKey } from "@tc/core";
+import { loadGame, saveGame, sceneKey, setSaveBuild } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
 import { CheatPanel } from "./cheats";
 import type { Bookmark } from "./cheats";
@@ -29,8 +29,40 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "44";
+const BUILD = "45";
+setSaveBuild(BUILD);
 const RESUME_KEY = "test-city.resume";
+/**
+ * What went wrong in this browser while playing: errors and failed promises, the last 40, with the time. They go into
+ * the report file (and the crash screen offers to save it), so a tester does not have to dig in the console.
+ */
+const errorsSeen: string[] = [];
+const noteError = (what: string) => {
+  errorsSeen.push(`${new Date().toISOString().slice(11, 19)} ${what}`.slice(0, 1500));
+  if (errorsSeen.length > 40) errorsSeen.shift();
+};
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (e) => noteError(`${e.message} @ ${e.filename?.split("/").pop() ?? ""}:${e.lineno}${e.error?.stack ? `\n${e.error.stack}` : ""}`));
+  window.addEventListener("unhandledrejection", (e) => noteError(`promise: ${(e.reason as Error)?.stack ?? String(e.reason)}`));
+  const was = console.error.bind(console);
+  console.error = (...a: unknown[]) => {
+    noteError(a.map((x) => (x instanceof Error ? (x.stack ?? x.message) : typeof x === "string" ? x : JSON.stringify(x))).join(" "));
+    was(...a);
+  };
+}
+/** The report file: who made it, the notes, the errors, then the moves for tools/replay.ts. Also used by the crash screen. */
+const reportText = (notes: string[], journal: unknown) => {
+  const head = `test-city report · build ${BUILD} · ${new Date().toISOString().slice(0, 16).replace("T", " ")} · ${typeof navigator !== "undefined" ? navigator.userAgent : ""}`;
+  const errs = errorsSeen.length ? `\n\n=== errors ===\n${errorsSeen.join("\n")}` : "";
+  const tail = journal ? `\n\n${JOURNAL_MARK}\n${JSON.stringify(journal)}\n` : "";
+  return `${head}\n\n${notes.join("\n\n")}${errs}${tail}`;
+};
+const downloadReport = (notes: string[], journal: unknown) => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([reportText(notes, journal)], { type: "text/plain;charset=utf-8" }));
+  a.download = `playtest-notes-${BUILD}.txt`;
+  a.click();
+};
 const JOURNAL_KEY = "test-city.journal";
 /**
  * Every move since the game started (or since a save was loaded): with it a playtest note can be played again
@@ -56,6 +88,15 @@ const packSave = (state: GameState, past: GameState[], budget = RESUME_BUDGET) =
     steps.unshift(s);
   }
   return JSON.stringify({ resume: 1, now, past: steps });
+};
+/** The build a save says it was written by (either kind of save), if it says. */
+const savedBuild = (json: string): string | undefined => {
+  try {
+    const raw = JSON.parse(json) as { build?: string; now?: string };
+    return raw.build ?? (typeof raw.now === "string" ? (JSON.parse(raw.now) as { build?: string }).build : undefined);
+  } catch {
+    return undefined;
+  }
 };
 /** Reads either kind: a plain save, or one with the steps back. */
 const unpackSave = (json: string, mods: Parameters<typeof loadGame>[1]): { state: GameState; past: GameState[] } => {
@@ -214,14 +255,8 @@ function App() {
       /* the note is still on screen for this session */
     }
   };
-  const saveNotes = () => {
-    const a = document.createElement("a");
-    // the moves go after the notes, on one line: tools/replay.ts reads them, a person can stop reading at the marker
-    const tail = journal ? `\n\n${JOURNAL_MARK}\n${JSON.stringify(journal)}\n` : "";
-    a.href = URL.createObjectURL(new Blob([notes.join("\n\n") + tail], { type: "text/plain;charset=utf-8" }));
-    a.download = `playtest-notes-${BUILD}.txt`;
-    a.click();
-  };
+  // the moves go after the notes and the errors, on one line: tools/replay.ts reads them, a person can stop reading at the marker
+  const saveNotes = () => downloadReport(notes, journal);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "F2") {
@@ -331,6 +366,9 @@ function App() {
       const got = unpackSave(json, game.mods);
       setPast(got.past.slice(-UNDO_DEPTH));
       setState(got.state);
+      // a save from another build: say so (it may play differently, or not at all), but load it
+      const from = savedBuild(json);
+      if (from && from !== BUILD) window.setTimeout(() => setError(t("ui.save.otherBuild", { from, now: BUILD })), 0);
       // from here the moves are counted on top of the loaded game (big saves are left out: the notes would not fit)
       setJournal(json.length < 400_000 ? { build: BUILD, base: { save: saveGame(got.state, engine) }, actions: [] } : null);
     });
@@ -607,4 +645,39 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+/** If the game itself falls over, the screen is not left blank: what happened, and the report with the notes and the moves. */
+class Crash extends Component<{ children: ReactNode }, { err: Error | null }> {
+  override state = { err: null as Error | null };
+  static getDerivedStateFromError(err: Error) {
+    return { err };
+  }
+  override componentDidCatch(err: Error) {
+    noteError(`crash: ${err.stack ?? err.message}`);
+  }
+  override render() {
+    if (!this.state.err) return this.props.children;
+    const stored = <T,>(k: string, d: T): T => {
+      try {
+        return (JSON.parse(localStorage.getItem(k) ?? "null") as T) ?? d;
+      } catch {
+        return d;
+      }
+    };
+    return (
+      <div style={{ padding: 24, maxWidth: 720, margin: "40px auto", lineHeight: 1.5 }}>
+        <h2>Игра упала / The game crashed</h2>
+        <p>Сохрани отчёт и пришли его: в нём заметки, ошибка и все ходы - по ним падение можно повторить. Потом перезагрузи страницу: продолжить можно с автосейва.</p>
+        <p>Save the report and send it: it has the notes, the error and every move, so the crash can be replayed. Then reload the page: the autosave lets you go on.</p>
+        <button onClick={() => downloadReport(stored<string[]>(NOTES_KEY, []), stored<unknown>(JOURNAL_KEY, null))}>Сохранить отчёт / Save report</button>{" "}
+        <button onClick={() => location.reload()}>Перезагрузить / Reload</button>
+        <pre className="error" style={{ whiteSpace: "pre-wrap", marginTop: 16 }}>{String(this.state.err.stack ?? this.state.err.message).slice(0, 2000)}</pre>
+      </div>
+    );
+  }
+}
+
+createRoot(document.getElementById("root")!).render(
+  <Crash>
+    <App />
+  </Crash>,
+);

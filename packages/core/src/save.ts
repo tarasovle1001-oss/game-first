@@ -6,7 +6,11 @@ export interface SaveFile {
   format: number;
   mods: Record<string, number>; // mod id -> version at save time
   state: GameState;
+  build?: string; // the game build that wrote it (the UI sets it): a save from another build may play differently
 }
+let saveBuild: string | undefined;
+/** The build label written into every save from now on (the UI calls this once at start). */
+export const setSaveBuild = (build: string) => void (saveBuild = build);
 
 /** Core state migrations: index i upgrades format i+1 -> i+2. */
 const coreMigrations: ((save: SaveFile) => SaveFile)[] = [];
@@ -16,6 +20,7 @@ export function saveGame(state: GameState, engine: EngineView): string {
     format: SAVE_FORMAT,
     mods: Object.fromEntries(engine.mods.map((m) => [m.id, m.version])),
     state,
+    ...(saveBuild ? { build: saveBuild } : {}),
   };
   return JSON.stringify(file);
 }
@@ -23,6 +28,7 @@ export function saveGame(state: GameState, engine: EngineView): string {
 export interface LoadResult {
   state: GameState;
   warnings: string[];
+  build?: string; // the build that wrote the save, when it says
 }
 
 export function loadGame(json: string, mods: Mod[]): LoadResult {
@@ -51,5 +57,5 @@ export function loadGame(json: string, mods: Mod[]): LoadResult {
   for (const id of Object.keys(file.mods)) {
     if (id !== "core" && !mods.some((m) => m.id === id)) warnings.push(`mod "${id}" is missing, its data is kept untouched`);
   }
-  return { state, warnings };
+  return { state, warnings, ...(file.build ? { build: file.build } : {}) };
 }

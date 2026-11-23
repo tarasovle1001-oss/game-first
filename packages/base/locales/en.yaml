@@ -4095,3 +4095,4 @@ log.sexshop.together.shy: "You turn in at the next door. She stops on the thresh
 log.sexshop.together.bold: "You turn in at the next door. She goes in first and straight to the shelves. She takes one, weighs it in her hand, holds it against your forearm and laughs."
 outfit.street: "Street clothes"
 outfit.sport: "Sportswear"
+ui.save.otherBuild: "This save is from build {from}, this is build {now}: it may play differently or break. If something goes wrong, start a new game."
