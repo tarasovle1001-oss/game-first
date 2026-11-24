@@ -104,6 +104,6 @@ describe("bed and body", () => {
     expect(dressShift(s)).toBe(moneyDress(s)); // nothing but the loan on her mind
     bs(s).heroine.mood = 10;
     bs(s).heroine.feel = { shame: 40 };
-    expect(dressShift(s)).toBeLessThan(-15);
+    expect(dressShift(s) - moneyDress(s)).toBeLessThan(-15);
   });
 });
