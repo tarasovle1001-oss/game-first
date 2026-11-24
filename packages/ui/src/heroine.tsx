@@ -7,7 +7,7 @@ import { checkGen, drawPicture, fileOf, genAlive, genSetup, listFolder, picUrl, 
 import { downloadCard, dropThumb, keepThumb, loadHeroines, readCardFile, saveHeroines, thumbOf } from "./heroines";
 
 const H = content.heroine;
-const WORK_AND_HOME = ["modest", "fitted", "revealing", "daring", "homewear", "nightgown", "lingerie", "towel"];
+const WORK_AND_HOME = ["modest", "fitted", "revealing", "daring", "homewear", "nightgown", "lingerie", "sheer_white", "sheer_black", "towel"];
 const NAMES = ["Ника", "Алина", "Вера", "Мила", "Лена", "Даша", "Катя", "Ира", "Оля", "Таня", "Соня", "Юля", "Аня", "Лиза", "Марина", "Ксюша", "Полина", "Света"];
 const rndName = () => NAMES[Math.floor(Math.random() * NAMES.length)]!;
 

@@ -3,22 +3,27 @@ import { content } from "../content";
 import { bs, clamp, WIFE } from "../state";
 import { HALL } from "./places";
 import { bareOf } from "./dress";
+import { sheerOf, wearOf } from "./bodystate";
 import { TIP_FORMULA, type TipInput } from "./shift";
 
 const C = content.manners.charm;
 /** How hard she is to look away from right now, 0..100: what she wears, what she has taken off, and what the evening has left on her. */
 export const charmParts = (state: GameState): [string, number][] => {
   const h = bs(state).heroine;
-  const outfit = content.outfits.find((o) => o.id === h.outfit) ?? content.outfits[0]!;
-  const orders = content.manners.orders.filter((o) => bs(state).orders.includes(o.id)).reduce((s, o) => s + o.allure, 0);
   const bare = bareOf(state);
+  const worn = wearOf(state);
+  const W = content.intimacy.wear;
+  const work = content.outfits.find((o) => o.id === worn);
+  // naked is naked whatever she took off; a see-through thing with nothing under it is a little more than that
+  const outfit = bare === "all" ? C.nakedAllure : (work?.allure ?? W.allure[worn] ?? 0) + (sheerOf(worn) && h.panties === "off" ? W.noPantiesAllure : 0);
+  const orders = bare === "all" || !work ? 0 : content.manners.orders.filter((o) => bs(state).orders.includes(o.id)).reduce((s, o) => s + o.allure, 0);
   const marks = Math.min(C.marksMax, (Object.keys(h.cum ?? {}).length + Object.keys(h.after ?? {}).length) * C.perMark);
   return [
     ["base", C.base],
     ["nature", ((h.attrs?.charm ?? 50) - 50) * C.nature],
-    ["outfit", outfit.allure * C.perAllure],
+    ["outfit", outfit * C.perAllure],
     ["orders", orders * C.perAllure],
-    ["bare", bare === "none" ? 0 : content.manners.talk.bare.allure[bare]! * C.perAllure],
+    ["bare", bare === "none" || bare === "all" ? 0 : content.manners.talk.bare.allure[bare]! * C.perAllure],
     ["marks", marks],
     ["flushed", (h.arousal / 100) * C.arousal + (h.drunk / 100) * C.drunk],
   ];

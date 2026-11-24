@@ -507,7 +507,7 @@ export const mannersSchema = z
     // what the husband asked her to be like tonight: consent shift with guests and share added to tips
     directives: z.record(z.enum(["reserved", "natural", "friendly"]), z.object({ consent: z.number(), maxTier: z.number().int(), tip: z.number() }).strict()),
     askOutfitBonus: z.number(), // how much his asking lowers the openness an outfit needs
-    charm: z.object({ base: z.number(), nature: z.number(), perAllure: z.number(), perMark: z.number(), marksMax: z.number(), arousal: z.number(), drunk: z.number(), tip: z.number(), interest: z.number() }).strict(),
+    charm: z.object({ base: z.number(), nature: z.number(), nakedAllure: z.number(), perAllure: z.number(), perMark: z.number(), marksMax: z.number(), arousal: z.number(), drunk: z.number(), tip: z.number(), interest: z.number() }).strict(),
     orders: z.array(z.object({ id, openness: z.number(), allure: z.number(), tip: z.number(), arousal: z.number(), consent: z.number() }).strict()),
     change: z
       .object({ chancePerTick: z.number(), arousalFrom: z.number(), drunkFrom: z.number(), margin: z.number(), guestInterest: z.number(), guestChance: z.number(), guestMargin: z.number(), suspicion: z.number(), backResent: z.number() })
@@ -790,7 +790,7 @@ export const intimacySchema = z
     fatigue: z.object({ perAct: z.number(), perMinute: z.number(), husbandShare: z.number(), from: z.number(), per: z.number(), enoughAt: z.number(), enough: z.number(), past: z.number(), night: z.number(), thoughtAt: z.number() }).strict(),
     marks: z.object({ visible: z.array(z.string()), guests: nums, husbandSuspicion: z.number(), husbandOpen: z.record(z.string(), nums), cleanPerMark: z.number(), cleanAfter: z.number(), skipChance: z.number() }).strict(),
     dress: z.object({ lowMood: z.number(), lowMoodStep: z.number(), fearStep: z.number(), wantStep: z.number(), wishStep: z.number() }).strict(),
-    wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string() }).strict(),
+    wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string(), nightwear: z.array(z.object({ id: z.string(), price: z.number().positive(), openness: z.number(), noPantiesFrom: z.number() }).strict()), allure: nums, noPantiesAllure: z.number() }).strict(),
     bedroom: z
       .object({ ask: ids, menu: z.object({ main: ids, groups: z.record(z.string(), ids) }).strict(), counter: ids, counterHard: ids, his: ids, needsToy: ids, upstairs: ids, join: ids, switchTo: ids, ownEnd: ids, herPleasure: nums, herPleasureDefault: z.number(), fixedPleasure: nums, finish: z.record(z.string(), ids), pullOut: ids, soft: ids, givesHer: ids, untouched: ids, needsHer: ids })
       .strict(),

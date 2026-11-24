@@ -15,6 +15,7 @@ taste: # her taste for an act (and for a type of man) moves with experience
 charm: # how hard she is to look away from, 0..100; shown on her card
   base: 30
   nature: 0.4       # per point of her own charm (the attribute) away from 50
+  nakedAllure: 32.5 # nothing on at all: a little less than barely covered (base 30 + 65 = 95)
   perAllure: 2      # per point of "allure" of the outfit, of each thing he asked her to take off or undo, of being bare
   perMark: 5        # per mark the evening left on her: flushed, hair, what guests left
   marksMax: 15

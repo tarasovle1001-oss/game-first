@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { content, promptFor } from "@tc/base";
+import { baseMod, bs, charmOf, content, promptFor, withLook } from "@tc/base";
+import { createEngine } from "@tc/core";
 import type { SceneDesc } from "@tc/core";
 
 const W = content.look.words;
@@ -37,5 +38,35 @@ describe("her outfits in pictures", () => {
   it("the outfit's own negative goes into the picture", () => {
     const p = promptFor({ type: "idle", location: "cafe.hall", participants: [wife], tags: { outfit: "modest" } });
     expect(p.negative).toContain("maid headdress");
+  });
+  it("a see-through chemise: what is under it shows, it has no halves, and it is the most she can put on", () => {
+    expect(her("idle", { outfit: "sheer_white" })).toContain(W.under.sheer_white!.panties);
+    expect(her("idle", { outfit: "sheer_black", under: "off" })).toContain(W.panties.sheerOff);
+    const engine = createEngine([baseMod]);
+    const s = structuredClone(engine.init(5, { base: { attrs: { charm: 50 } } }));
+    const b = bs(s);
+    s.time.phase = "night";
+    s.where.wife = "home.bedroom";
+    b.owned.push("sheer_white", "sheer_black");
+    b.heroine.traits.openness = 90;
+    b.heroine.arousal = 0;
+    b.heroine.drunk = 0;
+    b.heroine.cum = {};
+    b.heroine.after = {};
+    s.time.day = 3; // pool of three: black chemise, white chemise, lingerie
+    const idle = { type: "idle", location: "home.bedroom", participants: [wife] } as SceneDesc;
+    const worn = withLook(s, idle).tags!.outfit!;
+    expect(worn.startsWith("sheer_")).toBe(true);
+    expect(charmOf(s)).toBe(90);
+    b.heroine.panties = "off";
+    expect(charmOf(s)).toBe(100);
+    expect(withLook(s, idle).tags!.under).toBe("off"); // a whole scene keeps it for this outfit
+    b.heroine.skirtUp = true;
+    b.heroine.bare = "top";
+    const t = withLook(s, idle).tags!;
+    expect(t.skirt).toBeUndefined();
+    expect(t.bare).toBeUndefined();
+    b.heroine.bare = "all";
+    expect(charmOf(s)).toBe(95); // naked: a little less than barely covered
   });
 });

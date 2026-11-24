@@ -7,6 +7,7 @@ import { bs, HUSBAND, WIFE } from "../state";
 import { fitOf, sizeClass } from "./body";
 import { toyForHim } from "./marriage";
 import { bareOf, dressOf } from "./dress";
+import { sheerOf, wearOf } from "./bodystate";
 import { annoyedLevel } from "./annoy";
 import { husbandSees } from "./places";
 
@@ -28,6 +29,20 @@ export interface SceneWords {
   prompt: string;
 }
 
+/**
+ * A see-through one-piece has no halves to pull down or lift: her top "off" changes nothing in the picture, her bottom
+ * "off" is the same thing with no panties. `key`: for a picture key, where panties pushed aside are not a picture of their own.
+ */
+const fitSheer = (t: Record<string, string>, key: boolean) => {
+  if (!t.outfit || !sheerOf(t.outfit)) return;
+  delete t.skirt;
+  if (t.bare === "top") delete t.bare;
+  if (t.bare === "bottom") {
+    delete t.bare;
+    t.under = "off";
+  }
+  if (key && t.under === "aside") delete t.under;
+};
 const step = (table: [number, string][], value: number) => table.filter(([from]) => value >= from).at(-1)?.[1];
 
 /** Her face right now, as one of the names look.yaml knows. */
@@ -69,6 +84,7 @@ export function describeScene(state: GameState, open = false): SceneWords {
     if (h.panties && h.panties !== "on") wear.under = h.panties;
     if (h.skirtUp) wear.skirt = "up";
   }
+  fitSheer(wear, false);
   const actWords = actId ? (content.prompt.tags[content.acts.find((a) => a.id === actId)?.scene ?? ""] ?? "") : "";
   heroine.push(...wearWords(wear, actWords, bs(state).heroine.card ? cardToCast(bs(state).heroine.card!) : undefined).words);
   heroine.push(...(W.mood.find((m) => m.when === faceOf(state))?.tags ?? []));
@@ -195,6 +211,7 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
     if (h.panties && h.panties !== "on") out.under = h.panties;
     if (h.skirtUp) out.skirt = "up";
   }
+  fitSheer(out, true);
   out.face = faceOf(state);
   // what is under her clothes is not in the picture: it would only multiply pictures that look the same
   const lower = bare === "all" || bare === "bottom" || ((h.panties === "off" || h.panties === "aside") && !!h.skirtUp) || intimate;
@@ -232,7 +249,10 @@ export function pictureScene(engine: EngineView, state: GameState): SceneDesc | 
 /** Adds her look to any scene description; tags the scene already set win. */
 export const withLook = (state: GameState, desc: SceneDesc): SceneDesc => {
   const tags = { ...lookTags(state, desc), ...(desc.tags ?? {}) };
-  for (const k of PORTRAIT_ONLY) delete tags[k];
+  // through a see-through chemise no panties is a different picture - unless the act has her lower half bared anyway
+  const zones = content.acts.find((a) => a.scene === desc.type)?.zones ?? [];
+  const shows = !!tags.outfit && !!sheerOf(tags.outfit) && tags.under === "off" && !zones.includes("vagina") && !zones.includes("anus");
+  for (const k of PORTRAIT_ONLY) if (!(k === "under" && shows)) delete tags[k];
   // she is not in these pictures (him alone, at most her hand): her dress and face would only multiply the same picture
   if (HIM_ALONE.has(desc.type)) for (const k of Object.keys(tags)) if (k !== "tsize") delete tags[k];
   return groupOf(desc, tags);
@@ -313,6 +333,11 @@ export function registerLook(api: ModApi) {
       wash(ctx); // a new day: she has washed
       h.panties = "on";
       h.skirtUp = false;
+    }
+    // bold enough, she has nothing under the see-through thing she put on for the night
+    if (phase === "night") {
+      const sheer = sheerOf(wearOf(ctx.state));
+      if (sheer && h.traits.openness >= sheer.noPantiesFrom) h.panties = "off";
     }
   });
   api.events.on("prep:tick", (ctx) => {

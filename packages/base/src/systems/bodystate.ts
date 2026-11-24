@@ -54,13 +54,22 @@ export const foreignMarks = (state: GameState): string[] => {
   return Object.keys(h.cum ?? {}).filter((p) => I.marks.visible.includes(p) && !h.cumHis?.[p]);
 };
 export const visibleMarks = (state: GameState): string[] => Object.keys(bs(state).heroine.cum ?? {}).filter((p) => I.marks.visible.includes(p));
+/** A see-through thing for the night (intimacy.yaml: wear.nightwear), or nothing by that id. */
+export const sheerOf = (id: string) => I.wear.nightwear.find((n) => n.id === id);
 /** What she has on right now: the work outfit during the shift, something else the rest of the day. */
 export const wearOf = (state: GameState): string => {
   const b = bs(state);
   const h = b.heroine;
   if (state.where[WIFE] === "cafe.sauna") return I.wear.wash; // in the sauna she is in a towel, whatever she came to work in
   if (state.time.phase === "shift") return h.outfit;
-  if (state.time.phase === "night") return b.night?.wants || h.traits.openness >= I.wear.boldOpenness ? I.wear.nightBold : I.wear.night;
+  if (state.time.phase === "night") {
+    const wants = !!b.night?.wants;
+    // the see-through things she owns and is up to tonight; with the lingerie they take turns by the day
+    const sheer = I.wear.nightwear.filter((n) => b.owned.includes(n.id) && h.traits.openness + (wants ? content.manners.askOutfitBonus : 0) >= n.openness).map((n) => n.id);
+    const bold = wants || h.traits.openness >= I.wear.boldOpenness;
+    const pool = [...sheer, ...(bold ? [I.wear.nightBold] : [])];
+    return pool.length ? pool[state.time.day % pool.length]! : I.wear.night;
+  }
   if (b.day?.her?.task === "wash") return I.wear.wash;
   // downstairs she is dressed for work even before opening; upstairs she is at home
   return state.where[WIFE]?.startsWith("home.") ? I.wear.home : h.outfit;

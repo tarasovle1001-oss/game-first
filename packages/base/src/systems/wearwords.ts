@@ -37,10 +37,13 @@ export function wearWords(t: Record<string, string>, scene: string, wife?: CastC
   if (bare === "bottom") words.push(o.lift, ...(W().bare.bottom ?? []));
   else if (lowOff) words.push(o.lift, t.under === "off" || !o.panties ? "no panties" : `panties aside, ${o.panties}`, "pussy");
   else {
-    // dressed: her panties only show when the skirt is up or they are pushed aside / off
-    if (t.skirt) words.push(o.lift, t.under === "off" ? "no panties" : o.panties);
-    if (t.under === "aside") words.push(W().panties.aside ?? "panties aside", o.panties);
-    else if (t.under === "off" && !t.skirt) words.push(W().panties.off ?? "no panties");
+    // dressed: her panties only show when the skirt is up or they are pushed aside / off - or the thing is see-through
+    if (content.intimacy.wear.nightwear.some((n) => n.id === t.outfit)) words.push(t.under === "off" ? (W().panties.sheerOff ?? "no panties") : o.panties);
+    else {
+      if (t.skirt) words.push(o.lift, t.under === "off" ? "no panties" : o.panties);
+      if (t.under === "aside") words.push(W().panties.aside ?? "panties aside", o.panties);
+      else if (t.under === "off" && !t.skirt) words.push(W().panties.off ?? "no panties");
+    }
   }
   return { words: words.filter(Boolean), negative: o.negative };
 }
