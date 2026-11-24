@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AFTER, baseMod, BED, bs, content, describeScene, dressShift, foreignMarks, NIGHT_ACT, slick, soreOf, wearOf } from "@tc/base";
+import { AFTER, baseMod, BED, bs, content, describeScene, dressShift, moneyDress, foreignMarks, NIGHT_ACT, slick, soreOf, wearOf } from "@tc/base";
 import { CORE_ADVANCE, createEngine } from "@tc/core";
 import type { GameState } from "@tc/core";
 
@@ -101,7 +101,7 @@ describe("bed and body", () => {
     s.where.wife = "home.bedroom";
     expect(wearOf(s)).toBe(I.wear.home);
     expect(describeScene(s, true).heroine).toContain(content.look.words.outfit.homewear!.tags);
-    expect(dressShift(s)).toBe(0);
+    expect(dressShift(s)).toBe(moneyDress(s)); // nothing but the loan on her mind
     bs(s).heroine.mood = 10;
     bs(s).heroine.feel = { shame: 40 };
     expect(dressShift(s)).toBeLessThan(-15);

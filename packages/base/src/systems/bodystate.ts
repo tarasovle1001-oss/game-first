@@ -13,6 +13,7 @@ import { changeHeroine } from "./heroine";
 import { wash } from "./look";
 import { attrOf, feel, think } from "./mind";
 import { HALL, husbandSees } from "./places";
+import { worryOf } from "./rhythm";
 import { changeHim } from "./rhythm";
 
 const I = content.intimacy;
@@ -76,6 +77,8 @@ export const wearOf = (state: GameState): string => {
   // downstairs she is dressed for work even before opening; upstairs she is at home
   return state.where[WIFE]?.startsWith("home.") ? I.wear.home : h.outfit;
 };
+/** Money is short and she knows what the room tips for: points of openness that adds to what she puts on for work. */
+export const moneyDress = (state: GameState): number => (bs(state).debt > 0 ? I.dress.debtStep : 0) + worryOf(state) * I.dress.worryStep;
 /** How her state shifts what she picks in the morning, in points of openness. */
 export const dressShift = (state: GameState): number => {
   const b = bs(state);
@@ -87,6 +90,7 @@ export const dressShift = (state: GameState): number => {
   if (h.arousal >= 60 || h.frustration >= 50) d += D.wantStep;
   const run = b.wishRun?.dress_bold ?? b.wishRun?.sexier;
   if (run && state.time.day - run.day <= 1) d += D.wishStep;
+  d += moneyDress(state);
   return Math.round(d);
 };
 

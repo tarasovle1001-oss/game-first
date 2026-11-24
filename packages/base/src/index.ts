@@ -220,7 +220,7 @@ export type { Attr, Emotion } from "./systems/mind";
 export { WISH, ALLOW, PERMIT, STANCE, DARE, ABOUT, PROMISE, PRESS, wished } from "./systems/terms";
 export { DEAL, GROUP, TABLE, JOIN, LOUNGE } from "./systems/floor";
 export { CROWD, crowdOf, menOf } from "./systems/crowd";
-export { soreOf, slick, wearOf, foreignMarks, visibleMarks, dressShift } from "./systems/bodystate";
+export { soreOf, slick, wearOf, foreignMarks, visibleMarks, dressShift, moneyDress } from "./systems/bodystate";
 export { SLEEP, NIGHT_WAIT, WASH, SEND_WASH, WASH_TOGETHER, himOf, tired, worryOf, weekdayOf, fameOf, fameTier } from "./systems/rhythm";
 export { entersZone, permOf, pleasureFor, sizeClass, sizeStage, stepsAbove, takeChance } from "./systems/body";
 export { inspect, note, tracer, resetTracer } from "./systems/inspect";

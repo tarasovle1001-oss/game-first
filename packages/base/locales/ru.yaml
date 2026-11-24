@@ -328,6 +328,7 @@ log.directive.friendly: "Ты просишь её быть поласковее 
 log.outfit.yes: "Она переодевается: {outfit}."
 log.outfit.no: "Она смотрит на это ({outfit}) и качает головой: не при людях."
 log.outfit.own: "Сегодня она выбирает сама: {outfit}."
+log.outfit.own.money: "Сегодня она выбирает сама: {outfit}. \"В этом чаевых больше. Нам сейчас не до скромности.\""
 ui.outfit: "Наряд"
 ui.directive: "Сегодня"
 directive.reserved: "держит дистанцию"

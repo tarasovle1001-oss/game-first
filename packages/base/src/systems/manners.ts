@@ -10,7 +10,7 @@ import { HALL, husbandSees } from "./places";
 import { TIP_FORMULA } from "./shift";
 import type { TipInput } from "./shift";
 
-import { dressShift } from "./bodystate";
+import { dressShift, moneyDress } from "./bodystate";
 export const SET_DIRECTIVE = "base/directive";
 export const ASK_OUTFIT = "base/ask-outfit";
 export const OUTFIT_BACK = "base/outfit-back";
@@ -32,7 +32,9 @@ export function registerManners(api: ModApi) {
     if (e.payload!.phase !== "prep") return;
     const b = bs(ctx.state);
     const own = ownChoice(b.heroine.traits.openness + (ctx.state.time.day > 1 ? dressShift(ctx.state) : 0), b.owned, ctx.state.time.day);
-    if (own.id !== b.heroine.outfit && ctx.state.time.day > 1) ctx.log("log.outfit.own", { outfit: `outfit.${own.id}` });
+    // would she have picked it without the money on her mind?
+    const forMoney = ctx.state.time.day > 1 && own.order > ownChoice(b.heroine.traits.openness + dressShift(ctx.state) - moneyDress(ctx.state), b.owned, ctx.state.time.day).order;
+    if (own.id !== b.heroine.outfit && ctx.state.time.day > 1) ctx.log(forMoney ? "log.outfit.own.money" : "log.outfit.own", { outfit: `outfit.${own.id}` });
     b.heroine.outfit = own.id;
     // what he said he wants of her stands until it fades or he says otherwise
     b.directive = b.wishes?.includes("tone_down") ? "reserved" : b.wishes?.includes("friendlier") ? "friendly" : "natural";

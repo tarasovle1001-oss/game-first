@@ -107,6 +107,8 @@ dress:                # how she feels changes what she puts on in the morning
   fearStep: -10       # per 40 fear or 40 shame
   wantStep: 6         # arousal 60+ or frustration 50+
   wishStep: 8         # he asked for bolder yesterday or today
+  debtStep: 4         # while the loan is not paid off: she knows what brings tips
+  worryStep: 6        # per level of money worry (it nags / it keeps them awake)
 wear:                 # what she has on outside the shift, by situation
   night: nightgown
   nightBold: lingerie # she wants him tonight, or simply is that bold

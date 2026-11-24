@@ -328,6 +328,7 @@ log.directive.friendly: "You ask her to be nicer to the guests: tips matter. She
 log.outfit.yes: "She changes: {outfit}."
 log.outfit.no: "She looks at it ({outfit}) and shakes her head: not in front of people."
 log.outfit.own: "Today she picks it herself: {outfit}."
+log.outfit.own.money: "Today she picks it herself: {outfit}. \"It tips better. We can't afford modest right now.\""
 ui.outfit: "Outfit"
 ui.directive: "Tonight"
 directive.reserved: "keeps her distance"
