@@ -23,3 +23,22 @@
   tip: 0.55
   openness: 82
   price: 320
+# See-through chemises from the adult shop: a real outfit, not only a thing for the bedroom. For her husband at night
+# she puts one on easily (night), going up to a guest's room at night takes more (nightOut), and walking out onto the
+# floor in one is the hardest thing in her wardrobe (openness). Nothing under it: nightBare at night, bare in the hall.
+- id: sheer_white
+  order: 4
+  allure: 30
+  tip: 0.8
+  openness: 70
+  price: 130
+  shop: adult
+  sheer: { night: 25, nightOut: 45, nightBare: 45, bare: 80 }
+- id: sheer_black
+  order: 5
+  allure: 30
+  tip: 0.8
+  openness: 70
+  price: 130
+  shop: adult
+  sheer: { night: 25, nightOut: 45, nightBare: 45, bare: 80 }

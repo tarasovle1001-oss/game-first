@@ -113,13 +113,8 @@ wear:                 # what she has on outside the shift, by situation
   boldOpenness: 60
   wash: towel
   home: homewear
-  # see-through things for the night, sold in the adult shop. Once she has one and is bold enough for it (or wants him
-  # tonight) she wears it in turn with the lingerie. Bedroom and night only. noPantiesFrom: openness from which nothing under it.
-  nightwear:
-    - { id: sheer_white, price: 130, openness: 65, noPantiesFrom: 80 }
-    - { id: sheer_black, price: 130, openness: 65, noPantiesFrom: 80 }
   # how much each thing she wears outside the shift adds to "how hard she is to look away from" (x manners.charm.perAllure)
-  allure: { homewear: 2, nightgown: 10, lingerie: 22, towel: 14, sheer_white: 30, sheer_black: 30 }
+  allure: { homewear: 2, nightgown: 10, lingerie: 22, towel: 14 }
   noPantiesAllure: 5   # nothing under a see-through thing: it shows
 bedroom:              # which act is what in bed with him. Order matters: it is the order of the menu and of her choices
   # what he can ask for at night; each needs a text "action.night.<id>" and a picture layout named after the act

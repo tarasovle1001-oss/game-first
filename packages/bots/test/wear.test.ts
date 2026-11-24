@@ -68,5 +68,14 @@ describe("her outfits in pictures", () => {
     expect(t.bare).toBeUndefined();
     b.heroine.bare = "all";
     expect(charmOf(s)).toBe(95); // naked: a little less than barely covered
+    // for her husband at night it is easy, for a guest's room harder, for the floor the hardest
+    b.heroine.bare = "none";
+    b.heroine.traits.openness = 30;
+    expect(withLook(s, idle).tags!.outfit!.startsWith("sheer_")).toBe(true);
+    s.where.wife = "hotel.room1";
+    expect(withLook(s, { ...idle, location: "hotel.room1" }).tags!.outfit!.startsWith("sheer_")).toBe(false);
+    const sheer = content.outfits.find((o) => o.id === "sheer_white")!;
+    expect(sheer.sheer!.night).toBeLessThan(sheer.sheer!.nightOut);
+    expect(sheer.sheer!.nightOut).toBeLessThan(sheer.openness);
   });
 });

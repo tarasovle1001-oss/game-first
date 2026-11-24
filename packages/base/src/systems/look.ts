@@ -335,9 +335,9 @@ export function registerLook(api: ModApi) {
       h.skirtUp = false;
     }
     // bold enough, she has nothing under the see-through thing she put on for the night
-    if (phase === "night") {
+    if (phase === "night" || phase === "shift") {
       const sheer = sheerOf(wearOf(ctx.state));
-      if (sheer && h.traits.openness >= sheer.noPantiesFrom) h.panties = "off";
+      if (sheer && h.traits.openness >= (phase === "night" ? sheer.nightBare : sheer.bare)) h.panties = "off";
     }
   });
   api.events.on("prep:tick", (ctx) => {

@@ -19,14 +19,19 @@ const M = content.manners;
 const outfits = content.outfits.slice().sort((a, b) => a.order - b.order);
 const outfitOf = (state: GameState): Outfit => outfits.find((o) => o.id === bs(state).heroine.outfit) ?? outfits[0]!;
 /** The most revealing thing she would put on by herself today. */
-const ownChoice = (openness: number, owned: string[]): Outfit => [...outfits].reverse().find((o) => owned.includes(o.id) && openness >= o.openness) ?? outfits[0]!;
+const ownChoice = (openness: number, owned: string[], day = 0): Outfit => {
+  const top = [...outfits].reverse().find((o) => owned.includes(o.id) && openness >= o.openness) ?? outfits[0]!;
+  // two things as bold as each other (the chemise in two colours) take turns by the day
+  const same = outfits.filter((o) => owned.includes(o.id) && o.openness === top.openness && o.allure === top.allure);
+  return same[day % same.length]!;
+};
 
 export function registerManners(api: ModApi) {
   // Every morning she dresses as her own openness allows; the husband's wishes last one day.
   api.events.on("phase:enter", (ctx, e) => {
     if (e.payload!.phase !== "prep") return;
     const b = bs(ctx.state);
-    const own = ownChoice(b.heroine.traits.openness + (ctx.state.time.day > 1 ? dressShift(ctx.state) : 0), b.owned);
+    const own = ownChoice(b.heroine.traits.openness + (ctx.state.time.day > 1 ? dressShift(ctx.state) : 0), b.owned, ctx.state.time.day);
     if (own.id !== b.heroine.outfit && ctx.state.time.day > 1) ctx.log("log.outfit.own", { outfit: `outfit.${own.id}` });
     b.heroine.outfit = own.id;
     // what he said he wants of her stands until it fades or he says otherwise

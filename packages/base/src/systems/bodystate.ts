@@ -54,8 +54,8 @@ export const foreignMarks = (state: GameState): string[] => {
   return Object.keys(h.cum ?? {}).filter((p) => I.marks.visible.includes(p) && !h.cumHis?.[p]);
 };
 export const visibleMarks = (state: GameState): string[] => Object.keys(bs(state).heroine.cum ?? {}).filter((p) => I.marks.visible.includes(p));
-/** A see-through thing for the night (intimacy.yaml: wear.nightwear), or nothing by that id. */
-export const sheerOf = (id: string) => I.wear.nightwear.find((n) => n.id === id);
+/** What makes an outfit see-through (outfits.yaml: sheer), or nothing if it is not. */
+export const sheerOf = (id: string) => content.outfits.find((o) => o.id === id)?.sheer;
 /** What she has on right now: the work outfit during the shift, something else the rest of the day. */
 export const wearOf = (state: GameState): string => {
   const b = bs(state);
@@ -64,11 +64,13 @@ export const wearOf = (state: GameState): string => {
   if (state.time.phase === "shift") return h.outfit;
   if (state.time.phase === "night") {
     const wants = !!b.night?.wants;
-    // the see-through things she owns and is up to tonight; with the lingerie they take turns by the day
-    const sheer = I.wear.nightwear.filter((n) => b.owned.includes(n.id) && h.traits.openness + (wants ? content.manners.askOutfitBonus : 0) >= n.openness).map((n) => n.id);
+    const home = state.where[WIFE]?.startsWith("home.") ?? true;
+    // the see-through things she owns and is up to tonight: easy for her husband, harder for a guest's room
+    const sheer = content.outfits.filter((o) => o.sheer && b.owned.includes(o.id) && h.traits.openness + (wants ? content.manners.askOutfitBonus : 0) >= (home ? o.sheer.night : o.sheer.nightOut)).map((o) => o.id);
     const bold = wants || h.traits.openness >= I.wear.boldOpenness;
-    const pool = [...sheer, ...(bold ? [I.wear.nightBold] : [])];
-    return pool.length ? pool[state.time.day % pool.length]! : I.wear.night;
+    // they take turns by the day with what she wore before she had them
+    const pool = [...sheer, bold ? I.wear.nightBold : I.wear.night];
+    return pool[state.time.day % pool.length]!;
   }
   if (b.day?.her?.task === "wash") return I.wear.wash;
   // downstairs she is dressed for work even before opening; upstairs she is at home

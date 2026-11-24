@@ -1,665 +1,3137 @@
 {
- "note": "keys with outfit=sheer_white; the same set with outfit=sheer_black. n = views of the nightgown/lingerie key it was derived from (30 days x 6 seeds, plan of 23.11)",
+ "note": "keys with outfit=sheer_white; the same set with outfit=sheer_black. Derived from the plan of 23.11 (30 days x 6 seeds): from=night - from nightgown/lingerie keys (first priority), from=work - from the keys of the daring outfit (she walks the floor in it only at openness 70+). n = views of the source key",
  "keys": [
   {
    "key": "portrait/wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 680,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 658,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 641,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 553,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 479,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 451,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 340,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.kitchen/face=aroused,outfit=sheer_white,under=off",
+   "n": 300,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 282,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 282,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 270,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=ecstatic,outfit=sheer_white,under=off",
    "n": 235,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=ecstatic,outfit=sheer_white",
    "n": 218,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 205,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 205,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "talk/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white",
+   "n": 187,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white,under=off",
+   "n": 187,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 185,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 176,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 175,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 175,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=shy,outfit=sheer_white",
    "n": 169,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=shy,outfit=sheer_white,under=off",
    "n": 169,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 168,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 168,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 166,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white",
    "n": 154,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white,under=off",
    "n": 154,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=shy,outfit=sheer_white",
    "n": 151,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=shy,outfit=sheer_white,under=off",
    "n": 151,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 150,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 150,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.kitchen/face=happy,outfit=sheer_white,under=off",
+   "n": 140,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.kitchen/face=happy,outfit=sheer_white",
+   "n": 132,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.kitchen/face=happy,outfit=sheer_white,under=off",
+   "n": 132,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 124,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 124,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "serving/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 122,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "serving/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 122,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "him_hug/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 119,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "him_hug/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 119,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 114,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.kitchen/face=happy,outfit=sheer_white",
+   "n": 114,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 107,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 107,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 104,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 103,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 103,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 86,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 86,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white",
+   "n": 78,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white,under=off",
+   "n": 78,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 77,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 77,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white",
    "n": 77,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sex/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white,under=off",
    "n": 77,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 71,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 71,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 71,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 71,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 60,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 58,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 58,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 57,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 57,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "kissing/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 57,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "kissing/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 57,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 52,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 52,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 51,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 51,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 50,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 49,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 49,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.toilet/face=aroused,outfit=sheer_white,under=off",
+   "n": 46,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 41,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 38,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 37,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 37,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 35,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 35,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white",
+   "n": 34,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white,under=off",
+   "n": 34,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "portrait/wife/home.bedroom/face=plain,outfit=sheer_white",
    "n": 34,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
   },
   {
    "key": "portrait/wife/home.bedroom/face=plain,outfit=sheer_white,under=off",
    "n": 34,
-   "kind": "portrait"
+   "kind": "portrait",
+   "from": "night"
+  },
+  {
+   "key": "patron_grinding/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 33,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_grinding/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 33,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.kitchen/face=aroused,outfit=sheer_white",
+   "n": 32,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 31,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 31,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 31,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 31,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.bar/face=happy,outfit=sheer_white",
+   "n": 31,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.bar/face=happy,outfit=sheer_white,under=off",
+   "n": 31,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 31,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.bar/face=happy,outfit=sheer_white",
+   "n": 30,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.bar/face=happy,outfit=sheer_white,under=off",
+   "n": 30,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.toilet/face=happy,outfit=sheer_white,under=off",
+   "n": 30,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_lap_dance/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 29,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_lap_dance/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 29,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_groping/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 26,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_groping/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 26,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_chatting/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 26,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_chatting/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 26,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "him_hug/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 26,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "him_hug/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 26,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "left_wanting/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 24,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "left_wanting/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 24,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_touching/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 24,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 24,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.kitchen/face=annoyed,outfit=sheer_white,under=off",
+   "n": 22,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "serving/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 21,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "serving/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 21,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 20,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 20,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.kitchen/face=annoyed,outfit=sheer_white",
+   "n": 19,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.kitchen/face=annoyed,outfit=sheer_white,under=off",
+   "n": 19,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 19,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=shy,outfit=sheer_white",
    "n": 18,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=shy,outfit=sheer_white,under=off",
    "n": 18,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 18,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 18,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 18,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white,under=off",
+   "n": 18,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=plain,outfit=sheer_white",
    "n": 18,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "talk/husband+wife/home.bedroom/face=plain,outfit=sheer_white,under=off",
    "n": 18,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 17,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 17,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 17,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.toilet/face=happy,outfit=sheer_white,under=off",
+   "n": 17,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.staff/face=annoyed,outfit=sheer_white,under=off",
+   "n": 17,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 16,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=2,outfit=sheer_white,phase=during",
+   "n": 16,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=2,outfit=sheer_white,phase=during,under=off",
+   "n": 16,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "kissing/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 16,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "kissing/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 16,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sex/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 15,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 15,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/hotel.room1/face=happy,outfit=sheer_white,under=off",
+   "n": 15,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 14,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "dildo_him/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,tsize=1",
    "n": 14,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "dildo_him/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,tsize=1,under=off",
    "n": 14,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 14,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "sleeping/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 13,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sleeping/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 13,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 13,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 13,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 13,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/face=annoyed,outfit=sheer_white",
+   "n": 12,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/face=annoyed,outfit=sheer_white,under=off",
+   "n": 12,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/cafe.staff/face=aroused,fin=mouth,outfit=sheer_white",
+   "n": 12,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/cafe.staff/face=aroused,fin=mouth,outfit=sheer_white,under=off",
+   "n": 12,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=plain,outfit=sheer_white",
    "n": 12,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "night_awake/husband+wife/home.bedroom/face=plain,outfit=sheer_white,under=off",
    "n": 12,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "went_soft/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 11,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "went_soft/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 11,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/cafe.staff/face=happy,fin=mouth,outfit=sheer_white",
+   "n": 11,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/cafe.staff/face=happy,fin=mouth,outfit=sheer_white,under=off",
+   "n": 11,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 11,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 11,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_grinding/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_grinding/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_flirting/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_flirting/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_lap_dance/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_lap_dance/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 10,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 9,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 9,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 9,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 9,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 9,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 9,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 9,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 8,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 8,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room1/face=happy,outfit=sheer_white",
+   "n": 8,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room1/face=happy,outfit=sheer_white,under=off",
+   "n": 8,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "prostate/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 8,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "prostate/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 8,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 8,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white,under=off",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_chatting/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_chatting/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 7,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "sleeping/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 7,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sleeping/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 7,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/crowd=yes,face=aroused,men=2,outfit=sheer_white,phase=during",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/crowd=yes,face=aroused,men=2,outfit=sheer_white,phase=during,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.kitchen/face=happy,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.kitchen/face=happy,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 6,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 6,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 6,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 6,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_touching/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 6,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "sleeping/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 6,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sleeping/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 6,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "kissing/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "kissing/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_drinking/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_drinking/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_flirting/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_flirting/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white,under=off",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 5,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "prostate/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 5,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "prostate/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 5,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 5,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 5,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "left_wanting/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 5,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "left_wanting/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 5,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 5,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_grinding/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_grinding/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_inside/patron+wife/cafe.staff/face=aroused,fin=inside,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_inside/patron+wife/cafe.staff/face=aroused,fin=inside,outfit=sheer_white,under=off",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sex/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_drinking/patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_drinking/patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "deal/husband+patron+wife/cafe.hall/face=aroused,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "deal/husband+patron+wife/cafe.hall/face=aroused,outfit=sheer_white,under=off",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_lap_dance/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_lap_dance/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 4,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 4,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 4,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 4,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_groping/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_groping/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "dildo_him/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white,tsize=1",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "dildo_him/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white,tsize=1,under=off",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "serving/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "serving/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sex/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_groping/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_groping/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "left_wanting/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "left_wanting/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "went_soft/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "went_soft/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cunnilingus/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 3,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/cafe.staff/face=annoyed,outfit=sheer_white",
+   "n": 3,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.staff/face=ecstatic,outfit=sheer_white,under=off",
+   "n": 3,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/hotel.room1/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.kitchen/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.kitchen/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "fd_ignore/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "fd_ignore/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=plain,outfit=sheer_white",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "wants_him/husband+wife/home.bedroom/face=plain,outfit=sheer_white,under=off",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "fin_mouth/husband+wife/home.bedroom/face=annoyed,fin=mouth,outfit=sheer_white",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "fin_mouth/husband+wife/home.bedroom/face=annoyed,fin=mouth,outfit=sheer_white,under=off",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room1/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room1/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "wants_him/husband+wife/cafe.kitchen/face=annoyed,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "wants_him/husband+wife/cafe.kitchen/face=annoyed,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "deal/husband+patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "deal/husband+patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.toilet/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/face=annoyed,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.staff/face=annoyed,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "went_soft/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "went_soft/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=2,outfit=sheer_white,phase=after",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=2,outfit=sheer_white,phase=after,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+patron2+wife/cafe.staff/crowd=yes,face=aroused,men=2,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+patron2+wife/cafe.staff/crowd=yes,face=aroused,men=2,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/crowd=yes,face=annoyed,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/crowd=yes,face=annoyed,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+patron2+wife/cafe.staff/face=aroused,men=2,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+patron2+wife/cafe.staff/face=aroused,men=2,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "him_hug/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "him_hug/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/cafe.toilet/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/cafe.toilet/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_flirting/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_flirting/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/hotel.room2/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/hotel.room2/crowd=yes,face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 2,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "fin_inside/husband+wife/home.bedroom/face=happy,fin=inside,outfit=sheer_white",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "fin_inside/husband+wife/home.bedroom/face=happy,fin=inside,outfit=sheer_white,under=off",
    "n": 2,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "portrait/wife/hotel.room1/face=happy,outfit=sheer_white",
+   "n": 2,
+   "kind": "portrait",
+   "from": "work"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=plain,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "cold_back/husband+wife/home.bedroom/face=plain,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=plain,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "by_hand/husband+wife/home.bedroom/face=plain,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.staff/face=annoyed,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.staff/face=annoyed,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.bar/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.bar/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/hotel.room2/face=aroused,men=2,outfit=sheer_white,phase=during",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/hotel.room2/face=aroused,men=2,outfit=sheer_white,phase=during,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "came_dildo_him/husband+wife/home.bedroom/face=happy,outfit=sheer_white,tsize=1",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "came_dildo_him/husband+wife/home.bedroom/face=happy,outfit=sheer_white,tsize=1,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "premature_finish/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "premature_finish/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "came_dildo_him/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,tsize=1",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "came_dildo_him/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,tsize=1,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=3,outfit=sheer_white,phase=after",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=3,outfit=sheer_white,phase=after,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room1/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/hotel.room1/crowd=yes,face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room1/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room1/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/hotel.room1/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_touching/patron+wife/hotel.room1/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=3,outfit=sheer_white,phase=during",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=aroused,men=3,outfit=sheer_white,phase=during,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/cafe.staff/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/cafe.staff/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_face/patron+wife/cafe.staff/face=happy,fin=face,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_face/patron+wife/cafe.staff/face=happy,fin=face,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "came_prostate/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "came_prostate/husband+wife/home.bedroom/face=annoyed,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "wants_him/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "wants_him/husband+wife/cafe.kitchen/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.toilet/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/face=ecstatic,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/face=ecstatic,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_chatting/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_chatting/patron+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "finishing_herself/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "finishing_herself/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "came_prostate/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "came_prostate/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "him_hug/husband+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.hall/face=annoyed,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.hall/face=annoyed,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room1/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_blowjob/patron+wife/hotel.room1/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.bar/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "talk/husband+wife/cafe.bar/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/crowd=yes,face=aroused,men=3,outfit=sheer_white,phase=during",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/crowd=yes,face=aroused,men=3,outfit=sheer_white,phase=during,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sex/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/hotel.room2/face=aroused,fin=mouth,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/hotel.room2/face=aroused,fin=mouth,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "serving/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "serving/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_moment_sit_on_lap/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/hotel.room1/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/hotel.room1/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/hotel.room1/face=happy,fin=mouth,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_mouth/patron+wife/hotel.room1/face=happy,fin=mouth,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_chest/patron+wife/cafe.staff/face=aroused,fin=chest,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_chest/patron+wife/cafe.staff/face=aroused,fin=chest,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_thigh_job/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_face/patron+wife/cafe.staff/face=aroused,fin=face,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_face/patron+wife/cafe.staff/face=aroused,fin=face,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=aroused,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=aroused,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=ecstatic,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=happy,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "sixty_nine/husband+wife/home.bedroom/face=happy,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "fin_mouth/husband+wife/home.bedroom/face=happy,fin=mouth,outfit=sheer_white",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
   },
   {
    "key": "fin_mouth/husband+wife/home.bedroom/face=happy,fin=mouth,outfit=sheer_white,under=off",
    "n": 1,
-   "kind": "full"
+   "kind": "full",
+   "from": "night"
+  },
+  {
+   "key": "patron_fingering/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_handjob/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_sixty_nine/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.staff/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "striptease/patron+wife/cafe.staff/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/hotel.room1/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fingering/patron+wife/hotel.room1/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_body/patron+wife/cafe.staff/face=aroused,fin=body,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_body/patron+wife/cafe.staff/face=aroused,fin=body,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_cunnilingus/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/hotel.room2/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=ecstatic,men=2,outfit=sheer_white,phase=during",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "group/patron+wife/cafe.staff/face=ecstatic,men=2,outfit=sheer_white,phase=during,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/cafe.staff/face=ecstatic,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room2/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_titfuck/patron+wife/hotel.room2/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_inside/patron+wife/hotel.room2/face=aroused,fin=inside,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_fin_inside/patron+wife/hotel.room2/face=aroused,fin=inside,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/cafe.staff/crowd=yes,face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.kitchen/face=annoyed,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "idle/husband+wife/cafe.kitchen/face=annoyed,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_deepthroat/patron+wife/cafe.staff/crowd=yes,face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_breast_play/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/hotel.room2/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "body_shot/patron+wife/hotel.room2/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "her_tidy/husband+wife/cafe.hall/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "her_tidy/husband+wife/cafe.hall/face=happy,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_riding/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_standing_sex/patron+wife/cafe.toilet/face=happy,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "patron_mutual_touching/patron+wife/cafe.toilet/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "full",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.bar/face=aroused,outfit=sheer_white",
+   "n": 1,
+   "kind": "portrait",
+   "from": "work"
+  },
+  {
+   "key": "portrait/wife/cafe.bar/face=aroused,outfit=sheer_white,under=off",
+   "n": 1,
+   "kind": "portrait",
+   "from": "work"
   }
  ]
 }

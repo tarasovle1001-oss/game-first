@@ -404,6 +404,9 @@ export const outfitSchema = z
     tip: z.number().min(0), // share added to tips
     openness: z.number().min(0).max(100), // she wears it on her own from this openness up
     price: z.number().min(0), // 0 = hers from the start, otherwise bought in town
+    shop: z.enum(["adult"]).optional(), // sold in the adult shop, not with the dresses
+    // see-through: also a thing for the night. Openness for her husband at night, for a guest's room at night, and for nothing under it (night / hall)
+    sheer: z.object({ night: z.number(), nightOut: z.number(), nightBare: z.number(), bare: z.number() }).strict().optional(),
   })
   .strict();
 export const daySchema = z
@@ -790,7 +793,7 @@ export const intimacySchema = z
     fatigue: z.object({ perAct: z.number(), perMinute: z.number(), husbandShare: z.number(), from: z.number(), per: z.number(), enoughAt: z.number(), enough: z.number(), past: z.number(), night: z.number(), thoughtAt: z.number() }).strict(),
     marks: z.object({ visible: z.array(z.string()), guests: nums, husbandSuspicion: z.number(), husbandOpen: z.record(z.string(), nums), cleanPerMark: z.number(), cleanAfter: z.number(), skipChance: z.number() }).strict(),
     dress: z.object({ lowMood: z.number(), lowMoodStep: z.number(), fearStep: z.number(), wantStep: z.number(), wishStep: z.number() }).strict(),
-    wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string(), nightwear: z.array(z.object({ id: z.string(), price: z.number().positive(), openness: z.number(), noPantiesFrom: z.number() }).strict()), allure: nums, noPantiesAllure: z.number() }).strict(),
+    wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string(), allure: nums, noPantiesAllure: z.number() }).strict(),
     bedroom: z
       .object({ ask: ids, menu: z.object({ main: ids, groups: z.record(z.string(), ids) }).strict(), counter: ids, counterHard: ids, his: ids, needsToy: ids, upstairs: ids, join: ids, switchTo: ids, ownEnd: ids, herPleasure: nums, herPleasureDefault: z.number(), fixedPleasure: nums, finish: z.record(z.string(), ids), pullOut: ids, soft: ids, givesHer: ids, untouched: ids, needsHer: ids })
       .strict(),

@@ -174,7 +174,8 @@ export function passPrep(ctx: Ctx, minutes: number) {
  * the shop with the toys. What catches her eye depends on what is on her mind; now and then she comes back with a box.
  */
 const SEXSHOP = "town.sexshop";
-const NIGHTWEAR = content.intimacy.wear.nightwear;
+/** From what openness a thing is hers to want: a see-through one is first of all for the night. */
+const wantsFrom = (o: (typeof content.outfits)[number]) => Math.min(o.openness, o.sheer?.night ?? o.openness);
 /** The toy she would pick next: a step up from what she has and takes, within what she could work up to. */
 function nextToy(state: GameState) {
   const b = bs(state);
@@ -234,21 +235,12 @@ function herMorning(ctx: Ctx) {
   const outfit = content.outfits
     .slice()
     .sort((x, y) => x.order - y.order)
-    .find((o) => !b.owned.includes(o.id) && h.traits.openness >= o.openness - D.shop.herOutfitMargin);
+    .find((o) => !b.owned.includes(o.id) && h.traits.openness >= wantsFrom(o) - D.shop.herOutfitMargin);
   if (outfit && b.purse >= outfit.price) {
     b.purse -= outfit.price;
     b.owned.push(outfit.id);
     ctx.log("log.her.buys.outfit", { outfit: `outfit.${outfit.id}` });
     ctx.emit("her:bought", { kind: "outfit", id: outfit.id });
-    return;
-  }
-  // 1b. something see-through for the night, from the adult shop: for herself as much as for him
-  const sheer = NIGHTWEAR.find((n) => !b.owned.includes(n.id) && h.traits.openness >= n.openness);
-  if (sheer && b.purse >= sheer.price) {
-    b.purse -= sheer.price;
-    b.owned.push(sheer.id);
-    ctx.log("log.her.buys.outfit", { outfit: `outfit.${sheer.id}` });
-    ctx.emit("her:bought", { kind: "outfit", id: sheer.id });
     return;
   }
   // 2. a toy, when her husband is not enough: never much bigger than she can take, always bigger than the last one
@@ -381,10 +373,10 @@ function present(ctx: Ctx, kind: "outfit" | "toy", id: string, inShop: boolean) 
   const h = b.heroine;
   const S = D.herDay.shopping;
   if (kind === "outfit") {
-    const o = (content.outfits.find((x) => x.id === id) ?? NIGHTWEAR.find((x) => x.id === id))!; // a dress for work or a thing for the night
+    const o = content.outfits.find((x) => x.id === id)!;
     b.owned.push(o.id);
     // a present she is not ready for is still a present, but it stays in the wardrobe; trying it on herself helps
-    const ready = h.traits.openness + content.manners.askOutfitBonus + (inShop ? S.tryOn : 0) >= o.openness;
+    const ready = h.traits.openness + content.manners.askOutfitBonus + (inShop ? S.tryOn : 0) >= wantsFrom(o);
     changeHeroine(ctx, "mood", ready ? 4 : 1, "present");
     ctx.log(`log.${inShop ? "buy" : "give"}.outfit${ready ? "" : ".shy"}`, { outfit: `outfit.${o.id}` });
   } else {
@@ -618,12 +610,12 @@ export function registerDay(api: ModApi) {
       if (b.day.busy) return [];
       if (state.where[HUSBAND] === "town.shops") {
         const bag = (b.bag ?? []).map((x) => x.id);
-        for (const o of content.outfits) if (!b.owned.includes(o.id) && !bag.includes(o.id) && b.money >= o.price) out.push({ type: BUY, payload: { kind: "outfit", id: o.id, cost: o.price } });
+        for (const o of content.outfits) if (!o.shop && !b.owned.includes(o.id) && !bag.includes(o.id) && b.money >= o.price) out.push({ type: BUY, payload: { kind: "outfit", id: o.id, cost: o.price } });
       }
       if (state.where[HUSBAND] === SEXSHOP) {
         const bag = (b.bag ?? []).map((x) => x.id);
         for (const t of D.shop.toys) if (!b.toys.includes(t.id) && !bag.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
-        for (const n of NIGHTWEAR) if (!b.owned.includes(n.id) && !bag.includes(n.id) && b.money >= n.price) out.push({ type: BUY, payload: { kind: "outfit", id: n.id, cost: n.price } });
+        for (const n of content.outfits) if (n.shop === "adult" && !b.owned.includes(n.id) && !bag.includes(n.id) && b.money >= n.price) out.push({ type: BUY, payload: { kind: "outfit", id: n.id, cost: n.price } });
       }
       if (inTown(state.where[HUSBAND])) for (const u of D.upgrades) if (!b.upgrades.includes(u.id) && canPay(state, u.cost)) out.push({ type: BUY, payload: { kind: "upgrade", id: u.id, cost: u.cost } });
       return out;
@@ -632,7 +624,7 @@ export function registerDay(api: ModApi) {
       const b = bs(ctx.state);
       const { kind, id } = action.payload as { kind: string; id: string };
       if (kind === "outfit" || kind === "toy") {
-        const price = kind === "outfit" ? (content.outfits.find((x) => x.id === id) ?? NIGHTWEAR.find((x) => x.id === id))!.price : D.shop.toys.find((x) => x.id === id)!.price;
+        const price = kind === "outfit" ? content.outfits.find((x) => x.id === id)!.price : D.shop.toys.find((x) => x.id === id)!.price;
         addMoney(ctx, -price, kind);
         // she is there to see it and try it on, or it goes home in a bag until he gives it to her
         if (ctx.state.where[WIFE] === ctx.state.where[HUSBAND]) {
@@ -679,7 +671,7 @@ export function registerDay(api: ModApi) {
     if (b.purse < 0) return `her purse is negative: ${b.purse}`;
     if (b.day && (b.day.left < 0 || b.day.left > opening)) return `afternoon minutes out of range: ${b.day.left}`;
     if (b.day?.busy && !D.activities.some((a) => a.id === b.day!.busy!.id)) return `unknown activity in progress: ${b.day.busy.id}`;
-    for (const id of b.owned) if (!content.outfits.some((o) => o.id === id) && !NIGHTWEAR.some((n) => n.id === id)) return `unknown outfit owned: ${id}`;
+    for (const id of b.owned) if (!content.outfits.some((o) => o.id === id)) return `unknown outfit owned: ${id}`;
     if (!b.owned.includes(b.heroine.outfit)) return `she wears an outfit she does not own: ${b.heroine.outfit}`;
     return null;
   });
