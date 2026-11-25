@@ -1588,12 +1588,16 @@ export function registerMarriage(api: ModApi) {
       if (!b.night || (state.time.phase !== "night" && !b.night.sex) || state.where[HUSBAND] !== state.where[WIFE]) return null;
       if (b.night.watch) return { type: "her_solo", location: state.where[HUSBAND]!, participants: [{ id: WIFE, role: "wife" }], ...(b.night.watch.toy ? { tags: { toy: "vagina" } } : {}) };
       const fin = b.night.fin && !b.night.sex ? `fin_${b.night.fin}` : "";
+      // once she is asleep the night is a sleeping picture, whatever came before it
+      const type = b.night.herAsleep !== undefined && !b.night.sex ? "sleeping" : FIN_LAYOUTS.has(fin) ? fin : b.night.scene;
+      // a scene of three has the guest in it: he is in the key too, or a pack cannot tell it from the two of them
+      const third = b.night.third && content.scenes.find((l) => l.id === type)?.figures.some((f) => f.role === "patron") ? [{ id: b.night.third, role: "patron" }] : [];
       return {
-        // once she is asleep the night is a sleeping picture, whatever came before it
-        type: b.night.herAsleep !== undefined && !b.night.sex ? "sleeping" : FIN_LAYOUTS.has(fin) ? fin : b.night.scene,
+        type,
         location: state.where[HUSBAND]!,
         participants: [
           { id: WIFE, role: "wife" },
+          ...third,
           { id: HUSBAND, role: "husband" },
         ],
         ...(b.night.fin && !b.night.sex ? { tags: { fin: b.night.fin } } : {}),
