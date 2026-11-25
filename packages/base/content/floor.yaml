@@ -102,6 +102,7 @@ details:               # free close-ups beside the picture (see look.ts detailsF
   wet: [55, 72, 88]    # her arousal: three levels of how it shows on her
   # close-ups that only repeat the main picture or hang on for hours: not shown (playtest 26). To bring one back, take it off the list.
   drop: [kiss_close, tip_tuck, panties_off, hickey]
+  xrayChance: 0.25     # share of acts with a guest inside her (and of her toy) whose picture is asked for in section: xray=1 in the key
   accentClass: 2       # size class (0 tiny .. 4 huge) from which a man shows from the outside: her throat, her belly
 crowd:                # when something goes on where others can see: some gather to watch, some want in
   fromTier: 3

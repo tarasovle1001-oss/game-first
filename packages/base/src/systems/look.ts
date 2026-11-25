@@ -9,7 +9,7 @@ import { toyForHim } from "./marriage";
 import { bareOf, dressOf } from "./dress";
 import { sheerOf, wearOf } from "./bodystate";
 import { annoyedLevel } from "./annoy";
-import { husbandSees } from "./places";
+import { HALL, husbandSees } from "./places";
 
 const L = content.look;
 const W = L.words;
@@ -153,7 +153,9 @@ const shownOutfit = (state: GameState): string => {
   if (worn === "naked" || !loc.startsWith("town.")) return worn;
   return loc === "town.gym" ? "sport" : "street";
 };
-export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "phase", "crowd", "face", "tsize", "under", "skirt", "toy", "cage"];
+export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "phase", "crowd", "face", "tsize", "under", "skirt", "toy", "cage", "xray"];
+/** Acts a guest is inside her in, front: the ones a picture in section makes sense for. */
+const XRAY_ACTS = new Set(["sex", "riding", "standing_sex", "toy_on_her"]);
 /**
  * What a whole picture and her portrait do not show (the picture pass of 22.11 looked: a guest's size class, the marks on
  * her, how stretched or sore she is read the same at that distance). They stay out of those keys - one picture for all of
@@ -228,6 +230,10 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
     .filter(([, n]) => n > 0);
   if (sore.length) out.sore = sore.map(([z, n]) => `${z}${n}`).join("");
   for (const k of UNSEEN_WHOLE) delete out[k];
+  // now and then the same picture is drawn in section: a guest in her, or her own toy. The roll holds for the whole act.
+  const enc = b.encounter;
+  const xray = roles.has("patron") && enc && XRAY_ACTS.has(enc.act) && intimate ? enc.startTick + enc.actTick : TOY_HERS.has(desc.type) ? 50 : undefined;
+  if (xray !== undefined && ((state.time.day * 37 + xray * 11) % 100) / 100 < D.xrayChance) out.xray = "1";
   // a toy in the middle of the scene: how big it is shows, and is drawn
   if (TOY_HIS.has(desc.type)) {
     const toy = toyForHim(state).toy;
@@ -381,10 +387,12 @@ const SHOWS = new Set(["flash", "walk_naked", "striptease", "body_shot", "mastur
 /** How a scene with him ended, when the ending is his body's doing. */
 const HIS_END: Record<string, string> = { went_soft: "him_soft", premature_finish: "him_cum_early", came_too_soon_foreplay: "him_cum_early", lead_ruined: "him_ruined" };
 const FRONT = new Set(["sex", "riding", "standing_sex", "join_dp", "toy_on_her"]);
-const BACK = new Set(["anal", "join_dp"]);
 const THROAT = new Set(["deepthroat"]);
 const BY_HAND = new Set(["handjob", "ignore_handjob", "edging", "tease_denial"]);
 const TOY_HIM = new Set(["pegging", "dildo_him", "fisting_him"]);
+
+/** Close-ups with her dressed body in the frame: they carry her outfit, the same value as the main picture of the step. */
+const DRESSED = new Set(["nipples", "show_breasts", "show_butt", "show_pussy", "upskirt", "phone_ear", "grope_breast", "grope_butt", "grope_thigh", "grope_under", "wet", "belly_bulge", "gape_v", "gape_a", "panties_off", "tip_tuck"]);
 
 export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const b = bs(state);
@@ -394,7 +402,9 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const sizeOf = (id: string | undefined) => (id === HUSBAND ? b.husband.size : id ? b.patrons[id]?.size : undefined);
   const classOf = (id: string | undefined) => sizeClass(sizeOf(id) ?? 0);
   const roleOf = (id: string | undefined) => (id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron");
-  const add = (id: string, who: string, tags: Record<string, string> = {}) => void (D.drop.includes(id) || out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: "any", participants: [{ id: who, role: roleOf(who) }], tags })); // no room in a close-up: one file serves every room
+  const worn = shownOutfit(state);
+  const add = (id: string, who: string, tags: Record<string, string> = {}) =>
+    void (D.drop.includes(id) || out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: "any", participants: [{ id: who, role: roleOf(who) }], tags: DRESSED.has(id) ? { ...tags, outfit: worn } : tags })); // no room in a close-up: one file serves every room
   const aroused = (b.husband.arousal ?? 0) >= D.himArousal;
   // him in his trousers: plain, locked up, locked up and leaking - one close-up, three looks
   const cage: Record<string, string> = b.husband.caged ? { cage: aroused ? "leak" : "1" } : {};
@@ -409,6 +419,8 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const gape = (z: "vagina" | "anus") => String(level(W.stretch[z] ?? [], h.body[z].stretch));
   const wet = level(D.wet.map((from) => [from, ""] as [number, string]), h.arousal);
 
+  // a guest is talking money with the husband: the money changing hands, beside whatever the room shows
+  if (b.deal && b.shift && !b.encounter && state.where[HUSBAND] === HALL) add("deal_money", b.deal.patron);
   for (const d of freshDetails(state)) {
     if (d.secret && !openly) continue;
     const who = d.who ?? WIFE;
@@ -424,11 +436,10 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
     const fin = desc.tags?.fin;
     if (man && THROAT.has(id) && big) add("throat_bulge", WIFE, { size: String(classOf(man)) });
     // the section through her is for a guest: with her husband there is nothing in it worth an accent
-    if (guest && FRONT.has(id)) {
-      if (big) add("belly_bulge", WIFE, { size: String(classOf(man)) });
-      add("xray_v", WIFE, { size: String(classOf(man)), ...(fin === "inside" ? { fin: "1" } : {}) });
-    }
-    if (guest && BACK.has(id)) add("xray_a", WIFE, { size: String(classOf(man)), ...(fin === "anus" ? { fin: "1" } : {}) });
+    // (the section through her is a variant of the main picture now: lookTags, xray=1)
+    if (guest && FRONT.has(id) && big) add("belly_bulge", WIFE, { size: String(classOf(man)) });
+    // a guest finished inside her: what is in her now
+    if (guest && fin === "inside") add("womb_cum", WIFE);
     // her hand on him, bare: on a guest her ring is in the picture
     if (man && BY_HAND.has(id)) add("touch_bare", man, man !== HUSBAND ? { size: String(classOf(man)), ring: "1" } : {});
     if (TOY_HIM.has(id)) add("toy_him", HUSBAND, { who: "her" });

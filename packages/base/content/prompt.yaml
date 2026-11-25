@@ -247,6 +247,9 @@ details:
   "who.self": "male hand, holding dildo"
   "xray_a": "close-up, hetero, anal, (cross-section:1.3), x-ray, penis in ass, female, lower body, from behind"
   "xray_toy": "close-up, (cross-section:1.3), x-ray, dildo, object insertion, female, lower body"
+  "deal_money": "close-up, male hands, (money:1.3), banknotes, handing over money, two hands, clothed male, table edge"
+  "womb_cum": "close-up, (cross-section:1.3), x-ray, uterus, womb, (cum in uterus:1.2), internal cumshot, female, lower body"
+  "xray.1": "(cross-section:1.3), x-ray, internal view"
   "xray_v": "close-up, hetero, sex, vaginal, (cross-section:1.3), x-ray, internal cumshot, uterus, penis, pussy, female, lower body"
 # The first close-up words (Grok anketa, 19.11), kept for reference; not used.
 details_grok:
@@ -428,10 +431,10 @@ tags:
   cunnilingus: "hetero, (cunnilingus:1.2), oral, spread legs, lying on back, on bed, hand on another's head, man between legs, pussy juice, head back, from above"
   cold_back: "lying on bed, on side, back-to-back, facing away, annoyed, frown, open eyes, pillow, blanket, under covers, from above, warm lighting, lamp"
   sleeping: "sleeping, lying on bed, on side, closed eyes, under covers, man sleeping, on back, night, from above"
-  caught: "hetero, walk-in, fellatio, kneeling, man standing, man standing in doorway, shocked, surprised, wide shot"
+  caught: "hetero, fellatio, kneeling, man standing, caught, (looking at viewer:1.3), shocked, surprised, wide-eyed, pov doorway, wide shot"   # 25.11: the husband is the camera, not a figure
   fd_tease: "hetero, femdom, teasing, (crotch grab:1.2), (bulge:1.2), clothed, man sitting on bed, smirk, whispering, from side"
   fd_facesit: "hetero, femdom, (sitting on face:1.2), girl on top, man lying on back, on bed, thighs, looking down, smirk, from side"
-  fd_ignore: "hetero, femdom, (handjob:1.3), reaching back, lying on side, facing away, holding phone, looking at phone, bored, man kneeling, penis, on bed, from side"
+  fd_ignore: "hetero, femdom, lying on side, (facing away:1.3), back turned, under blanket, closed eyes, smug, man sitting on bed behind her, man looking at her, frustrated, erection under clothes, underwear, on bed, night, from side"   # she told him about her evening and turned away: nothing happens for him
   patron_titfuck: "hetero, (paizuri:1.2), penis between breasts, breasts squeezed together, hands on own breasts, kneeling, man sitting, large penis, precum, looking up, from side"
   patron_thigh_job: "hetero, (thigh sex:1.2), penis between thighs, standing, man standing behind, hug from behind, grabbing another's breast, large penis, from side"
   patron_deepthroat: "hetero, (deepthroat:1.2), irrumatio, penis in mouth, large penis, kneeling, man standing, hands on another's head, tears, saliva, drooling, height difference, from side"
@@ -460,7 +463,8 @@ tags:
   came_fisting_him: "close-up, femdom, female pov, pov, pov hands, (female hand:1.3), (pale hand:1.5), (pale arm:1.4), slender fingers, (black nails:1.2), wedding ring, (anal fisting:1.5), (arm in anus:1.3), forearm in anus, wrist deep, (male penetrated:1.2), (solo focus:1.2), male focus, man on all fours, male ass, from behind, ejaculation, (handsfree ejaculation:1.3), (excessive cum:1.3), cum string, cumdrip, (cum pool:1.2), cum on bed sheet, projectile cum, (pale hand:1.5), (white skin:1.4), (pale-skinned female:1.3), (pale arm:1.4), (white arm:1.3)"
   came_rimming_him: "hetero, femdom, (anilingus:1.2), man on all fours, reach-around, handjob, ejaculation, excessive cum, kneeling, on bed, from side"
   came_rimming_her: "hetero, (anilingus:1.3), (face in ass:1.2), tongue, all fours, top-down bottom-up, ass up, female orgasm, trembling, closed eyes, open mouth, pussy juice, on bed, man kneeling behind, grabbing another's ass, from side, uncensored"
-  wants_him: "hetero, girl on top, leaning forward, hands on another's chest, seductive smile, bedroom eyes, man lying on back, on bed, from side"
+  wants_him: "hetero, standing, pressing against him, hands on another's chest, leaning in, seductive smile, bedroom eyes, man standing, from side, cowboy shot"   # standing everywhere there is nothing to lie on
+  "wants_him@home.bedroom": "hetero, girl on top, leaning forward, hands on another's chest, seductive smile, bedroom eyes, man lying on back, on bed, from side"
   patron_breast_play: "hetero, breast sucking, nipple sucking, grabbing another's breast, breasts out, sitting, hand on another's head, head back, blush, upper body"
   patron_fingering: "hetero, (fingering:1.2), spread legs, lying on back, man between legs, pussy juice, blush, open mouth, from above"
   patron_sixty_nine: "hetero, (69:1.2), fellatio, cunnilingus, girl on top, all fours, man lying on back, penis, from side"
@@ -512,7 +516,7 @@ tags:
   caught_him_surprised: "1girl, solo, standing in doorway, open door, hand on door, surprised, wide-eyed, covering mouth, looking at viewer, pov, cowboy shot"
   caught_him_pity: "1girl, solo, standing in doorway, open door, crossed arms, disappointed, frown, half-closed eyes, looking down, looking at viewer, pov, cowboy shot"
   caught_him_playful: "1girl, solo, leaning on doorframe, open door, smirk, raised eyebrow, finger to mouth, naughty face, looking at viewer, pov, cowboy shot"
-  bath_walkin: "walk-in, showering, bathroom, nude, wet, covering breasts, covering crotch, surprised, man standing in doorway, cowboy shot"
+  bath_walkin: "solo, showering, bathroom, nude, wet, covering breasts, covering crotch, surprised, (looking at viewer:1.3), pov doorway, cowboy shot"   # 25.11: she alone, the husband is the camera
   bath_together: "hetero, showering, bathroom, nude, wet, hug, arms around neck, hands on another's hips, steam, cowboy shot"
   flash: "flashing, exhibitionism, lifting own clothes, breasts out, nipples, standing, men sitting at table, staring, blush, embarrassed, cowboy shot"
   walk_naked: "(public nudity:1.3), exhibitionism, completely nude, walking, men sitting at table, staring, blush, full body"
@@ -525,13 +529,13 @@ tags:
   edging: "hetero, femdom, (handjob:1.2), teasing, penis, erection, precum, smirk, kneeling, on bed, man lying on back, from side"
   came_edging: "hetero, femdom, handjob, ruined orgasm, ejaculation, excessive cum, hand on penis, smirk, kneeling, on bed, man lying on back, from side"
   cleanup: "hetero, (licking penis:1.2), cum on penis, tongue out, saliva, cum string, after sex, kneeling, on bed, man lying on back, looking up, from side"
-  came_cleanup: "hetero, (licking penis:1.2), cum on penis, tongue out, ejaculation, cum on face, excessive cum, kneeling, on bed, man lying on back, from side"
+  came_cleanup: "hetero, (cunnilingus:1.2), man between her legs, face in crotch, lying on back, spread legs, hand on another's head, cum in pussy, cumdrip, looking down, smug, on bed, man kneeling, hands-free ejaculation, cum on sheets, from side"   # he licks her clean after a guest and comes untouched
   chastity: "hetero, femdom, (chastity cage:1.4), (male chastity:1.2), caged penis, holding key, key, smirk, looking up, kneeling, on floor, between legs, man sitting on bed, spread legs, head out of frame, (from side:1.3), profile, (2people:1.1)"
   came_chastity: "hetero, femdom, (chastity cage:1.4), (male chastity:1.2), caged penis, holding key, key, smirk, looking up, kneeling, on floor, between legs, man sitting on bed, spread legs, head out of frame, (from side:1.3), profile, (2people:1.1), cum, cumdrip, cum string, ruined orgasm, trembling, uncensored"
   toy_on_her: "(pink dildo:1.3), (vaginal object insertion:1.3), dildo, sex toy, lying on back, spread legs, m legs, on bed, man sitting beside, holding dildo, pussy juice, moaning, from side, uncensored, sweat"
   came_toy_on_her: "hetero, (dildo:1.2), object insertion, vaginal object insertion, female orgasm, trembling, spread legs, lying on back, on bed, pussy juice, ahegao, from above"
-  masturbate_show: "(female masturbation:1.2), fingering, spread legs, lying on back, on bed, hand on own breast, man watching, man lying on side, blush, from above"
-  came_masturbate_show: "(female masturbation:1.2), female orgasm, trembling, arched back, spread legs, lying on back, on bed, pussy juice, man watching, from above"
+  masturbate_show: "(female masturbation:1.2), fingering, spread legs, lying on back, on bed, hand on own breast, man watching, man sitting, clothed male, hands on own knees, blush, looking at another, from side"   # he only watches: dressed, not touching himself
+  came_masturbate_show: "(female masturbation:1.2), spread legs, lying on back, on bed, smirk, looking at another, man watching, man sitting, clothed male, (cum stain:1.2), wet pants, trembling, embarrassed, from side"   # he comes in his trousers from the sight alone, no hands
   footjob: "hetero, femdom, pov, male pov, (footjob:1.4), two-footed footjob, penis between feet, feet, soles, toes, barefoot, sitting, leaning back, smirk, looking at viewer, on bed, penis, erection, uncensored, precum"
   came_footjob: "hetero, femdom, (footjob:1.2), feet, ejaculation, cum on feet, excessive cum, penis, sitting, on bed, man lying on back, smirk, from side"
   spank_him: "hetero, femdom, (spanking:1.2), man on all fours, ass, red ass, hand raised, kneeling, on bed, smirk, from side"
@@ -557,7 +561,7 @@ tags:
   him_grope: "hetero, groping, grabbing another's breast, grabbing another's ass, hug from behind, man behind her, standing, blush, looking back, upper body"
   him_grab_ass: "hetero, (grabbing another's ass:1.3), ass grab, hands on ass, from behind, man behind her, standing, looking back, blush, lower body"
   him_under_skirt: "hetero, (hand under skirt:1.3), hand between legs, skirt lift, fingering through clothes, standing, hug from behind, biting own lip, blush, cowboy shot"
-  him_guide_hand: "hetero, (handjob:1.3), (penis grab:1.2), her hand on his penis, open fly, penis out, her other hand on his chest, (arm at side:1.2), his arms at sides, standing, (from side:1.3), profile, facing each other, looking down, blush, clothed female, cowboy shot"
+  him_guide_hand: "hetero, (hand on another's crotch:1.3), crotch grab, bulge, erection under clothes, pants, clothed male, his hand over hers, her other hand on his chest, (arm at side:1.2), his arms at sides, standing, (from side:1.3), profile, facing each other, looking down, blush, clothed female, cowboy shot"
   her_solo: "(female masturbation:1.2), fingering, spread legs, lying on back, on bed, hand on own breast, half-closed eyes, looking at viewer, blush, from above"
 # Extra negative words of a scene, added to the shared negative (tools/prompt-lab).
 negatives:
@@ -616,7 +620,7 @@ penis_unless: "outline|bulge|stain on (his )?pants|through (his )?(pants|trouser
 # Her nude words (cast.yaml: nude) go in only when the scene shows her body: sex, or her own nudity
 her_nude_when: "\\b(penis|sex|vaginal|anal|fellatio|handjob|paizuri|footjob|69|cunnilingus|fingering|masturbation|facesitting|sitting on face|pegging|creampie|cum|nude|nudity|naked|breasts out|flashing|nipples|pussy|ass|panties|topless|bottomless|anilingus|thigh sex|after sex|undressing|showering)\\b"
 # The figures a scene's picture draws (Alexey 19.11: husbands next to her chores look bad - she is alone there).
-only: { her_cook: [wife], her_tidy: [wife], her_rest: [wife], dildo_him: [husband], came_dildo_him: [husband], prostate: [husband], came_prostate: [husband], fisting_him: [husband], came_fisting_him: [husband] }
+only: { caught: [wife, patron], bath_walkin: [wife], her_cook: [wife], her_tidy: [wife], her_rest: [wife], dildo_him: [husband], came_dildo_him: [husband], prostate: [husband], came_prostate: [husband], fisting_him: [husband], came_fisting_him: [husband] }
 # Rules on top of a scene's tags (Alexey's Wayward filters, 19.11): when the scene's tags match `when` (a regex) and not `unless`,
 # with: the scene has that role (patron = any guest, husband), without: it has not. add -> after the scene tags, her -> her part,
 # negative -> the negative. Fixes for problem scenes that are not switched on yet: claude/gen-fixes.md in the project.

@@ -160,7 +160,6 @@ export function registerSolo(api: ModApi) {
     b.lastToy = { id: toy.id, size: toy.size, zone, day: ctx.state.time.day };
     ctx.log(`log.solo.${zone}${heard ? ".heard" : ""}`, { toy: `toy.${toy.id}` }, tags);
     detail(ctx, { id: anal ? "toy_a" : "toy_v", who: WIFE, tags: { tsize: String(sizeClass(toy.size)), gape: String(Math.min(3, Math.floor(h.body[anal ? "anus" : "vagina"].stretch / 25))) }, secret: !heard });
-    detail(ctx, { id: "xray_toy", who: WIFE, tags: { tsize: String(sizeClass(toy.size)), at: anal ? "a" : "v" }, secret: !heard });
     ctx.emit("solo:did", { zone, toy: toy.id, size: toy.size, heard });
   };
 }

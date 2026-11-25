@@ -241,7 +241,14 @@ describe("free close-ups", () => {
     expect(pictureFrames(s, desc).details.length).toBe(d.length);
     // in bed with a big man the accents come instead
     const bed = detailsFor(s, { type: "patron_sex", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }] });
-    expect(bed.map((x) => x.type)).toContain("detail_xray_v");
+    expect(bed.map((x) => x.type)).toContain("detail_belly_bulge");
+    // the section through her is no close-up any more: a variant of the main picture, and what he left in her is one
+    expect(bed.some((x) => x.type.startsWith("detail_xray"))).toBe(false);
+    const fin = detailsFor(s, { type: "patron_sex", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }], tags: { fin: "inside" } });
+    expect(fin.map((x) => x.type)).toContain("detail_womb_cum");
+    // a close-up of her dressed body is in the outfit of the main picture
+    expect(by.detail_nipples!.outfit).toBe(bs(s).heroine.outfit);
+    expect(by.detail_bulge!.outfit).toBeUndefined();
   });
   it("what she does while the phone rings is only for eyes that may see it", () => {
     const s = atShift();

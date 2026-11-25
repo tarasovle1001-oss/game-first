@@ -107,7 +107,7 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   const detailMain = isDetail ? [swapped ?? P.details[detailId] ?? "", ...tagKeys.map((k) => P.details[`${detailId}+${k}`] ?? "")].filter(Boolean).join(", ") : "";
   // a dressed close-up (a bulge, a stain) does not take the size words: they name a penis and undress him; his size shows as the bulge
   const dressedDetail = isDetail && !!P.penis_unless && new RegExp(P.penis_unless, "i").test(detailMain);
-  const detailWords = isDetail ? [detailMain, ...Object.entries(t).filter(([k]) => !(dressedDetail && k === "size")).map(([k, v]) => P.details[`${k}.${v}`] ?? "")].filter(Boolean).join(", ") : "";
+  const detailWords = isDetail ? [detailMain, ...Object.entries(t).filter(([k]) => !(dressedDetail && k === "size")).map(([k, v]) => (k === "outfit" ? (t.wear === "bare" ? "" : (content.look.words.outfit[v]?.core ?? "")) : (P.details[`${k}.${v}`] ?? "")))].filter(Boolean).join(", ") : "";
   // booru tags of the scene (prompt.yaml: tags) lead the prompt; a scene that has them does not use its English pose slots
   // ...and may have extra words for one value of a tag ("group+men.3")
   // ...or other words in one room ("idle@town.square": walking together in the street, not a waitress at the counter)
@@ -161,7 +161,7 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   const roomWords = (W.room[desc.location] ?? desc.location).split(",").map((w) => w.trim());
   const room = isDetail ? P.style.detail : [`(${roomWords[0]}:1.2)`, ...roomWords.slice(1)].join(", ");
   const shared = booru
-    ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, ...fired.flatMap((r) => (r.add ? [r.add] : [])), t.fin ? W.fin[t.fin] : undefined, t.tsize !== undefined ? P.details[`tsize.${t.tsize}`] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
+    ? join([quality, counts, men > 0 ? booru.replace(/(^|,\s*)solo(?=,|$)/, "") : booru, ...fired.flatMap((r) => (r.add ? [r.add] : [])), t.fin ? W.fin[t.fin] : undefined, t.tsize !== undefined ? P.details[`tsize.${t.tsize}`] : undefined, t.xray ? P.details["xray.1"] : undefined, trigger, t.crowd ? "crowd, onlookers" : undefined])
     : join([
         P.style.prefix,
         counts,

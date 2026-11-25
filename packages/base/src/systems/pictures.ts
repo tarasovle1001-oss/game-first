@@ -112,15 +112,8 @@ export function registerPictures(api: ModApi) {
       return { type: s.type, location: HALL, participants: [{ id: WIFE, role: "wife" }, ...guests.slice(0, 2).map((id, i) => ({ id, role: i ? "patron2" : "patron" }))], tags: { bare: s.type === "walk_naked" ? "all" : "flash" } };
     },
   });
-  api.scenes.register({
-    id: "base.deal",
-    priority: 55,
-    match(state) {
-      const b = bs(state);
-      if (!b.deal || !b.shift || b.encounter || state.where[HUSBAND] !== HALL) return null;
-      return { type: "deal", location: HALL, participants: [{ id: HUSBAND, role: "husband" }, { id: b.deal.patron, role: "patron" }, ...(state.where[WIFE] === HALL ? [{ id: WIFE, role: "wife" }] : [])] };
-    },
-  });
+  // (a guest talking money with the husband has no picture of its own since 25.11: the room stays, the money changing
+  // hands is a close-up beside it - look.ts detailsFor, deal_money)
   // Behind the bedroom door with her own drawer: for eyes that may see it, for as long as it lasts.
   api.scenes.register({
     id: "base.solo",
