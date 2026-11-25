@@ -4,7 +4,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import type { ZodTypeAny, z } from "zod";
+import { z, type ZodTypeAny } from "zod";
 import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, castSchema, heroineSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
@@ -75,7 +75,18 @@ const balance = load(join(base, "content/balance.yaml"), balanceSchema);
 
 // --- acts, scenes, consent tuning ---
 const acts = load(join(base, "content/acts.yaml"), actSchema.array().min(1)) ?? [];
-const scenes = load(join(base, "content/scenes.yaml"), sceneSchema.array().min(1)) ?? [];
+// a scene may borrow the layout of another one: "- { id: came_x, like: x }" (the pose is then edited in one place)
+const sceneLike = z.object({ id: z.string(), like: z.string(), split: z.boolean().optional() }).strict();
+const sceneFile = load(join(base, "content/scenes.yaml"), z.union([sceneSchema, sceneLike]).array().min(1)) ?? [];
+const scenes = sceneFile.flatMap((s) => {
+  if (!("like" in s)) return [s];
+  const src = sceneFile.find((x) => x.id === s.like);
+  if (!src || "like" in src) {
+    errors.push(`scenes.yaml: "${s.id}" is like "${s.like}", which is ${src ? "itself borrowed" : "unknown"}`);
+    return [];
+  }
+  return [{ ...src, id: s.id, ...(s.split === undefined ? {} : { split: s.split }) }];
+});
 const consent = load(join(base, "content/consent.yaml"), consentSchema);
 const body = load(join(base, "content/body.yaml"), bodySchema);
 const secrecy = load(join(base, "content/secrecy.yaml"), secrecySchema);

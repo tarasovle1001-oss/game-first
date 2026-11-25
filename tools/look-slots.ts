@@ -10,7 +10,9 @@ import { parse, parseDocument, Scalar, stringify } from "yaml";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const file = join(root, "packages/base/content/prompt.yaml");
-const scenes = parse(readFileSync(join(root, "packages/base/content/scenes.yaml"), "utf8")) as { id: string; figures: Record<string, unknown>[] }[];
+const sceneFile = parse(readFileSync(join(root, "packages/base/content/scenes.yaml"), "utf8")) as { id: string; like?: string; figures: Record<string, unknown>[] }[];
+// "like: x" borrows the layout of scene x (resolved the same way in build-content.ts)
+const scenes = sceneFile.map((s) => (s.like ? { ...sceneFile.find((x) => x.id === s.like)!, id: s.id } : s));
 const acts = parse(readFileSync(join(root, "packages/base/content/acts.yaml"), "utf8")) as { id: string; scene: string }[];
 const ru = parse(readFileSync(join(root, "packages/base/locales/ru.yaml"), "utf8")) as Record<string, string>;
 const en = parse(readFileSync(join(root, "packages/base/locales/en.yaml"), "utf8")) as Record<string, string>;

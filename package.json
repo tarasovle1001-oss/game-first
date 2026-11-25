@@ -12,6 +12,8 @@
     "dev": "pnpm content && pnpm --filter @tc/ui dev",
     "build": "pnpm content && pnpm --filter @tc/ui build",
     "check": "pnpm content && tsc -p tsconfig.json --noEmit && vitest run && tsx packages/bots/src/run.ts",
+    "check:fast": "pnpm content && tsc -p tsconfig.json --noEmit && vitest run",
+    "pics:plan": "pnpm content && tsx tools/pics-plan.ts",
     "lab": "tsx tools/prompt-lab/server.ts"
   },
   "devDependencies": {
