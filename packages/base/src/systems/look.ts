@@ -155,7 +155,7 @@ const shownOutfit = (state: GameState): string => {
 };
 export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "phase", "crowd", "face", "tsize", "under", "skirt", "toy", "cage", "xray"];
 /** Acts a guest is inside her in, front: the ones a picture in section makes sense for. */
-const XRAY_ACTS = new Set(["sex", "riding", "standing_sex", "toy_on_her"]);
+const XRAY_ACTS = new Set(["sex", "riding", "standing_sex"]);
 /**
  * What a whole picture and her portrait do not show (the picture pass of 22.11 looked: a guest's size class, the marks on
  * her, how stretched or sore she is read the same at that distance). They stay out of those keys - one picture for all of
@@ -230,9 +230,9 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
     .filter(([, n]) => n > 0);
   if (sore.length) out.sore = sore.map(([z, n]) => `${z}${n}`).join("");
   for (const k of UNSEEN_WHOLE) delete out[k];
-  // now and then the same picture is drawn in section: a guest in her, or her own toy. The roll holds for the whole act.
+  // now and then the same picture is drawn in section: a guest in her. The roll holds for the whole act.
   const enc = b.encounter;
-  const xray = roles.has("patron") && enc && XRAY_ACTS.has(enc.act) && intimate ? enc.startTick + enc.actTick : TOY_HERS.has(desc.type) ? 50 : undefined;
+  const xray = roles.has("patron") && enc && XRAY_ACTS.has(enc.act) && intimate ? enc.startTick + enc.actTick : undefined; // (a toy in section the model cannot draw: not asked for)
   if (xray !== undefined && ((state.time.day * 37 + xray * 11) % 100) / 100 < D.xrayChance) out.xray = "1";
   // a toy in the middle of the scene: how big it is shows, and is drawn
   if (TOY_HIS.has(desc.type)) {
