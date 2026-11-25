@@ -247,6 +247,7 @@ details:
   "who.self": "male hand, holding dildo"
   "xray_a": "close-up, hetero, anal, (cross-section:1.3), x-ray, penis in ass, female, lower body, from behind"
   "xray_toy": "close-up, (cross-section:1.3), x-ray, dildo, object insertion, female, lower body"
+  "group_hand": "close-up, (handjob:1.2), female hand, penis grab, wedding ring, dark-skinned male, lower body, erection"
   "deal_money": "close-up, male hands, (money:1.3), banknotes, handing over money, two hands, clothed male, table edge"
   "womb_cum": "close-up, (cross-section:1.3), x-ray, uterus, womb, (cum in uterus:1.2), internal cumshot, female, lower body"
   "xray.1": "(cross-section:1.3), x-ray, internal view"
@@ -297,9 +298,9 @@ details_grok:
   "xray_toy": "x-ray view of toy inside, internal stretch, detailed"
   "xray_v": "x-ray view of penis inside pussy, internal detail, stretched walls"
 # Who else is drawn in a close-up besides the figure in its key (his hand on her: she is the subject).
-detail_with: { touch_bulge: [wife], grope_breast: [wife], grope_butt: [wife], grope_thigh: [wife], grope_under: [wife], tip_tuck: [wife], him_ruined: [wife], join_hand_lazy: [wife], join_ruined: [wife], kiss_close: [patron], touch_bare: [wife], throat_bulge: [patron], belly_bulge: [patron], xray_v: [patron], xray_a: [patron] }
+detail_with: { group_hand: [wife], touch_bulge: [wife], grope_breast: [wife], grope_butt: [wife], grope_thigh: [wife], grope_under: [wife], tip_tuck: [wife], him_ruined: [wife], join_hand_lazy: [wife], join_ruined: [wife], kiss_close: [patron], touch_bare: [wife], throat_bulge: [patron], belly_bulge: [patron], xray_v: [patron], xray_a: [patron] }
 # In these close-ups a figure is only a hand: drawn with its skin alone, so her body or his chest does not take over the frame.
-detail_hands: { grope_breast: [patron, husband], grope_butt: [patron, husband], grope_thigh: [patron], grope_under: [patron, husband], tip_tuck: [patron], touch_bulge: [wife], him_ruined: [wife], join_hand_lazy: [wife], join_ruined: [wife], touch_bare: [wife], phone_busy: [wife], panties_off: [wife] }
+detail_hands: { group_hand: [wife], grope_breast: [patron, husband], grope_butt: [patron, husband], grope_thigh: [patron], grope_under: [patron, husband], tip_tuck: [patron], touch_bulge: [wife], him_ruined: [wife], join_hand_lazy: [wife], join_ruined: [wife], touch_bare: [wife], phone_busy: [wife], panties_off: [wife] }
 # Close-ups with no one in them (things on their own).
 # close-ups with her head in the frame: they take her hair from her card (other close-ups keep only skin and body)
 detail_head: [phone_ear, tip_tuck, marks_face]

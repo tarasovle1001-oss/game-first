@@ -168,21 +168,33 @@ const UNSEEN_WHOLE = ["size", "size2", "size3", "hsize", "marks", "gape", "sore"
  */
 const PORTRAIT_ONLY = ["under", "skirt"];
 /**
- * More than one man on her is one pool of pictures: `group/patron+wife/<room>/men=2|3|4,phase=during|after` + her look.
- * Who has which part of her stays in the game (attempts, stretch, text) and in the mannequin; the picture does not tell
- * the layouts apart. Her husband joining a guest is the same pool. `men=4` stands for four and more.
+ * More than one man on her, or her husband joining a guest: the picture is asked for by the scene's own name
+ * (`group_dp/patron+wife/<room>/...`, `join_mouth/husband+patron+wife/<room>/...`) with her look. Scenes that read the
+ * same in a picture share one (look.yaml: group.same); where the second man only gets her hand the main picture is the
+ * first guest's act alone and the hand is a close-up (group.plain). Who has which part of her stays in the game and
+ * in the mannequin. `men` (2|3|4+) stays only in "they have finished".
  */
 const GROUP = /^(came_)?(group_|join_)/;
 const MEN_ROLES = new Set(["husband", "patron", "patron2", "patron3"]);
-const groupOf = (desc: SceneDesc, tags: Record<string, string>): SceneDesc => {
+const groupOf = (state: GameState, desc: SceneDesc, tags: Record<string, string>): SceneDesc => {
   const wife = desc.participants.find((p) => p.role === "wife");
   const men = desc.participants.filter((p) => MEN_ROLES.has(p.role));
-  const count = Math.max(men.length, Number(tags.men ?? 0));
-  if (!GROUP.test(desc.type) || !wife || count < 2) return { ...desc, tags };
+  if (!GROUP.test(desc.type) || !wife || men.length === 0) return { ...desc, tags };
+  const G = content.look.group;
   const first = men.find((m) => m.role === "patron") ?? men[0]!;
-  const { fin: _f, cage: _c, tsize: _t, toy: _toy, ...look } = tags;
-  const after = desc.type.startsWith("came_") || desc.type === "group_after";
-  return { type: "group", location: desc.location, participants: [wife, { id: first.id, role: "patron" }], tags: { ...look, men: String(Math.min(4, count)), phase: after ? "after" : "during" } };
+  const husband = men.find((m) => m.role === "husband");
+  const { fin: _f, cage: _c, tsize: _t, toy: _toy, men: count, ...look } = tags;
+  const enc = bs(state).encounter;
+  // the second man has only her hand: the picture is what the first one is doing with her
+  if (G.plain.includes(desc.type) && enc) {
+    // (if it is the first guest who has her hand, the picture is the man who is in her)
+    const inHer = (id: string) => (content.acts.find((a) => a.id === id)?.zones as string[] | undefined)?.some((z) => z === "vagina" || z === "anus");
+    const main = inHer(enc.act) ? { act: enc.act, patron: enc.patron } : (enc.men?.find((m) => inHer(m.act)) ?? { act: enc.act, patron: enc.patron });
+    return { type: content.acts.find((a) => a.id === main.act)?.scene ?? desc.type, location: desc.location, participants: [wife, { id: main.patron, role: "patron" }], tags: look };
+  }
+  const type = G.same[desc.type] ?? desc.type;
+  const who = husband && first !== husband ? [wife, { id: first.id, role: "patron" }, husband] : [wife, { id: first.id, role: first.role === "husband" ? "husband" : "patron" }];
+  return { type, location: desc.location, participants: who, tags: type === "group_after" && count ? { ...look, men: String(Math.min(4, Number(count))) } : look };
 };
 /** Scenes where a toy is the subject: its size class goes into the key. */
 const TOY_HERS = new Set(["toy_on_her", "came_toy_on_her"]);
@@ -261,7 +273,7 @@ export const withLook = (state: GameState, desc: SceneDesc): SceneDesc => {
   for (const k of PORTRAIT_ONLY) if (!(k === "under" && shows)) delete tags[k];
   // she is not in these pictures (him alone, at most her hand): her dress and face would only multiply the same picture
   if (HIM_ALONE.has(desc.type)) for (const k of Object.keys(tags)) if (k !== "tsize") delete tags[k];
-  return groupOf(desc, tags);
+  return groupOf(state, desc, tags);
 };
 
 const mark = (ctx: Ctx, place: string, his = false) => {
@@ -419,6 +431,13 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const gape = (z: "vagina" | "anus") => String(level(W.stretch[z] ?? [], h.body[z].stretch));
   const wet = level(D.wet.map((from) => [from, ""] as [number, string]), h.arousal);
 
+  // her hand on the man beside the one who has her: the husband who joined, or a second guest
+  // (only for the scenes switched to "plain": look.yaml group)
+  const withHer = content.look.group.plain.includes(desc.type) ? b.encounter : null;
+  if (withHer?.joined === "hand") add("join_hand_lazy", HUSBAND);
+  const byHand = (id: string) => (content.acts.find((a) => a.id === id)?.zones as string[] | undefined)?.every((z) => z === "hands");
+  const handed = withHer?.men?.length ? (withHer.men.find((m) => m.slot === "hand")?.patron ?? (byHand(withHer.act) ? withHer.patron : undefined)) : undefined;
+  if (handed) add("group_hand", handed, { size: String(classOf(handed)) });
   // a guest is talking money with the husband: the money changing hands, beside whatever the room shows
   if (b.deal && b.shift && !b.encounter && state.where[HUSBAND] === HALL) add("deal_money", b.deal.patron);
   for (const d of freshDetails(state)) {

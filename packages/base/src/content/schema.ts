@@ -628,6 +628,7 @@ export const lookSchema = z
     marks: z.object({ byAct: z.record(z.string(), z.array(z.string()).min(1)), husbandWhere: z.record(z.string(), z.string()), lasts: z.record(z.string(), z.number().positive()), dripAfter: z.number(), onHim: z.number() }).strict(),
     after: z.record(z.string(), z.number().positive()),
     // how a picture is chosen when the pack has no exact one (systems/packfind.ts)
+    group: z.object({ same: z.record(z.string(), z.string()), plain: z.array(z.string()) }).strict(),
     match: z.object({ room: z.number(), other: z.number(), lacks: z.number().min(0).max(1), wholeCap: z.number(), tags: z.record(z.string(), z.number()) }).strict(),
     words: z
       .object({
