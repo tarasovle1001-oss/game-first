@@ -32,13 +32,13 @@ after:              # minutes each shows once something intimate has ended
   hair: 60
   clothes: 30
 # More than one man on her: every scene asks for a picture by its own name (group_dp, join_mouth, ...). Two switches
-# for what the model cannot draw (25.11: every scene was tried as a whole picture first, these did not come out):
+# for what the model cannot draw, both off by Alexey's decision (25.11: all group scenes are drawn whole):
 # same: scenes shown with another scene's picture, e.g. { group_airtight: group_dp }.
 # plain: scenes whose main picture is the act of the man who is in her alone, with the hand on the other man as a
 # close-up beside it (detail_group_hand for a guest, detail_join_hand_lazy for the husband), e.g. [group_sex_hand, join_hand].
 group:
-  same: { group_spitroast_hand: group_spitroast, group_airtight: group_dp }   # on since 25.11: three men do not draw
-  plain: [group_sex_hand]                                                      # join_hand is still being tried whole
+  same: {}    # off: Alexey, 25.11 - every group scene is drawn as one whole picture, no stand-ins
+  plain: []   # off: and no close-ups in place of the second man
 # Choosing a picture when the pack has no exact one: the nearest picture of the same scene with the same people.
 # Each difference costs its weight; the cheapest picture wins. Numbers (a size) cost by how far apart they are.
 match:
