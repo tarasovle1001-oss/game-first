@@ -280,6 +280,14 @@ describe("free close-ups", () => {
     expect(types("patron_chatting")[0]).toBe("detail_bulge");
     expect(types("patron_chatting")).not.toContain("detail_nipples");
   });
+  it("a guest drinking from her body: the shot in her navel close up, not her showing herself", () => {
+    const s = atShift();
+    const v = bs(s).shift!.visits[0]!;
+    const d = detailsFor(s, { type: "body_shot", location: "cafe.hall", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }] });
+    expect(d[0]?.type).toBe("detail_shot_navel");
+    expect(d[0]?.tags?.outfit).toBeDefined();
+    expect(d.some((x) => x.type === "detail_show_breasts")).toBe(false);
+  });
   it("what she does while the phone rings is only for eyes that may see it", () => {
     const s = atShift();
     const b = bs(s);

@@ -395,7 +395,7 @@ const GROPE: Record<string, string[]> = {
   him_under_skirt: ["grope_under"],
 };
 /** She is showing herself: the parts in close-up. */
-const SHOWS = new Set(["flash", "walk_naked", "striptease", "body_shot", "masturbate_show"]);
+const SHOWS = new Set(["flash", "walk_naked", "striptease", "masturbate_show"]);
 /** How a scene with him ended, when the ending is his body's doing. */
 const HIS_END: Record<string, string> = { went_soft: "him_soft", premature_finish: "him_cum_early", came_too_soon_foreplay: "him_cum_early", lead_ruined: "him_ruined" };
 const FRONT = new Set(["sex", "riding", "standing_sex", "join_dp", "toy_on_her"]);
@@ -404,7 +404,7 @@ const BY_HAND = new Set(["handjob", "ignore_handjob", "edging", "tease_denial"])
 const TOY_HIM = new Set(["pegging", "dildo_him", "fisting_him"]);
 
 /** Close-ups with her dressed body in the frame: they carry her outfit, the same value as the main picture of the step. */
-const DRESSED = new Set(["nipples", "show_breasts", "show_butt", "show_pussy", "upskirt", "phone_ear", "grope_breast", "grope_butt", "grope_thigh", "grope_under", "wet", "belly_bulge", "gape_v", "gape_a", "panties_off", "tip_tuck"]);
+const DRESSED = new Set(["nipples", "show_breasts", "show_butt", "show_pussy", "upskirt", "phone_ear", "grope_breast", "grope_butt", "grope_thigh", "grope_under", "wet", "belly_bulge", "gape_v", "gape_a", "panties_off", "tip_tuck", "shot_navel"]);
 
 export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const b = bs(state);
@@ -494,6 +494,8 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   // his hands on her, part by part
   if (man) for (const part of GROPE[desc.type] ?? []) add(part, man, part === "grope_breast" ? { wear: top } : part === "grope_under" ? { wear: under, wet: String(Math.max(1, wet)) } : { wear: part === "grope_thigh" ? "on" : under });
   if (has("wife")) {
+    // a guest drinks from her body: the shot in her navel, close up (26.11 Alexey: the whole scene drew her undressed wrong)
+    if (desc.type === "body_shot") add("shot_navel", WIFE);
     if (SHOWS.has(desc.type)) {
       // shown on purpose she is always wet, and what was left in her runs down
       add("show_breasts", WIFE, { wear: top, ...((h.cum?.chest ?? 0) > 0 ? { marks: "chest" } : {}) });
