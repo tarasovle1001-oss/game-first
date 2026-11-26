@@ -440,6 +440,9 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   if (handed) add("group_hand", handed, { size: String(classOf(handed)) });
   // a guest is talking money with the husband: the money changing hands, beside whatever the room shows
   if (b.deal && b.shift && !b.encounter && state.where[HUSBAND] === HALL) add("deal_money", b.deal.patron);
+  // he sits at a guest's table: the two of them over a drink, beside whatever she is busy with (it had a picture of its own until 26.11)
+  const show = b.shift?.show;
+  if (show?.type === "table_sit" && show.patron && b.shift!.tick < show.until && state.where[HUSBAND] === HALL) add("table_sit", show.patron);
   for (const d of freshDetails(state)) {
     if (d.secret && !openly) continue;
     const who = d.who ?? WIFE;

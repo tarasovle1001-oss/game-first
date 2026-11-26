@@ -226,6 +226,18 @@ describe("free close-ups", () => {
     for (let i = 0; i < 400 && (s.time.phase !== "shift" || (bs(s).shift?.visits.length ?? 0) === 0); i++) s = engine.dispatch(s, engine.listActions(s).find((a) => a.type === "base/wait") ?? engine.listActions(s).find((a) => a.type === CORE_ADVANCE)!);
     return structuredClone(s);
   };
+  it("him at a guest's table is a close-up beside what she does, not a picture of its own", () => {
+    const s = atShift();
+    const v = bs(s).shift!.visits[0]!;
+    s.where.husband = "cafe.hall";
+    bs(s).shift!.show = { type: "table_sit", until: bs(s).shift!.tick + 2, patron: v.patron };
+    const desc = { type: "serving", location: "cafe.hall", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }] };
+    const d = detailsFor(s, desc).find((x) => x.type === "detail_table_sit");
+    expect(d?.participants[0]?.id).toBe(v.patron);
+    expect(promptFor(d!).key).toMatch(/^detail_table_sit\//);
+    bs(s).shift!.tick = bs(s).shift!.show!.until;
+    expect(detailsFor(s, desc).some((x) => x.type === "detail_table_sit")).toBe(false);
+  });
   it("a worked-up guest shows through his trousers, by size; how wet she is shows on her", () => {
     const s = atShift();
     const v = bs(s).shift!.visits[0]!;

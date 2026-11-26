@@ -104,10 +104,9 @@ export function registerPictures(api: ModApi) {
       const s = sh?.show;
       if (!sh || !s || sh.tick >= s.until || bs(state).encounter || !husbandSees(state, HALL)) return null;
       const guests = sh.visits.map((v) => v.patron);
-      if (s.type === "table_sit") {
-        if (state.where[HUSBAND] !== HALL || !s.patron) return null;
-        return { type: s.type, location: HALL, participants: [{ id: HUSBAND, role: "husband" }, { id: s.patron, role: "patron" }] };
-      }
+      // him at a guest's table has no picture of its own since 26.11 (Alexey): the screen shows what she is busy with,
+      // and the two men at the table are a close-up beside it - look.ts detailsFor, table_sit. The layout stays (claude/scenes-archive.md).
+      if (s.type === "table_sit") return null;
       if (state.where[WIFE] !== HALL) return null;
       return { type: s.type, location: HALL, participants: [{ id: WIFE, role: "wife" }, ...guests.slice(0, 2).map((id, i) => ({ id, role: i ? "patron2" : "patron" }))], tags: { bare: s.type === "walk_naked" ? "all" : "flash" } };
     },
