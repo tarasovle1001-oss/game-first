@@ -111,7 +111,12 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   // booru tags of the scene (prompt.yaml: tags) lead the prompt; a scene that has them does not use its English pose slots
   // ...and may have extra words for one value of a tag ("group+men.3")
   // ...or other words in one room ("idle@town.square": walking together in the street, not a waitress at the counter)
-  const sceneTags = P.tags[`${desc.type}@${desc.location}`] ?? P.tags[desc.type] ?? "";
+  // "nothing special" without her in the room is the husband's own view of it (26.11): he is the viewer, not in the picture -
+  // an empty room, or the guests in it; the waitress words and "walking together" are for when she is there
+  const viewOnly = desc.type === "idle" && !desc.participants.some((p) => p.role === "wife");
+  // ...and with her in the room he is still the one looking: she is drawn, he is not (in town they walk side by side - he stays)
+  const viewer = desc.type === "idle" && !desc.location.startsWith("town.");
+  const sceneTags = viewOnly ? (P.tags[`idle_view@${desc.location}`] ?? P.tags.idle_view ?? "") : (P.tags[`${desc.type}@${desc.location}`] ?? P.tags[desc.type] ?? "");
   // an annoyed face loses to a smile or "flustered" in the scene's own words: those go, and a smile is forbidden
   const cross = t.face === "annoyed" ? new Set(["flustered", "smile", "light smile", "smirk", "grin", "happy", "laughing"]) : null;
   const booru = isDetail
@@ -144,13 +149,13 @@ export function promptFor(desc: SceneDesc, castId = "default", wife?: CastCard):
   const onlyRoles = P.only[desc.type];
   const nobody = isDetail && P.detail_nobody.includes(detailId);
   // a close-up draws its keyed figure and whoever else it shows (his hand on her: her body is the subject)
-  const inDesc = new Set(nobody ? [] : [...desc.participants.map((p) => p.role), ...(isDetail ? (P.detail_with[detailId] ?? []) : [])].filter((r) => !onlyRoles || onlyRoles.includes(r)));
+  const inDesc = new Set(nobody ? [] : [...desc.participants.map((p) => p.role), ...(isDetail ? (P.detail_with[detailId] ?? []) : [])].filter((r) => (!onlyRoles || onlyRoles.includes(r)) && !((viewer || viewOnly) && r === "husband")));
   // a close-up has no layout: whoever is in it is drawn, so his skin and size (or her body) still come from the card
-  const drawn = isDetail || !layout ? [...inDesc] : [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
+  const drawn = isDetail || !layout || viewOnly ? [...inDesc] : [...new Set((layout?.figures ?? []).map((f) => f.role))].filter((r) => inDesc.size === 0 || inDesc.has(r));
 
   // counts: one girl, the men in the scene (several of one role still count each)
   const men = isDetail ? [...inDesc].filter((r) => MEN.has(r)).length : Math.max(desc.participants.filter((p) => MEN.has(p.role) && inDesc.has(p.role)).length, onlyRoles ? 0 : Number(t.men ?? 0));
-  const counts = [inDesc.has("wife") ? "1girl" : "", men > 0 ? `${men}boy${men > 1 ? "s" : ""}` : "", nobody ? "no humans" : ""];
+  const counts = viewOnly ? [men > 0 ? (men > 2 ? "multiple boys" : `${men}boy${men > 1 ? "s" : ""}`) : "no humans"] : [inDesc.has("wife") ? "1girl" : "", men > 0 ? `${men}boy${men > 1 ? "s" : ""}` : "", nobody ? "no humans" : ""];
   const act = sceneAct(desc.type);
   if (!P.style.prefix.trim()) empty.push("style.prefix");
   // quality first, then who does what, then the style trigger (the order the Wayward packs were drawn with)

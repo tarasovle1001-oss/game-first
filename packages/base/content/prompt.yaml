@@ -404,6 +404,12 @@ tags_wayward:
 # They lead the prompt; a scene with tags does not use its English pose slots (poses:, kept). Edited in tools/prompt-lab.
 tags:
   # a room of its own for one scene ("idle@town.square"): replaces the scene's words there
+  # "nothing special" with only the husband in the room (he is the viewer): the room itself, or the guests in it (prompt.ts viewOnly)
+  idle_view: "scenery, empty room, interior, no humans, wide shot"
+  "idle_view@cafe.hall": "scenery, cafe interior, guests sitting at tables, background people, wide shot"
+  "idle_view@town.square": "scenery, city street, outdoors, no humans, wide shot"
+  "idle_view@town.market": "scenery, street market, market stall, outdoors, wide shot"
+  "idle_view@town.shops": "scenery, shop interior, shelves, wide shot"
   idle@town.square: "1girl, 1boy, hetero, walking, side by side, holding bag, couple, smile, outdoors, street, full body"
   idle@town.market: "1girl, 1boy, hetero, walking, side by side, holding bag, couple, smile, outdoors, market stall, full body"
   idle@town.shops: "1girl, 1boy, hetero, walking, side by side, holding shopping bag, couple, smile, shopping, full body"
