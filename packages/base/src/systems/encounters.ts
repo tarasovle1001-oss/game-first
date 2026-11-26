@@ -1,6 +1,7 @@
 // Guests try their luck with her, she answers through one formula.
 // Every row of that formula is named and visible; mods add rows with api.formulas.addFactor(CONSENT_FORMULA, ...).
 import { cruelNow } from "./hernight";
+import { actOff } from "./kinks";
 import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
 import { actById, actOf, content } from "../content";
 import { outcomeOf, refusalWhy, setOutcome } from "./voice";
@@ -92,6 +93,7 @@ const offerOf = (p: Patron, act: Act, paid: boolean) => (p.approach === "pay" &&
  * and not again tonight after a try that failed, until her body has moved a step.
  */
 export const worthTrying = (state: GameState, p: Patron, a: Act) => {
+  if (actOff(state, a.id)) return false; // the player switched it off (kinks.yaml)
   const zone = entersZone(a);
   if (!zone || !p.memory.sizeKnown) return true;
   if (takeChance(state, zone, p.size) <= 0) return false;
@@ -272,7 +274,7 @@ export function advanceEncounter(ctx: Ctx) {
     if ((enc.bored ?? 0) >= G.boredLimit) {
       // she steers it to something that does more for her, or she has had enough
       const better = content.acts
-        .filter((a) => !a.only && isIntimate(a) && a.id !== act.id && a.tier <= Math.max(act.tier, p.memory.tier) && (v.rounds < p.stamina) && (!a.at || a.at.includes(enc.loc)))
+        .filter((a) => !a.only && isIntimate(a) && a.id !== act.id && a.tier <= Math.max(act.tier, p.memory.tier) && (v.rounds < p.stamina) && (!a.at || a.at.includes(enc.loc)) && !actOff(ctx.state, a.id))
         .map((a) => ({ a, r: pleasureFor(ctx.state, a, p.size) }))
         .filter((x) => x.r >= enc.pleasure + G.rewardBetter)
         .sort((x, y) => y.r - x.r || x.a.id.localeCompare(y.a.id))[0];
@@ -674,7 +676,7 @@ export function runProposals(ctx: Ctx) {
       // she is plainly glad of it: he reads that and does not go one small step at a time
       // (only when she would gladly take the step he skips, too)
       if (isLight(act) && verdict === "eager" && res.total >= content.consent.eagerAt + S.skipMargin) {
-        const over = content.acts.filter((a) => a.tier === act.tier + 1 && !a.only && a.id !== "drink");
+        const over = content.acts.filter((a) => a.tier === act.tier + 1 && !a.only && a.id !== "drink" && !actOff(ctx.state, a.id));
         const glad = over.length > 0 && over.every((a) => verdictOf(ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, { ...input, act: a.id }).total) === "eager");
         if (glad) {
           v.tier = Math.min(v.tier + 1, tierCap(p, v), topTier);

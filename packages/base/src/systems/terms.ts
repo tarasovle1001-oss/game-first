@@ -2,6 +2,7 @@
 // one thing at a time; what she asks him before she does it; where he stands on a particular man; dares;
 // talking over what happened; promises that are kept or not; pushing after a "no".
 import { hasLine } from "./voice";
+import { actOff, allowedPlaces, dareOff } from "./kinks";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -78,7 +79,8 @@ const settle = (ctx: Ctx, kind: string, kept: boolean) => {
 };
 
 /** Where a guest may finish, as far as she keeps to what her husband said. */
-export function cumPlaces(ctx: Ctx, options: string[]): string[] {
+export function cumPlaces(ctx: Ctx, given: string[]): string[] {
+  const options = allowedPlaces(ctx.state, given); // places the player switched off (kinks.yaml) are not on the list
   const b = bs(ctx.state);
   const banned = T.items.filter((it) => it.where && b.perm?.[it.id] === "forbid").flatMap((it) => it.where!);
   if (banned.length === 0) return options;
@@ -466,7 +468,7 @@ export function registerTerms(api: ModApi) {
       if (targets.length === 0) return [];
       const out: { type: string; payload: Record<string, string | number> }[] = [];
       for (const d of T.dares.list) {
-        if ((b.dared ?? []).includes(d.id)) continue;
+        if ((b.dared ?? []).includes(d.id) || dareOff(state, d.id) || (d.act && actOff(state, d.act))) continue;
         if (d.bare) out.push({ type: DARE, payload: { id: d.id, patron: "all", name: 0, why: "just" } });
         else
           for (const who of [...targets.slice(0, 1), { id: "pick", name: 0 }])
@@ -474,7 +476,7 @@ export function registerTerms(api: ModApi) {
       }
       return out;
     },
-    accepts: (state, a) => state.time.phase === "shift" && together(state) && T.dares.list.some((d) => d.id === a.payload?.id) && a.payload?.why !== undefined && (a.payload.why as string) in T.dares.reasons,
+    accepts: (state, a) => state.time.phase === "shift" && together(state) && T.dares.list.some((d) => d.id === a.payload?.id && !dareOff(state, d.id) && !(d.act && actOff(state, d.act))) && a.payload?.why !== undefined && (a.payload.why as string) in T.dares.reasons,
     apply(ctx, action) {
       const b = bs(ctx.state);
       const h = b.heroine;

@@ -1,6 +1,7 @@
 // A size above what her body is used to. Whether it goes in is a try (body.ts: tryTake); this file is what happens around
 // it: what is said and thought, and what they do instead when it does not go in.
 import type { Ctx } from "@tc/core";
+import { actOff } from "./kinks";
 import { actById, content } from "../content";
 import type { Act } from "../content/schema";
 import { bs } from "../state";
@@ -15,7 +16,8 @@ const T = content.body.take;
 /** What they do when it does not go in: of the ways round it, the one she is best at. */
 export function insteadOf(ctx: Ctx): Act {
   const h = bs(ctx.state).heroine;
-  const best = [...T.instead].sort((a, b) => (h.skills[b] ?? 0) + (h.tastes.acts[b] ?? 0) - ((h.skills[a] ?? 0) + (h.tastes.acts[a] ?? 0)))[0]!;
+  const allowed = T.instead.filter((a) => !actOff(ctx.state, a));
+  const best = [...(allowed.length ? allowed : T.instead)].sort((a, b) => (h.skills[b] ?? 0) + (h.tastes.acts[b] ?? 0) - ((h.skills[a] ?? 0) + (h.tastes.acts[a] ?? 0)))[0]!;
   return actById(best);
 }
 

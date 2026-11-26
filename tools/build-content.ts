@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { z, type ZodTypeAny } from "zod";
-import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, castSchema, heroineSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, castSchema, heroineSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, kinksSchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -90,6 +90,7 @@ const scenes = sceneFile.flatMap((s) => {
 const consent = load(join(base, "content/consent.yaml"), consentSchema);
 const body = load(join(base, "content/body.yaml"), bodySchema);
 const secrecy = load(join(base, "content/secrecy.yaml"), secrecySchema);
+const kinks = load(join(base, "content/kinks.yaml"), kinksSchema);
 const outfits = load(join(base, "content/outfits.yaml"), outfitSchema.array().min(1)) ?? [];
 const latents = load(join(base, "content/latents.yaml"), latentSchema.array()) ?? [];
 const manners = load(join(base, "content/manners.yaml"), mannersSchema);
@@ -210,13 +211,32 @@ if (intimacy) {
   for (const id of new Set([...B.ownEnd, ...B.his])) if (!sceneIds.has(`came_${id}`)) errors.push(`intimacy.yaml: bedroom act "${id}" ends in its own picture, but there is no layout "came_${id}"`);
   for (const id of B.needsToy) if (!B.his.includes(id)) errors.push(`intimacy.yaml: bedroom.needsToy "${id}" is not in bedroom.his`);
 }
-if (errors.length > 0 || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !prompt || !mind || !terms || !floor || !intimacy || !heroine) {
+// kink switches name acts, dares and close-ups that must exist, and every switch needs its texts
+if (kinks) {
+  const actIds = new Set(acts.map((a) => a.id));
+  const dareIds = new Set(terms?.dares.list.map((d) => d.id) ?? []);
+  const seen = new Set<string>();
+  for (const d of kinks.directions) {
+    if (seen.has(d.id)) errors.push(`kinks.yaml: "${d.id}" twice`);
+    seen.add(d.id);
+    need(`kink.${d.id}`);
+    for (const it of d.items) {
+      if (seen.has(it.id)) errors.push(`kinks.yaml: "${it.id}" twice`);
+      seen.add(it.id);
+      need(`kink.${d.id}.${it.id}`);
+      for (const a of it.acts ?? []) if (!actIds.has(a)) errors.push(`kinks.yaml: ${it.id} names unknown act "${a}"`);
+      for (const x of it.dare ?? []) if (!dareIds.has(x)) errors.push(`kinks.yaml: ${it.id} names unknown dare "${x}"`);
+      for (const x of it.detail ?? []) if (!x.startsWith("detail_")) errors.push(`kinks.yaml: ${it.id}: close-up "${x}" must be a picture type detail_*`);
+    }
+  }
+}
+if (errors.length > 0 || !kinks || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !prompt || !mind || !terms || !floor || !intimacy || !heroine) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { look, prompt, casts, heroine, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, phone, outfits, latents, manners, day, presets, locales };
+const content: Content = { look, prompt, casts, heroine, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, kinks, phone, outfits, latents, manners, day, presets, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));

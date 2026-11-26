@@ -357,6 +357,22 @@ export const bodySchema = z
   })
   .strict();
 
+/** Kink switches (kinks.yaml): directions with items; an item lists what it turns off. */
+export const kinkItemSchema = z
+  .object({
+    id: z.string(),
+    acts: z.array(z.string()).optional(),
+    finish: z.array(z.string()).optional(),
+    ending: z.array(z.enum(["ruined", "snowball", "lick_clean"])).optional(),
+    dare: z.array(z.string()).optional(),
+    detail: z.array(z.string()).optional(),
+    flags: z.array(z.enum(["crowd_join", "cage", "toy_buy"])).optional(),
+  })
+  .strict();
+export const kinksSchema = z.object({ directions: z.array(z.object({ id: z.string(), items: z.array(kinkItemSchema).min(1) }).strict()).min(1) }).strict();
+export type Kinks = z.infer<typeof kinksSchema>;
+export type KinkItem = z.infer<typeof kinkItemSchema>;
+
 export const secrecySchema = z
   .object({
     caughtHer: z.object({ composure: z.number(), openness: z.number(), fidelity: z.number(), open: z.number(), likes: z.number(), drunk: z.number(), at: z.array(z.number()).length(3) }).strict(),
@@ -821,6 +837,7 @@ export interface Content {
   consent: ConsentTuning;
   body: BodyTuning;
   secrecy: SecrecyTuning;
+  kinks: Kinks;
   phone: PhoneTuning;
   outfits: Outfit[];
   latents: Latent[];

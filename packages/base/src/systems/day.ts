@@ -1,6 +1,7 @@
 // The afternoon before opening: a budget of minutes, things to spend it on, the town with its shops,
 // one-off upgrades for the cafe, and what she does with her own money while he is not looking.
 import { glance } from "./glance";
+import { actOff, flagOff } from "./kinks";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -200,7 +201,7 @@ function browse(ctx: Ctx) {
   const want = h.wantSize ?? 0;
   // the shop with the toys draws her by how much size is on her mind, how badly she is left wanting, and what she failed to take
   const pull = B.toysBase + h.sizeTaste * B.perTaste + h.frustration * B.perFrustration + (want > fit ? B.failed : 0);
-  if (b.wantsToy || ctx.rng.chance(Math.min(B.toysMax, pull))) {
+  if (!flagOff(ctx.state, "toy_buy") && (b.wantsToy || ctx.rng.chance(Math.min(B.toysMax, pull)))) {
     const biggest = Math.max(0, ...D.shop.toys.filter((t) => b.toys.includes(t.id)).map((t) => t.size));
     const next = D.shop.toys
       .slice()
@@ -260,7 +261,7 @@ function herMorning(ctx: Ctx) {
       .slice()
       .sort((x, y) => y.size - x.size)
       .find((t) => !b.toys.includes(t.id) && t.size > biggest && t.size <= fit + D.shop.toyStretchAbove && b.purse >= t.price);
-  if (toy && (h.marriage.resent >= 20 || h.sizeTaste >= 25 || h.traits.libido >= 65)) {
+  if (toy && !flagOff(ctx.state, "toy_buy") && (h.marriage.resent >= 20 || h.sizeTaste >= 25 || h.traits.libido >= 65)) {
     b.purse -= toy.price;
     b.toys.push(toy.id);
     ctx.log(hidden ? "log.her.buys.toy.hidden" : "log.her.buys.toy", { toy: `toy.${toy.id}` }, hidden ? ["unseen"] : undefined);
@@ -326,7 +327,7 @@ function gym(ctx: Ctx, together: boolean) {
     .sort((x, y) => y.memory.interest - x.memory.interest || x.id.localeCompare(y.id))[0];
   if (!known || !ctx.rng.chance(G.meetChance)) return;
   const tier = Math.max(1, Math.min(known.memory.tier + 1, G.maxTier));
-  const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink" && !a.at);
+  const options = content.acts.filter((a) => a.tier === tier && !a.only && a.id !== "drink" && !a.at && !actOff(ctx.state, a.id));
   if (options.length === 0) return;
   const act = ctx.rng.pick(options);
   const input: ConsentInput = { act: act.id, partner: known.id, loc: "town.gym", offer: 0, pressure: 0 };
@@ -614,7 +615,7 @@ export function registerDay(api: ModApi) {
       }
       if (state.where[HUSBAND] === SEXSHOP) {
         const bag = (b.bag ?? []).map((x) => x.id);
-        for (const t of D.shop.toys) if (!b.toys.includes(t.id) && !bag.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
+        if (!flagOff(state, "toy_buy")) for (const t of D.shop.toys) if (!b.toys.includes(t.id) && !bag.includes(t.id) && b.money >= t.price) out.push({ type: BUY, payload: { kind: "toy", id: t.id, cost: t.price } });
         for (const n of content.outfits) if (n.shop === "adult" && !b.owned.includes(n.id) && !bag.includes(n.id) && b.money >= n.price) out.push({ type: BUY, payload: { kind: "outfit", id: n.id, cost: n.price } });
       }
       if (inTown(state.where[HUSBAND])) for (const u of D.upgrades) if (!b.upgrades.includes(u.id) && canPay(state, u.cost)) out.push({ type: BUY, payload: { kind: "upgrade", id: u.id, cost: u.cost } });

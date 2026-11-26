@@ -1,0 +1,49 @@
+# Kink switches (27.11, Alexey: a must for the alpha). The player turns off a whole direction or single items in it.
+# What an item lists is gone from the game: not offered to him, not done by her or the guests, no picture, no close-up.
+#   acts:    content acts (acts.yaml) - guests, her own moves, the bed, the hotel, the day
+#   finish:  where a man finishes (face, mouth, inside, anus, chest, body, hands, thighs, back, belly)
+#   ending:  how she ends it in bed when she leads (ruined, snowball, lick_clean)
+#   dare:    dares on the floor (terms.yaml dares)
+#   detail:  close-ups (picture types detail_*)
+#   flags:   whole systems: crowd_join (other guests join a scene), cage (he is kept locked up), toy_buy (she buys toys)
+# An item with nothing left to do still shows: it is the player's word. Texts: kink.<direction>, kink.<direction>.<item>.
+directions:
+  - id: anal
+    items:
+      - { id: anal_sex, acts: [anal], finish: [anus], detail: [detail_gape_a] }
+      - { id: rimming, acts: [rimming_her, rimming_him] }
+      - { id: anal_toys, detail: [detail_toy_a] }
+  - id: femdom
+    items:
+      - { id: pegging, acts: [pegging, dildo_him] }
+      - { id: prostate, acts: [prostate] }
+      - { id: fisting_him, acts: [fisting_him] }
+      - { id: facesitting, acts: [facesitting] }
+      - { id: spanking, acts: [spank_him] }
+      - { id: denial, acts: [edging, tease_denial, ignore_handjob], ending: [ruined] }
+      - { id: chastity, acts: [chastity], flags: [cage] }
+      - { id: footjob, acts: [footjob] }
+      - { id: cleanup, acts: [cleanup], ending: [lick_clean] }
+      - { id: snowball, ending: [snowball] }
+  - id: group
+    items:
+      - { id: husband_joins, acts: [join_dp, join_two_mouths, join_hold, join_after] }
+      - { id: guests_join, flags: [crowd_join] }
+  - id: cum
+    items:
+      - { id: facial, finish: [face] }
+      - { id: swallow, finish: [mouth] }
+      - { id: creampie, finish: [inside], detail: [detail_womb_cum] }
+  - id: stretch
+    items:
+      - { id: gape, detail: [detail_gape_v, detail_gape_a] }
+      - { id: bulge, detail: [detail_belly_bulge] }
+  - id: toys
+    items:
+      - { id: toys_on_her, acts: [toy_on_her], detail: [detail_toy_v, detail_toy_drawer], flags: [toy_buy] }
+      - { id: masturbate_show, acts: [masturbate_show] }
+  - id: exhib
+    items:
+      - { id: dares, dare: [flash, walk_naked] }
+      - { id: striptease, acts: [striptease] }
+      - { id: body_shot, acts: [body_shot] }

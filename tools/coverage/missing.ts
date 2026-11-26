@@ -27,7 +27,7 @@ for (const scene of data.scenes as { id: string; title: string; kind: string; ro
   for (const combo of t.missing as Record<string, string>[]) {
     const g = combo.room;
     const tpl = bot.find((p) => !g || groupOf(p.room) === g) ?? bot[0];
-    const room = scene.kind !== "full" ? (tpl?.room ?? "any") : (bot.find((p) => groupOf(p.room) === g)?.room ?? roomsOf(g)[0] ?? tpl?.room ?? "cafe.staff");
+    const room = scene.kind !== "full" ? (tpl?.room ?? "any") : (bot.find((p) => groupOf(p.room) === g)?.room ?? roomsOf(g ?? "")[0] ?? tpl?.room ?? "cafe.staff");
     const tags: Record<string, string> = { ...(tpl?.tags ?? {}) };
     for (const [a, v] of Object.entries(combo)) if (a !== "room") { if (v === "") delete tags[a]; else tags[a] = v; }
     // naked: nothing is "off" any more, it is all off

@@ -1,7 +1,7 @@
 import type { PointerEvent, ReactNode } from "react";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { tracer, resetTracer, bs, husbandSees, cardFolder, shownDay } from "@tc/base";
+import { tracer, resetTracer, bs, husbandSees, cardFolder, shownDay, SET_KINKS } from "@tc/base";
 import type { HeroineCard } from "@tc/base";
 import { loadGame, saveGame, sceneKey, setSaveBuild } from "@tc/core";
 import type { Action, GameState } from "@tc/core";
@@ -17,6 +17,7 @@ import { canRememberPack, loadPack, packInfo, picNote, pickPack, rememberedPack,
 import { useStoredFlag } from "./stored";
 import { actionLabel, ConsentCalc, HerCard, InspectorBlock, OutcomeCard, CoupleTab, GuestsTab, HeroineTab, Log, PhoneTab, RoomGrid, ScenePanel, StatsTab, TopBar, WhyTab } from "./panels";
 import { ActionMenu } from "./menu";
+import { KinkDialog, saveKinkProfile } from "./kinks";
 import "./style.css";
 
 const DEFAULT_COLS = [24, 27, 28, 21];
@@ -29,7 +30,7 @@ const MONEY_ACTS = new Set(["base/tip-share", "base/repay-debt"]);
 const PHONE_ACTS = new Set(["base/call-wife", "base/phone-peek"]);
 const clockOf = (s: GameState) => `${String(Math.floor(s.time.minute / 60) % 24).padStart(2, "0")}:${String(s.time.minute % 60).padStart(2, "0")}`;
 const NOTES_KEY = "test-city.notes";
-const BUILD = "55";
+const BUILD = "56";
 setSaveBuild(BUILD);
 const RESUME_KEY = "test-city.resume";
 /**
@@ -268,6 +269,7 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   });
   const [phoneOpen, setPhoneOpen] = useState(false);
+  const [kinksOpen, setKinksOpen] = useState(false);
   const [moneyOpen, setMoneyOpen] = useState(false);
   const [error, setError] = useState("");
   // the last few states, to step back from a misclick: states are immutable, so keeping them costs little
@@ -465,6 +467,7 @@ function App() {
         {menu && (
           <div className="menu" onClick={() => setMenu(false)}>
             <button onClick={() => setSetupOpen(true)}>{t("ui.new")}</button>
+            <button onClick={() => setKinksOpen(true)}>{t("ui.kinks.menu")}</button>
             <button
               onClick={() =>
                 guard(() => {
@@ -612,6 +615,18 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+      {kinksOpen && (
+        <KinkDialog
+          t={t}
+          off={bs(state).kinks ?? []}
+          onCancel={() => setKinksOpen(false)}
+          onDone={(off) => {
+            saveKinkProfile(off);
+            act({ type: SET_KINKS, payload: { off } });
+            setKinksOpen(false);
+          }}
+        />
       )}
       {phoneOpen && (
         <div className="overlay" onClick={() => setPhoneOpen(false)}>

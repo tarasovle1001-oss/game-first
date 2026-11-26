@@ -1,4 +1,5 @@
 import { detail } from "./glance";
+import { actOff, detailOff, flagOff } from "./kinks";
 import { sizeClass } from "./body";
 import type { Ctx, ModApi } from "@tc/core";
 import { content } from "../content";
@@ -33,7 +34,7 @@ export function registerSolo(api: ModApi) {
     // ...or she is simply curious about a size: what she has read about, seen in a man's trousers, or tried and could not take
     const curious = h.sizeTaste >= So.curious.sizeTaste && ctx.rng.chance(So.curious.chance + ((h.seenSize ?? 0) > b.husband.size + 6 ? So.curious.seen : 0));
     const wants = biggest === 0 ? h.frustration >= So.buyAt || curious : fit >= biggest - So.outgrown && (h.frustration >= So.buyAt / 2 || curious);
-    if (!wants) return;
+    if (!wants || flagOff(ctx.state, "toy_buy")) return; // toys switched off (kinks.yaml): she does not go for one
     const next = S.toys.filter((t) => !b.toys.includes(t.id) && t.size > biggest && t.size >= So.firstSize && t.size <= fit + S.toyStretchAbove).sort((x, y) => x.size - y.size)[0];
     if (!next || b.purse < next.price) return;
     // she does not have it the moment she wakes up: today she finds an hour to go to the shops for it (day.ts: her trip, browse)
@@ -76,7 +77,7 @@ export function registerSolo(api: ModApi) {
     // Without this the back never opened at all: guests need it to take them, and only acts there taught her the taste
     const taught = (h.tastes.acts.anal ?? 0) > 0 || h.body.anus.stretch >= So.analTaughtAt;
     const curious = (h.prefs?.anal ?? 50) >= So.analCuriousFrom && owned(b).some((t) => t.size <= fitOf(ctx.state, "anus") + content.day.shop.toyStretchAbove);
-    const anal = taught ? ctx.rng.chance(So.analChance) : curious ? ctx.rng.chance(So.analChance * So.analCuriousShare * ((h.prefs?.anal ?? 50) / 50)) : false;
+    const anal = (taught ? ctx.rng.chance(So.analChance) : curious ? ctx.rng.chance(So.analChance * So.analCuriousShare * ((h.prefs?.anal ?? 50) / 50)) : false) && !detailOff(ctx.state, "detail_toy_a") && !actOff(ctx.state, "anal");
     b.solo.zone = anal ? "anus" : "vagina";
     b.solo.started = ctx.state.time.minute;
     b.soloDay = ctx.state.time.day;

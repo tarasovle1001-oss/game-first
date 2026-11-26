@@ -2,6 +2,7 @@
 // the game: who is there, what she has on and what is off, her face, what her body has become, what is on
 // her and in her. A picture pack takes the coarse part of it as a key; an image model takes all of it as tags.
 import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
+import { detailOff } from "./kinks";
 import { actOf, content } from "../content";
 import { bs, HUSBAND, WIFE } from "../state";
 import { fitOf, sizeClass } from "./body";
@@ -542,7 +543,7 @@ export function pictureFrames(state: GameState, desc: SceneDesc): PictureFrames 
   // The list stays in the shape of the frames, always empty; the free close-ups (details) go beside the picture as before.
   const inserts: SceneDesc[] = [];
   const { men: _m, phase: _p, crowd: _c, fin: _f, size: _s, size2: _s2, size3: _s3, hsize: _h, tsize: _t, toy: _toy, cage: _cg, ...look } = tags;
-  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc) };
+  return { full, portrait: wife ? { type: "portrait", location: desc.location, participants: [wife], tags: look } : null, inserts, details: detailsFor(state, desc).filter((d) => !detailOff(state, d.type)) };
 }
 
 /**

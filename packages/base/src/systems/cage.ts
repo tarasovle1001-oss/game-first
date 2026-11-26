@@ -1,6 +1,7 @@
 // The cage as a state of his, not a moment in bed: once it is on, it stays on by day and by night until she takes it off.
 // While it is on he has nothing to enter her with: only what needs nothing of him is possible, and none of it ends for him.
 import { cruelNow } from "./hernight";
+import { flagOff } from "./kinks";
 import type { GameState, ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
@@ -22,7 +23,7 @@ export function registerCage(api: ModApi) {
   api.events.on("bed:ended", (ctx, e) => {
     if (e.payload!.act !== "chastity") return;
     const b = bs(ctx.state);
-    if (b.husband.caged) return;
+    if (b.husband.caged || flagOff(ctx.state, "cage")) return;
     b.husband.caged = { day: ctx.state.time.day };
     b.power = clamp(b.power + Cg.power);
     ctx.log("log.cage.on");

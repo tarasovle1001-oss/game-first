@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ATTRS, content, TASTES, TASTE_LATENT } from "@tc/base";
 import type { BaseSetup, HeroineCard } from "@tc/base";
 import type { T } from "./game";
+import { KinkSwitches, loadKinkProfile, saveKinkProfile } from "./kinks";
 
 const TRAITS = ["openness", "confidence", "fidelity", "honesty", "libido"] as const;
 
@@ -24,6 +25,8 @@ export function NewGame({ t, seed, card, onStart, onCancel, onKeep }: { t: T; se
   const [seedText, setSeedText] = useState(String(seed));
   const [name, setName] = useState(card?.name || t("ui.newgame.name.default"));
   const [keep, setKeep] = useState(!!kept);
+  const [kinks, setKinks] = useState<string[]>(kept?.kinks ?? loadKinkProfile());
+  const [kinksOpen, setKinksOpen] = useState(false);
   const tastesOf = (ls: string[]) => Object.fromEntries(TASTES.map((id) => [id, ls.includes(TASTE_LATENT[id]) ? 85 : 50])) as Record<(typeof TASTES)[number], number>;
   const [tastes, setTastes] = useState({ ...tastesOf(first.latents), ...(kept?.tastes ?? {}) } as Record<(typeof TASTES)[number], number>);
   const tasteLatents = new Set<string>(Object.values(TASTE_LATENT));
@@ -140,6 +143,14 @@ export function NewGame({ t, seed, card, onStart, onCancel, onKeep }: { t: T; se
           </div>
         </div>
 
+        <div className="kinks-block">
+          <button className="link" onClick={() => setKinksOpen(!kinksOpen)}>
+            {kinksOpen ? "▾" : "▸"} {t("ui.kinks.title")}
+            {kinks.length > 0 && <span className="muted small"> ({t("ui.kinks.off", { n: kinks.length })})</span>}
+          </button>
+          {kinksOpen && <KinkSwitches t={t} off={kinks} onChange={setKinks} />}
+        </div>
+
         <div className="dialog-actions">
           {onCancel && <button onClick={onCancel}>{t("ui.newgame.cancel")}</button>}
           {card && onKeep && (
@@ -163,7 +174,9 @@ export function NewGame({ t, seed, card, onStart, onCancel, onKeep }: { t: T; se
                 attrs,
                 ...(latents === null ? {} : { latents }),
                 ...(open ? { mode: "open" as const } : {}),
+                ...(kinks.length ? { kinks } : {}),
               };
+              saveKinkProfile(kinks);
               if (card && onKeep) onKeep(keep ? setup : {});
               onStart(Number(seedText) || seed, card ? { ...setup, card: { ...card, name: name.trim() || card.name } } : setup);
             }}

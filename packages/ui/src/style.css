@@ -999,3 +999,10 @@ button.danger { border-color: #a33; color: #f88; }
 .warn { color: #e8a24a; }
 .gen-switch { display: flex; align-items: center; gap: 4px; }
 .gen-switch .ok { color: #7c7; }
+/* kink switches (27.11) */
+.kinks-block { margin: 10px 0 4px; }
+.kinks { margin: 6px 0 0 4px; }
+.kink-dir { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 3px 0; border-bottom: 1px solid rgba(128, 128, 128, 0.15); }
+.kink-dir.none b { opacity: 0.55; text-decoration: line-through; }
+.kink-items { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 2px 16px; padding: 2px 0 6px 24px; }
+button.link { background: none; border: none; padding: 0 2px; color: inherit; text-decoration: underline dotted; cursor: pointer; }

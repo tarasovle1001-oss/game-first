@@ -297,6 +297,7 @@ export interface BaseState {
   wantsToy?: boolean; // she has made up her mind to buy one (or the next size): today she goes to the shops for it
   heard?: number; // how he has taken what she told him so far, -100..100: scolding teaches her to keep quiet
   mode: Mode;
+  kinks?: string[]; // kink switches the player turned off (kinks.yaml ids: directions or items)
   suspicion: number; // 0..100, only matters while hidden
   power: number; // her power over him, 0..100, grows once it is open
   owes?: number; // what he owes her in bed: failures she has counted and not yet collected

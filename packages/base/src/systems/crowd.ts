@@ -2,6 +2,7 @@
 // watch; one who has watched long enough wants in; the room has something to say about it. And every time a
 // guest finishes, where it goes and what she makes of it is a small scene of its own.
 import type { Ctx, GameState, ModApi } from "@tc/core";
+import { actOff, flagOff } from "./kinks";
 import { content } from "../content";
 import { bs, clamp, HUSBAND, WIFE } from "../state";
 import type { Encounter, Patron } from "../state";
@@ -49,6 +50,7 @@ const busy = (enc: Encounter) => new Set([SLOT[enc.act] ?? "", ...(enc.men ?? []
 
 /** One more man asks for a part of her. Returns whether she let him. */
 function tryJoin(ctx: Ctx, enc: Encounter, id: string, bonus: number): boolean {
+  if (flagOff(ctx.state, "crowd_join")) return false; // switched off (kinks.yaml): nobody joins
   const b = bs(ctx.state);
   const sh = b.shift!;
   const p = b.patrons[id];
@@ -59,7 +61,7 @@ function tryJoin(ctx: Ctx, enc: Encounter, id: string, bonus: number): boolean {
   const name = `@name:${p.name}`;
   let noFit = false; // she would have, and it did not go in: that is not a "no"
   for (const [slot, act] of JOIN_ACTS) {
-    if (taken.has(slot)) continue;
+    if (taken.has(slot) || actOff(ctx.state, act)) continue;
     const input: ConsentInput = { act, partner: id, loc: enc.loc, offer: 0, pressure: (enc.men?.length ?? 0) * C.joinPressure };
     const res = ctx.engine.evaluate<ConsentInput>(CONSENT_FORMULA, ctx.state, input);
     const total = res.total + bonus + watched * C.joinWatchBonus;
@@ -222,7 +224,7 @@ export function registerCrowd(api: ModApi) {
       if (state.time.phase !== "shift" || !enc || b.caught || (enc.crowd?.length ?? 0) === 0 || state.where[HUSBAND] !== enc.loc) return [];
       const out: { type: string; payload: Record<string, string | number> }[] = [{ type: CROWD, payload: { do: "disperse" } }];
       const first = enc.crowd![0]!;
-      if (b.mode === "open" && isIntimate(actById(enc.act)) && (enc.men?.length ?? 0) < C.joinMax && !enc.invited?.includes(first)) out.push({ type: CROWD, payload: { do: "invite", patron: first, name: b.patrons[first]?.name ?? 0 } });
+      if (b.mode === "open" && !flagOff(state, "crowd_join") && isIntimate(actById(enc.act)) && (enc.men?.length ?? 0) < C.joinMax && !enc.invited?.includes(first)) out.push({ type: CROWD, payload: { do: "invite", patron: first, name: b.patrons[first]?.name ?? 0 } });
       return out;
     },
     apply(ctx, action) {

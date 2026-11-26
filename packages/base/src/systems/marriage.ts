@@ -18,6 +18,7 @@ import { passPrep } from "./day";
 
 import { himOf, onNightMinute, passNight, tired } from "./rhythm";
 import { glance } from "./glance";
+import { actOff, allowedPlaces, endingOff, finishOff } from "./kinks";
 export const NIGHT_ACT = "base/night-act";
 /** What the husband can ask for in the bedroom. */
 const IN_BED = content.intimacy.bedroom; // which act is what: all of it is content
@@ -66,6 +67,7 @@ const FEMDOM = new Set(["pegging", "dildo_him", "fisting_him", "prostate"]);
 export const SOFT_ACTS = IN_BED.soft;
 export const hisActOpen = (state: GameState, act: string) => {
   const b = bs(state);
+  if (actOff(state, act)) return false; // the player switched it off (kinks.yaml)
   if (b.night?.sex?.soft && !SOFT_ACTS.includes(act)) return false;
   // locked up, he has only what needs nothing of him; and it cannot be put on twice
   if (b.husband.caged && (act === "chastity" || !(SOFT_ACTS.includes(act) || content.body.cage.through.includes(act)))) return false;
@@ -334,15 +336,17 @@ export function registerMarriage(api: ModApi) {
         const inside = act.zones.includes("vagina") || act.zones.includes("anus");
         if (leads && inside && h.marriage.resent < C.maxResent && ctx.rng.chance(C.chance)) {
           const hard = b.power >= C.peggingPower || cruelNow(b);
-          const options = [...IN_BED.counter, ...(hard ? IN_BED.counterHard.filter((a) => hisActOpen(ctx.state, a)) : [])];
+          const options = [...IN_BED.counter.filter((a) => hisActOpen(ctx.state, a)), ...(hard ? IN_BED.counterHard.filter((a) => hisActOpen(ctx.state, a)) : [])];
           // a wife who still asks rather than tells does not order him down there: she asks for his mouth, quietly
           const meek = toneOf(ctx.state) < 2;
-          const offer = meek ? "cunnilingus" : options[ctx.rng.int(0, options.length - 1)]!;
-          b.night!.counter = offer;
-          b.night!.scene = "wants_him";
-          ctx.log(meek ? "log.night.counter.soft" : `log.night.counter.${offer}`);
-          ctx.emit("husband:countered", { asked: act.id, offer });
-          return;
+          const offer = meek && options.includes("cunnilingus") ? "cunnilingus" : options.length ? options[ctx.rng.int(0, options.length - 1)] : undefined;
+          if (offer) {
+            b.night!.counter = offer;
+            b.night!.scene = "wants_him";
+            ctx.log(meek ? "log.night.counter.soft" : `log.night.counter.${offer}`);
+            ctx.emit("husband:countered", { asked: act.id, offer });
+            return;
+          }
         }
         b.night!.scene = "cold_back";
         feel(ctx, 0, 1);
@@ -909,21 +913,21 @@ export function registerMarriage(api: ModApi) {
     const sex = b.night!.sex!;
     const inside = sex.act === "sex" || sex.act === "riding" || sex.act === "anal";
     const cruel = cruelNow(b);
-    let where = FINISH[sex.act]?.[0] ?? "on_her";
+    let where = allowedPlaces(ctx.state, FINISH[sex.act] ?? ["on_her"])[0]!;
     let how = "plain";
     if (!HIS_ACTS.includes(sex.act) && sex.act !== "rimming_him") {
       // a ruined ending is what he owes her, collected: the more is owed, the likelier. With nothing owed it is a rare whim; on a night meant as a reward, never
       const O = content.intimacy.her.owes;
       const owed = (b.owes ?? 0) > 0 && b.power >= O.punishPower;
-      if (b.night?.why === "reward") how = inside ? "inside" : "plain";
-      else if (owed && ctx.rng.chance(Math.min(0.9, (b.owes ?? 0) * O.ruinPer))) {
+      if (b.night?.why === "reward") how = inside && !finishOff(ctx.state, "inside") ? "inside" : "plain";
+      else if (owed && !endingOff(ctx.state, "ruined") && ctx.rng.chance(Math.min(0.9, (b.owes ?? 0) * O.ruinPer))) {
         how = "ruined";
         b.owes = (b.owes ?? 0) - 1;
         ctx.log(`log.bed.ruin.owed.${ctx.rng.int(1, 2)}`, { n: b.owes });
-      } else if ((b.power >= LEAD.ruinedPower || cruel) && ctx.rng.chance(LEAD.ending.ruined * (owed ? 1 : O.randomRuin))) how = "ruined";
-      else if (b.power >= LEAD.snowballPower && h.traits.openness >= LEAD.snowballOpenness && ctx.rng.chance(LEAD.ending.snowball)) how = "snowball";
-      else if (inside && b.power >= LEAD.lickPower && ctx.rng.chance(LEAD.ending.lickClean)) how = "lick_clean";
-      else if (inside && how === "plain") how = "inside";
+      } else if ((b.power >= LEAD.ruinedPower || cruel) && !endingOff(ctx.state, "ruined") && ctx.rng.chance(LEAD.ending.ruined * (owed ? 1 : O.randomRuin))) how = "ruined";
+      else if (b.power >= LEAD.snowballPower && h.traits.openness >= LEAD.snowballOpenness && !endingOff(ctx.state, "snowball") && ctx.rng.chance(LEAD.ending.snowball)) how = "snowball";
+      else if (inside && b.power >= LEAD.lickPower && !endingOff(ctx.state, "lick_clean") && ctx.rng.chance(LEAD.ending.lickClean)) how = "lick_clean";
+      else if (inside && how === "plain" && !finishOff(ctx.state, "inside")) how = "inside";
     }
     if (how === "ruined") {
       // she lets go of him at the last moment: it happens, and it is worth nothing to him
@@ -1146,7 +1150,7 @@ export function registerMarriage(api: ModApi) {
       dos.push("give_lead");
       const out = dos.map((d) => ({ type: BED, payload: { do: d } as Record<string, string> }));
       if (sex.asks && sex.asks !== "finish") out.unshift({ type: BED, payload: { do: "give", act: sex.asks } });
-      if (sex.his >= B.cumAt) for (const where of FINISH[sex.act] ?? ["self"]) out.push({ type: BED, payload: { do: "finish", where } });
+      if (sex.his >= B.cumAt) for (const where of FINISH[sex.act] ? allowedPlaces(state, FINISH[sex.act]!) : ["self"]) out.push({ type: BED, payload: { do: "finish", where } });
       for (const to of BED_ACTS) if (to !== sex.act && hisActOpen(state, to)) out.push({ type: BED, payload: { do: "switch", to } });
       out.push({ type: BED, payload: { do: "stop" } });
       return out;

@@ -1,4 +1,5 @@
 // New-game choices: a preset or hand-set sliders. Applied once, at the very end of game:init.
+import { applyKinks } from "./kinks";
 import type { ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp } from "../state";
@@ -24,6 +25,8 @@ export interface BaseSetup {
   tastes?: Partial<Record<TasteId, number>>;
   /** The heroine card from the builder: her look in every picture, her name, age and story. */
   card?: unknown;
+  /** Kink switches turned off (kinks.yaml: directions or items). */
+  kinks?: string[];
 }
 export const TASTES = ["oral", "anal", "show", "romance", "rough", "drink"] as const;
 export type TasteId = (typeof TASTES)[number];
@@ -58,6 +61,7 @@ export function registerSetup(api: ModApi) {
         h.name = card.name || h.name;
       }
       if (typeof setup.name === "string" && setup.name.trim()) h.name = setup.name.trim().slice(0, 24);
+      if (setup.kinks) applyKinks(ctx, setup.kinks);
       for (const id of TASTES) {
         const v = setup.tastes?.[id];
         if (typeof v !== "number") continue;
