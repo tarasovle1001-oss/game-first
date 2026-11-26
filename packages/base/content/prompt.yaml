@@ -89,7 +89,7 @@ poses:
   patron_fin_chest: { scene: "medium close-up, focused on chest, climax framing", wife: "kneeling, leaning back slightly, looking up", patron: "standing, one hand on his penis, climax expression, aiming at chest" }
   patron_fin_body: { scene: "medium shot, from above, climax framing", wife: "lying on back, legs open, looking at him", patron: "kneeling between legs, one hand on his penis, other on her knee, climax" }
   patron_fin_hands: { scene: "medium close-up, focused on hands, climax framing", patron: "sitting, leaning back, climax expression, penis shown", wife: "kneeling, both hands around his penis, looking up at him" }
-  patron_fin_inside: { scene: "medium shot, close embrace, climax framing", wife: "lying on back, legs wrapped around him, arms around his neck and shoulder", patron: "kneeling over her, arms around her, deep penetration, climax expression" }
+  patron_fin_inside: { scene: "medium shot, close embrace, climax framing", wife: "lying on back, legs spread, arms around his neck and shoulder", patron: "kneeling over her, arms around her, deep penetration, climax expression" }
   patron_fin_anus: { scene: "medium shot, from behind, climax framing", wife: "on all fours, head lowered, receiving", patron: "kneeling behind, hands on her hip and shoulder, penetrating, climax" }
   patron_fin_thighs: { scene: "medium shot, standing close contact, climax framing", wife: "bent forward, looking back", patron: "standing behind, hands on her hips and butt, penis between thighs, climax" }
   patron_fin_held: { scene: "medium shot, abrupt separation, tense framing", wife: "standing, stepping back, looking at him", patron: "standing, one hand on his penis, climax expression, semen visible" }
@@ -98,7 +98,7 @@ poses:
   fin_chest: { scene: "medium close-up, focused on chest, climax framing", wife: "lying on back, looking up", husband: "kneeling beside, one hand on his penis, aiming at chest, climax" }
   fin_belly: { scene: "medium shot, from above, climax framing", wife: "lying on back, legs open, looking at him", husband: "kneeling between legs, one hand on his penis, other on her knee, climax" }
   fin_back: { scene: "medium shot, from behind, climax framing", wife: "lying face down, relaxed", husband: "kneeling beside, one hand on his penis, other on her butt, climax" }
-  fin_inside: { scene: "medium shot, close embrace, climax framing", wife: "lying on back, legs wrapped around him, arms around his neck and shoulder", husband: "kneeling over her, arms around her, deep penetration, climax expression" }
+  fin_inside: { scene: "medium shot, close embrace, climax framing", wife: "lying on back, legs spread, arms around his neck and shoulder", husband: "kneeling over her, arms around her, deep penetration, climax expression" }
   lead_ruined: { scene: "medium shot, abrupt interruption, tense framing", husband: "lying on back, frustrated expression, penis shown", wife: "kneeling beside, one hand resting on her knee, looking away" }
   lead_snowball: { scene: "medium close-up, intimate transfer framing", husband: "lying on back, one hand on her hip, receiving", wife: "on all fours over him, head near his face, transferring" }
   lead_lick_clean: { scene: "medium shot, three-quarter view, from below, intimate cleaning framing", husband: "lying on back, hands on her thigh and butt, looking up", wife: "straddling his face, one hand on his head, looking down" }
@@ -482,7 +482,8 @@ tags:
   patron_fin_chest: "hetero, (cum on breasts:1.2), excessive cum, ejaculation, breasts out, kneeling, man standing, penis, looking up, open mouth, from side"
   patron_fin_body: "hetero, (cum on body:1.2), cum on stomach, excessive cum, ejaculation, lying on back, spread legs, man kneeling, penis, after sex, heavy breathing, from above"
   patron_fin_hands: "hetero, handjob, (cum on hands:1.2), ejaculation, excessive cum, penis, kneeling, man sitting, looking up, from side"
-  patron_fin_inside: "hetero, sex, vaginal, (creampie:1.2), cum in pussy, cum overflow, excessive cum, missionary, leg lock, lying on back, man between legs, penis, penetration, ahegao, from side"
+  patron_fin_inside: "hetero, sex, vaginal, (creampie:1.2), cum in pussy, cum overflow, excessive cum, missionary, lying on back, spread legs, man between legs, penis, penetration, ahegao, from side"
+  "patron_fin_inside+lock.1": "(leg lock:1.2), legs around waist, crossed ankles" # 26.11: she locks her legs around him only when she wanted it inside (floor.yaml finish.lock)
   patron_fin_anus: "hetero, anal, (cum in ass:1.2), excessive cum, cum overflow, from behind, doggystyle, all fours, man kneeling behind, penis in ass, from side"
   patron_fin_thighs: "hetero, (thigh sex:1.2), cum on legs, excessive cum, ejaculation, bent over, man standing behind, penis between thighs, looking back, from side"
   patron_fin_held: "hetero, ejaculation, cum, excessive cum, penis, man standing, standing, surprised, open mouth, cowboy shot"
@@ -491,7 +492,8 @@ tags:
   fin_chest: "hetero, (cum on breasts:1.2), excessive cum, ejaculation, breasts out, lying on back, on bed, man kneeling, penis, from above"
   fin_belly: "hetero, (cum on stomach:1.2), excessive cum, ejaculation, lying on back, spread legs, on bed, man kneeling, penis, after sex, from above"
   fin_back: "hetero, (cum on back:1.2), cum on ass, excessive cum, ejaculation, lying on stomach, on bed, man kneeling, penis, looking back, from above"
-  fin_inside: "hetero, sex, vaginal, (creampie:1.2), cum in pussy, cum overflow, excessive cum, missionary, leg lock, lying on back, on bed, man between legs, penetration, from side"
+  fin_inside: "hetero, sex, vaginal, (creampie:1.2), cum in pussy, cum overflow, excessive cum, missionary, lying on back, spread legs, on bed, man between legs, penetration, from side"
+  "fin_inside+lock.1": "(leg lock:1.2), legs around waist, crossed ankles" # 26.11: she held him in (intimacy.yaml finish.hold*)
   lead_ruined: "hetero, femdom, (ruined orgasm:1.2), hands up, ejaculation, cum, cumdrip, penis, twitching penis, smirk, looking at penis, kneeling, on floor, between legs, man sitting on bed, spread legs, head out of frame, (from side:1.3), profile, (2people:1.1), uncensored, cum string"
   lead_snowball: "hetero, femdom, (snowballing:1.3), cum swap, (french kiss:1.2), kiss, cum in mouth, cum on tongue, cum string, girl on top, leaning over, hand on another's chin, man lying on back, on bed, upper body, from side, uncensored, saliva"
   lead_lick_clean: "hetero, femdom, (facesitting:1.3), sitting on face, straddling, (cunnilingus:1.1), cum in pussy, cumdrip, after sex, looking down, smirk, hand on another's head, man lying on back, on bed, from side, uncensored"

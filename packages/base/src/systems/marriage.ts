@@ -1373,6 +1373,7 @@ export function registerMarriage(api: ModApi) {
           } else if (PULL_OUT.has(where) && (sex.act === "sex" || sex.act === "riding") && hh.arousal >= Fn.holdArousal && hh.marriage.desire >= Fn.holdDesire && ctx.rng.chance(Fn.holdChance)) {
             where = "inside";
             ctx.log("log.bed.finish.held");
+            if (b.night) b.night.lock = true; // she held him in: her legs locked around him (fin_inside, lock=1)
           }
           if (b.night && ctx.state.time.phase === "night") b.night.after = where;
           if (b.night) b.night.fin = where;
@@ -1600,7 +1601,7 @@ export function registerMarriage(api: ModApi) {
           ...third,
           { id: HUSBAND, role: "husband" },
         ],
-        ...(b.night.fin && !b.night.sex ? { tags: { fin: b.night.fin } } : {}),
+        ...(b.night.fin && !b.night.sex ? { tags: { fin: b.night.fin, ...(b.night.lock && b.night.fin === "inside" ? { lock: "1" } : {}) } } : {}),
       };
     },
   });

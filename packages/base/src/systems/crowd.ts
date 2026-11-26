@@ -263,8 +263,9 @@ export function registerCrowd(api: ModApi) {
     // a pushy man, or one who likes it that way, goes for her face when he can
     const wantsFace = (p.approach === "push" || (v.drunk ?? 0) >= 60) && options.includes("face");
     let place = wantsFace ? "face" : ctx.rng.pick(options);
+    let lockNext = false;
     const show = (pl: string) => {
-      sh.fin = { patron: p.id, place: pl, act: enc.act, loc: enc.loc, until: sh.tick + Fi.shows, ...((enc.men?.length ?? 0) > 0 ? { men: 1 + enc.men!.length } : {}) };
+      sh.fin = { patron: p.id, place: pl, act: enc.act, loc: enc.loc, until: sh.tick + Fi.shows, ...((enc.men?.length ?? 0) > 0 ? { men: 1 + enc.men!.length } : {}), ...(lockNext ? { lock: true } : {}) };
     };
     if (place === "face" || place === "mouth") {
       const glad = h.traits.openness >= (Fi.wants[place] ?? 100) || h.latents.oral_fixation !== undefined || p.memory.affinity >= Fi.likedAffinity || h.drunk >= Fi.drunk;
@@ -298,6 +299,8 @@ export function registerCrowd(api: ModApi) {
         if (swallows) place = "mouth";
       }
     } else ctx.log(`log.fin.${place}`, { name }, tags);
+    // inside her and she wanted it there: her legs lock around him (the picture shows it - lock=1)
+    if (place === "inside" && (enc.men?.length ?? 0) === 0 && h.arousal >= Fi.lock.arousal && (h.traits.openness >= Fi.lock.openness || p.memory.affinity >= Fi.likedAffinity)) lockNext = true;
     show(place);
     ctx.emit("cum:landed", { by: p.id, act: enc.act, where: place });
     ctx.emit("finish:done", { patron: p.id, place });

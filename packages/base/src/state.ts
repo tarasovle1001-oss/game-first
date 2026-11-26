@@ -237,7 +237,7 @@ export interface Shift {
   upstairs?: boolean; // he already took her away from the floor tonight
   stockWarned: boolean;
   stolen?: number; // taken from the unwatched till tonight
-  fin?: { patron: string; place: string; act: string; loc: string; until: number; men?: number }; // how the last one ended, while it still shows
+  fin?: { patron: string; place: string; act: string; loc: string; until: number; men?: number; lock?: boolean }; // how the last one ended, while it still shows
   lastCrowd?: { crowd: string[]; men: { patron: string; slot: string; act: string }[] }; // who was around the encounter that is running
   cleanUntil?: number; // minute she is done cleaning herself up
   marksSeen?: boolean;
@@ -308,7 +308,7 @@ export interface BaseState {
   secretKnows: boolean; // he found out and she does not know that he knows
   caught: { patron: string; act: string } | null; // he has just walked in on them and has to choose
   secretActsToday: number;
-  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; why?: "need" | "guest" | "punish" | "reward" | "play"; rounds?: number; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string; rest?: { his: boolean; hers: boolean; act: string; wants?: string; hersAt: number; age?: number }; watch?: { toy?: string; step: number; awake: boolean }; had?: number; noes?: number; smallAt?: number; smallDone?: boolean; himAsleep?: boolean; slept?: number; herCame?: boolean } | null; // what is going on in the bedroom tonight
+  night: { scene: string; asked: boolean; asks?: number; up?: { room: string; patron: string; leaveAt: number; stage: number; decideAt?: number; backAt?: number; far?: boolean; act?: string; hours?: number; seen?: boolean; sent?: { tells: string; stays: boolean }; heard?: boolean; knocked?: boolean }; sex: BedScene | null; why?: "need" | "guest" | "punish" | "reward" | "play"; rounds?: number; here?: "here" | "public"; third?: string; wants?: boolean; selfAsked?: boolean; counter?: string; minute?: number; herAsleep?: number; woken?: boolean; refused?: string; pressed?: boolean; after?: string; fin?: string; lock?: boolean; rest?: { his: boolean; hers: boolean; act: string; wants?: string; hersAt: number; age?: number }; watch?: { toy?: string; step: number; awake: boolean }; had?: number; noes?: number; smallAt?: number; smallDone?: boolean; himAsleep?: boolean; slept?: number; herCame?: boolean } | null; // what is going on in the bedroom tonight
   phone: import("./systems/phone").PhoneState;
   directive: Directive; // how he asked her to behave tonight
   expect: Record<string, number>; // act id -> what she thinks he allows, -100..100; absent = no idea

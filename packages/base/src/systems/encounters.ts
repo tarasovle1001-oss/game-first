@@ -876,7 +876,7 @@ export function registerEncounters(api: ModApi) {
       if (!f || bs(state).encounter || (bs(state).shift?.tick ?? 0) >= f.until || !onScreen(state, f.loc)) return null;
       // a group that has finished: the picture is all of them after it, not one man's ending
       if ((f.men ?? 0) >= 2) return { type: "group_after", location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), men: String(f.men) } };
-      return { type: FIN_SCENE[f.place] ?? actById(f.act).scene, location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), fin: f.place } };
+      return { type: FIN_SCENE[f.place] ?? actById(f.act).scene, location: f.loc, participants: [{ id: WIFE, role: "wife" }, { id: f.patron, role: "patron" }], tags: { outfit: dressOf(state), fin: f.place, ...(f.lock ? { lock: "1" } : {}) } };
     },
   });
 

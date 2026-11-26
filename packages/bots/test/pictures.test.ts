@@ -284,6 +284,15 @@ import { sceneKey } from "@tc/core";
 describe("pictures: what a key carries after the picture chat looked (22.11)", () => {
   const her = { id: "wife", role: "wife" };
   const fresh = () => engine.init(5, { base: { preset: "ordinary" } });
+  it("finished inside her: her legs lock around him only when she wanted it there (lock=1)", () => {
+    const s = fresh();
+    const plain = withLook(s, { type: "patron_fin_inside", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }], tags: { fin: "inside" } });
+    const locked = withLook(s, { type: "patron_fin_inside", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }], tags: { fin: "inside", lock: "1" } });
+    expect(sceneKey(plain)).not.toMatch(/lock=1/);
+    expect(sceneKey(locked)).toMatch(/lock=1/);
+    expect(promptFor(locked).positive).toMatch(/leg lock/);
+    expect(promptFor(plain).positive).not.toMatch(/leg lock/);
+  });
   it("more than one man: the picture goes by the scene's own name; only 'they have finished' counts them", () => {
     const s = fresh();
     const two = withLook(s, { type: "group_spitroast", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "b", role: "patron2" }], tags: { men: "2" } });

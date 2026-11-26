@@ -143,6 +143,7 @@ finish:               # where a guest finishes, and what she makes of it
   unwilling: { shame: 6, disgust: 4, annoy: 4 }
   glad: { arousal: 3, affinity: 2 }
   shows: 4                    # minutes the ending stays as the scene
+  lock: { arousal: 65, openness: 60 } # inside her and she wants it there: she locks her legs around him (worked up, and open enough or fond of him: likedAffinity)
 roam: # guests get up and walk about: nobody sits in plain view the whole evening
   chancePerMinute: 0.012   # per seated guest: about one trip per guest per evening
   meet: { chance: 0.35, interest: 50, affinity: 30, openness: 45, arousal: 35, extra: 5 } # he steps out to the toilet or the stairs and she goes after him: from there it is the hall mode, the two of them

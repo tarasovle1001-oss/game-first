@@ -153,7 +153,7 @@ const shownOutfit = (state: GameState): string => {
   if (worn === "naked" || !loc.startsWith("town.")) return worn;
   return loc === "town.gym" ? "sport" : "street";
 };
-export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "phase", "crowd", "face", "tsize", "under", "skirt", "toy", "cage", "xray"];
+export const PICTURE_TAGS = ["outfit", "bare", "fin", "men", "phase", "crowd", "face", "tsize", "under", "skirt", "toy", "cage", "xray", "lock"];
 /** Acts a guest is inside her in, front: the ones a picture in section makes sense for. */
 const XRAY_ACTS = new Set(["sex", "riding", "standing_sex"]);
 /**
