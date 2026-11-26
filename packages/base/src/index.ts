@@ -42,6 +42,8 @@ import { registerRoam } from "./systems/roam";
 import { registerPictures } from "./systems/pictures";
 import { registerInspect } from "./systems/inspect";
 import { registerKinks } from "./systems/kinks";
+import { registerTraits } from "./systems/traits";
+import { registerModes } from "./systems/modes";
 
 /** The game itself, written as a mod on the public API of @tc/core. */
 export const baseMod: Mod = {
@@ -169,6 +171,8 @@ export const baseMod: Mod = {
     registerInspect(api);
     registerSetup(api);
     registerKinks(api);
+    registerTraits(api);
+    registerModes(api);
   },
 };
 
@@ -212,6 +216,8 @@ export { PREP_WAIT, DAY_STOP, passPrep } from "./systems/day";
 export { TASTES, TASTE_LATENT } from "./systems/setup";
 export { STRIP, bareOf, bareMargin, dressOf, eyesOn } from "./systems/dress";
 export { HIS_ACTS, hisActOpen } from "./systems/marriage";
+export { TRAITS, traitOf } from "./systems/traits";
+export { modeKey, ntr, nts } from "./systems/modes";
 export { SET_KINKS, actOff, cleanKinks, detailOff, offItems } from "./systems/kinks";
 export { AFTER, NIGHT_DECLINE, NIGHT_SELF, REST, WATCH, UPSTAIRS, UPSTAIRS_ACTS } from "./systems/marriage";
 export { installment, LOAN_PAY } from "./systems/loan";

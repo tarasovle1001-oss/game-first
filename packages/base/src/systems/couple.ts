@@ -40,7 +40,7 @@ const applyFx = (ctx: Ctx, fx: Fx, reason: string) => {
 const statOf = (state: GameState, stat: string): number => {
   const h = bs(state).heroine;
   if (stat === "desire" || stat === "resent") return h.marriage[stat];
-  if (stat in h.traits) return h.traits[stat as keyof typeof h.traits];
+  if (stat in h.traits) return h.traits[stat] ?? 0;
   return (h as unknown as Record<string, number>)[stat] ?? 0;
 };
 

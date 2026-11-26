@@ -233,7 +233,8 @@ export function registerMarriage(api: ModApi) {
       if (level === 0 && knows) sex.looseSaid = true; // one roll a night, not one per act
       if ((level > 0 && fresh) || crossed) {
         sex.looseSaid = true;
-        if (today && b.mode === "open" && level > 0) ctx.log(`log.bed.compare.say.${ctx.rng.int(1, 3)}`);
+        // in the open she says it as it is; hidden, now and then she lets it slip in words that hide where it comes from (the @ntr wording)
+        if (today && level > 0 && (b.mode === "open" || ctx.rng.chance(content.body.take.hiddenSays ?? 0))) ctx.log(`log.bed.compare.say.${ctx.rng.int(1, 3)}`);
         else think(ctx, today ? "thought.bed.compare" : level > 0 && h.drunk >= 30 ? "thought.bed.small.drunk" : level > 0 ? "thought.bed.small" : "thought.bed.knows", level > 0);
       }
     }

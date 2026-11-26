@@ -13,7 +13,8 @@ export interface Heroine {
   arousal: number;
   drunk: number;
   // character, 0..100, changes slowly
-  traits: { openness: number; confidence: number; fidelity: number; honesty: number; libido: number };
+  // the five built-in ones by name; any trait of traits.yaml by id (a trait added after a save was made: traitOf gives its default)
+  traits: { openness: number; confidence: number; fidelity: number; honesty: number; libido: number } & Record<string, number>;
   // body, per zone, 0..100: `stretch` is what she takes today, `perm` what is hers for good (absent in old saves: see permOf), `peak` the highest ever
   body: Record<Zone, { stretch: number; peak: number; perm?: number }>;
   seenSize?: number; // cm: the biggest she has seen or had (her bar)

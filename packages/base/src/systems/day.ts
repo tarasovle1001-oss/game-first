@@ -1,6 +1,7 @@
 // The afternoon before opening: a budget of minutes, things to spend it on, the town with its shops,
 // one-off upgrades for the cafe, and what she does with her own money while he is not looking.
 import { glance } from "./glance";
+import { pickTrip } from "./traits";
 import { actOff, flagOff } from "./kinks";
 import type { Ctx, GameState, ModApi } from "@tc/core";
 import { content } from "../content";
@@ -89,7 +90,7 @@ function herNext(ctx: Ctx) {
   // once a day she may have an errand of her own in town: the shops, the market, the gym. This one is what it looks like
   if (day.her && !day.tripped && day.left > D.herDay.tripMinutes[1] + 60 && (b.wantsToy || ctx.rng.chance(D.herDay.tripChance))) {
     day.tripped = true;
-    const to = b.wantsToy ? SEXSHOP : ctx.rng.pick(D.herDay.trips); // with something to buy she goes on purpose
+    const to = b.wantsToy ? SEXSHOP : pickTrip(ctx, D.herDay.trips); // with something to buy she goes on purpose
     day.her = { task: "away", left: ctx.rng.int(D.herDay.tripMinutes[0], D.herDay.tripMinutes[1]) };
     // she says it to his face only if he is there to hear it; otherwise he finds a note
     const told = ctx.state.where[HUSBAND] === ctx.state.where[WIFE];

@@ -290,7 +290,7 @@ export const bodySchema = z
         throatOver: z.number(),
         chance: z.array(z.number().min(0).max(1)).min(1), arousal: z.number(), warm: z.number(), warmMax: z.number(), drunk: z.number(), anus: z.number(),
         partial: z.number().min(0).max(1), partialShare: z.number(), share: z.number(), perAct: z.number(), volumeCap: z.number(), keep: z.number().min(0).max(1), fade: z.number().min(0).max(1),
-        instead: z.array(id).min(1), fearPerStage: z.number(), tasteSeen: z.number(), tasteHandled: z.number(), bedThought: z.number().min(0).max(1), looseEvery: z.number(),
+        instead: z.array(id).min(1), fearPerStage: z.number(), tasteSeen: z.number(), tasteHandled: z.number(), bedThought: z.number().min(0).max(1), hiddenSays: z.number().min(0).max(1).optional(), looseEvery: z.number(),
         giant: z.object({ fromDay: z.number(), chance: z.number().min(0).max(1), size: z.tuple([z.number(), z.number()]) }).strict(),
         ladder: z.object({ start: z.number(), perFame: z.number() }).strict(),
       })
@@ -401,10 +401,24 @@ export const secrecySchema = z
   .strict();
 
 const pct = z.number().min(0).max(100);
+/** Her character traits (traits.yaml): built-in ones are read by name in code, new ones act only through the rows given here. */
+export const traitSchema = z
+  .object({
+    id,
+    builtIn: z.boolean().default(false),
+    default: pct,
+    hidden: z.boolean().default(false), // not on the new-game screen
+    consent: z.object({ per: z.number(), from: z.number().int().min(0).default(0), guest: z.boolean().default(false), depth: z.boolean().default(false) }).strict().optional(),
+    initiative: z.number().optional(),
+    trips: z.record(z.number()).optional(),
+    tips: z.number().optional(),
+  })
+  .strict();
+export type TraitDef = z.infer<typeof traitSchema>;
 export const presetSchema = z
   .object({
     id,
-    traits: z.object({ openness: pct, confidence: pct, fidelity: pct, honesty: pct, libido: pct }).strict(),
+    traits: z.object({ openness: pct, confidence: pct, fidelity: pct, honesty: pct, libido: pct }).catchall(pct),
     sizeTaste: pct,
     latents: z.array(id), // always present with this preset; the rest are rolled as usual unless "noRandomLatents"
     noRandomLatents: z.boolean().default(false),
@@ -838,6 +852,7 @@ export interface Content {
   body: BodyTuning;
   secrecy: SecrecyTuning;
   kinks: Kinks;
+  traits: TraitDef[];
   phone: PhoneTuning;
   outfits: Outfit[];
   latents: Latent[];

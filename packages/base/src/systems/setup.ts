@@ -1,5 +1,6 @@
 // New-game choices: a preset or hand-set sliders. Applied once, at the very end of game:init.
 import { applyKinks } from "./kinks";
+import { TRAITS } from "./traits";
 import type { ModApi } from "@tc/core";
 import { content } from "../content";
 import { bs, clamp } from "../state";
@@ -9,7 +10,8 @@ import { readCard } from "./card";
 /** What the new-game screen can pass to engine.init(seed, { base: setup }). Every field is optional. */
 export interface BaseSetup {
   preset?: string;
-  traits?: Partial<Record<"openness" | "confidence" | "fidelity" | "honesty" | "libido", number>>;
+  /** Any trait of traits.yaml by id. */
+  traits?: Partial<Record<string, number>>;
   sizeTaste?: number;
   /** Exact set of hidden sides. Omit to let the preset and the dice decide. */
   latents?: string[];
@@ -48,7 +50,7 @@ export function registerSetup(api: ModApi) {
         if (preset.noRandomLatents) h.latents = {};
         for (const id of preset.latents) h.latents[id] = true;
       }
-      for (const [k, v] of Object.entries(setup.traits ?? {})) if (typeof v === "number") h.traits[k as keyof typeof h.traits] = clamp(v);
+      for (const [k, v] of Object.entries(setup.traits ?? {})) if (typeof v === "number" && TRAITS.some((t) => t.id === k)) h.traits[k] = clamp(v);
       if (typeof setup.sizeTaste === "number") h.sizeTaste = clamp(setup.sizeTaste);
       if (setup.latents) {
         h.latents = {};

@@ -1,6 +1,7 @@
 // Guests try their luck with her, she answers through one formula.
 // Every row of that formula is named and visible; mods add rows with api.formulas.addFactor(CONSENT_FORMULA, ...).
 import { cruelNow } from "./hernight";
+import { traitUrge } from "./traits";
 import { actOff } from "./kinks";
 import type { Ctx, EngineView, GameState, ModApi, SceneDesc } from "@tc/core";
 import { actById, actOf, content } from "../content";
@@ -561,7 +562,7 @@ function herOwnMove(ctx: Ctx) {
   const H = G.her;
   const room = herRoom(ctx.state);
   if (b.encounter || sh.tick < (sh.restUntil ?? 0) || (sh.herMoves ?? 0) >= H.perShift || ctx.state.where[WIFE] !== room) return;
-  const urge = Math.max(0, h.arousal - H.arousalFrom) * H.perArousal + h.frustration * H.perFrustration + h.drunk * H.perDrunk + (h.latents.exhibitionist !== undefined ? H.trait : 0) + (h.latents.disappointed !== undefined ? h.marriage.resent * H.perResent : 0);
+  const urge = Math.max(0, h.arousal - H.arousalFrom) * H.perArousal + h.frustration * H.perFrustration + h.drunk * H.perDrunk + (h.latents.exhibitionist !== undefined ? H.trait : 0) + (h.latents.disappointed !== undefined ? h.marriage.resent * H.perResent : 0) + traitUrge(ctx.state);
   if (urge < H.urgeFrom || !ctx.rng.chance(Math.min(H.maxChance, (urge / 100) * H.chancePerMinute))) return;
   // whom: a man she likes; or a stranger, or a rough one, if that is her thing
   const drawn = (p: Patron) =>

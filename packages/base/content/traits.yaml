@@ -1,0 +1,22 @@
+# Her character traits, 0..100 (27.11): one registry for the new-game sliders, the inspector, presets and saves.
+# The five built-in ones (builtIn: true) are read by name all over the code. A new trait needs no code at all:
+# list it here, give it texts (trait.<id>, and factor.consent.trait_<id> / factor.tip.trait_<id> if it has those rows),
+# and say what it does - every effect is "per point away from 50":
+#   consent:    a row of the consent formula (how readily she says yes): per x (value - 50);
+#               from: only acts from this tier up; guest: only with a guest, not her husband; depth: scaled by how far the act goes
+#   initiative: adds to her own urge to make a move on the floor: per x (value - 50)
+#   trips:      where she goes in her free time (day.yaml herDay.trips): place -> per; weight = 1 + per x (value - 50) / 50
+#   tips:       a row of the tips formula: per x (value - 50) x bill / 100
+#   default:    the value a game starts with (and old saves get)
+traits:
+  - { id: openness, builtIn: true, default: 30 }
+  - { id: confidence, builtIn: true, default: 45 }
+  - { id: fidelity, builtIn: true, default: 80 }
+  - { id: honesty, builtIn: true, default: 70 }
+  - { id: libido, builtIn: true, default: 45 }
+  # how a new one looks (an example, off):
+  # - id: submissive
+  #   default: 50
+  #   consent: { per: 0.15, from: 3, guest: true }
+  #   initiative: -0.2
+  #   trips: { town.gym: -0.5, town.shops: 0.3 }

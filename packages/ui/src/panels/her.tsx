@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { charmOf, annoyedLevel, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, annoyanceOf, bs, content, HUSBAND, patronName, WIFE, husbandSees } from "@tc/base";
+import { charmOf, annoyedLevel, soreOf, wearOf, slick, ATTRS, attrOf, faceOf, feelingsOf, latitudeOf, trustOf, wantsOf, annoyanceOf, bs, content, HUSBAND, patronName, WIFE, husbandSees, TRAITS, traitOf } from "@tc/base";
 import { Bar, Common, reasonLabel, who } from "./common";
 import { fmt } from "./scene";
 import { richLine } from "./log";
@@ -191,9 +191,10 @@ export function HeroineTab({ state, t, open, lang }: Common) {
       {open && (
         <>
           <div className="cap gap">{t("ui.character")}</div>
-          {(Object.keys(h.traits) as (keyof typeof h.traits)[]).map((k) => {
-            const d = h.snap ? h.traits[k] - (h.snap.traits[k] ?? h.traits[k]) : 0;
-            return <Bar key={k} label={t(`trait.${k}`) + (Math.abs(d) >= 1 ? ` (${fmt(d)} ${t("ui.drift")})` : "")} value={h.traits[k]} />;
+          {TRAITS.filter((x) => !x.hidden).map(({ id: k }) => {
+            const v = traitOf(h, k);
+            const d = h.snap ? v - (h.snap.traits[k] ?? v) : 0;
+            return <Bar key={k} label={t(`trait.${k}`) + (Math.abs(d) >= 1 ? ` (${fmt(d)} ${t("ui.drift")})` : "")} value={v} />;
           })}
           <div className="cap gap">{t("ui.attrs")}</div>
           {ATTRS.map((a) => (

@@ -135,6 +135,8 @@ export interface ModApi {
   scenes: { register(def: SceneDef): void };
   events: { on(type: string, handler: EventHandler, priority?: number): void };
   invariants: { add(id: string, check: Invariant): void };
+  /** Swap a log line key for a variant of it at the moment it is written (e.g. by the state of the game). Applied in order. */
+  lines: { resolve(fn: (state: GameState, key: string) => string): void };
 }
 
 export interface Mod {

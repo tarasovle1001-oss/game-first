@@ -1,4 +1,5 @@
 import type { Ctx, ModApi } from "@tc/core";
+import { defaultTraits } from "./traits";
 import { content } from "../content";
 import { bs, clamp } from "../state";
 import type { Heroine } from "../state";
@@ -9,7 +10,7 @@ export const newHeroine = (): Heroine => ({
   mood: 60,
   arousal: 10,
   drunk: 0,
-  traits: { openness: 30, confidence: 45, fidelity: 80, honesty: 70, libido: 45 },
+  traits: defaultTraits(), // traits.yaml: the five built-in ones and any new one, at their defaults
   body: { vagina: { stretch: 0, peak: 0 }, anus: { stretch: 0, peak: 0 }, mouth: { stretch: 0, peak: 0 } },
   skills: {},
   frustration: 0,
@@ -42,7 +43,7 @@ export function registerHeroine(api: ModApi) {
   // Small seeded spread so that two seeds do not start with the same woman.
   api.events.on("game:init", (ctx) => {
     const t = bs(ctx.state).heroine.traits;
-    for (const k of Object.keys(t) as (keyof typeof t)[]) t[k] = clamp(t[k] + ctx.rng.int(-8, 8));
+    for (const k of Object.keys(t)) t[k] = clamp((t[k] ?? 50) + ctx.rng.int(-8, 8));
   });
 
   api.events.on("phase:exit", (ctx, e) => {

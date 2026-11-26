@@ -58,6 +58,7 @@ export function createEngine(modList: Mod[]): Engine {
   const scenes: SceneDef[] = [];
   const handlers = new Map<string, { handler: EventHandler; priority: number; seq: number }[]>();
   const invariants: { id: string; check: Invariant }[] = [];
+  const lineResolvers: ((state: GameState, key: string) => string)[] = [];
   let tracer: Tracer | null = null;
   let seq = 0;
 
@@ -96,6 +97,7 @@ export function createEngine(modList: Mod[]): Engine {
       },
     },
     invariants: { add: (id, check) => void invariants.push({ id: `${modId}:${id}`, check }) },
+    lines: { resolve: (fn) => void lineResolvers.push(fn) },
   });
 
   const sortedPhases = () => [...phases.values()].sort((a, b) => a.order - b.order);
@@ -267,7 +269,10 @@ export function createEngine(modList: Mod[]): Engine {
         engine: view,
         emit: (type, payload) => void queue.push({ type, payload }),
         flush: () => drain(),
-        log(key, params, tags) {
+        log(given, params, tags) {
+          // mods may swap a line for a variant of it (base: the NTR / NTS wording of the same line)
+          let key = given;
+          for (const r of lineResolvers) key = r(draft as GameState, key);
           draft.log.push({ turn: draft.turn, day: draft.time.day, phase: draft.time.phase, minute: draft.time.minute, key, params, ...(tags ? { tags } : {}) });
           if (draft.log.length > LOG_LIMIT) draft.log.splice(0, draft.log.length - LOG_LIMIT);
         },

@@ -1,11 +1,10 @@
 import { shownCm } from "@tc/base";
 import { useState } from "react";
-import { ATTRS, content, TASTES, TASTE_LATENT } from "@tc/base";
+import { ATTRS, content, TASTES, TASTE_LATENT, TRAITS } from "@tc/base";
 import type { BaseSetup, HeroineCard } from "@tc/base";
 import type { T } from "./game";
 import { KinkSwitches, loadKinkProfile, saveKinkProfile } from "./kinks";
 
-const TRAITS = ["openness", "confidence", "fidelity", "honesty", "libido"] as const;
 
 /** New-game screen: a preset to start from, then sliders. How the story goes depends mostly on these. */
 /** `card`: the heroine picked before (her look and name); a set personality on her card fills the sliders. */
@@ -68,7 +67,7 @@ export function NewGame({ t, seed, card, onStart, onCancel, onKeep }: { t: T; se
               <span>{t("ui.newgame.name")}</span>
               <input type="text" value={name} maxLength={24} onChange={(e) => setName(e.target.value)} />
             </label>
-            {TRAITS.map((k) => slider(t(`trait.${k}`), traits[k], (v) => setTraits({ ...traits, [k]: v })))}
+            {TRAITS.filter((x) => !x.hidden).map(({ id: k, default: d }) => slider(t(`trait.${k}`), traits[k] ?? d, (v) => setTraits({ ...traits, [k]: v })))}
             {slider(t("stat.sizeTaste"), sizeTaste, setSizeTaste)}
             {slider(t("ui.newgame.desire"), desire, setDesire)}
             <div className="cap gap">{t("ui.new.attrs")}</div>

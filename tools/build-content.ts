@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { z, type ZodTypeAny } from "zod";
-import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, castSchema, heroineSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, kinksSchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
+import { actSchema, balanceSchema, bodySchema, latentSchema, mannersSchema, daySchema, outfitSchema, presetSchema, phoneSchema, lookSchema, promptSchema, castSchema, heroineSchema, mindSchema, termsSchema, floorSchema, intimacySchema, EMOTIONS, secrecySchema, kinksSchema, traitSchema, consentSchema, nameSchema, patronTypeSchema, sceneSchema, zoneFileSchema } from "../packages/base/src/content/schema";
 import type { Content, Room } from "../packages/base/src/content/schema";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -91,6 +91,7 @@ const consent = load(join(base, "content/consent.yaml"), consentSchema);
 const body = load(join(base, "content/body.yaml"), bodySchema);
 const secrecy = load(join(base, "content/secrecy.yaml"), secrecySchema);
 const kinks = load(join(base, "content/kinks.yaml"), kinksSchema);
+const traits = load(join(base, "content/traits.yaml"), z.object({ traits: traitSchema.array().min(1) }).strict())?.traits ?? [];
 const outfits = load(join(base, "content/outfits.yaml"), outfitSchema.array().min(1)) ?? [];
 const latents = load(join(base, "content/latents.yaml"), latentSchema.array()) ?? [];
 const manners = load(join(base, "content/manners.yaml"), mannersSchema);
@@ -230,13 +231,37 @@ if (kinks) {
     }
   }
 }
+// the trait registry: the five the code reads by name must be there; each trait needs its name, and a text for each row it adds
+{
+  const BUILT = ["openness", "confidence", "fidelity", "honesty", "libido"];
+  for (const b of BUILT) if (!traits.some((t) => t.id === b && t.builtIn)) errors.push(`traits.yaml: built-in trait "${b}" missing (or not builtIn)`);
+  for (const t of traits) {
+    if (t.builtIn && !BUILT.includes(t.id)) errors.push(`traits.yaml: "${t.id}" is not one the code knows: drop builtIn`);
+    need(`trait.${t.id}`);
+    if (t.consent) need(`factor.consent.trait_${t.id}`);
+    if (t.tips !== undefined) need(`factor.tip.trait_${t.id}`);
+    const tripIds = new Set(day?.herDay.trips ?? []);
+    for (const place of Object.keys(t.trips ?? {})) if (!tripIds.has(place)) errors.push(`traits.yaml: ${t.id} trips to "${place}", which is not in day.yaml herDay.trips`);
+  }
+  for (const pr of presets) for (const k of Object.keys(pr.traits)) if (!traits.some((t) => t.id === k)) errors.push(`preset "${pr.id}" sets unknown trait "${k}"`);
+}
+// NTR / NTS wordings of a line (systems/modes.ts): "<key>@ntr" / "<key>@nts" need the plain key and its placeholders
+if (locales.en)
+  for (const k of Object.keys(locales.en)) {
+    const at = k.lastIndexOf("@");
+    if (at < 0) continue;
+    const plain = k.slice(0, at), mode = k.slice(at + 1);
+    if (mode !== "ntr" && mode !== "nts") errors.push(`locale key "${k}": after @ only ntr or nts`);
+    else if (!(plain in locales.en)) errors.push(`locale key "${k}": no plain line "${plain}" to fall back to`);
+    else if (placeholders(locales.en[k]!) !== placeholders(locales.en[plain]!)) errors.push(`locale key "${k}": placeholders differ from "${plain}"`);
+  }
 if (errors.length > 0 || !kinks || !balance || !consent || !body || !secrecy || !phone || !manners || !day || !look || !prompt || !mind || !terms || !floor || !intimacy || !heroine) {
   console.error(`content: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
 
-const content: Content = { look, prompt, casts, heroine, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, kinks, phone, outfits, latents, manners, day, presets, locales };
+const content: Content = { look, prompt, casts, heroine, mind, terms, floor, intimacy, rooms, patronTypes, names, balance, acts, scenes, consent, body, secrecy, kinks, traits, phone, outfits, latents, manners, day, presets, locales };
 const out = join(base, "src/generated/content.json");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(content, null, 1));
