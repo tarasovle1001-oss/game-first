@@ -1,0 +1,1501 @@
+{
+ "after:found": {
+  "emittedIn": [
+   "base/src/systems/secrecy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "marks",
+   "patron"
+  ]
+ },
+ "attend:ended": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "payload": [
+   "loc",
+   "why"
+  ]
+ },
+ "attend:started": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/roam.ts"
+  ],
+  "payload": [
+   "loc",
+   "why"
+  ]
+ },
+ "bare:asked": {
+  "emittedIn": [
+   "base/src/systems/dress.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/mind.ts"
+  ],
+  "payload": [
+   "off",
+   "ok"
+  ]
+ },
+ "bare:changed": {
+  "emittedIn": [
+   "base/src/systems/dress.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "to",
+   "where"
+  ]
+ },
+ "base:invite-arrives": {
+  "emittedIn": [
+   "base/src/systems/hotel.ts",
+   "base/src/systems/loan.ts",
+   "base/src/systems/phone.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "payload": [
+   "id"
+  ]
+ },
+ "bath:sent": {
+  "emittedIn": [
+   "base/src/systems/rhythm.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "marks"
+  ]
+ },
+ "bath:walkin": {
+  "emittedIn": [
+   "base/src/systems/rhythm.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/mind.ts"
+  ],
+  "payload": [
+   "ok"
+  ]
+ },
+ "bed:after": {
+  "emittedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts"
+  ],
+  "payload": [
+   "do",
+   "outcome",
+   "where"
+  ]
+ },
+ "bed:continued": {
+  "emittedIn": [
+   "base/src/systems/bed/scene.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act"
+  ]
+ },
+ "bed:ended": {
+  "emittedIn": [
+   "base/src/systems/bed/scene.ts",
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts",
+   "base/src/systems/cage.ts",
+   "base/src/systems/hernight.ts",
+   "base/src/systems/look.ts",
+   "base/src/systems/memories.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/nerve.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "act",
+   "alone",
+   "came",
+   "outcome",
+   "turns"
+  ]
+ },
+ "bed:her_ending": {
+  "emittedIn": [
+   "base/src/systems/bed/scene.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts"
+  ],
+  "payload": [
+   "how"
+  ]
+ },
+ "bed:lead": {
+  "emittedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts"
+  ],
+  "payload": [
+   "given",
+   "taken"
+  ]
+ },
+ "bed:said": {
+  "emittedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts"
+  ],
+  "payload": [
+   "what"
+  ]
+ },
+ "bed:save": {
+  "emittedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "do",
+   "of",
+   "ok"
+  ]
+ },
+ "bed:started": {
+  "emittedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bed/hisnight.ts",
+   "base/src/systems/crowd.ts",
+   "base/src/systems/herside.ts",
+   "base/src/systems/marriage.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "act",
+   "public",
+   "shift",
+   "third"
+  ]
+ },
+ "bed:turn": {
+  "emittedIn": [
+   "base/src/systems/bed/scene.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/rhythm.ts"
+  ],
+  "payload": []
+ },
+ "body:take": {
+  "emittedIn": [
+   "base/src/systems/taking.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "size",
+   "stage",
+   "steps",
+   "take",
+   "zone"
+  ]
+ },
+ "bought": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "id",
+   "kind"
+  ]
+ },
+ "caught": {
+  "emittedIn": [
+   "base/src/systems/secrecy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "patron"
+  ]
+ },
+ "caught:resolved": {
+  "emittedIn": [
+   "base/src/systems/secrecy.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/expectations.ts",
+   "base/src/systems/memories.ts",
+   "base/src/systems/mind.ts"
+  ],
+  "payload": [
+   "choice",
+   "how"
+  ]
+ },
+ "couple:about": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "say"
+  ]
+ },
+ "couple:allow": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "item",
+   "say"
+  ]
+ },
+ "couple:dare": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "id",
+   "ok",
+   "patron"
+  ]
+ },
+ "couple:guest": {
+  "emittedIn": [
+   "base/src/systems/couple.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/mind.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "do",
+   "patron"
+  ]
+ },
+ "couple:heard": {
+  "emittedIn": [
+   "base/src/systems/couple.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/memories.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "how",
+   "topic"
+  ]
+ },
+ "couple:kiss-after": {
+  "emittedIn": [
+   "base/src/systems/expectations.ts"
+  ],
+  "listenedIn": [],
+  "payload": []
+ },
+ "couple:permit": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "patron",
+   "say",
+   "tone"
+  ]
+ },
+ "couple:press": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "ok"
+  ]
+ },
+ "couple:stance": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "patron",
+   "say"
+  ]
+ },
+ "couple:talk": {
+  "emittedIn": [
+   "base/src/systems/couple.ts",
+   "base/src/systems/rhythm.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "do",
+   "ok"
+  ]
+ },
+ "couple:tell": {
+  "emittedIn": [
+   "base/src/systems/couple.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "group",
+   "say"
+  ]
+ },
+ "couple:wish": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "id",
+   "shock"
+  ]
+ },
+ "crowd:dispersed": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "liked"
+  ]
+ },
+ "crowd:joined": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "men",
+   "patron",
+   "slot"
+  ]
+ },
+ "crowd:refused": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "patron"
+  ]
+ },
+ "cum:landed": {
+  "emittedIn": [
+   "base/src/systems/bed/scene.ts",
+   "base/src/systems/crowd.ts",
+   "base/src/systems/encounters.ts",
+   "base/src/systems/floor.ts",
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/look.ts"
+  ],
+  "payload": [
+   "act",
+   "by",
+   "where"
+  ]
+ },
+ "day:did": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/mind.ts",
+   "base/src/systems/nerve.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "do",
+   "share"
+  ]
+ },
+ "day:end": {
+  "emittedIn": [
+   "base/src/systems/shift.ts",
+   "core/src/engine.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bed/hisnight.ts",
+   "base/src/systems/body.ts",
+   "base/src/systems/economy.ts",
+   "base/src/systems/gossip.ts",
+   "base/src/systems/hernight.ts",
+   "base/src/systems/heroine.ts",
+   "base/src/systems/hotel.ts",
+   "base/src/systems/patrons.ts",
+   "base/src/systems/secrecy.ts"
+  ],
+  "payload": [
+   "day"
+  ]
+ },
+ "day:shopping": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [],
+  "payload": []
+ },
+ "day:start": {
+  "emittedIn": [
+   "core/src/engine.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "day"
+  ]
+ },
+ "day:started": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "do"
+  ]
+ },
+ "deal:asked": {
+  "emittedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "patron",
+   "price"
+  ]
+ },
+ "deal:done": {
+  "emittedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "ok",
+   "patron",
+   "say"
+  ]
+ },
+ "door": {
+  "emittedIn": [
+   "base/src/systems/secrecy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "how",
+   "patron"
+  ]
+ },
+ "encounter:came": {
+  "emittedIn": [
+   "base/src/systems/encounters.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/manners.ts",
+   "base/src/systems/memories.ts",
+   "base/src/systems/mind.ts"
+  ],
+  "payload": [
+   "act",
+   "patron",
+   "witnessed"
+  ]
+ },
+ "encounter:ended": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts",
+   "base/src/systems/encounters.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts",
+   "base/src/systems/crowd.ts",
+   "base/src/systems/expectations.ts",
+   "base/src/systems/gossip.ts",
+   "base/src/systems/look.ts",
+   "base/src/systems/secrecy.ts"
+  ],
+  "payload": [
+   "act",
+   "came",
+   "group",
+   "loc",
+   "minutes",
+   "patron"
+  ]
+ },
+ "encounter:finished_self": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "patron"
+  ]
+ },
+ "encounter:proposed": {
+  "emittedIn": [
+   "base/src/systems/encounters.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts"
+  ],
+  "payload": [
+   "act",
+   "patron",
+   "rowIds",
+   "seen",
+   "total",
+   "verdict"
+  ]
+ },
+ "encounter:pushed": {
+  "emittedIn": [
+   "base/src/systems/encounters.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/floor.ts",
+   "base/src/systems/herside.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "act",
+   "far",
+   "patron"
+  ]
+ },
+ "encounter:refused": {
+  "emittedIn": [
+   "base/src/systems/encounters.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/mind.ts"
+  ],
+  "payload": [
+   "act",
+   "patron",
+   "reaction"
+  ]
+ },
+ "encounter:started": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts",
+   "base/src/systems/encounters.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts",
+   "base/src/systems/couple.ts",
+   "base/src/systems/expectations.ts",
+   "base/src/systems/gossip.ts",
+   "base/src/systems/herside.ts",
+   "base/src/systems/loan.ts",
+   "base/src/systems/look.ts",
+   "base/src/systems/manners.ts",
+   "base/src/systems/memories.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/phone.ts",
+   "base/src/systems/roam.ts",
+   "base/src/systems/secrecy.ts"
+  ],
+  "payload": [
+   "act",
+   "came",
+   "intimate",
+   "joined",
+   "loc",
+   "patron",
+   "switched",
+   "tier",
+   "verdict",
+   "witnessed"
+  ]
+ },
+ "entity:moved": {
+  "emittedIn": [
+   "core/src/engine.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/day.ts",
+   "base/src/systems/dress.ts",
+   "base/src/systems/marriage.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/secrecy.ts",
+   "base/src/systems/shift.ts",
+   "base/src/systems/solo.ts"
+  ],
+  "payload": [
+   "from",
+   "id",
+   "to"
+  ]
+ },
+ "finish:done": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "patron",
+   "place"
+  ]
+ },
+ "finish:refused": {
+  "emittedIn": [
+   "base/src/systems/crowd.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "offended",
+   "patron",
+   "place"
+  ]
+ },
+ "floor:join": {
+  "emittedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "how",
+   "ok",
+   "ruined"
+  ]
+ },
+ "floor:moment": {
+  "emittedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/pictures.ts"
+  ],
+  "payload": [
+   "id",
+   "patron",
+   "side"
+  ]
+ },
+ "floor:table": {
+  "emittedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "do",
+   "patron"
+  ]
+ },
+ "game:init": {
+  "emittedIn": [
+   "core/src/engine.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/heroine.ts",
+   "base/src/systems/latents.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/places.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/setup.ts"
+  ],
+  "payload": []
+ },
+ "group:pulled_out": {
+  "emittedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "heat"
+  ]
+ },
+ "group:round": {
+  "emittedIn": [
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "heat",
+   "her"
+  ]
+ },
+ "gym:met": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "intimate",
+   "patron"
+  ]
+ },
+ "her:afternoon": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/memories.ts"
+  ],
+  "payload": [
+   "came",
+   "patron"
+  ]
+ },
+ "her:answered": {
+  "emittedIn": [
+   "base/src/systems/herside.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "kind",
+   "say"
+  ]
+ },
+ "her:approached": {
+  "emittedIn": [
+   "base/src/systems/herside.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "kind"
+  ]
+ },
+ "her:asked": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "patron"
+  ]
+ },
+ "her:bought": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/memories.ts",
+   "base/src/systems/solo.ts"
+  ],
+  "payload": [
+   "id",
+   "kind"
+  ]
+ },
+ "her:confessed": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "patron"
+  ]
+ },
+ "her:followed": {
+  "emittedIn": [
+   "base/src/systems/roam.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "patron",
+   "to"
+  ]
+ },
+ "her:gigolo": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/memories.ts"
+  ],
+  "payload": [
+   "came"
+  ]
+ },
+ "her:owed": {
+  "emittedIn": [
+   "base/src/systems/hernight.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "n",
+   "why"
+  ]
+ },
+ "her:remarked": {
+  "emittedIn": [
+   "base/src/systems/herside.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "id",
+   "spoken"
+  ]
+ },
+ "her:started": {
+  "emittedIn": [
+   "base/src/systems/encounters.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "patron",
+   "seen"
+  ]
+ },
+ "her:turned_down": {
+  "emittedIn": [
+   "base/src/systems/bed/scene.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/hernight.ts",
+   "base/src/systems/mind.ts"
+  ],
+  "payload": [
+   "weight"
+  ]
+ },
+ "her:woken": {
+  "emittedIn": [
+   "base/src/systems/rhythm.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/mind.ts"
+  ],
+  "payload": []
+ },
+ "heroine:changed": {
+  "emittedIn": [
+   "base/src/systems/heroine.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/mind.ts"
+  ],
+  "payload": [
+   "amount",
+   "key",
+   "reason"
+  ]
+ },
+ "hotel:sent-up": {
+  "emittedIn": [
+   "base/src/systems/hotel.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "brief",
+   "patron",
+   "stays"
+  ]
+ },
+ "hotel:towels": {
+  "emittedIn": [
+   "base/src/systems/hotel.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "act",
+   "hours",
+   "kind",
+   "patron"
+  ]
+ },
+ "husband:act": {
+  "emittedIn": [
+   "base/src/systems/bed/scene.ts",
+   "base/src/systems/floor.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/manners.ts",
+   "base/src/systems/secrecy.ts"
+  ],
+  "payload": [
+   "act",
+   "came",
+   "outcome",
+   "pleasure",
+   "turns"
+  ]
+ },
+ "husband:alone": {
+  "emittedIn": [
+   "base/src/systems/alone.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "thought",
+   "toy"
+  ]
+ },
+ "husband:came_touch": {
+  "emittedIn": [
+   "base/src/systems/alone.ts",
+   "base/src/systems/couple.ts",
+   "base/src/systems/herside.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/nerve.ts",
+   "base/src/systems/pictures.ts",
+   "base/src/systems/rhythm.ts"
+  ],
+  "payload": [
+   "from"
+  ]
+ },
+ "husband:caught_alone": {
+  "emittedIn": [
+   "base/src/systems/alone.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "toy"
+  ]
+ },
+ "husband:changed": {
+  "emittedIn": [
+   "base/src/systems/nerve.ts",
+   "base/src/systems/rhythm.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "amount",
+   "key",
+   "reason"
+  ]
+ },
+ "husband:countered": {
+  "emittedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "asked",
+   "offer"
+  ]
+ },
+ "husband:joined_alone": {
+  "emittedIn": [
+   "base/src/systems/alone.ts"
+  ],
+  "listenedIn": [],
+  "payload": []
+ },
+ "husband:refused": {
+  "emittedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/hernight.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "act"
+  ]
+ },
+ "husband:wet_dream": {
+  "emittedIn": [
+   "base/src/systems/nerve.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/pictures.ts"
+  ],
+  "payload": [
+   "noticed",
+   "told",
+   "who"
+  ]
+ },
+ "join:start": {
+  "emittedIn": [
+   "base/src/systems/expectations.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/marriage.ts"
+  ],
+  "payload": [
+   "act",
+   "patron"
+  ]
+ },
+ "lead": {
+  "emittedIn": [
+   "base/src/systems/secrecy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "kind"
+  ]
+ },
+ "look:marked": {
+  "emittedIn": [
+   "base/src/systems/look.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "by",
+   "place"
+  ]
+ },
+ "marks:seen": {
+  "emittedIn": [
+   "base/src/systems/bodystate.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "by",
+   "marks"
+  ]
+ },
+ "mode:changed": {
+  "emittedIn": [
+   "base/src/systems/secrecy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "mode",
+   "reason"
+  ]
+ },
+ "money:changed": {
+  "emittedIn": [
+   "base/src/systems/economy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "amount",
+   "reason"
+  ]
+ },
+ "night:self": {
+  "emittedIn": [
+   "base/src/systems/bed/hisnight.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "noticed",
+   "toy"
+  ]
+ },
+ "night:slipped_out": {
+  "emittedIn": [
+   "base/src/systems/bed/hisnight.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/memories.ts"
+  ],
+  "payload": [
+   "came",
+   "noticed",
+   "patron"
+  ]
+ },
+ "outfit:changed": {
+  "emittedIn": [
+   "base/src/systems/manners.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "by",
+   "to"
+  ]
+ },
+ "patron:arrived": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/dress.ts",
+   "base/src/systems/gossip.ts",
+   "base/src/systems/manners.ts"
+  ],
+  "payload": [
+   "id",
+   "returning"
+  ]
+ },
+ "patron:forgotten": {
+  "emittedIn": [
+   "base/src/systems/patrons.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "id"
+  ]
+ },
+ "patron:left": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/phone.ts"
+  ],
+  "payload": [
+   "id",
+   "reason",
+   "served"
+  ]
+ },
+ "patron:served": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/rhythm.ts"
+  ],
+  "payload": [
+   "bill",
+   "by",
+   "id",
+   "tip"
+  ]
+ },
+ "phase:enter": {
+  "emittedIn": [
+   "core/src/engine.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/bed/hisnight.ts",
+   "base/src/systems/bodystate.ts",
+   "base/src/systems/cage.ts",
+   "base/src/systems/couple.ts",
+   "base/src/systems/day.ts",
+   "base/src/systems/dress.ts",
+   "base/src/systems/economy.ts",
+   "base/src/systems/hernight.ts",
+   "base/src/systems/herside.ts",
+   "base/src/systems/hotel.ts",
+   "base/src/systems/loan.ts",
+   "base/src/systems/look.ts",
+   "base/src/systems/manners.ts",
+   "base/src/systems/marriage.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/nerve.ts",
+   "base/src/systems/phone.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/secrecy.ts",
+   "base/src/systems/shift.ts",
+   "base/src/systems/solo.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "phase"
+  ]
+ },
+ "phase:exit": {
+  "emittedIn": [
+   "base/src/systems/places.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/shift.ts",
+   "core/src/engine.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/alone.ts",
+   "base/src/systems/bed/hisnight.ts",
+   "base/src/systems/floor.ts",
+   "base/src/systems/heroine.ts",
+   "base/src/systems/herside.ts",
+   "base/src/systems/hotel.ts",
+   "base/src/systems/marriage.ts",
+   "base/src/systems/nerve.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/secrecy.ts",
+   "base/src/systems/shift.ts",
+   "base/src/systems/solo.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "phase"
+  ]
+ },
+ "phone:buttdial": {
+  "emittedIn": [
+   "base/src/systems/phone.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "patron"
+  ]
+ },
+ "phone:call": {
+  "emittedIn": [
+   "base/src/systems/phone.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "busy",
+   "from"
+  ]
+ },
+ "phone:message": {
+  "emittedIn": [
+   "base/src/systems/phone.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "heat",
+   "key",
+   "other"
+  ]
+ },
+ "phone:number": {
+  "emittedIn": [
+   "base/src/systems/phone.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "patron"
+  ]
+ },
+ "phone:peeked": {
+  "emittedIn": [
+   "base/src/systems/phone.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "count",
+   "worst"
+  ]
+ },
+ "place:bought": {
+  "emittedIn": [
+   "base/src/systems/economy.ts"
+  ],
+  "listenedIn": [],
+  "payload": []
+ },
+ "prep:tick": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/bodystate.ts",
+   "base/src/systems/look.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/solo.ts"
+  ],
+  "payload": [
+   "left"
+  ]
+ },
+ "presented": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "id",
+   "kind"
+  ]
+ },
+ "promise:settled": {
+  "emittedIn": [
+   "base/src/systems/terms.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "kept",
+   "kind"
+  ]
+ },
+ "reaction": {
+  "emittedIn": [
+   "base/src/systems/expectations.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/mind.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "act",
+   "how",
+   "patron"
+  ]
+ },
+ "shift:end": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/day.ts",
+   "base/src/systems/economy.ts",
+   "base/src/systems/expectations.ts",
+   "base/src/systems/hotel.ts",
+   "base/src/systems/secrecy.ts"
+  ],
+  "payload": [
+   "income",
+   "served",
+   "tips"
+  ]
+ },
+ "shift:minute": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bodystate.ts",
+   "base/src/systems/crowd.ts",
+   "base/src/systems/floor.ts",
+   "base/src/systems/look.ts",
+   "base/src/systems/roam.ts"
+  ],
+  "payload": [
+   "minute"
+  ]
+ },
+ "shift:pass": {
+  "emittedIn": [
+   "base/src/systems/rhythm.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "payload": [
+   "minutes"
+  ]
+ },
+ "shift:start": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/expectations.ts",
+   "base/src/systems/floor.ts",
+   "base/src/systems/hotel.ts",
+   "base/src/systems/loan.ts"
+  ],
+  "payload": []
+ },
+ "shift:tick": {
+  "emittedIn": [
+   "base/src/systems/shift.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/annoy.ts",
+   "base/src/systems/body.ts",
+   "base/src/systems/bodystate.ts",
+   "base/src/systems/charm.ts",
+   "base/src/systems/dress.ts",
+   "base/src/systems/economy.ts",
+   "base/src/systems/expectations.ts",
+   "base/src/systems/floor.ts",
+   "base/src/systems/heroine.ts",
+   "base/src/systems/herside.ts",
+   "base/src/systems/hotel.ts",
+   "base/src/systems/loan.ts",
+   "base/src/systems/manners.ts",
+   "base/src/systems/mind.ts",
+   "base/src/systems/phone.ts",
+   "base/src/systems/rhythm.ts",
+   "base/src/systems/terms.ts"
+  ],
+  "payload": [
+   "tick"
+  ]
+ },
+ "solo:did": {
+  "emittedIn": [
+   "base/src/systems/solo.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "cut",
+   "heard",
+   "size",
+   "toy",
+   "zone"
+  ]
+ },
+ "solo:end": {
+  "emittedIn": [
+   "base/src/systems/day.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/solo.ts"
+  ],
+  "payload": []
+ },
+ "trouble:breakdown": {
+  "emittedIn": [
+   "base/src/systems/economy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "cost",
+   "what"
+  ]
+ },
+ "trouble:theft": {
+  "emittedIn": [
+   "base/src/systems/economy.ts"
+  ],
+  "listenedIn": [],
+  "payload": [
+   "taken"
+  ]
+ },
+ "watch:skip": {
+  "emittedIn": [
+   "base/src/systems/rhythm.ts"
+  ],
+  "listenedIn": [
+   "base/src/systems/bed/hisnight.ts"
+  ],
+  "payload": []
+ }
+}
