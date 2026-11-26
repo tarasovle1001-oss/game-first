@@ -39,6 +39,8 @@ after:              # minutes each shows once something intimate has ended
 group:
   same: {}    # off: Alexey, 25.11 - every group scene is drawn as one whole picture, no stand-ins
   plain: []   # off: and no close-ups in place of the second man
+# 26.11 Alexey: things that look the same share one picture; the game keeps them apart. Scene or close-up type -> the one drawn.
+alias: { patron_moment_sit_on_lap: patron_lap_dance, join_mouth: join_husband, detail_join_ruined: detail_him_ruined }
 # Choosing a picture when the pack has no exact one: the nearest picture of the same scene with the same people.
 # Each difference costs its weight; the cheapest picture wins. Numbers (a size) cost by how far apart they are.
 match:

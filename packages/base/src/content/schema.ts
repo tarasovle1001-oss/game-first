@@ -629,6 +629,7 @@ export const lookSchema = z
     after: z.record(z.string(), z.number().positive()),
     // how a picture is chosen when the pack has no exact one (systems/packfind.ts)
     group: z.object({ same: z.record(z.string(), z.string()), plain: z.array(z.string()) }).strict(),
+    alias: z.record(z.string(), z.string()).default({}),
     match: z.object({ room: z.number(), other: z.number(), lacks: z.number().min(0).max(1), wholeCap: z.number(), tags: z.record(z.string(), z.number()) }).strict(),
     words: z
       .object({

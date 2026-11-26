@@ -288,6 +288,15 @@ describe("free close-ups", () => {
     expect(d[0]?.tags?.outfit).toBeDefined();
     expect(d.some((x) => x.type === "detail_show_breasts")).toBe(false);
   });
+  it("a second guest who only waits is out of the frame; things that look the same share one picture", () => {
+    const s = atShift();
+    const [a, b2] = bs(s).shift!.visits.map((v) => v.patron);
+    const her = { id: "wife", role: "wife" };
+    const two = withLook(s, { type: "patron_blowjob", location: "cafe.staff", participants: [her, { id: a!, role: "patron" }, { id: b2 ?? "x", role: "patron2" }], tags: { men: "2" } });
+    expect(two.participants.map((p) => p.role)).toEqual(["wife", "patron"]);
+    expect(two.tags!.men).toBeUndefined();
+    expect(withLook(s, { type: "patron_moment_sit_on_lap", location: "cafe.hall", participants: [her, { id: a!, role: "patron" }] }).type).toBe("patron_lap_dance");
+  });
   it("what she does while the phone rings is only for eyes that may see it", () => {
     const s = atShift();
     const b = bs(s);
@@ -328,8 +337,8 @@ describe("pictures: what a key carries after the picture chat looked (22.11)", (
     const three = withLook(s, { type: "group_airtight", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "b", role: "patron2" }, { id: "c", role: "patron3" }], tags: { men: "3" } });
     expect(three.type).toBe(same.group_airtight ?? "group_airtight");
     // her husband joining: his own pictures, he is in the roles
-    const join = withLook(s, { type: "join_mouth", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "husband", role: "husband" }], tags: {} });
-    expect(sceneKey(join)).toMatch(/^join_mouth\/husband\+patron\+wife\//);
+    const join = withLook(s, { type: "join_take", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "husband", role: "husband" }], tags: {} });
+    expect(sceneKey(join)).toMatch(/^join_take\/husband\+patron\+wife\//);
     expect(withLook(s, { type: "came_join_dp", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }, { id: "husband", role: "husband" }], tags: {} }).type).toBe("came_join_dp");
     // "they have finished" keeps how many they were, five are "4"
     expect(withLook(s, { type: "group_after", location: "cafe.staff", participants: [her, { id: "a", role: "patron" }], tags: { men: "5" } }).tags!.men).toBe("4");

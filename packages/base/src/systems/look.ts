@@ -179,7 +179,14 @@ const MEN_ROLES = new Set(["husband", "patron", "patron2", "patron3"]);
 const groupOf = (state: GameState, desc: SceneDesc, tags: Record<string, string>): SceneDesc => {
   const wife = desc.participants.find((p) => p.role === "wife");
   const men = desc.participants.filter((p) => MEN_ROLES.has(p.role));
-  if (!GROUP.test(desc.type) || !wife || men.length === 0) return { ...desc, tags };
+  const alias = content.look.alias;
+  if (!GROUP.test(desc.type) && tags.men) {
+    // 26.11 Alexey: a second guest who is only waiting or watching stays out of the frame (one picture for the act)
+    const { men: _n, ...rest } = tags;
+    const first = men.find((m) => m.role === "patron") ?? men[0];
+    return { ...desc, type: alias[desc.type] ?? desc.type, participants: desc.participants.filter((p) => !MEN_ROLES.has(p.role) || p === first), tags: rest };
+  }
+  if (!GROUP.test(desc.type) || !wife || men.length === 0) return { ...desc, type: alias[desc.type] ?? desc.type, tags };
   const G = content.look.group;
   const first = men.find((m) => m.role === "patron") ?? men[0]!;
   const husband = men.find((m) => m.role === "husband");
@@ -192,7 +199,7 @@ const groupOf = (state: GameState, desc: SceneDesc, tags: Record<string, string>
     const main = inHer(enc.act) ? { act: enc.act, patron: enc.patron } : (enc.men?.find((m) => inHer(m.act)) ?? { act: enc.act, patron: enc.patron });
     return { type: content.acts.find((a) => a.id === main.act)?.scene ?? desc.type, location: desc.location, participants: [wife, { id: main.patron, role: "patron" }], tags: look };
   }
-  const type = G.same[desc.type] ?? desc.type;
+  const type = alias[G.same[desc.type] ?? desc.type] ?? G.same[desc.type] ?? desc.type;
   const who = husband && first !== husband ? [wife, { id: first.id, role: "patron" }, husband] : [wife, { id: first.id, role: first.role === "husband" ? "husband" : "patron" }];
   return { type, location: desc.location, participants: who, tags: type === "group_after" && count ? { ...look, men: String(Math.min(4, Number(count))) } : look };
 };
@@ -415,8 +422,10 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const classOf = (id: string | undefined) => sizeClass(sizeOf(id) ?? 0);
   const roleOf = (id: string | undefined) => (id === WIFE ? "wife" : id === HUSBAND ? "husband" : "patron");
   const worn = shownOutfit(state);
-  const add = (id: string, who: string, tags: Record<string, string> = {}) =>
-    void (D.drop.includes(id) || out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: "any", participants: [{ id: who, role: roleOf(who) }], tags: DRESSED.has(id) ? { ...tags, outfit: worn } : tags })); // no room in a close-up: one file serves every room
+  const add = (id0: string, who: string, tags: Record<string, string> = {}) => {
+    const id = content.look.alias[`detail_${id0}`]?.replace(/^detail_/, "") ?? id0; // close-ups that look the same share one picture
+    void (D.drop.includes(id0) || out.some((x) => x.type === `detail_${id}`) || out.push({ type: `detail_${id}`, location: "any", participants: [{ id: who, role: roleOf(who) }], tags: DRESSED.has(id) ? { ...tags, outfit: worn } : tags })); // no room in a close-up: one file serves every room
+  };
   const aroused = (b.husband.arousal ?? 0) >= D.himArousal;
   // him in his trousers: plain, locked up, locked up and leaking - one close-up, three looks
   const cage: Record<string, string> = b.husband.caged ? { cage: aroused ? "leak" : "1" } : {};
