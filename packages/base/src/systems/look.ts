@@ -243,7 +243,8 @@ export function lookTags(state: GameState, desc: SceneDesc): Record<string, stri
     .sort();
   if (marks.length) out.marks = marks.join("+");
   const gape = lower ? (["vagina", "anus"] as const).map((z) => [z[0], level(W.stretch[z] ?? [], h.body[z].stretch)] as const).filter(([, n]) => n > 0) : [];
-  if (gape.length) out.gape = gape.map(([z, n]) => `${z}${n}`).join("");
+  // gaping switched off (kinks.yaml stretch.gape): the key does not ask for it, so the pack picks pictures without it
+  if (gape.length && !detailOff(state, "detail_gape_v")) out.gape = gape.map(([z, n]) => `${z}${n}`).join("");
   const sore = (["vagina", "anus", "mouth"] as const)
     .filter((z) => z === "mouth" || lower)
     .map((z) => [z[0], level(W.sore[z] ?? [], h.sore?.[z] ?? 0)] as const)
