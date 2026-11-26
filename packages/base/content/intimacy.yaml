@@ -110,8 +110,9 @@ dress:                # how she feels changes what she puts on in the morning
   debtStep: 4         # while the loan is not paid off: she knows what brings tips
   worryStep: 6        # per level of money worry (it nags / it keeps them awake)
 wear:                 # what she has on outside the shift, by situation
-  night: sheer_black # 26.11 Alexey: the black chemise is her night thing (the nightgown drew almost the same picture twice); the nightgown stays defined, unused at home
-  nightOut: sheer_black  # 26.11 Alexey: to a guest's room at night too - the chemise and the nightgown draw almost the same picture, one set of keys
+  night: nightgown
+  nightOut: nightgown  # what she goes up to a guest's room in at night when no see-through thing is right for that (sheer.nightOut)
+  picture: { nightgown: sheer_black }  # 26.11 Alexey: in the game they stay two things (the nightgown is hers, the chemise is bought), but they look the same, so the picture key of the nightgown is the chemise's - one set of pictures
   nightBold: lingerie # she wants him tonight, or simply is that bold
   boldOpenness: 60
   wash: towel

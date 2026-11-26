@@ -148,7 +148,7 @@ export function describeScene(state: GameState, open = false): SceneWords {
  */
 /** What she is drawn in: in town it is street clothes, in the gym sportswear - not the work dress with the apron (pictures only). */
 const shownOutfit = (state: GameState): string => {
-  const worn = dressOf(state);
+  const own = dressOf(state), worn = content.intimacy.wear.picture?.[own] ?? own; // things that look the same share one picture key
   const loc = state.where[WIFE] ?? "";
   if (worn === "naked" || !loc.startsWith("town.")) return worn;
   return loc === "town.gym" ? "sport" : "street";
