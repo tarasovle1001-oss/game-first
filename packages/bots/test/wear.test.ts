@@ -73,7 +73,7 @@ describe("her outfits in pictures", () => {
     b.heroine.traits.openness = 30;
     expect(withLook(s, idle).tags!.outfit!.startsWith("sheer_")).toBe(true);
     s.where.wife = "hotel.room1";
-    expect(withLook(s, { ...idle, location: "hotel.room1" }).tags!.outfit!.startsWith("sheer_")).toBe(false);
+    expect(withLook(s, { ...idle, location: "hotel.room1" }).tags!.outfit).toBe("sheer_black"); // 26.11: the night chemise is also what she goes up in (no nightgown keys); the other sheer things stay harder there
     const sheer = content.outfits.find((o) => o.id === "sheer_white")!;
     expect(sheer.sheer!.night).toBeLessThan(sheer.sheer!.nightOut);
     expect(sheer.sheer!.nightOut).toBeLessThan(sheer.openness);

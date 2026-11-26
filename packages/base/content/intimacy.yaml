@@ -111,7 +111,7 @@ dress:                # how she feels changes what she puts on in the morning
   worryStep: 6        # per level of money worry (it nags / it keeps them awake)
 wear:                 # what she has on outside the shift, by situation
   night: sheer_black # 26.11 Alexey: the black chemise is her night thing (the nightgown drew almost the same picture twice); the nightgown stays defined, unused at home
-  nightOut: nightgown  # what she goes up to a guest's room in at night when no see-through thing is right for that (sheer.nightOut)
+  nightOut: sheer_black  # 26.11 Alexey: to a guest's room at night too - the chemise and the nightgown draw almost the same picture, one set of keys
   nightBold: lingerie # she wants him tonight, or simply is that bold
   boldOpenness: 60
   wash: towel
