@@ -70,7 +70,7 @@ export const wearOf = (state: GameState): string => {
     const sheer = content.outfits.filter((o) => o.sheer && b.owned.includes(o.id) && h.traits.openness + (wants ? content.manners.askOutfitBonus : 0) >= (home ? o.sheer.night : o.sheer.nightOut)).map((o) => o.id);
     const bold = wants || h.traits.openness >= I.wear.boldOpenness;
     // they take turns by the day with what she wore before she had them
-    const pool = [...sheer, bold ? I.wear.nightBold : I.wear.night];
+    const pool = [...new Set([...sheer, bold ? I.wear.nightBold : home ? I.wear.night : I.wear.nightOut])]; // the night chemise may be one of the sheer things she owns: once in the turn, not twice
     return pool[state.time.day % pool.length]!;
   }
   if (b.day?.her?.task === "wash") return I.wear.wash;

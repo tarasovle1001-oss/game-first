@@ -794,7 +794,7 @@ export const intimacySchema = z
     fatigue: z.object({ perAct: z.number(), perMinute: z.number(), husbandShare: z.number(), from: z.number(), per: z.number(), enoughAt: z.number(), enough: z.number(), past: z.number(), night: z.number(), thoughtAt: z.number() }).strict(),
     marks: z.object({ visible: z.array(z.string()), guests: nums, husbandSuspicion: z.number(), husbandOpen: z.record(z.string(), nums), cleanPerMark: z.number(), cleanAfter: z.number(), skipChance: z.number() }).strict(),
     dress: z.object({ lowMood: z.number(), lowMoodStep: z.number(), fearStep: z.number(), wantStep: z.number(), wishStep: z.number(), debtStep: z.number(), worryStep: z.number() }).strict(),
-    wear: z.object({ night: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string(), allure: nums, noPantiesAllure: z.number() }).strict(),
+    wear: z.object({ night: z.string(), nightOut: z.string(), nightBold: z.string(), boldOpenness: z.number(), wash: z.string(), home: z.string(), allure: nums, noPantiesAllure: z.number() }).strict(),
     bedroom: z
       .object({ ask: ids, menu: z.object({ main: ids, groups: z.record(z.string(), ids) }).strict(), counter: ids, counterHard: ids, his: ids, needsToy: ids, upstairs: ids, join: ids, switchTo: ids, ownEnd: ids, herPleasure: nums, herPleasureDefault: z.number(), fixedPleasure: nums, finish: z.record(z.string(), ids), pullOut: ids, soft: ids, givesHer: ids, untouched: ids, needsHer: ids })
       .strict(),
