@@ -14,6 +14,9 @@
     "check": "pnpm content && tsc -p tsconfig.json --noEmit && vitest run && tsx packages/bots/src/run.ts",
     "check:fast": "pnpm content && tsc -p tsconfig.json --noEmit && vitest run",
     "pics:plan": "pnpm content && tsx tools/pics-plan.ts",
+    "coverage:build": "tsx tools/coverage/build.ts",
+    "coverage:missing": "tsx tools/coverage/missing.ts",
+    "coverage": "node tools/coverage/server.mjs",
     "lab": "tsx tools/prompt-lab/server.ts"
   },
   "devDependencies": {

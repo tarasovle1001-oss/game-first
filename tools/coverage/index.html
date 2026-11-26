@@ -1,0 +1,109 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Покрытие картинок</title>
+<!-- [2026-11-27 Claude] picture coverage page: which keys a pack must have per scene. Data: data.json (pnpm coverage:build), config: /api/config. -->
+<style>
+*{box-sizing:border-box}body{margin:0;font:13px/1.35 Segoe UI,Arial,sans-serif;background:#16171a;color:#ddd}
+header{position:sticky;top:0;background:#1c1d21;border-bottom:1px solid #333;padding:8px 12px;z-index:5}
+header h1{font-size:17px;margin:0 0 6px}header .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,select,button{background:#2b2d33;color:#ddd;border:1px solid #484b55;border-radius:4px;padding:4px 7px;font:inherit}button{cursor:pointer}button:hover{background:#383b44}
+button.save{background:#2d5a36;border-color:#4a8}button.dirty{background:#8a5a12;border-color:#fa3}
+.tot{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px;color:#aaa}.tot b{color:#fff;font-size:15px}
+main{display:flex;gap:0}#tbl{flex:1;overflow:auto;padding:8px 12px 80px}#side{width:520px;flex:none;border-left:1px solid #333;padding:10px 14px;position:sticky;top:96px;height:calc(100vh - 96px);overflow:auto;background:#1a1b1f}
+table{border-collapse:collapse;width:100%}th,td{padding:4px 6px;border-bottom:1px solid #26272c;text-align:left;vertical-align:top}th{color:#999;font-weight:400;position:sticky;top:0;background:#16171a;cursor:pointer}
+tr:hover td{background:#202127}tr.cur td{background:#2a2e3a}tr.off td{opacity:.4}
+.num{text-align:right;font-variant-numeric:tabular-nums}.bad{color:#f66}.mid{color:#fa3}.ok{color:#5c5}
+.ax{display:inline-block;margin:1px 3px 1px 0;padding:0 5px;border-radius:3px;font-size:11px;background:#2b2d33;color:#aaa}.ax.full{background:#25472c;color:#9e9}.ax.cover{background:#4a3a14;color:#fc8}
+.bar{height:6px;background:#333;border-radius:3px;overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:#4a8}.bar i.o{background:#6a7;opacity:.5}
+h2{font-size:16px;margin:0 0 4px}h3{font-size:13px;margin:14px 0 6px;color:#aaa;font-weight:600}.muted{color:#888}
+.axr{border:1px solid #2c2e34;border-radius:5px;padding:6px 8px;margin:0 0 6px}.axr .vals{margin-top:4px;display:flex;flex-wrap:wrap;gap:3px 10px}.axr label{white-space:nowrap}
+.miss{font-family:Consolas,monospace;font-size:11px;color:#bbb;max-height:260px;overflow:auto;background:#111;padding:6px;border-radius:4px}
+.help{color:#888;font-size:12px;max-width:900px}
+</style></head><body>
+<header><h1>Покрытие картинок: какие ключи обязаны быть в паке</h1>
+<div class="row">
+  <input id="q" placeholder="поиск сцены" oninput="draw()">
+  <select id="kind" onchange="draw()"><option value="">все типы</option><option value="full">сцены</option><option value="portrait">портрет</option><option value="detail">вставки</option></select>
+  <select id="flt" onchange="draw()"><option value="">все</option><option value="gap">есть дыры</option><option value="zero">ноль в pack26</option><option value="unreached">боты не дошли</option></select>
+  кадров на ключ: частые <input id="fh" type="number" min="0" style="width:52px" onchange="setFrames()"> обычные <input id="fn" type="number" min="0" style="width:52px" onchange="setFrames()"> хвост <input id="ft" type="number" min="0" style="width:52px" onchange="setFrames()">
+  частые = ключи до <input id="hs" type="number" min="0" max="100" style="width:52px" onchange="setFrames()">% показов сцены
+  <button onclick="openGlobal()">Фоны и наряды</button>
+  <button id="save" class="save" onclick="save()">Сохранить</button>
+</div>
+<div class="tot" id="tot"></div></header>
+<main><div id="tbl"></div><div id="side"><div class="help">
+<p><b>Как читать.</b> Ключ = сцена / кто / фон / теги. У каждой сцены свои оси (наряд, лицо, растяжение...). Режим оси:
+<span class="ax full">все сочетания</span> - каждое значение с каждым значением других таких осей;
+<span class="ax cover">каждое хоть раз</span> - каждое значение встречается хотя бы в одном ключе;
+<span class="ax">подбор</span> - не рисуем отдельно, игра подставит ближайший кадр.</p>
+<p><b>Гарантия</b> - сколько ключей сцена обязана иметь. <b>pack26</b> - сколько из них уже нарисовано в паке 26.11, <b>старые</b> - есть только в старых кругах (pilot55/p2/r*), <b>нет</b> - не нарисовано нигде. <b>Кадров</b> - сколько кадров нужно на сцену по правилу "частые / обычные / хвост".</p>
+<p>Клик по сцене - настройки справа: режим и значения каждой оси, свои кадры на ключ, выключить сцену. Всё пересчитывается сразу; "Сохранить" пишет docs/pics/coverage.json.</p></div></div></main>
+<script type="module">
+import { defaultConfig, sceneStats, AXIS_RU, ROOM_GROUPS } from "./cover.mjs";
+const D = await (await fetch("data.json")).json();
+let C = await (await fetch("/api/config")).json();
+const def = defaultConfig(D);
+if (!C) C = def; else C = { ...def, ...C, frames: { ...def.frames, ...C.frames }, axisDefaults: { ...def.axisDefaults, ...C.axisDefaults }, scenes: C.scenes ?? {} };
+let cur = null, sortBy = "missing", dirty = false, cache = new Map();
+const $ = (id) => document.getElementById(id);
+const stats = (s) => { if (!cache.has(s.id)) cache.set(s.id, sceneStats(s, D, C)); return cache.get(s.id); };
+const touch = (id) => { if (id) cache.delete(id); else cache.clear(); dirty = true; $("save").className = "dirty"; $("save").textContent = "Сохранить *"; };
+const KIND = { full: "сцена", portrait: "портрет", detail: "вставка" };
+const MODE = { full: "все сочетания", cover: "каждое хоть раз", ignore: "подбор" };
+window.draw = () => {
+  $("fh").value = C.frames.hot; $("fn").value = C.frames.normal; $("ft").value = C.frames.tail; $("hs").value = Math.round(C.hotShare * 100);
+  const q = $("q").value.toLowerCase(), kind = $("kind").value, flt = $("flt").value;
+  let rows = D.scenes.map((s) => ({ s, t: stats(s) }));
+  const T = rows.reduce((a, { t }) => ({ g: a.g + t.guarantee, p: a.p + t.in26, o: a.o + t.inOld, f: a.f + t.frames, z: a.z + (t.guarantee && !t.in26 ? 1 : 0) }), { g: 0, p: 0, o: 0, f: 0, z: 0 });
+  const miss = T.g - T.p - T.o;
+  $("tot").innerHTML = `сцен <b>${D.scenes.length}</b> &nbsp; гарантия ключей <b>${T.g}</b> &nbsp; в pack26 <b class="ok">${T.p}</b> (${pct(T.p, T.g)}) &nbsp; только в старых <b class="mid">${T.o}</b> &nbsp; нет нигде <b class="bad">${miss}</b> &nbsp; сцен с нулём в pack26 <b class="bad">${T.z}</b> &nbsp; кадров на весь гарантийный пак <b>${T.f}</b> (нужно дорисовать ключей: ${T.g - T.p})`;
+  rows = rows.filter(({ s, t }) => (!q || s.id.includes(q) || s.title.toLowerCase().includes(q)) && (!kind || s.kind === kind) && (!flt || (flt === "gap" && t.in26 < t.guarantee) || (flt === "zero" && t.guarantee && !t.in26) || (flt === "unreached" && !s.reached)));
+  const key = { missing: (r) => -(r.t.guarantee - r.t.in26), id: (r) => r.s.id, views: (r) => -r.t.views, g: (r) => -r.t.guarantee, frames: (r) => -r.t.frames }[sortBy];
+  rows.sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0));
+  $("tbl").innerHTML = `<table><tr><th onclick="sortBy='id';draw()">сцена</th><th>тип</th><th class="num" onclick="sortBy='views';draw()">показов</th><th class="num">ключей у ботов</th><th>оси (режим, значений)</th><th class="num" onclick="sortBy='g';draw()">гарантия</th><th class="num">pack26</th><th class="num">старые</th><th class="num" onclick="sortBy='missing';draw()">нет</th><th>покрытие</th><th class="num" onclick="sortBy='frames';draw()">кадров</th></tr>` +
+    rows.map(({ s, t }) => { const no = t.guarantee - t.in26 - t.inOld; const p = t.guarantee ? t.in26 / t.guarantee : 1, po = t.guarantee ? t.inOld / t.guarantee : 0;
+      return `<tr class="${cur === s.id ? "cur" : ""} ${t.off ? "off" : ""}" onclick="pick('${s.id}')"><td><b>${s.title}</b><div class="muted">${s.id}${s.reached ? "" : " · боты не дошли"}</div></td><td>${KIND[s.kind]}</td><td class="num">${t.views}</td><td class="num">${t.botKeys}</td>
+      <td>${t.axes.map((a) => `<span class="ax ${a.mode === "ignore" ? "" : a.mode}">${AXIS_RU[a.name] ?? a.name} ${a.values.length}</span>`).join("")}</td>
+      <td class="num">${t.guarantee}</td><td class="num ok">${t.in26}</td><td class="num mid">${t.inOld || ""}</td><td class="num ${no ? "bad" : ""}">${no || ""}</td>
+      <td><div class="bar"><i style="width:${p * 100}%;float:left"></i><i class="o" style="width:${po * 100}%;float:left"></i></div></td><td class="num">${t.frames}</td></tr>`; }).join("") + `</table>`;
+};
+const pct = (a, b) => (b ? Math.round((100 * a) / b) + "%" : "-");
+window.pick = (id) => { cur = id; draw(); side(); };
+const sc = (id) => (C.scenes[id] ??= {});
+window.setMode = (id, ax, m) => { const s = sc(id); (s.axes ??= {})[ax] = { ...(s.axes[ax] ?? {}), mode: m }; touch(id); draw(); side(); };
+window.togVal = (id, ax, v, on) => { const t = stats(D.scenes.find((x) => x.id === id)); const a = t.axes.find((x) => x.name === ax); const s = sc(id); const vals = new Set(s.axes?.[ax]?.values ?? a.values); on ? vals.add(v) : vals.delete(v); (s.axes ??= {})[ax] = { ...(s.axes[ax] ?? {}), values: [...vals] }; touch(id); draw(); side(); };
+window.resetAx = (id, ax) => { delete sc(id).axes?.[ax]; touch(id); draw(); side(); };
+window.setSceneFrames = (id, k, v) => { const s = sc(id); (s.frames ??= {})[k] = Number(v); if (v === "") delete s.frames[k]; touch(id); draw(); };
+window.togOff = (id) => { const s = sc(id); s.off = !s.off; touch(id); draw(); side(); };
+window.setFrames = () => { C.frames = { hot: +$("fh").value, normal: +$("fn").value, tail: +$("ft").value }; C.hotShare = +$("hs").value / 100; touch(); draw(); };
+const domain = (s, a) => {
+  if (a.name === "outfit") return [...new Set([...D.outfits, ...a.values])];
+  if (a.name === "face") return [...new Set([...D.faces, ...a.values])];
+  if (a.name === "room") return [...new Set([...Object.values(C.roomGroups), ...a.values])];
+  const seen = new Set(a.values); for (const [k] of s.keys) { const m = k.match(new RegExp(`[/,]${a.name}=([^,]*)`)); if (m) seen.add(m[1]); } return [...seen];
+};
+function side() {
+  const s = D.scenes.find((x) => x.id === cur); if (!s) return; const t = stats(s); const own = C.scenes[s.id] ?? {};
+  $("side").innerHTML = `<h2>${s.title}</h2><div class="muted">${s.id} · ${KIND[s.kind]} · кто: ${s.roles.join(" + ")} · показов у ботов ${t.views}, ключей у ботов ${t.botKeys}${s.reached ? "" : " · боты не дошли"}</div>
+  <p>гарантия <b>${t.guarantee}</b> ключей: в pack26 <b class="ok">${t.in26}</b>, только в старых <b class="mid">${t.inOld}</b>, нет <b class="bad">${t.missing.length}</b>; кадров на сцену <b>${t.frames}</b> (частых ключей ${t.hot})</p>
+  <button onclick="togOff('${s.id}')">${t.off ? "Включить сцену" : "Выключить сцену (не рисовать)"}</button>
+  <h3>Оси (сверху - самые заметные на картинке)</h3>` +
+  t.axes.map((a) => `<div class="axr"><b>${AXIS_RU[a.name] ?? a.name}</b> <span class="muted">${a.name}</span> &nbsp;
+    <select onchange="setMode('${s.id}','${a.name}',this.value)">${Object.entries(MODE).map(([m, l]) => `<option value="${m}" ${a.mode === m ? "selected" : ""}>${l}</option>`).join("")}</select>
+    ${own.axes?.[a.name] ? `<button onclick="resetAx('${s.id}','${a.name}')">сброс</button>` : ""}
+    <div class="vals">${domain(s, a).map((v) => `<label><input type="checkbox" ${a.values.includes(v) ? "checked" : ""} onchange="togVal('${s.id}','${a.name}','${v}',this.checked)"> ${v || "(нет)"}</label>`).join("")}</div></div>`).join("") +
+  `<h3>Кадров на ключ для этой сцены (пусто = общие)</h3>частые <input type="number" style="width:52px" value="${own.frames?.hot ?? ""}" onchange="setSceneFrames('${s.id}','hot',this.value)"> обычные <input type="number" style="width:52px" value="${own.frames?.normal ?? ""}" onchange="setSceneFrames('${s.id}','normal',this.value)"> хвост <input type="number" style="width:52px" value="${own.frames?.tail ?? ""}" onchange="setSceneFrames('${s.id}','tail',this.value)">
+  <h3>Не хватает (${t.missing.length})</h3><div class="miss">${t.missing.slice(0, 300).map((m) => Object.entries(m).map(([k, v]) => `${AXIS_RU[k] ?? k}=${v || "-"}`).join(", ")).join("<br>") || "всё есть"}</div>`;
+}
+window.openGlobal = () => {
+  cur = null; draw();
+  const groups = [...new Set(Object.values(C.roomGroups))];
+  $("side").innerHTML = `<h2>Фоны и наряды</h2><h3>Комната -> фон (в ключе гарантии комната считается по фону)</h3>` +
+    D.rooms.map((r) => `<div>${r} <select onchange="setGroup('${r}',this.value)">${[...new Set([...groups, ...Object.values(ROOM_GROUPS)])].map((g) => `<option ${C.roomGroups[r] === g ? "selected" : ""}>${g}</option>`).join("")}</select></div>`).join("") +
+    `<h3>Какие наряды бывают на каждом фоне</h3>` + groups.map((g) => `<div class="axr"><b>${g}</b><div class="vals">${D.outfits.map((o) => `<label><input type="checkbox" ${(C.outfitsByGroup[g] ?? []).includes(o) ? "checked" : ""} onchange="setOutfit('${g}','${o}',this.checked)"> ${o}</label>`).join("")}</div></div>`).join("");
+};
+window.setGroup = (r, g) => { C.roomGroups[r] = g; touch(); draw(); };
+window.setOutfit = (g, o, on) => { const s = new Set(C.outfitsByGroup[g] ?? []); on ? s.add(o) : s.delete(o); C.outfitsByGroup[g] = [...s]; touch(); draw(); openGlobal(); };
+window.save = async () => { const r = await fetch("/api/config", { method: "POST", body: JSON.stringify(C, null, 1) }); if (r.ok) { dirty = false; $("save").className = "save"; $("save").textContent = "Сохранено"; } else alert(await r.text()); };
+window.addEventListener("beforeunload", (e) => { if (dirty) e.preventDefault(); });
+window.sortBy = sortBy; Object.defineProperty(window, "sortBy", { get: () => sortBy, set: (v) => (sortBy = v) });
+draw();
+</script></body></html>
