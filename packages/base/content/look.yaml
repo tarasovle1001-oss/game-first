@@ -196,7 +196,7 @@ words:
     anus: [[40, reddened anus], [70, puffy anus]]
     mouth: [[50, smeared lipstick]]
   stretch:          # from this much stretch, per zone
-    vagina: [[45, loose pussy], [70, gaping pussy]]
+    vagina: [[35, loose pussy], [60, gaping pussy], [85, gaping pussy]]   # 26.11 Alexey: four looks in the close-up (closed, two fingers, a fist, extreme)
     anus: [[35, loose anus], [60, anal gape], [85, extreme anal gape]]
   cum: { face: cum on face, hands: cum on hands, chest: cum on breasts, body: cum on body, mouth: cum in mouth, inside: cum in pussy, anus: cum in ass, thighs: cum dripping down thighs }
   after: { flushed: flushed skin, sweat: sweat, hair: messy hair, clothes: disheveled clothes }
