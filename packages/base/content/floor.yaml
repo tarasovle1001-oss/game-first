@@ -104,6 +104,16 @@ details:               # free close-ups beside the picture (see look.ts detailsF
   drop: [kiss_close, tip_tuck, panties_off, hickey]
   xrayChance: 0.25     # share of acts with a guest inside her whose picture is asked for in section: xray=1 in the key
   accentClass: 2       # size class (0 tiny .. 4 huge) from which a man shows from the outside: her throat, her belly
+  # 26.11 Alexey: her body is always on screen. After every other close-up, three of her: pussy (how wet, how stretched, what is
+  # in her), anus (stretch, what is in it; drawn bare - a game convention) and nipples (how aroused; through the cloth when dressed).
+  # They only fill the free places (three in all), nipples go first. A scene that is about one of them does not repeat it:
+  # base scene ids (without patron_ / came_) whose main picture already shows that part.
+  body:
+    order: [gape_v, gape_a, nipples]
+    hide:
+      gape_v: [sex, riding, standing_sex, faking_it, cunnilingus, fingering, fin_inside, toy_on_her, thigh_ride, grinding, mutual_touching, her_solo, masturbate_show, finishing_herself, facesitting, fd_facesit, lead_lick_clean, cleanup, premature_finish, sixty_nine, join_after, join_hold, join_take, join_hand, join_husband, join_mouth, join_dp, group_dp, group_airtight, group_spitroast, group_sex_hand, group_spitroast_hand]
+      gape_a: [anal, fin_anus, rimming_her, join_dp, group_dp, group_airtight]
+      nipples: [breast_play, titfuck, fin_chest, him_grope, groping, thigh_job]
 crowd:                # when something goes on where others can see: some gather to watch, some want in
   fromTier: 3
   max: 4

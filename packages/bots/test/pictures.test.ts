@@ -220,6 +220,7 @@ describe("small things get a picture for one move", () => {
 });
 
 import { detailsFor } from "@tc/base";
+const BODY = new Set(["detail_gape_v", "detail_gape_a", "detail_nipples"]);
 describe("free close-ups", () => {
   const atShift = () => {
     let s = engine.init(4, { base: { preset: "curious" } });
@@ -247,9 +248,9 @@ describe("free close-ups", () => {
     const d = detailsFor(s, desc);
     const by = Object.fromEntries(d.map((x) => [x.type, x.tags ?? {}]));
     expect(by.detail_bulge!.size).toBeDefined();
-    expect(by.detail_wet!.wet).toBe("2");
-    expect(Object.keys(by)).toContain("detail_nipples");
-    for (const x of d) expect(Object.keys(x.tags ?? {}).length).toBeLessThanOrEqual(3);
+    expect(by.detail_gape_v!.wet).toBe("2"); // how wet she is is part of the pussy close-up now (26.11)
+    expect(by.detail_gape_v!.wear).toBe("on");
+    for (const x of d) expect(Object.keys(x.tags ?? {}).length).toBeLessThanOrEqual(BODY.has(x.type) ? 5 : 3);
     expect(pictureFrames(s, desc).details.length).toBe(d.length);
     // in bed with a big man the accents come instead
     const bed = detailsFor(s, { type: "patron_sex", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }] });
@@ -259,8 +260,25 @@ describe("free close-ups", () => {
     const fin = detailsFor(s, { type: "patron_sex", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }, { id: v.patron, role: "patron" }], tags: { fin: "inside" } });
     expect(fin.map((x) => x.type)).toContain("detail_womb_cum");
     // a close-up of her dressed body is in the outfit of the main picture
-    expect(by.detail_nipples!.outfit).toBe(bs(s).heroine.outfit);
+    expect(by.detail_gape_v!.outfit).toBe(bs(s).heroine.outfit);
     expect(by.detail_bulge!.outfit).toBeUndefined();
+  });
+  it("her body is always on screen: pussy, anus, nipples fill the free places; a scene about one does not repeat it", () => {
+    const s = atShift();
+    const v = bs(s).shift!.visits[0]!;
+    const her = { id: "wife", role: "wife" }, him = { id: v.patron, role: "patron" };
+    const types = (type: string) => detailsFor(s, { type, location: "cafe.hall", participants: [her, him] }).map((x) => x.type);
+    expect(types("patron_chatting")).toEqual(["detail_gape_v", "detail_gape_a", "detail_nipples"]);
+    expect(types("patron_sex")).not.toContain("detail_gape_v");
+    expect(types("patron_anal")).not.toContain("detail_gape_a");
+    expect(types("patron_breast_play")).not.toContain("detail_nipples");
+    const a = detailsFor(s, { type: "patron_chatting", location: "cafe.hall", participants: [her, him] }).find((x) => x.type === "detail_gape_a")!;
+    expect(a.tags!.wear).toBeUndefined(); // drawn bare, a game convention
+    expect(a.tags!.outfit).toBeDefined();
+    // other close-ups come first: with three of them her body is gone
+    v.heat = 90;
+    expect(types("patron_chatting")[0]).toBe("detail_bulge");
+    expect(types("patron_chatting")).not.toContain("detail_nipples");
   });
   it("what she does while the phone rings is only for eyes that may see it", () => {
     const s = atShift();
@@ -272,7 +290,7 @@ describe("free close-ups", () => {
     b.heroine.traits.honesty = 20;
     const called = engine.dispatch(s, { type: "base/call-wife" });
     const desc = { type: "idle", location: "cafe.staff", participants: [{ id: "wife", role: "wife" }] };
-    expect(detailsFor(called, desc).map((x) => x.type)).toEqual(["detail_phone_ear"]);
+    expect(detailsFor(called, desc).map((x) => x.type).filter((t) => !BODY.has(t))).toEqual(["detail_phone_ear"]); // her body fills the rest
     const open = structuredClone(called);
     bs(open).viewAll = true;
     expect(detailsFor(open, desc).map((x) => x.type)).toContain("detail_phone_busy");

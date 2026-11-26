@@ -430,6 +430,28 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   const left = ["inside", "anus", "thighs"].filter((k) => (h.cum?.[k] ?? 0) > 0).join("+");
   const gape = (z: "vagina" | "anus") => String(level(W.stretch[z] ?? [], h.body[z].stretch));
   const wet = level(D.wet.map((from) => [from, ""] as [number, string]), h.arousal);
+  // her body, always (floor.yaml details.body): what is left of the three places after the other close-ups, pussy / anus / nipples
+  const bodyOf = () => {
+    if (!has("wife")) return;
+    const base = desc.type.replace(/^came_/, "").replace(/^patron_/, "");
+    const shown = new Set(out.map((x) => x.type));
+    const skip: Record<string, boolean> = {
+      gape_v: shown.has("detail_show_pussy") || shown.has("detail_toy_v") || shown.has("detail_grope_under"),
+      gape_a: shown.has("detail_show_butt") || shown.has("detail_toy_a"),
+      nipples: shown.has("detail_show_breasts") || shown.has("detail_grope_breast"),
+    };
+    const inside = ["inside", "thighs"].filter((k) => (h.cum?.[k] ?? 0) > 0).join("+");
+    const tagsOf: Record<string, () => Record<string, string>> = {
+      gape_v: () => (under === "on" ? { wear: "on", wet: String(wet) } : { wear: under, wet: String(wet), gape: gape("vagina"), ...(inside ? { marks: inside } : {}) }),
+      gape_a: () => ({ gape: gape("anus"), ...((h.cum?.anus ?? 0) > 0 ? { marks: "anus" } : {}) }),
+      nipples: () => ({ wear: top, level: String(Math.min(2, wet)) }),
+    };
+    for (const id of D.body.order) {
+      if (out.length >= 3) return;
+      if (skip[id] || (D.body.hide[id] ?? []).includes(base)) continue;
+      add(id, WIFE, tagsOf[id]?.() ?? {});
+    }
+  };
 
   // her hand on the man beside the one who has her: the husband who joined, or a second guest
   // (only for the scenes switched to "plain": look.yaml group)
@@ -466,6 +488,7 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
     if (man && BY_HAND.has(id)) add("touch_bare", man, man !== HUSBAND ? { size: String(classOf(man)), ring: "1" } : {});
     if (TOY_HIM.has(id)) add("toy_him", HUSBAND, { who: "her" });
     if (has("husband") && b.husband.caged) add("him_cage", HUSBAND, aroused ? { leak: "1" } : {});
+    bodyOf();
     return out;
   }
   // his hands on her, part by part
@@ -479,15 +502,9 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
         add("show_butt", WIFE, { wear: under, gape: gape("anus"), ...((h.cum?.anus ?? 0) > 0 ? { marks: "anus" } : {}) });
       }
     }
-    if (wet > 0 || left) add("wet", WIFE, { wet: String(wet), ...(left ? { marks: left } : {}) });
-    if (wet > 0 && top === "on") add("nipples", WIFE, { level: String(Math.min(2, wet)) });
     if (desc.type === "kissing" || desc.type === "him_kiss") add("kiss_close", WIFE);
     // what an evening has left on her, close up: only where it is not covered
     if ((h.cum?.face ?? 0) > 0 || (h.cum?.mouth ?? 0) > 0) add("marks_face", WIFE, { marks: ["face", "mouth"].filter((k) => (h.cum?.[k] ?? 0) > 0).join("+") });
-    if (under === "bare" && Object.values(h.after ?? {}).some((v) => v > 0)) {
-      if (Number(gape("vagina")) > 0 || (h.cum?.inside ?? 0) > 0) add("gape_v", WIFE, { gape: gape("vagina"), ...((h.cum?.inside ?? 0) > 0 ? { marks: "inside" } : {}) });
-      if (Number(gape("anus")) > 0 || (h.cum?.anus ?? 0) > 0) add("gape_a", WIFE, { gape: gape("anus"), ...((h.cum?.anus ?? 0) > 0 ? { marks: "anus" } : {}) });
-    }
     if (h.panties === "off" && bare === "none") add("panties_off", WIFE);
     if (Object.values(h.after ?? {}).some((v) => v > 0)) add("hickey", WIFE);
   }
@@ -497,6 +514,7 @@ export function detailsFor(state: GameState, desc: SceneDesc): SceneDesc[] {
   // him: watching her with another man, or close to her and worked up
   const watching = !!b.encounter && !has("husband") && desc.participants.some((p) => p.id === b.encounter!.patron);
   if (aroused && (watching || has("husband"))) add("him_bulge", HUSBAND, cage);
+  bodyOf();
   return out;
 }
 
