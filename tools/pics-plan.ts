@@ -139,7 +139,7 @@ for (const id of unreached) {
   const layout = content.scenes.find((l) => l.id === id)!;
   const roles = [...new Set(layout.figures.map((f) => f.role))];
   const room = ROOM[id] ?? (roles.some((r) => r.startsWith("patron")) ? "cafe.staff" : "home.bedroom");
-  fallback[id] = { type: id, location: room, participants: roles.map((r) => ({ id: r === "wife" || r === "husband" ? r : `${r}1`, role: r })), tags: {} };
+  fallback[id] = { type: id, location: room, participants: roles.map((r) => ({ id: r === "wife" || r === "husband" ? r : `${r}1`, role: r })), tags: roles.includes("wife") ? { outfit: "sheer_black" } : {} }; // the most worn thing in the plan
 }
 const context: Record<string, { title: string; prompt: string; views: number; fallback?: boolean }> = {};
 for (const desc of Object.values(fallback)) { try { context[sceneKey(desc)] = { title: title(desc.type), prompt: promptFor(desc).positive, views: 0, fallback: true }; } catch {} }
