@@ -131,7 +131,18 @@ const list = (kind: Kind) =>
 const plan = { note: "picture keys the game asks for: bots, hidden + open marriage. n = views (hidden + open). like = not reached by the bots, keys taken from that scene. Made by tools/pics-plan.ts", days: Number(days), seeds: Number(seeds), plan: list("full"), portrait: list("portrait"), detail: list("detail"), unreached, notes };
 writeFileSync(planOut, JSON.stringify(plan, null, 0).replace(/\},\{/g, "},\n{"));
 
-const context: Record<string, { title: string; prompt: string; views: number }> = {};
+// scenes the bots never reached still get one key with the game's current words: scene / who is in its layout / a room it happens in
+// (the general key the game falls back to), so a picture of it is drawn from today's words, not from an old pack's
+const ROOM: Record<string, string> = { bath_walkin: "home.bathroom", bath_together: "home.bathroom", her_cook: "cafe.kitchen", her_rest: "home.bedroom", her_dress: "home.bedroom", flash: "cafe.hall", walk_naked: "cafe.hall", her_shop_toy: "town.sexshop", deal: "cafe.hall", table_sit: "cafe.hall" };
+const fallback: Record<string, SceneDesc> = {};
+for (const id of unreached) {
+  const layout = content.scenes.find((l) => l.id === id)!;
+  const roles = [...new Set(layout.figures.map((f) => f.role))];
+  const room = ROOM[id] ?? (roles.some((r) => r.startsWith("patron")) ? "cafe.staff" : "home.bedroom");
+  fallback[id] = { type: id, location: room, participants: roles.map((r) => ({ id: r === "wife" || r === "husband" ? r : `${r}1`, role: r })), tags: {} };
+}
+const context: Record<string, { title: string; prompt: string; views: number; fallback?: boolean }> = {};
+for (const desc of Object.values(fallback)) { try { context[sceneKey(desc)] = { title: title(desc.type), prompt: promptFor(desc).positive, views: 0, fallback: true }; } catch {} }
 let noWords = 0;
 for (const [key, r] of rows) {
   let prompt = "";
