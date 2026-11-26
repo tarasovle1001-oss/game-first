@@ -11,14 +11,20 @@
   tip: 0.15
   openness: 38
   price: 0
+- id: halter
+  order: 2        # 26.11 Alexey: a black knit halter top over a pencil skirt - shoulders, back and the sides of her chest bare (the side of her breast shows)
+  allure: 7
+  tip: 0.25
+  openness: 44
+  price: 120
 - id: revealing
-  order: 2
+  order: 3
   allure: 10
   tip: 0.35
   openness: 50
   price: 180
 - id: daring
-  order: 3
+  order: 4
   allure: 16
   tip: 0.55
   openness: 62
@@ -27,7 +33,7 @@
 # she puts one on easily (night), going up to a guest's room at night takes more (nightOut), and walking out onto the
 # floor in one is the hardest thing in her wardrobe (openness). Nothing under it: nightBare at night, bare in the hall.
 - id: sheer_white
-  order: 4
+  order: 5
   allure: 30
   tip: 0.8
   openness: 70
@@ -35,7 +41,7 @@
   shop: adult
   sheer: { night: 25, nightOut: 45, nightBare: 45, bare: 80 }
 - id: sheer_black
-  order: 5
+  order: 6
   allure: 30
   tip: 0.8
   openness: 70

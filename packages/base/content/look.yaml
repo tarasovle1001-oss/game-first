@@ -71,6 +71,13 @@ words:
       lift: "skirt lift, clothes lift"
       under: black
       negative: "dress, apron, school uniform, sailor collar, necktie, jacket, pleated skirt"
+    halter:
+      tags: "(black sweater:1.2), halterneck, sleeveless, backless outfit, sideboob, bare shoulders, (black skirt:1.1), pencil skirt, black pantyhose, high heels"
+      core: "(black sweater:1.2), halterneck, sideboob, pencil skirt"
+      top: "clothes pull, breasts out, sideboob"
+      lift: "skirt lift, clothes lift"
+      under: black
+      negative: "apron, long sleeves, dress, red dress, school uniform, turtleneck, jacket"
     revealing:
       tags: "(red dress:1.2), off-shoulder dress, short dress, cleavage, bare shoulders, collarbone, black thighhighs, high heels"
       core: "(red dress:1.2), off-shoulder dress, short dress"
